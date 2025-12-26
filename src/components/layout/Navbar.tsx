@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import MobileNavbar from './MobileNavbar';
 import Image from 'next/image';
-import  MisunLogo  from '@/assets/svg/misun-logo-png.png';
+import  MisunLogo  from '@/assets/svg/misun logo svg.svg';
 
 export default function Navbar() {
   const [isDark, setIsDark] = useState(false);
