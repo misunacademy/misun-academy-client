@@ -1,9 +1,8 @@
 import Dashboard from '@/components/module/dashboard/Dashboard';
-import React from 'react';
 
 const page = () => {
     return (
-        <div>
+        <div className="space-y-6">
             <Dashboard />
         </div>
     );

@@ -101,10 +101,11 @@ export function useAuth() {
 
       if (result.token) {
         // Store token and refresh token in cookies
-        Cookies.set('token', result.token, { expires: 7 }); // 7 days
+        Cookies.set('token', result.token, { expires: 7, secure: false }); // 7 days
         if (result.refreshToken) {
-          Cookies.set('refreshToken', result.refreshToken, { expires: 30 }); // refresh token long-lived
-        }
+          Cookies.set('refreshToken', result.refreshToken, { expires: 30, secure: false }); // refresh token long-lived
+        }        // Debug: confirm cookies presence after login
+        console.debug('[useAuth] after signIn cookies token:', !!Cookies.get('token'), 'refreshToken:', !!Cookies.get('refreshToken'));
         dispatch(setUser(result.user));
         // toast.success('সফলভাবে লগইন হয়েছে!');
         return { success: true, user: result.user };
@@ -124,7 +125,7 @@ export function useAuth() {
     dispatch(setLoading(true));
     try {
       const result = await signUpWithEmail(name, email, password);
-console.log("res from useAuth.ts",result)
+
       if (result.token) {
         // Store token and refresh token in cookies
         Cookies.set('token', result.token, { expires: 7 }); // 7 days

@@ -1,7 +1,8 @@
 "use client";
 import { BookOpen, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
-import { usePathname } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { usePathname, useRouter } from "next/navigation";
+import Link from 'next/link';
 import {
     Sidebar,
     SidebarContent,
@@ -19,8 +20,9 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/redux/features/auth/authSlice";
-import { RootState } from "@/redux/store";
+
 import Image from "next/image";
+import { useAppSelector } from "@/redux/hooks";
 
 // Menu items - Bengali version with existing routes
 const studentItems = [
@@ -97,16 +99,19 @@ const adminItems = [
 export function AppSidebar() {
     const dispatch = useDispatch();
     const pathname = usePathname();
-    const user = useSelector((state: RootState) => state.auth.user);
+  const user = useAppSelector((state) => state?.auth?.user);
     // Determine if we're in admin or student dashboard
     const isAdmin = pathname.startsWith('/dashboard/admin');
     const items = isAdmin ? adminItems : studentItems;
 
+    const router = useRouter();
+
     const handleSignOut = () => {
         dispatch(logout());
-        window.location.href = "/auth";
+        // Use client-side navigation to avoid a full reload
+        router.push('/auth');
     };
-
+console.log(user)
     return (
         <Sidebar className="border-r border-gray-200">
             {/* Logo Section */}
@@ -141,10 +146,10 @@ export function AppSidebar() {
                                                 }
                                             `}
                                         >
-                                            <a href={item.url} className="flex items-center gap-3">
+                                            <Link href={item.url} className="flex items-center gap-3">
                                                 <item.icon className="w-5 h-5" />
                                                 <span className="font-medium">{item.title}</span>
-                                            </a>
+                                            </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 );

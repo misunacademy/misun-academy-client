@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { useAppSelector } from "@/redux/hooks";
 
 
 // Validation schemas
@@ -52,7 +53,7 @@ const AuthPage = () => {
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const router = useRouter();
     const { signIn, signUp, signInWithGoogle } = useAuth();
-    // const user = useSelector((state: RootState) => state.auth.user);
+    const user = useAppSelector((state ) => state.auth.user);
 
 
 
@@ -85,7 +86,7 @@ const AuthPage = () => {
         const result = await signInWithGoogle();
         if (result.success) {
             toast.success("Google দিয়ে সফলভাবে লগইন হয়েছে!");
-            router.push("/dashboard");
+            router.push(`/dashboard/${user?.role}`);
         } else {
             toast.error(result.error || "Google লগইন ব্যর্থ হয়েছে");
         }
@@ -94,7 +95,7 @@ const AuthPage = () => {
     const handleLogin = async (data: LoginFormData) => {
         const result = await signIn(data.email, data.password);
         if (result.success) {
-            router.push(result.user && result.user.role ? `/dashboard/${result.user.role}` : '/dashboard');
+            router.push(result.user && result.user.role ? `/dashboard/${result.user.role}` : '/');
         } else {
             toast.error(result.error || "লগইন ব্যর্থ হয়েছে");
         }
@@ -103,7 +104,7 @@ const AuthPage = () => {
     const handleRegister = async (data: RegisterFormData) => {
         const result = await signUp(data.name, data.email, data.password);
         if (result.success) {
-            router.push(result.user && result.user.role ? `/dashboard/${result.user.role}` : '/dashboard');
+            router.push(result.user && result.user.role ? `/dashboard/${result.user.role}` : '/');
         } else {
             toast.error(result.error || "রেজিস্ট্রেশন ব্যর্থ হয়েছে");
         }

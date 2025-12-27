@@ -7,33 +7,47 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { Download, TrendingUp, Users, DollarSign, BookOpen, Calendar } from "lucide-react";
 
+import { useGetMetadataQuery } from "@/redux/features/student/studentApi";
+import { Loader2 } from "lucide-react";
+
 export default function AdminReports() {
-  // Mock data for charts
-  const enrollmentData = [
-    { month: 'Jan', enrollments: 120 },
-    { month: 'Feb', enrollments: 150 },
-    { month: 'Mar', enrollments: 180 },
-    { month: 'Apr', enrollments: 200 },
-    { month: 'May', enrollments: 250 },
-    { month: 'Jun', enrollments: 280 },
-  ];
+  const { data, isLoading, error } = useGetMetadataQuery(undefined);
 
-  const revenueData = [
-    { month: 'Jan', revenue: 12000 },
-    { month: 'Feb', revenue: 15000 },
-    { month: 'Mar', revenue: 18000 },
-    { month: 'Apr', revenue: 22000 },
-    { month: 'May', revenue: 25000 },
-    { month: 'Jun', revenue: 30000 },
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
-  const coursePopularityData = [
-    { name: 'Web Development', value: 35, color: '#0088FE' },
-    { name: 'React.js', value: 25, color: '#00C49F' },
-    { name: 'Node.js', value: 20, color: '#FFBB28' },
-    { name: 'Python', value: 12, color: '#FF8042' },
-    { name: 'Others', value: 8, color: '#8884D8' },
-  ];
+  if (error || !data) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-500">Error loading reports data</p>
+      </div>
+    );
+  }
+
+  const metadata = data.data;
+
+  // Format data for charts
+  const enrollmentData = metadata.dayWiseStats.map((stat) => ({
+    month: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    enrollments: stat.totalEnrollment,
+  }));
+
+  const revenueData = metadata.dayWiseStats.map((stat) => ({
+    month: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    revenue: stat.totalIncome,
+  }));
+
+  // For course popularity, use batch-wise enrolled as proxy
+  const coursePopularityData = metadata.batchWiseEnrolled.map((batch, index) => ({
+    name: batch.batchId,
+    value: batch.totalEnrolled,
+    color: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'][index % 5],
+  }));
 
   return (
     <div className="space-y-6">
@@ -69,24 +83,24 @@ export default function AdminReports() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$142,000</div>
+            <div className="text-2xl font-bold">${metadata.totalIncome.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground flex items-center">
               <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              +12.5% from last month
+              Revenue from enrollments
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New Enrollments</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Enrollments</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,200</div>
+            <div className="text-2xl font-bold">{metadata.totalEnrolled}</div>
             <p className="text-xs text-muted-foreground flex items-center">
               <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              +8.2% from last month
+              Students enrolled
             </p>
           </CardContent>
         </Card>

@@ -8,23 +8,15 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Clock, Calendar as CalendarIcon, Save } from "lucide-react";
 import { format } from "date-fns";
+import { Course, Duration } from "@/types/common";
 
-interface Course {
-  id: number;
-  title: string;
-  instructor: string;
-  students: number;
-  duration: string;
-  price: number;
-  status: 'active' | 'draft' | 'archived';
-  category: string;
-  enrollmentStartDate: Date;
-  enrollmentEndDate: Date;
-  courseStartDate: Date;
-  courseEndDate: Date;
-  enrollmentDeadline: Date;
-  schedule: string;
-}
+const formatDuration = (duration: Duration | string | undefined): string => {
+  if (!duration) return '';
+  if (typeof duration === 'string') return duration;
+  if (duration.weeks) return `${duration.weeks} weeks`;
+  if (duration.hours) return `${duration.hours} hours`;
+  return '';
+};
 
 type DateField = 'enrollmentStartDate' | 'enrollmentEndDate' | 'courseStartDate' | 'courseEndDate' | 'enrollmentDeadline';
 
@@ -34,7 +26,7 @@ interface EditCourseDialogProps {
   onOpenChange: (open: boolean) => void;
   onSave: () => void;
   onDateChange: (field: DateField, date: Date | undefined) => void;
-  onFieldChange: (field: keyof Course, value: string | number) => void;
+  onFieldChange: (field: keyof Course, value: any) => void;
   isAddingNew?: boolean;
 }
 
@@ -76,38 +68,147 @@ export function EditCourseDialog({
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="subtitle">Subtitle</Label>
+              <Input
+                id="subtitle"
+                value={editingCourse.subtitle || ''}
+                onChange={(e) => onFieldChange('subtitle', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={editingCourse.description || ''}
+              onChange={(e) => onFieldChange('description', e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="shortDescription">Short Description</Label>
+            <Textarea
+              id="shortDescription"
+              value={editingCourse.shortDescription || ''}
+              onChange={(e) => onFieldChange('shortDescription', e.target.value)}
+              rows={2}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
               <Label htmlFor="instructor">Instructor</Label>
               <Input
                 id="instructor"
-                value={editingCourse.instructor}
+                value={typeof editingCourse.instructor === 'string' ? editingCourse.instructor : editingCourse.instructor?.name || ''}
                 onChange={(e) => onFieldChange('instructor', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="courseCode">Course Code</Label>
+              <Input
+                id="courseCode"
+                value={editingCourse.courseCode || ''}
+                onChange={(e) => onFieldChange('courseCode', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Input
+                id="category"
+                value={editingCourse.category || ''}
+                onChange={(e) => onFieldChange('category', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="subcategory">Subcategory</Label>
+              <Input
+                id="subcategory"
+                value={editingCourse.subcategory || ''}
+                onChange={(e) => onFieldChange('subcategory', e.target.value)}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="price">Price ($)</Label>
+              <Label htmlFor="level">Level</Label>
+              <Select
+                value={editingCourse.level || 'Beginner'}
+                onValueChange={(value: string) => onFieldChange('level', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Beginner">Beginner</SelectItem>
+                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                  <SelectItem value="Advanced">Advanced</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="language">Language</Label>
               <Input
-                id="price"
-                type="number"
-                value={editingCourse.price}
-                onChange={(e) => onFieldChange('price', parseInt(e.target.value) || 0)}
+                id="language"
+                value={editingCourse.language || 'English'}
+                onChange={(e) => onFieldChange('language', e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="duration">Duration</Label>
+              <Label htmlFor="isFeatured">Featured</Label>
+              <input
+                id="isFeatured"
+                type="checkbox"
+                checked={editingCourse.isFeatured || false}
+                onChange={(e) => onFieldChange('isFeatured', e.target.checked)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="thumbnailUrl">Thumbnail URL</Label>
+              <Input
+                id="thumbnailUrl"
+                value={editingCourse.thumbnailUrl || ''}
+                onChange={(e) => onFieldChange('thumbnailUrl', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="coverImageUrl">Cover Image URL</Label>
+              <Input
+                id="coverImageUrl"
+                value={editingCourse.coverImageUrl || ''}
+                onChange={(e) => onFieldChange('coverImageUrl', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="tags">Tags (comma separated)</Label>
+            <Input
+              id="tags"
+              value={editingCourse.tags?.join(', ') || ''}
+              onChange={(e) => onFieldChange('tags', e.target.value.split(',').map(s => s.trim()))}
+            />
+          </div>
               <Input
                 id="duration"
-                value={editingCourse.duration}
+                value={formatDuration(editingCourse.duration)}
                 onChange={(e) => onFieldChange('duration', e.target.value)}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select
-                value={editingCourse.status}
-                onValueChange={(value: Course['status']) => onFieldChange('status', value)}
+                value={editingCourse.status || 'draft'}
+                onValueChange={(value: string) => onFieldChange('status', value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -119,14 +220,50 @@ export function EditCourseDialog({
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Input
+                id="category"
+                value={editingCourse.category || ''}
+                onChange={(e) => onFieldChange('category', e.target.value)}
+              />
+            </div>
+          {/* </div> */}
+
+          {/* Enrollment Details */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium">Enrollment Settings</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="enrollmentCapacity">Capacity</Label>
+                <Input
+                  id="enrollmentCapacity"
+                  type="number"
+                  value={editingCourse.enrollment?.capacity || 0}
+                  onChange={(e) => onFieldChange('enrollment', { ...editingCourse.enrollment, capacity: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="enrollmentStatus">Enrollment Status</Label>
+                <Select
+                  value={editingCourse.enrollment?.status || 'open'}
+                  onValueChange={(value: string) => onFieldChange('enrollment', { ...editingCourse.enrollment, status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="open">Open</SelectItem>
+                    <SelectItem value="closed">Closed</SelectItem>
+                    <SelectItem value="waitlist">Waitlist</SelectItem>
+                    <SelectItem value="coming_soon">Coming Soon</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
 
           {/* Enrollment Dates */}
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium flex items-center gap-2">
-              <CalendarIcon className="h-4 w-4" />
-              Enrollment Period
-            </h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Enrollment Start Date</Label>
@@ -186,7 +323,7 @@ export function EditCourseDialog({
                 </PopoverContent>
               </Popover>
             </div>
-          </div>
+          {/* </div> */}
 
           {/* Course Dates */}
           <div className="space-y-4">
@@ -238,7 +375,7 @@ export function EditCourseDialog({
               <Label htmlFor="schedule">Class Schedule</Label>
               <Textarea
                 id="schedule"
-                value={editingCourse.schedule}
+                value={editingCourse.schedule || ''}
                 onChange={(e) => onFieldChange('schedule', e.target.value)}
                 placeholder="e.g., Mon, Wed, Fri - 7:00 PM - 9:00 PM"
               />
@@ -254,7 +391,7 @@ export function EditCourseDialog({
               {isAddingNew ? "Create Course" : "Save Changes"}
             </Button>
           </div>
-        </div>
+        {/* </div> */}
       </DialogContent>
     </Dialog>
   );

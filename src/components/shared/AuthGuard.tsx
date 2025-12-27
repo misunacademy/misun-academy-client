@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -32,7 +33,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                                 Authorization: `Bearer ${token}`,
                             },
                         });
-
+console.log("res",res)
                         if (res.ok) {
                             const payload = await res.json();
                             if (payload?.data) {

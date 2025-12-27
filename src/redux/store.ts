@@ -30,7 +30,7 @@ export const store = configureStore({
             serializableCheck: {
                 ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
                 ignoredPaths: ['auth.session', 'auth.user', 'auth'],
-                ignoredActionPaths: ['payload.session', 'payload.user', 'meta.arg'],
+                ignoredActionPaths: ['payload.session', 'payload.user', 'meta.arg', 'meta.baseQueryMeta.request', 'meta.baseQueryMeta.response'],
             },
         }).concat(baseApi.middleware),
 });
