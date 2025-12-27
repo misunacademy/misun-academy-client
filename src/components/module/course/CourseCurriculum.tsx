@@ -29,9 +29,6 @@ const CourseCurriculum = () => {
         switch (type) {
             case 'video': return <Play className="h-4 w-4" />;
             case 'reading': return <BookOpen className="h-4 w-4" />;
-            case 'quiz': return <HelpCircle className="h-4 w-4" />;
-            case 'assignment': return <FileText className="h-4 w-4" />;
-            case 'project': return <FolderOpen className="h-4 w-4" />;
             default: return <BookOpen className="h-4 w-4" />;
         }
     };

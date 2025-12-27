@@ -16,6 +16,19 @@ const authApi = baseApi.injectEndpoints({
                 body: userInfo,
             }),
         }),
+        getMe: builder.query({
+            query: () => ({
+                url: '/auth/me',
+                method: 'GET',
+            }),
+        }),
+        updateUserProfile: builder.mutation({
+            query: (updateData) => ({
+                url: '/auth/update-profile',
+                method: 'PUT',
+                body: updateData,
+            }),
+        }),
         forgetPassword: builder.mutation({
             query: (userInfo) => ({
                 url: '/auth/forget-password',
@@ -36,6 +49,8 @@ const authApi = baseApi.injectEndpoints({
 export const {
     useLoginMutation,
     useRegisterMutation,
+    useGetMeQuery,
+    useUpdateUserProfileMutation,
     useForgetPasswordMutation,
     useResetPasswordMutation,
 } = authApi;

@@ -1,3 +1,4 @@
+"use client"
 import { AppSidebar } from "@/components/module/dashboard/app-sidebar"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { Bell, User, ExternalLink } from "lucide-react"
@@ -12,8 +13,47 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import AuthGuard from "@/components/shared/AuthGuard"
+import { usePathname } from "next/navigation"
+
+
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname()
+
+    // Function to get page title from pathname
+    const getPageTitle = (path: string) => {
+        const pathMap: Record<string, string> = {
+            '/dashboard': 'Overview',
+            '/dashboard/admin': 'Admin Dashboard',
+            '/dashboard/admin/courses': 'Courses Management',
+            '/dashboard/admin/student': 'Student Management',
+            '/dashboard/admin/payment': 'Payment Management',
+            '/dashboard/admin/batch': 'Batch Management',
+            '/dashboard/admin/users': 'User Management',
+            '/dashboard/admin/reports': 'Reports',
+            '/dashboard/admin/settings': 'Settings',
+            '/dashboard/student': 'Student Dashboard',
+            '/dashboard/student/courses': 'My Courses',
+            '/dashboard/student/certificates': 'Certificates',
+            '/dashboard/student/profile': 'Profile',
+            '/dashboard/student/settings': 'Settings',
+        }
+
+        return pathMap[path] || 'Overview'
+    }
+
+    // Function to get header title from pathname
+    const getHeaderTitle = (path: string) => {
+        if (path.startsWith('/dashboard/admin')) {
+            return 'Admin Dashboard'
+        } else if (path.startsWith('/dashboard/student')) {
+            return 'Student Dashboard'
+        }
+        return 'Dashboard'
+    }
+
+    const currentPageTitle = getPageTitle(pathname)
+    const currentHeaderTitle = getHeaderTitle(pathname)
     return (
         <AuthGuard>
             <SidebarProvider>
@@ -22,7 +62,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <header className="flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
                     <div className="flex items-center gap-2">
                         <SidebarTrigger className="-ml-1" />
-                        <h1 className="text-lg font-semibold hidden sm:block">Student Dashboard</h1>
+                        <h1 className="text-lg font-semibold hidden sm:block">{currentHeaderTitle}</h1>
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -83,7 +123,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
                         <span>Dashboard</span>
                         <span>/</span>
-                        <span className="text-foreground font-medium">Overview</span>
+                        <span className="text-foreground font-medium">{currentPageTitle}</span>
                     </nav>
 
                     {children}

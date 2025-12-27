@@ -16,8 +16,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
+} from '@/components/ui/table';import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
     Select,
@@ -49,6 +48,18 @@ interface Student {
     phone: string;
 }
 
+interface Course {
+    _id: string;
+    title: string;
+    slug: string;
+}
+
+interface Batch {
+    _id: string;
+    title: string;
+    batchCode: string;
+}
+
 interface PaymentData {
     _id: string;
     transactionId: string;
@@ -57,6 +68,8 @@ interface PaymentData {
     method: string;
     createdAt: string;
     student: Student;
+    course?: Course;
+    batch?: Batch;
     gatewayResponse?: { transactionId?: string, senderNumber?: string, bank_tran_id?: string, card_issuer?: string };
 }
 
@@ -121,6 +134,30 @@ const PaymentTable = () => {
                     return <div>
                         <p>{row.original.student.name}</p>
                         <p className='text-[12px]'>{row.original.student.email}</p>
+                    </div>
+                }
+            },
+            {
+                accessorKey: 'course.title',
+                header: 'Course',
+                cell: ({ row }) => {
+                    return <div>
+                        <p className='font-medium'>{row.original.course?.title || 'N/A'}</p>
+                        {row.original.course?.slug && (
+                            <p className='text-[12px] text-gray-500'>{row.original.course.slug}</p>
+                        )}
+                    </div>
+                }
+            },
+            {
+                accessorKey: 'batch.title',
+                header: 'Batch',
+                cell: ({ row }) => {
+                    return <div>
+                        <p className='font-medium'>{row.original.batch?.title || 'N/A'}</p>
+                        {row.original.batch?.batchCode && (
+                            <p className='text-[12px] text-gray-500'>Code: {row.original.batch.batchCode}</p>
+                        )}
                     </div>
                 }
             },
@@ -252,108 +289,115 @@ const PaymentTable = () => {
     }
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Payment Records</h1>
-            <div className="flex justify-between mb-4 gap-4">
-                <Input
-                    placeholder="Search payments..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="max-w-sm"
-                    aria-label="Search payments"
-                />
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="success">Success</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="failed">Failed</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>All Payments</CardTitle>
+                    <CardDescription>View and manage all payment transactions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex justify-between mb-4 gap-4">
+                        <Input
+                            placeholder="Search payments..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="max-w-sm"
+                            aria-label="Search payments"
+                        />
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Filter by status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Status</SelectItem>
+                                <SelectItem value="success">Success</SelectItem>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="failed">Failed</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
 
-            <div className="overflow-x-auto rounded-lg shadow">
-                <Table className="min-w-full">
-                    <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id} className="bg-gray-100">
-                                {headerGroup.headers.map((header) => (
-                                    <TableHead
-                                        key={header.id}
-                                        onClick={header.column.getToggleSortingHandler()}
-                                        className="font-bold text-gray-700 uppercase text-sm py-3 px-4 cursor-pointer"
-                                    >
-                                        {flexRender(header.column.columnDef.header, header.getContext())}
-                                        {header.column.getIsSorted() ? (
-                                            header.column.getIsSorted() === 'asc' ? (
-                                                <span className="ml-1">🔼</span>
-                                            ) : (
-                                                <span className="ml-1">🔽</span>
-                                            )
-                                        ) : null}
-                                    </TableHead>
+                    <div className="overflow-x-auto rounded-lg shadow">
+                        <Table className="min-w-full">
+                            <TableHeader>
+                                {table.getHeaderGroups().map((headerGroup) => (
+                                    <TableRow key={headerGroup.id}>
+                                        {headerGroup.headers.map((header) => (
+                                            <TableHead
+                                                key={header.id}
+                                                onClick={header.column.getToggleSortingHandler()}
+                                                className="cursor-pointer"
+                                            >
+                                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                                {header.column.getIsSorted() ? (
+                                                    header.column.getIsSorted() === 'asc' ? (
+                                                        <span className="ml-1">🔼</span>
+                                                    ) : (
+                                                        <span className="ml-1">🔽</span>
+                                                    )
+                                                ) : null}
+                                            </TableHead>
+                                        ))}
+                                    </TableRow>
                                 ))}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow
-                                    key={row.id}
-                                    className="hover:bg-gray-50 transition-colors"
-                                >
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id} className="py-3 px-4 text-gray-600">
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableHeader>
+                            <TableBody>
+                                {table.getRowModel().rows.length ? (
+                                    table.getRowModel().rows.map((row) => (
+                                        <TableRow
+                                            key={row.id}
+                                            className="hover:bg-gray-50 transition-colors"
+                                        >
+                                            {row.getVisibleCells().map((cell) => (
+                                                <TableCell key={cell.id}>
+                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={columns.length} className="text-center py-4 text-gray-500">
+                                            No results found
                                         </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="text-center py-4 text-gray-500">
-                                    No results found
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
 
-            <div className="flex items-center justify-between mt-6">
-                <div className="text-gray-600">
-                    Showing {table.getRowModel().rows.length} of {meta.total} payments
-                </div>
-                <div className="flex items-center space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={page === 1}
-                        className="text-green-600 border-gray-300"
-                        aria-label="Previous page"
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="text-gray-600">
-                        Page {page} of {meta.totalPages}
-                    </span>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((prev) => Math.min(prev + 1, meta.totalPages))}
-                        disabled={page === meta.totalPages}
-                        className="text-green-600 border-gray-300"
-                        aria-label="Next page"
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
+                    <div className="flex items-center justify-between mt-6">
+                        <div className="text-gray-600">
+                            Showing {table.getRowModel().rows.length} of {meta.total} payments
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                                disabled={page === 1}
+                                className="border-gray-300"
+                                aria-label="Previous page"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <span className="text-gray-600">
+                                Page {page} of {meta.totalPages}
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPage((prev) => Math.min(prev + 1, meta.totalPages))}
+                                disabled={page === meta.totalPages}
+                                className="border-gray-300"
+                                aria-label="Next page"
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 };

@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function AdminSettings() {
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Admin Settings</h1>
         <p className="text-muted-foreground">Manage system-wide settings and configurations</p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,160 +12,171 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  Download
+  Download,
+  Loader2
 } from "lucide-react";
 import { VideoPlayer } from "@/components/module/dashboard/student/VideoPlayer";
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useGetCourseByIdQuery } from "@/redux/features/course/courseApi";
+import { useGetCourseProgressQuery, useCompleteLessonMutation } from "@/redux/features/course/courseApi";
+import { toast } from "sonner";
+
+interface Lesson {
+  lessonId: string;
+  title: string;
+  type: string;
+  duration?: number;
+  isPreview: boolean;
+  content?: any;
+  media?: {
+    type: string;
+    url: string;
+    thumbnail?: string;
+  };
+}
 
 interface Module {
-  id: number;
+  moduleId: string;
   title: string;
-  description: string;
-  duration: string;
-  videoUrl: string;
-  resources?: {
-    name: string;
-    url: string;
-    type: 'pdf' | 'doc' | 'link';
-  }[];
-  completed: boolean;
+  description?: string;
+  order: number;
+  duration?: number;
+  lessons: Lesson[];
 }
 
 interface Course {
-  id: number;
+  _id: string;
   title: string;
-  instructor: string;
+  slug: string;
   description: string;
-  progress: number;
-  totalModules: number;
-  completedModules: number;
-  modules: Module[];
+  instructor: {
+    name: string;
+  };
+  duration: {
+    hours: number;
+    weeks: number;
+  };
+  curriculum: Module[];
+  thumbnailUrl?: string;
 }
 
-// Mock data - replace with API call
-const coursesData: Course[] = [
-  {
-    id: 1,
-    title: "Web Development Fundamentals",
-    instructor: "John Doe",
-    description: "Learn the basics of HTML, CSS, and JavaScript to build modern web applications.",
-    progress: 75,
-    totalModules: 12,
-    completedModules: 9,
-    modules: [
-      {
-        id: 1,
-        title: "Introduction to HTML",
-        description: "Learn the basics of HTML structure and semantic elements",
-        duration: "15 min",
-        videoUrl: "https://drive.google.com/file/d/1abc123def456/view?usp=sharing",
-        completed: true,
-        resources: [
-          { name: "HTML Cheat Sheet", url: "#", type: "pdf" },
-          { name: "Practice Exercise", url: "#", type: "link" }
-        ]
-      },
-      {
-        id: 2,
-        title: "HTML Forms and Input",
-        description: "Create interactive forms with various input types",
-        duration: "20 min",
-        videoUrl: "https://drive.google.com/file/d/1def456ghi789/view?usp=sharing",
-        completed: true,
-        resources: [
-          { name: "Form Examples", url: "#", type: "pdf" }
-        ]
-      },
-      {
-        id: 3,
-        title: "CSS Fundamentals",
-        description: "Introduction to Cascading Style Sheets",
-        duration: "25 min",
-        videoUrl: "https://drive.google.com/file/d/1ghi789jkl012/view?usp=sharing",
-        completed: true
-      },
-      {
-        id: 4,
-        title: "CSS Layout with Flexbox",
-        description: "Master modern CSS layout techniques",
-        duration: "30 min",
-        videoUrl: "https://drive.google.com/file/d/1jkl012mno345/view?usp=sharing",
-        completed: false
-      },
-      {
-        id: 5,
-        title: "JavaScript Basics",
-        description: "Introduction to programming with JavaScript",
-        duration: "35 min",
-        videoUrl: "https://drive.google.com/file/d/1mno345pqr678/view?usp=sharing",
-        completed: false
-      }
-    ]
-  },
-  {
-    id: 2,
-    title: "React.js Advanced",
-    instructor: "Jane Smith",
-    description: "Master advanced React concepts and patterns for building complex applications.",
-    progress: 45,
-    totalModules: 10,
-    completedModules: 4,
-    modules: [
-      {
-        id: 1,
-        title: "Advanced Hooks",
-        description: "Deep dive into custom hooks and advanced use cases",
-        duration: "25 min",
-        videoUrl: "https://drive.google.com/file/d/1stu234vwx567/view?usp=sharing",
-        completed: true
-      }
-    ]
-  },
-  {
-    id: 3,
-    title: "Node.js Backend Development",
-    instructor: "Mike Johnson",
-    description: "Build scalable server-side applications with Node.js and Express.",
-    progress: 20,
-    totalModules: 15,
-    completedModules: 3,
-    modules: [
-      {
-        id: 1,
-        title: "Node.js Fundamentals",
-        description: "Introduction to server-side JavaScript with Node.js",
-        duration: "30 min",
-        videoUrl: "https://drive.google.com/file/d/1yz890abc123/view?usp=sharing",
-        completed: true
-      }
-    ]
-  }
-];
+interface CourseProgress {
+  percentage: number;
+  completedLessons: Array<{
+    moduleId: string;
+    lessonId: string;
+    completedAt: string;
+  }>;
+  currentLesson?: {
+    moduleId: string;
+    lessonId: string;
+  };
+}
 
-export default function CourseDetails({ params }: { params: { courseId: string } }) {
+export default function CourseDetails() {
+  const params = useParams();
+  const courseId = params.courseId as string;
+
   const [currentModuleIndex, setCurrentModuleIndex] = useState(0);
-  const courseId = parseInt(params.courseId);
-  const course = coursesData.find(c => c.id === courseId) || coursesData[0]; // Fallback to first course
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
 
-  const currentModule = course.modules[currentModuleIndex];
+  // Fetch course details
+  const { data: courseData, isLoading: courseLoading } = useGetCourseByIdQuery(courseId);
+  const course: Course | undefined = courseData?.data;
 
-  const handleNextModule = () => {
-    if (currentModuleIndex < course.modules.length - 1) {
+  // Fetch course progress
+  const { data: progressData, isLoading: progressLoading, refetch: refetchProgress } = useGetCourseProgressQuery(courseId);
+  const progress: CourseProgress | undefined = progressData?.data;
+
+  // Complete lesson mutation
+  const [completeLesson, { isLoading: completingLesson }] = useCompleteLessonMutation();
+
+  // Set current lesson based on progress
+  useEffect(() => {
+    if (progress?.currentLesson && course?.curriculum) {
+      const moduleIndex = course.curriculum.findIndex(m => m.moduleId === progress.currentLesson?.moduleId);
+      const lessonIndex = course.curriculum[moduleIndex]?.lessons.findIndex(l => l.lessonId === progress.currentLesson?.lessonId);
+
+      if (moduleIndex >= 0) setCurrentModuleIndex(moduleIndex);
+      if (lessonIndex >= 0) setCurrentLessonIndex(lessonIndex);
+    }
+  }, [progress, course]);
+
+  if (courseLoading || progressLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!course) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold mb-2">Course Not Found</h2>
+        <p className="text-muted-foreground mb-4">The course you're looking for doesn't exist or you don't have access to it.</p>
+        <Link href="/dashboard/student/courses">
+          <Button>Back to My Courses</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  const currentModule = course.curriculum[currentModuleIndex];
+  const currentLesson = currentModule?.lessons[currentLessonIndex];
+
+  const isLessonCompleted = (moduleId: string, lessonId: string) => {
+    return progress?.completedLessons?.some(
+      completed => completed.moduleId === moduleId && completed.lessonId === lessonId
+    ) || false;
+  };
+
+  const handleNextLesson = () => {
+    if (!currentModule) return;
+
+    if (currentLessonIndex < currentModule.lessons.length - 1) {
+      setCurrentLessonIndex(currentLessonIndex + 1);
+    } else if (currentModuleIndex < course.curriculum.length - 1) {
       setCurrentModuleIndex(currentModuleIndex + 1);
+      setCurrentLessonIndex(0);
     }
   };
 
-  const handlePrevModule = () => {
-    if (currentModuleIndex > 0) {
+  const handlePrevLesson = () => {
+    if (!currentModule) return;
+
+    if (currentLessonIndex > 0) {
+      setCurrentLessonIndex(currentLessonIndex - 1);
+    } else if (currentModuleIndex > 0) {
+      const prevModule = course.curriculum[currentModuleIndex - 1];
       setCurrentModuleIndex(currentModuleIndex - 1);
+      setCurrentLessonIndex(prevModule.lessons.length - 1);
     }
   };
 
-  const markModuleComplete = () => {
-    // Update module completion status
-    // This would typically make an API call
-    console.log(`Marking module ${currentModule.id} as complete`);
+  const handleCompleteLesson = async () => {
+    if (!currentLesson || !currentModule) return;
+
+    try {
+      await completeLesson({
+        courseId,
+        moduleId: currentModule.moduleId,
+        lessonId: currentLesson.lessonId
+      }).unwrap();
+
+      toast.success("Lesson marked as complete!");
+      refetchProgress();
+
+      // Auto-advance to next lesson
+      handleNextLesson();
+    } catch (error) {
+      toast.error("Failed to complete lesson. Please try again.");
+    }
   };
+
+  const totalLessons = course.curriculum.reduce((total, module) => total + module.lessons.length, 0);
+  const completedLessonsCount = progress?.completedLessons?.length || 0;
 
   return (
     <div className="space-y-6">
@@ -179,7 +190,7 @@ export default function CourseDetails({ params }: { params: { courseId: string }
         </Link>
         <div>
           <h1 className="text-3xl font-bold">{course.title}</h1>
-          <p className="text-muted-foreground">by {course.instructor}</p>
+          <p className="text-muted-foreground">by {course.instructor?.name || 'Instructor'}</p>
         </div>
       </div>
 
@@ -192,16 +203,16 @@ export default function CourseDetails({ params }: { params: { courseId: string }
               <CardDescription>{course.description}</CardDescription>
             </div>
             <Badge variant="secondary" className="text-lg px-3 py-1">
-              {course.progress}% Complete
+              {progress?.percentage || 0}% Complete
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <Progress value={course.progress} className="h-3" />
+            <Progress value={progress?.percentage || 0} className="h-3" />
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>{course.completedModules} of {course.totalModules} modules completed</span>
-              <span>{course.totalModules - course.completedModules} modules remaining</span>
+              <span>{completedLessonsCount} of {totalLessons} lessons completed</span>
+              <span>{totalLessons - completedLessonsCount} lessons remaining</span>
             </div>
           </div>
         </CardContent>
@@ -211,81 +222,67 @@ export default function CourseDetails({ params }: { params: { courseId: string }
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Video Player */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PlayCircle className="h-5 w-5" />
-                {currentModule.title}
-              </CardTitle>
-              <CardDescription>{currentModule.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <VideoPlayer
-                videoUrl={currentModule.videoUrl}
-                title={currentModule.title}
-              />
-            </CardContent>
-          </Card>
+          {currentLesson && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <PlayCircle className="h-5 w-5" />
+                  {currentLesson.title}
+                </CardTitle>
+                <CardDescription>
+                  {currentModule?.title} • Lesson {currentLessonIndex + 1} of {currentModule?.lessons.length}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {currentLesson.media?.url ? (
+                  <VideoPlayer
+                    videoUrl={currentLesson.media.url}
+                    title={currentLesson.title}
+                  />
+                ) : (
+                  <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
+                    <div className="text-center">
+                      <FileText className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-500">Content not available</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Module Navigation */}
+          {/* Lesson Navigation */}
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <Button
                   variant="outline"
-                  onClick={handlePrevModule}
-                  disabled={currentModuleIndex === 0}
+                  onClick={handlePrevLesson}
+                  disabled={currentModuleIndex === 0 && currentLessonIndex === 0}
                 >
                   <ChevronLeft className="h-4 w-4 mr-2" />
-                  Previous Module
+                  Previous Lesson
                 </Button>
 
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">
-                    Module {currentModuleIndex + 1} of {course.modules.length}
+                    Lesson {currentLessonIndex + 1} of {currentModule?.lessons.length}
                   </span>
                 </div>
 
                 <Button
-                  onClick={handleNextModule}
-                  disabled={currentModuleIndex === course.modules.length - 1}
+                  onClick={handleNextLesson}
+                  disabled={
+                    currentModuleIndex === course.curriculum.length - 1 &&
+                    currentLessonIndex === currentModule?.lessons.length - 1
+                  }
                 >
-                  Next Module
+                  Next Lesson
                   <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
             </CardContent>
           </Card>
-
-          {/* Module Resources */}
-          {currentModule.resources && currentModule.resources.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Module Resources
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {currentModule.resources.map((resource, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{resource.name}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {resource.type.toUpperCase()}
-                        </Badge>
-                      </div>
-                      <Button variant="ghost" size="sm">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Sidebar */}
@@ -296,38 +293,55 @@ export default function CourseDetails({ params }: { params: { courseId: string }
               <CardTitle>Course Modules</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {course.modules.map((module, index) => (
-                  <button
-                    key={module.id}
-                    onClick={() => setCurrentModuleIndex(index)}
-                    className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                      index === currentModuleIndex
-                        ? 'bg-blue-50 border-blue-200'
-                        : 'hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 mt-0.5">
-                        {module.completed ? (
-                          <CheckCircle className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <PlayCircle className="h-5 w-5 text-gray-400" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`font-medium text-sm ${
-                          index === currentModuleIndex ? 'text-blue-900' : 'text-gray-900'
-                        }`}>
-                          {module.title}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Clock className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">{module.duration}</span>
-                        </div>
-                      </div>
+              <div className="space-y-4">
+                {course.curriculum.map((module, moduleIdx) => (
+                  <div key={module.moduleId} className="space-y-2">
+                    <h4 className="font-semibold text-sm">{module.title}</h4>
+                    <div className="space-y-1 ml-4">
+                      {module.lessons.map((lesson, lessonIdx) => {
+                        const isCompleted = isLessonCompleted(module.moduleId, lesson.lessonId);
+                        const isCurrent = moduleIdx === currentModuleIndex && lessonIdx === currentLessonIndex;
+
+                        return (
+                          <button
+                            key={lesson.lessonId}
+                            onClick={() => {
+                              setCurrentModuleIndex(moduleIdx);
+                              setCurrentLessonIndex(lessonIdx);
+                            }}
+                            className={`w-full text-left p-2 rounded-lg border transition-colors text-sm ${
+                              isCurrent
+                                ? 'bg-blue-50 border-blue-200'
+                                : 'hover:bg-gray-50'
+                            }`}
+                          >
+                            <div className="flex items-start gap-2">
+                              <div className="flex-shrink-0 mt-0.5">
+                                {isCompleted ? (
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <PlayCircle className="h-4 w-4 text-gray-400" />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`font-medium ${
+                                  isCurrent ? 'text-blue-900' : 'text-gray-900'
+                                }`}>
+                                  {lesson.title}
+                                </p>
+                                {lesson.duration && (
+                                  <div className="flex items-center gap-1 mt-1">
+                                    <Clock className="h-3 w-3 text-muted-foreground" />
+                                    <span className="text-xs text-muted-foreground">{lesson.duration} min</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             </CardContent>
@@ -339,23 +353,23 @@ export default function CourseDetails({ params }: { params: { courseId: string }
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button
-                className="w-full"
-                onClick={markModuleComplete}
-                disabled={currentModule.completed}
-              >
-                {currentModule.completed ? (
-                  <>
+              {currentLesson && (
+                <Button
+                  className="w-full"
+                  onClick={handleCompleteLesson}
+                  disabled={isLessonCompleted(currentModule?.moduleId || '', currentLesson.lessonId) || completingLesson}
+                >
+                  {completingLesson ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Module Completed
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Mark as Complete
-                  </>
-                )}
-              </Button>
+                  )}
+                  {isLessonCompleted(currentModule?.moduleId || '', currentLesson.lessonId)
+                    ? 'Lesson Completed'
+                    : 'Mark as Complete'
+                  }
+                </Button>
+              )}
               <Button variant="outline" className="w-full">
                 Download Certificate
               </Button>

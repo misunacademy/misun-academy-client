@@ -140,7 +140,7 @@ const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps
                                         variant="destructive"
                                         className="text-lg px-6 py-2 font-semibold bg-gradient-to-r from-rose-500 to-red-500 text-white rounded-full shadow-md"
                                     >
-                                        Amount: ₹{paymentInfo.amount.toLocaleString('en-IN')}
+                                        Amount: BDT {paymentInfo.amount.toLocaleString('en-IN')}
                                     </Badge>
                                 </div>
                             </div>

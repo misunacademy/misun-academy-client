@@ -111,7 +111,7 @@ export function AppSidebar() {
         // Use client-side navigation to avoid a full reload
         router.push('/auth');
     };
-console.log(user)
+
     return (
         <Sidebar className="border-r border-gray-200">
             {/* Logo Section */}

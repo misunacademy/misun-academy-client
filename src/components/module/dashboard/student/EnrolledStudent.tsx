@@ -17,6 +17,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +30,7 @@ import {
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useGetEnrolledStudentsQuery } from "@/redux/features/student/studentApi";
 import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 
 // Define the shape of a student data object
 interface Student {
@@ -44,11 +46,18 @@ interface Batch {
     title: string;
 }
 
+interface Course {
+    _id: string;
+    title: string;
+    slug: string;
+}
+
 interface StudentData {
     _id: string;
     student: Student;
     studentId: string;
     batch: Batch;
+    course: Course; // Added course interface
     status: string;
     createdAt: string;
 }
@@ -91,9 +100,9 @@ const EnrolledStudentTable = () => {
                 cell: ({ row }) => row.original.student.phone,
             },
             {
-                accessorKey: "address",
-                header: "Address",
-                cell: ({ row }) => row.original.student.address,
+                accessorKey: "course",
+                header: "Course",
+                cell: ({ row }) => row.original.course.title,
             },
             {
                 accessorKey: "batch",
@@ -136,109 +145,126 @@ const EnrolledStudentTable = () => {
     });
 
     if (isLoading) {
-        return <div className="container mx-auto p-4">Loading...</div>;
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+        );
     }
 
     if (isError) {
-        return <div className="container mx-auto p-4">Error fetching students</div>;
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-red-600 text-lg">Error fetching students</p>
+            </div>
+        );
     }
 
     return (
-        <div className="container mx-auto p-4 h-screen">
-            <div>
-                <h1 className="text-3xl font-bold text-gray-800 mb-6">Enrolled Student</h1>
-            </div>
-            <div className="flex justify-between mb-4">
-                <Input
-                    placeholder="Search students..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="max-w-sm"
-                />
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filter by status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="success">Success</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="failed">Failed</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>All Students</CardTitle>
+                    <CardDescription>View and manage all enrolled students</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex justify-between mb-4">
+                        <Input
+                            placeholder="Search students..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="max-w-sm"
+                        />
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Filter by status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Status</SelectItem>
+                                <SelectItem value="success">Success</SelectItem>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="failed">Failed</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
 
-            <Table>
-                <TableHeader>
-                    {table.getHeaderGroups().map((headerGroup) => (
-                        <TableRow key={headerGroup.id}>
-                            {headerGroup.headers.map((header) => (
-                                <TableHead
-                                    key={header.id}
-                                    onClick={header.column.getToggleSortingHandler()}
-                                    className="cursor-pointer text-bold bg-gray-200"
-                                >
-                                    {flexRender(
-                                        header.column.columnDef.header,
-                                        header.getContext()
-                                    )}
-                                    {/* {{
-                    asc: " 🔼",
-                    desc: " 🔽",
-                  }[header.column.getIsSorted()] ?? null} */}
-                                </TableHead>
+                    <Table>
+                        <TableHeader>
+                            {table.getHeaderGroups().map((headerGroup) => (
+                                <TableRow key={headerGroup.id}>
+                                    {headerGroup.headers.map((header) => (
+                                        <TableHead
+                                            key={header.id}
+                                            onClick={header.column.getToggleSortingHandler()}
+                                            className="cursor-pointer"
+                                        >
+                                            {flexRender(
+                                                header.column.columnDef.header,
+                                                header.getContext()
+                                            )}
+                                            {header.column.getIsSorted() ? (
+                                                header.column.getIsSorted() === 'asc' ? (
+                                                    <span className="ml-1">🔼</span>
+                                                ) : (
+                                                    <span className="ml-1">🔽</span>
+                                                )
+                                            ) : null}
+                                        </TableHead>
+                                    ))}
+                                </TableRow>
                             ))}
-                        </TableRow>
-                    ))}
-                </TableHeader>
-                <TableBody>
-                    {table.getRowModel().rows.length ? (
-                        table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id}>
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}>
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableHeader>
+                        <TableBody>
+                            {table.getRowModel().rows.length ? (
+                                table.getRowModel().rows.map((row) => (
+                                    <TableRow key={row.id} className="hover:bg-gray-50 transition-colors">
+                                        {row.getVisibleCells().map((cell) => (
+                                            <TableCell key={cell.id}>
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} className="text-center py-4 text-gray-500">
+                                        No results found
                                     </TableCell>
-                                ))}
-                            </TableRow>
-                        ))
-                    ) : (
-                        <TableRow>
-                            <TableCell colSpan={columns.length} className="text-center">
-                                No results found
-                            </TableCell>
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
 
-            <div className="flex items-center justify-between mt-8">
-                <div>
-                    Showing {table.getRowModel().rows.length} of {meta.total} students
-                </div>
-                <div className="flex items-center space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={page === 1}
-                        className="text-green-600"
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span>
-                        Page {page} of {meta.totalPages}
-                    </span>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((prev) => Math.min(prev + 1, meta.totalPages))}
-                        disabled={page === meta.totalPages}
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
+                    <div className="flex items-center justify-between mt-8">
+                        <div>
+                            Showing {table.getRowModel().rows.length} of {meta.total} students
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                                disabled={page === 1}
+                                className="border-gray-300"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <span>
+                                Page {page} of {meta.totalPages}
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPage((prev) => Math.min(prev + 1, meta.totalPages))}
+                                disabled={page === meta.totalPages}
+                                className="border-gray-300"
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 };

@@ -32,7 +32,7 @@ export interface ApiResponse<T> {
 export interface Lesson {
     lessonId: string;
     title: string;
-    type: 'video' | 'reading' | 'quiz' | 'assignment' | 'project';
+    type: 'video' | 'reading';
     duration?: number;
     isPreview?: boolean;
     content?: any;

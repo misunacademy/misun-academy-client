@@ -61,6 +61,41 @@ const checkServerAuth = async () => {
   return null;
 };
 
+// Function to handle social login
+const handleSocialLogin = async (userData: { email: string; name?: string; image?: string }) => {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/social-login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: userData.email,
+        name: userData.name,
+        image: userData.image,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const result = data.data;
+
+      if (result.token) {
+        // Store token and refresh token in cookies
+        Cookies.set('token', result.token, { expires: 7, secure: false }); // 7 days
+        if (result.refreshToken) {
+          Cookies.set('refreshToken', result.refreshToken, { expires: 30, secure: false }); // refresh token long-lived
+        }
+        console.debug('[useAuth] social login tokens stored');
+        return result.user;
+      }
+    }
+  } catch (error) {
+    console.error('Failed to handle social login:', error);
+  }
+  return null;
+};
+
 export function useAuth() {
   const dispatch = useDispatch();
 
@@ -72,8 +107,18 @@ export function useAuth() {
         // Check Better Auth session first (for social login)
         const session = await authClient.getSession();
         const betterPayload = (session as any)?.data ?? (session as any)?.user ?? (session as any)?.session;
-        if (betterPayload) {
-          dispatch(setSession(serializeSession(betterPayload)));
+        if (betterPayload && betterPayload.user?.email) {
+          // Handle social login - get JWT tokens
+          const user = await handleSocialLogin({
+            email: betterPayload.user.email,
+            name: betterPayload.user.name,
+            image: betterPayload.user.image,
+          });
+          if (user) {
+            dispatch(setUser(user));
+          } else {
+            dispatch(setSession(serializeSession(betterPayload)));
+          }
         } else {
           // Check server auth (for email/password login)
           const serverUser = await checkServerAuth();

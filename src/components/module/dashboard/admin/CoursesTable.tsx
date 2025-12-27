@@ -16,6 +16,7 @@ interface CoursesTableProps {
 }
 
 export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesTableProps) {
+  console.log(courses);
   return (
     <Card>
       <CardHeader>
@@ -83,8 +84,8 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={course.status === 'active' ? 'default' : 'secondary'}>
-                    {course.status}
+                  <Badge variant={course.isPublished === true ? 'default' : 'secondary'}>
+                    {course.isPublished === true ? 'Active' : 'Draft'}
                   </Badge>
                 </TableCell>
                 <TableCell>

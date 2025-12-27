@@ -18,6 +18,8 @@ import Image from "next/image";
 import ManualPaymentForm from "./ManualPaymentForm";
 import { CourseThumbnail } from "@/assets/images";
 import { useEnrollStudentMutation } from "@/redux/features/student/studentApi";
+import { useGetCoursesQuery } from "@/redux/features/course/courseApi";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface PaymentError {
     data?: {
@@ -27,6 +29,7 @@ interface PaymentError {
 }
 
 const enrollmentSchema = z.object({
+    courseId: z.string().min(1, "Please select a course"),
     studentName: z.string().min(2, "Name must be at least 2 characters"),
     email: z.string().email("Please enter a valid email address"),
     phone: z
@@ -50,9 +53,17 @@ const EnrollmentCheckout = () => {
     const [enrollStudent] = useEnrollStudentMutation();
     const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
 
+    // Fetch available courses
+    const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery({
+        isPublished: true,
+        limit: 50
+    });
+    const courses = coursesData?.data || [];
+
     const form = useForm<EnrollmentForm>({
         resolver: zodResolver(enrollmentSchema),
         defaultValues: {
+            courseId: "",
             studentName: "",
             email: "",
             phone: "",
@@ -66,6 +77,7 @@ const EnrollmentCheckout = () => {
         try {
             console.log(data)
             const res = await enrollStudent({
+                courseId: data.courseId,
                 name: data.studentName,
                 email: data.email,
                 phone: data.phone,
@@ -106,6 +118,7 @@ const EnrollmentCheckout = () => {
         }
         try {
             const res = await enrollStudent({
+                courseId: enrollmentData.courseId,
                 name: enrollmentData.studentName,
                 email: enrollmentData.email,
                 phone: enrollmentData.phone,
@@ -284,11 +297,59 @@ const EnrollmentCheckout = () => {
                             <CardContent>
                                 <Form {...form}>
                                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                                        {/* Student Information */}
+                                        {/* Course Selection */}
                                         <div className="space-y-4">
                                             <h3 className="text-lg font-semibold flex items-center gap-2">
                                                 <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">
                                                     1
+                                                </div>
+                                                Select Course
+                                            </h3>
+
+                                            <FormField
+                                                control={form.control}
+                                                name="courseId"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Choose a Course *</FormLabel>
+                                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                            <FormControl>
+                                                                <SelectTrigger>
+                                                                    <SelectValue placeholder="Select a course to enroll in" />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {coursesLoading ? (
+                                                                    <SelectItem value="" disabled>
+                                                                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                                                        Loading courses...
+                                                                    </SelectItem>
+                                                                ) : courses.length > 0 ? (
+                                                                    courses.map((course: any) => (
+                                                                        <SelectItem key={course._id} value={course._id}>
+                                                                            {course.title}
+                                                                        </SelectItem>
+                                                                    ))
+                                                                ) : (
+                                                                    <SelectItem value="" disabled>
+                                                                        No courses available
+                                                                    </SelectItem>
+                                                                )}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+
+                                        <Separator />
+
+                                        {/* Student Information */}
+                                        <div className="space-y-4">
+                                            <h3 className="text-lg font-semibold flex items-center gap-2">
+                                                <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">
+                                                    2
                                                 </div>
                                                 Student Information
                                             </h3>
@@ -403,7 +464,7 @@ const EnrollmentCheckout = () => {
                                         <div className="space-y-4">
                                             <h3 className="text-lg font-semibold flex items-center gap-2">
                                                 <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm">
-                                                    2
+                                                    3
                                                 </div>
                                                 Payment Method
                                             </h3>

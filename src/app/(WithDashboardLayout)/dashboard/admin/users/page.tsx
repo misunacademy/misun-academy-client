@@ -106,10 +106,10 @@ export default function AdminUsers() {
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'SUPERADMIN': return 'destructive';
-      case 'ADMIN': return 'default';
-      case 'INSTRUCTOR': return 'secondary';
-      case 'STUDENT': return 'outline';
+      case 'superadmin': return 'destructive';
+      case 'admin': return 'default';
+      case 'instructor': return 'secondary';
+      case 'student': return 'outline';
       default: return 'outline';
     }
   };
@@ -123,7 +123,7 @@ export default function AdminUsers() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       {/* Header with Create Dialog */}
       <div className="flex items-center justify-between">
         <div>
@@ -161,15 +161,15 @@ export default function AdminUsers() {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="role" className="text-right">Role</Label>
-                  <Select name="role" defaultValue="STUDENT">
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="STUDENT">Student</SelectItem>
-                      <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                      <SelectItem value="SUPERADMIN">Super Admin</SelectItem>
+                <Select name="role" defaultValue="student">
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="student">Student</SelectItem>
+                    <SelectItem value="instructor">Instructor</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="superadmin">Super Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -205,15 +205,15 @@ export default function AdminUsers() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-role" className="text-right">Role</Label>
-                <Select name="role" defaultValue={editUser?.role || 'STUDENT'}>
+                <Select name="role" defaultValue={editUser?.role || 'student'}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="STUDENT">Student</SelectItem>
-                    <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                    <SelectItem value="ADMIN">Admin</SelectItem>
-                    <SelectItem value="SUPERADMIN">Super Admin</SelectItem>
+                    <SelectItem value="student">Student</SelectItem>
+                    <SelectItem value="instructor">Instructor</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="superadmin">Super Admin</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -268,7 +268,7 @@ export default function AdminUsers() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.filter(u => u.role === 'INSTRUCTOR').length}</div>
+            <div className="text-2xl font-bold">{users.filter(u => u.role === 'instructor').length}</div>
             <p className="text-xs text-muted-foreground">Teaching staff</p>
           </CardContent>
         </Card>
@@ -279,7 +279,7 @@ export default function AdminUsers() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.filter(u => u.role === 'ADMIN' || u.role === 'SUPERADMIN').length}</div>
+            <div className="text-2xl font-bold">{users.filter(u => u.role === 'admin' || u.role === 'superadmin').length}</div>
             <p className="text-xs text-muted-foreground">System administrators</p>
           </CardContent>
         </Card>
@@ -308,10 +308,10 @@ export default function AdminUsers() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="SUPERADMIN">Super Admin</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
-                <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
-                <SelectItem value="STUDENT">Student</SelectItem>
+              <SelectItem value="superadmin">Super Admin</SelectItem>
+              <SelectItem value="admin">Admin</SelectItem>
+              <SelectItem value="instructor">Instructor</SelectItem>
+              <SelectItem value="student">Student</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>

@@ -33,6 +33,13 @@ const studentsApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Students"],
         }),
+        getStudentDashboardData: builder.query({
+            query: () => ({
+                url: "/dashboard/student",
+                method: "GET",
+            }),
+            providesTags: ["Students"],
+        }),
         enrollStudent: builder.mutation({
             query: (studentData) => ({
                 url: "/student",
@@ -49,6 +56,7 @@ export const {
     useGetPaymentHistoryQuery,
     useUpdatePaymentStatusMutation,
     useGetMetadataQuery,
+    useGetStudentDashboardDataQuery,
     useEnrollStudentMutation
 } = studentsApi;
 

@@ -70,7 +70,7 @@ export const paymentInfo = {
     instructions: [
         "Open your PhonePe app",
         "Send money to the number above",
-        "Enter the exact amount: ₹3,000",
+        "Enter the exact amount: BDT 3,000",
         "Add reference: 'MA-5'",
         "Complete the payment",
         "Fill in your payment details below"

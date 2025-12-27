@@ -24,8 +24,54 @@ const courseApi = baseApi.injectEndpoints({
                 url: `/courses/${id}`,
                 method: "GET",
             }),
-            transformResponse: (result: { data: ApiResponse<Course> }) => result.data.data,
+            transformResponse: (result: { data: { course: Course; enrolled: boolean; progress: any } }) => result.data.course,
             providesTags: ["Courses"],
+        }),
+        createCourse: builder.mutation({
+            query: (courseData) => ({
+                url: "/courses",
+                method: "POST",
+                body: courseData,
+            }),
+            invalidatesTags: ["Courses"],
+        }),
+        updateCourse: builder.mutation({
+            query: ({ id, ...courseData }) => ({
+                url: `/courses/${id}`,
+                method: "PATCH",
+                body: courseData,
+            }),
+            invalidatesTags: ["Courses"],
+        }),
+        deleteCourse: builder.mutation({
+            query: (id) => ({
+                url: `/courses/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Courses"],
+        }),
+        // Course Enrollment APIs
+        enrollInCourse: builder.mutation({
+            query: (courseId) => ({
+                url: `/course-enrollment/${courseId}/enroll`,
+                method: "POST",
+            }),
+            invalidatesTags: ["CourseEnrollments"],
+        }),
+        getCourseProgress: builder.query({
+            query: (courseId) => ({
+                url: `/course-enrollment/${courseId}/progress`,
+                method: "GET",
+            }),
+            providesTags: ["CourseEnrollments"],
+        }),
+        completeLesson: builder.mutation({
+            query: ({ courseId, moduleId, lessonId }) => ({
+                url: `/course-enrollment/${courseId}/complete-lesson`,
+                method: "POST",
+                body: { moduleId, lessonId },
+            }),
+            invalidatesTags: ["CourseEnrollments"],
         }),
     }),
 });
@@ -34,4 +80,10 @@ export const {
     useGetCoursesQuery,
     useGetCourseBySlugQuery,
     useGetCourseByIdQuery,
+    useCreateCourseMutation,
+    useUpdateCourseMutation,
+    useDeleteCourseMutation,
+    useEnrollInCourseMutation,
+    useGetCourseProgressQuery,
+    useCompleteLessonMutation,
 } = courseApi;
