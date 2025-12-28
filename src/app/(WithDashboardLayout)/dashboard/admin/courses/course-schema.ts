@@ -25,6 +25,16 @@ const moduleSchema = z.object({
   lessons: z.array(lessonSchema),
 });
 
+// Resource schema
+const resourceSchema = z.object({
+  resourceId: z.string(),
+  title: z.string().min(1, "Resource title is required"),
+  type: z.enum(["document", "link", "download", "video", "image"]),
+  url: z.string().url("Valid URL is required"),
+  description: z.string().optional(),
+  isDownloadable: z.boolean().optional(),
+});
+
 // Course form validation schema
 export const courseSchema = z.object({
   title: z.string().min(1, "Title is required").min(3, "Title must be at least 3 characters"),
@@ -65,6 +75,9 @@ export const courseSchema = z.object({
   // Curriculum (Modules/Days)
   curriculum: z.array(moduleSchema).optional(),
 
+  // Resources
+  resources: z.array(resourceSchema).optional(),
+
   // Status
   isPublished: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
@@ -73,3 +86,4 @@ export const courseSchema = z.object({
 export type CourseFormData = z.infer<typeof courseSchema>;
 export type ModuleFormData = z.infer<typeof moduleSchema>;
 export type LessonFormData = z.infer<typeof lessonSchema>;
+export type ResourceFormData = z.infer<typeof resourceSchema>;

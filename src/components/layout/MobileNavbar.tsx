@@ -45,6 +45,13 @@ export default function MobileNavbar() {
                 </Link>
                 <Link
                     onClick={() => setIsOpen(!isOpen)}
+                    href="/feedback"
+                    className="text-lg h-14 flex items-center border-b border-dark font-bangla"
+                >
+                    শিক্ষার্থীদের মতামত
+                </Link>
+                <Link
+                    onClick={() => setIsOpen(!isOpen)}
                     href="/about"
                     className="text-lg h-14 flex items-center border-b border-dark font-bangla"
                 >

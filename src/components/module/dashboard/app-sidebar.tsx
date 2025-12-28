@@ -1,5 +1,5 @@
 "use client";
-import { BookOpen, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut } from "lucide-react";
+import { BookOpen, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { usePathname, useRouter } from "next/navigation";
 import Link from 'next/link';
@@ -37,6 +37,11 @@ const studentItems = [
         icon: BookOpen,
     },
     {
+        title: "লাইভ ক্লাস রেকর্ডিং",
+        url: "/dashboard/student/recordings",
+        icon: Video,
+    },
+    {
         title: "সার্টিফিকেট",
         url: "/dashboard/student/certificates",
         icon: Award,
@@ -63,6 +68,11 @@ const adminItems = [
         title: "কোর্স ম্যানেজমেন্ট",
         url: "/dashboard/admin/courses",
         icon: BookOpen,
+    },
+    {
+        title: "লাইভ ক্লাস রেকর্ডিং",
+        url: "/dashboard/admin/recordings",
+        icon: Video,
     },
     {
         title: "ব্যাচ ম্যানেজমেন্ট",

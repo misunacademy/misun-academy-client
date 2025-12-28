@@ -16,7 +16,7 @@ interface CoursesTableProps {
 }
 
 export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesTableProps) {
-  console.log(courses);
+  console.log("courses",courses);
   return (
     <Card>
       <CardHeader>
@@ -70,7 +70,7 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
               <TableRow key={String(course._id)}>
                 <TableCell className="font-medium">{course.title}</TableCell>
                 <TableCell>{typeof course.instructor === 'string' ? course.instructor : course.instructor?.name || '—'}</TableCell>
-                <TableCell>{course.students}</TableCell>
+                <TableCell>{course.studentsCount ?? 0}</TableCell>
                 <TableCell>
                   <div className="text-sm">
                     <div>Start: {course.enrollmentStartDate ? format(new Date(course.enrollmentStartDate), 'MMM dd') : '—'}</div>

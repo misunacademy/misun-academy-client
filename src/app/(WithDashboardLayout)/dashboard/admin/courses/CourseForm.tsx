@@ -17,7 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, X, Save, ArrowLeft, Plus, Edit2, Trash2, Play, BookOpen } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { courseSchema, CourseFormData, ModuleFormData, LessonFormData } from "./course-schema";
+import { courseSchema, CourseFormData, ModuleFormData, LessonFormData, ResourceFormData } from "./course-schema";
 import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "@/redux/features/course/courseApi";
 import { toast } from "sonner";
 
@@ -58,6 +58,8 @@ function ModuleDialog({
         },
         content: "",
     });
+    const [editingLesson, setEditingLesson] = useState<LessonFormData | null>(null);
+    const [isEditingLesson, setIsEditingLesson] = useState(false);
 
     const addLesson = () => {
         if (newLesson.title && newLesson.type) {
@@ -87,6 +89,61 @@ function ModuleDialog({
                 content: "",
             });
         }
+    };
+
+    const startEditingLesson = (lesson: LessonFormData) => {
+        setEditingLesson(lesson);
+        setNewLesson({
+            title: lesson.title,
+            type: lesson.type,
+            duration: lesson.duration || 0,
+            isPreview: lesson.isPreview || false,
+            media: lesson.media || {
+                type: "youtube",
+                url: "",
+                thumbnail: "",
+            },
+            content: lesson.content || "",
+        });
+        setIsEditingLesson(true);
+    };
+
+    const saveEditedLesson = () => {
+        if (editingLesson && newLesson.title && newLesson.type) {
+            const updatedLesson: LessonFormData = {
+                ...editingLesson,
+                title: newLesson.title,
+                type: newLesson.type,
+                duration: newLesson.duration || 0,
+                isPreview: newLesson.isPreview || false,
+                media: newLesson.media,
+                content: newLesson.content,
+            };
+            setModuleData(prev => ({
+                ...prev,
+                lessons: prev.lessons.map(l =>
+                    l.lessonId === editingLesson.lessonId ? updatedLesson : l
+                ),
+            }));
+            cancelLessonEdit();
+        }
+    };
+
+    const cancelLessonEdit = () => {
+        setEditingLesson(null);
+        setNewLesson({
+            title: "",
+            type: "video",
+            duration: 0,
+            isPreview: false,
+            media: {
+                type: "youtube",
+                url: "",
+                thumbnail: "",
+            },
+            content: "",
+        });
+        setIsEditingLesson(false);
     };
 
     const removeLesson = (lessonId: string) => {
@@ -154,13 +211,15 @@ function ModuleDialog({
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <Label className="text-lg font-semibold">Lessons</Label>
-                                <Button type="button" onClick={addLesson} size="sm" variant="outline">
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Add Lesson
-                                </Button>
+                                {!isEditingLesson && (
+                                    <Button type="button" onClick={addLesson} size="sm" variant="outline">
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Add Lesson
+                                    </Button>
+                                )}
                             </div>
 
-                            {/* Add New Lesson Form */}
+                            {/* Add/Edit New Lesson Form */}
                             <Card className="border-dashed">
                                 <CardContent className="pt-4">
                                     <div className="grid gap-4 md:grid-cols-2">
@@ -258,9 +317,22 @@ function ModuleDialog({
                                             <Label htmlFor="isPreview" className="ml-2">Preview Lesson</Label>
                                         </div>
                                         <div className="space-y-2 flex items-end">
-                                            <Button type="button" onClick={addLesson} className="w-full">
-                                                Add Lesson
-                                            </Button>
+                                            {isEditingLesson ? (
+                                                <div className="flex gap-2">
+                                                    <Button type="button" onClick={saveEditedLesson} className="flex-1">
+                                                        <Save className="h-4 w-4 mr-2" />
+                                                        Update Lesson
+                                                    </Button>
+                                                    <Button type="button" onClick={cancelLessonEdit} variant="outline">
+                                                        <X className="h-4 w-4 mr-2" />
+                                                        Cancel
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <Button type="button" onClick={addLesson} className="w-full">
+                                                    Add Lesson
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
                                 </CardContent>
@@ -303,14 +375,25 @@ function ModuleDialog({
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => removeLesson(lesson.lessonId)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                    <div className="flex items-center gap-2">
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => startEditingLesson(lesson)}
+                                                            disabled={isEditingLesson}
+                                                        >
+                                                            <Edit2 className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => removeLesson(lesson.lessonId)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             </CardContent>
                                         </Card>
@@ -341,6 +424,14 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
     const [modules, setModules] = useState<ModuleFormData[]>([]);
     const [editingModule, setEditingModule] = useState<ModuleFormData | null>(null);
     const [isModuleDialogOpen, setIsModuleDialogOpen] = useState(false);
+    const [resources, setResources] = useState<ResourceFormData[]>([]);
+    const [newResource, setNewResource] = useState<Partial<ResourceFormData>>({
+        title: "",
+        type: "document",
+        url: "",
+        description: "",
+        isDownloadable: false,
+    });
 
     const { data: courseData, isLoading: isLoadingCourse } = useGetCourseByIdQuery(courseId || "", {
         skip: isNew || !courseId || courseId.trim() === "",
@@ -378,6 +469,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
             coverImageUrl: "",
             tags: [],
             curriculum: [],
+            resources: [],
             isPublished: false,
             isFeatured: false,
         },
@@ -422,19 +514,34 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
                 coverImageUrl: course.coverImageUrl || "",
                 tags: course.tags || [],
                 curriculum: course.curriculum || [],
+                resources: course.resources || [],
                 isPublished: course.isPublished || false,
                 isFeatured: course.isFeatured || false,
             });
 
             // Set modules state separately
             setModules(course.curriculum || []);
+            // Set resources state separately
+            setResources(course.resources || []);
         }
     }, [courseData, isNew, courseId, reset]);
 
     const onSubmit = async (data: CourseFormData) => {
         try {
+            // Generate slug from title if not provided
+            const generateSlug = (title: string) => {
+                return title
+                    .toString()
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-');
+            };
+
             const coursePayload = {
                 title: data.title,
+                slug: data.title ? generateSlug(data.title) : '',
                 subtitle: data.subtitle,
                 description: data.description,
                 shortDescription: data.shortDescription,
@@ -465,6 +572,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
                 coverImageUrl: data.coverImageUrl,
                 tags: data.tags,
                 curriculum: data.curriculum,
+                resources: data.resources,
                 isPublished: data.isPublished,
                 isFeatured: data.isFeatured,
             };
@@ -492,6 +600,35 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
 
     const removeTag = (tagToRemove: string) => {
         setValue("tags", watchedTags.filter(tag => tag !== tagToRemove));
+    };
+
+    const addResource = () => {
+        if (newResource.title && newResource.url) {
+            const resource: ResourceFormData = {
+                resourceId: `resource-${resources.length + 1}`,
+                title: newResource.title,
+                type: newResource.type || "document",
+                url: newResource.url,
+                description: newResource.description || "",
+                isDownloadable: newResource.isDownloadable || false,
+            };
+            const updatedResources = [...resources, resource];
+            setResources(updatedResources);
+            setValue("resources", updatedResources);
+            setNewResource({
+                title: "",
+                type: "document",
+                url: "",
+                description: "",
+                isDownloadable: false,
+            });
+        }
+    };
+
+    const removeResource = (resourceId: string) => {
+        const updatedResources = resources.filter(r => r.resourceId !== resourceId);
+        setResources(updatedResources);
+        setValue("resources", updatedResources);
     };
 
     if (!isNew && courseId && !isLoadingCourse && !courseData) {
@@ -533,7 +670,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <Tabs defaultValue="basic" className="w-full">
-                    <TabsList className="grid w-full grid-cols-9">
+                    <TabsList className="grid w-full grid-cols-10">
                         <TabsTrigger value="basic">Basic</TabsTrigger>
                         <TabsTrigger value="category">Category</TabsTrigger>
                         <TabsTrigger value="duration">Duration</TabsTrigger>
@@ -541,6 +678,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
                         <TabsTrigger value="enrollment">Enrollment</TabsTrigger>
                         <TabsTrigger value="media">Media</TabsTrigger>
                         <TabsTrigger value="tags">Tags</TabsTrigger>
+                        <TabsTrigger value="resources">Resources</TabsTrigger>
                         <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
                         <TabsTrigger value="settings">Settings</TabsTrigger>
                     </TabsList>
@@ -554,10 +692,16 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="title">Course Title *</Label>
-                                    <Input
-                                        id="title"
-                                        {...register("title")}
-                                        placeholder="Enter course title"
+                                    <Controller
+                                        name="title"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Input
+                                                id="title"
+                                                {...field}
+                                                placeholder="Enter course title"
+                                            />
+                                        )}
                                     />
                                     {errors.title && (
                                         <p className="text-sm text-red-500">{errors.title.message}</p>
@@ -578,11 +722,17 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
 
                                 <div className="space-y-2">
                                     <Label htmlFor="description">Description *</Label>
-                                    <Textarea
-                                        id="description"
-                                        {...register("description")}
-                                        placeholder="Detailed course description"
-                                        className="min-h-[100px]"
+                                    <Controller
+                                        name="description"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Textarea
+                                                id="description"
+                                                {...field}
+                                                placeholder="Detailed course description"
+                                                className="min-h-[100px]"
+                                            />
+                                        )}
                                     />
                                     {errors.description && (
                                         <p className="text-sm text-red-500">{errors.description.message}</p>
@@ -1073,6 +1223,148 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
                             </CardContent>
                         </Card>
                     </TabsContent>
+
+                    {/* Resources */}
+                    <TabsContent value="resources">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Course Resources</CardTitle>
+                                <CardDescription>Add downloadable resources, links, and supplementary materials for your course</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <p className="text-sm text-muted-foreground">
+                                        Add resources that students can access throughout the course
+                                    </p>
+                                    <Button
+                                        type="button"
+                                        onClick={addResource}
+                                        size="sm"
+                                        disabled={!newResource.title || !newResource.url}
+                                    >
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Add Resource
+                                    </Button>
+                                </div>
+
+                                {/* Add New Resource Form */}
+                                <Card className="border-dashed">
+                                    <CardContent className="pt-4">
+                                        <div className="grid gap-4 md:grid-cols-2">
+                                            <div className="space-y-2">
+                                                <Label>Resource Title *</Label>
+                                                <Input
+                                                    value={newResource.title || ""}
+                                                    onChange={(e) => setNewResource(prev => ({ ...prev, title: e.target.value }))}
+                                                    placeholder="e.g. Course Syllabus, Cheat Sheet"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Type</Label>
+                                                <Select
+                                                    value={newResource.type || "document"}
+                                                    onValueChange={(value: "document" | "link" | "download" | "video" | "image") =>
+                                                        setNewResource(prev => ({ ...prev, type: value }))
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="document">Document</SelectItem>
+                                                        <SelectItem value="link">External Link</SelectItem>
+                                                        <SelectItem value="download">Downloadable File</SelectItem>
+                                                        <SelectItem value="video">Video</SelectItem>
+                                                        <SelectItem value="image">Image</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-2 md:col-span-2">
+                                                <Label>URL *</Label>
+                                                <Input
+                                                    value={newResource.url || ""}
+                                                    onChange={(e) => setNewResource(prev => ({ ...prev, url: e.target.value }))}
+                                                    placeholder="https://example.com/resource.pdf"
+                                                />
+                                            </div>
+                                            <div className="space-y-2 md:col-span-2">
+                                                <Label>Description (optional)</Label>
+                                                <Textarea
+                                                    value={newResource.description || ""}
+                                                    onChange={(e) => setNewResource(prev => ({ ...prev, description: e.target.value }))}
+                                                    placeholder="Brief description of this resource"
+                                                    className="min-h-[60px]"
+                                                />
+                                            </div>
+                                            <div className="space-y-2 flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    id="isDownloadable"
+                                                    checked={newResource.isDownloadable || false}
+                                                    onChange={(e) => setNewResource(prev => ({ ...prev, isDownloadable: e.target.checked }))}
+                                                    className="rounded"
+                                                />
+                                                <Label htmlFor="isDownloadable" className="ml-2">Downloadable</Label>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Existing Resources */}
+                                {resources.length === 0 ? (
+                                    <div className="text-center py-8 text-muted-foreground">
+                                        <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                        <p>No resources added yet</p>
+                                        <p className="text-sm">Add resources above to provide supplementary materials for your course</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {resources.map((resource, index) => (
+                                            <Card key={resource.resourceId}>
+                                                <CardContent className="pt-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-3 flex-1">
+                                                            <div className="flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-full text-sm font-semibold">
+                                                                {index + 1}
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <span className="font-medium">{resource.title}</span>
+                                                                    <Badge variant="outline" className="text-xs">
+                                                                        {resource.type}
+                                                                    </Badge>
+                                                                    {resource.isDownloadable && (
+                                                                        <Badge variant="secondary" className="text-xs">
+                                                                            Downloadable
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-sm text-muted-foreground space-y-1">
+                                                                    <div>URL: {resource.url.length > 50 ? `${resource.url.substring(0, 50)}...` : resource.url}</div>
+                                                                    {resource.description && (
+                                                                        <div>Description: {resource.description.length > 50 ? `${resource.description.substring(0, 50)}...` : resource.description}</div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => removeResource(resource.resourceId)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
                     {/* Curriculum */}
                     <TabsContent value="curriculum">
                         <Card>

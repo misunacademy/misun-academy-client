@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "../../api/baseApi";
 import { Course, ApiResponse } from "@/types/common";
 
@@ -16,7 +17,7 @@ const courseApi = baseApi.injectEndpoints({
                 url: `/courses/slug/${slug}`,
                 method: "GET",
             }),
-            transformResponse: (result: { data: ApiResponse<Course> }) => result.data.data,
+            transformResponse: (result) => (result as unknown as { data: ApiResponse<Course> }).data.data,
             providesTags: ["Courses"],
         }),
         getCourseById: builder.query<Course, string>({
@@ -24,7 +25,7 @@ const courseApi = baseApi.injectEndpoints({
                 url: `/courses/${id}`,
                 method: "GET",
             }),
-            transformResponse: (result: { data: { course: Course; enrolled: boolean; progress: any } }) => result.data.course,
+            transformResponse: (result) => (result as unknown as { data: { course: Course; enrolled: boolean; progress: any } }).data.course,
             providesTags: ["Courses"],
         }),
         createCourse: builder.mutation({

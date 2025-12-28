@@ -3,17 +3,17 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Clock, Star, Loader2 } from "lucide-react";
+import { BookOpen, Clock, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studentApi";
-
+import thumbnail from "../../../../../assets/images/course-thumbnail.png";
 export default function StudentCourses() {
   // Get enrolled courses from student dashboard data
   const { data: dashboardData, isLoading: dashboardLoading } = useGetStudentDashboardDataQuery(undefined);
 
-  const enrolledCourses = dashboardData?.enrolledCourses || [];
-console.log("dashboardData",dashboardData);
+  const enrolledCourses = dashboardData?.data?.enrolledCourses || [];
+  console.log("dashboardData", dashboardData);
   if (dashboardLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -43,47 +43,65 @@ console.log("dashboardData",dashboardData);
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6">
           {enrolledCourses.map((enrollment: any) => (
-            <Card key={enrollment.id}>
-              <CardHeader>
-                <div className="relative w-full h-32 mb-4">
-                  <Image
-                    src="https://via.placeholder.com/300x150?text=Course"
-                    alt={enrollment.courseTitle}
-                    fill
-                    className="object-cover rounded-md"
-                  />
-                </div>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  {enrollment.courseTitle}
-                </CardTitle>
-                <CardDescription>
-                  Batch: {enrollment.batchTitle} ({enrollment.batchCode})
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Status</span>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      enrollment.status === 'Success' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {enrollment.status}
-                    </span>
+            <Card key={enrollment.id} className="overflow-hidden w-full max-w-5xl min-h-64 h-full">
+              <CardContent className="p-0 h-full">
+                <div className="sm:flex h-full ">
+                  {/* Left side - Thumbnail */}
+                  <div className="relative flex-1 flex-shrink-0">
+                    <Image
+                      src={thumbnail}
+                      alt={enrollment.courseTitle}
+                      height={64}
+                      width={256}
+                      className="object-cover h-full w-full"
+                    />
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      <span>Enrolled: {new Date(enrollment.enrolledAt).toLocaleDateString()}</span>
+
+                  {/* Right side - Details */}
+                  <div className="flex-1 p-4">
+                    <div className="space-y-5">
+                      <div>
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                          <BookOpen className="h-5 w-5" />
+                          {enrollment.courseTitle}
+                        </CardTitle>
+                        <CardDescription className="mt-1">
+                          <div className=" flex items-center gap-2">
+                            <p className="">
+                              By {enrollment?.instructor?.name || "Mithun Sarkar"} &mdash;
+                            </p>
+                            {enrollment.batchTitle}
+                            {/* ({enrollment.batchCode}) */}
+                          </div>
+                          <p className="">
+                            {enrollment?.shortDescription}
+                          </p>
+
+
+                        </CardDescription>
+                      </div>
+
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          <span>Enrolled: {new Date(enrollment.enrolledAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <Link href={`/dashboard/student/courses/${enrollment.courseId}`}>
+                          <Button size="sm">
+                            Continue Course
+                          </Button>
+                        </Link>
+                        <Button variant="outline" size="sm">
+                         Course Outline
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                  <Link href={`/dashboard/student/courses/${enrollment.id}`} className="w-full">
-                    <Button className="w-full mt-4">
-                      View Course
-                    </Button>
-                  </Link>
                 </div>
               </CardContent>
             </Card>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Clock,
   CheckCircle,
@@ -12,8 +13,11 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  Download,
-  Loader2
+  Loader2,
+  Calendar,
+  Users,
+  MessageSquare,
+  BookOpen
 } from "lucide-react";
 import { VideoPlayer } from "@/components/module/dashboard/student/VideoPlayer";
 import Link from "next/link";
@@ -21,45 +25,6 @@ import { useParams } from "next/navigation";
 import { useGetCourseByIdQuery } from "@/redux/features/course/courseApi";
 import { useGetCourseProgressQuery, useCompleteLessonMutation } from "@/redux/features/course/courseApi";
 import { toast } from "sonner";
-
-interface Lesson {
-  lessonId: string;
-  title: string;
-  type: string;
-  duration?: number;
-  isPreview: boolean;
-  content?: any;
-  media?: {
-    type: string;
-    url: string;
-    thumbnail?: string;
-  };
-}
-
-interface Module {
-  moduleId: string;
-  title: string;
-  description?: string;
-  order: number;
-  duration?: number;
-  lessons: Lesson[];
-}
-
-interface Course {
-  _id: string;
-  title: string;
-  slug: string;
-  description: string;
-  instructor: {
-    name: string;
-  };
-  duration: {
-    hours: number;
-    weeks: number;
-  };
-  curriculum: Module[];
-  thumbnailUrl?: string;
-}
 
 interface CourseProgress {
   percentage: number;
@@ -82,8 +47,9 @@ export default function CourseDetails() {
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
 
   // Fetch course details
-  const { data: courseData, isLoading: courseLoading } = useGetCourseByIdQuery(courseId);
-  const course: Course | undefined = courseData?.data;
+  const { data: course, isLoading: courseLoading } = useGetCourseByIdQuery(courseId);
+  // console.log(courseData);
+  // const course: Course | undefined = courseData?.data;
 
   // Fetch course progress
   const { data: progressData, isLoading: progressLoading, refetch: refetchProgress } = useGetCourseProgressQuery(courseId);
@@ -98,10 +64,15 @@ export default function CourseDetails() {
       const moduleIndex = course.curriculum.findIndex(m => m.moduleId === progress.currentLesson?.moduleId);
       const lessonIndex = course.curriculum[moduleIndex]?.lessons.findIndex(l => l.lessonId === progress.currentLesson?.lessonId);
 
-      if (moduleIndex >= 0) setCurrentModuleIndex(moduleIndex);
-      if (lessonIndex >= 0) setCurrentLessonIndex(lessonIndex);
+      if (moduleIndex >= 0) {
+        setCurrentModuleIndex(moduleIndex);
+      }
+      if (lessonIndex >= 0) {
+        setCurrentLessonIndex(lessonIndex);
+      }
     }
-  }, [progress, course]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [progress?.currentLesson?.moduleId, progress?.currentLesson?.lessonId, course?.curriculum]);
 
   if (courseLoading || progressLoading) {
     return (
@@ -115,7 +86,7 @@ export default function CourseDetails() {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold mb-2">Course Not Found</h2>
-        <p className="text-muted-foreground mb-4">The course you're looking for doesn't exist or you don't have access to it.</p>
+        <p className="text-muted-foreground mb-4">The course you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
         <Link href="/dashboard/student/courses">
           <Button>Back to My Courses</Button>
         </Link>
@@ -123,7 +94,7 @@ export default function CourseDetails() {
     );
   }
 
-  const currentModule = course.curriculum[currentModuleIndex];
+  const currentModule = course.curriculum?.[currentModuleIndex];
   const currentLesson = currentModule?.lessons[currentLessonIndex];
 
   const isLessonCompleted = (moduleId: string, lessonId: string) => {
@@ -133,7 +104,7 @@ export default function CourseDetails() {
   };
 
   const handleNextLesson = () => {
-    if (!currentModule) return;
+    if (!currentModule || !course.curriculum) return;
 
     if (currentLessonIndex < currentModule.lessons.length - 1) {
       setCurrentLessonIndex(currentLessonIndex + 1);
@@ -144,7 +115,7 @@ export default function CourseDetails() {
   };
 
   const handlePrevLesson = () => {
-    if (!currentModule) return;
+    if (!currentModule || !course.curriculum) return;
 
     if (currentLessonIndex > 0) {
       setCurrentLessonIndex(currentLessonIndex - 1);
@@ -170,12 +141,12 @@ export default function CourseDetails() {
 
       // Auto-advance to next lesson
       handleNextLesson();
-    } catch (error) {
+    } catch {
       toast.error("Failed to complete lesson. Please try again.");
     }
   };
 
-  const totalLessons = course.curriculum.reduce((total, module) => total + module.lessons.length, 0);
+  const totalLessons = course.curriculum?.reduce((total, module) => total + module.lessons.length, 0) || 0;
   const completedLessonsCount = progress?.completedLessons?.length || 0;
 
   return (
@@ -190,7 +161,7 @@ export default function CourseDetails() {
         </Link>
         <div>
           <h1 className="text-3xl font-bold">{course.title}</h1>
-          <p className="text-muted-foreground">by {course.instructor?.name || 'Instructor'}</p>
+          <p className="text-muted-foreground">by {typeof course.instructor === 'string' ? course.instructor : course.instructor?.name || 'Instructor'}</p>
         </div>
       </div>
 
@@ -273,8 +244,9 @@ export default function CourseDetails() {
                 <Button
                   onClick={handleNextLesson}
                   disabled={
-                    currentModuleIndex === course.curriculum.length - 1 &&
-                    currentLessonIndex === currentModule?.lessons.length - 1
+                    !course.curriculum ||
+                    (currentModuleIndex === course.curriculum.length - 1 &&
+                    currentLessonIndex === (currentModule?.lessons.length || 0) - 1)
                   }
                 >
                   Next Lesson
@@ -283,10 +255,178 @@ export default function CourseDetails() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Course Tabs */}
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="live-classes">Live Classes</TabsTrigger>
+              <TabsTrigger value="resources">Resources</TabsTrigger>
+              <TabsTrigger value="discussions">Discussions</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>About This Course</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <p className="text-muted-foreground">{course.description}</p>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>
+                          Duration: {
+                            course.duration
+                              ? (typeof course.duration === 'object'
+                                  ? `${course.duration.weeks || 0} weeks, ${course.duration.hours || 0} hours`
+                                  : course.duration)
+                              : 'TBD'
+                          }
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                        <span>{totalLessons} Lessons</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span>Instructor: {typeof course.instructor === 'string' ? course.instructor : course.instructor?.name || 'TBD'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                        <span>Progress: {progress?.percentage || 0}%</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Copyright Notice */}
+              <Card className="border-orange-200 bg-orange-50">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="text-white text-xs font-bold">©</span>
+                    </div>
+                    <div className="text-sm">
+                      <p className="font-medium text-orange-800 mb-1">Copyright Notice</p>
+                      <p className="text-orange-700">
+                        This course content is protected by copyright. Unauthorized distribution,
+                        reproduction, or sharing of course materials is strictly prohibited and may
+                        result in legal action. All rights reserved.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="live-classes" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Upcoming Live Classes
+                  </CardTitle>
+                  <CardDescription>
+                    Join interactive live sessions with your instructor
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Placeholder for live classes - you can replace this with actual data */}
+                    <div className="text-center py-8">
+                      <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No Live Classes Scheduled</h3>
+                      <p className="text-muted-foreground mb-4">
+                        There are no live classes scheduled for this course at the moment.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Check back later for upcoming sessions or contact your instructor.
+                      </p>
+                    </div>
+
+                    {/* Example live class card - uncomment and modify when you have real data */}
+                    {/*
+                    <div className="border rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h4 className="font-semibold">Advanced JavaScript Concepts</h4>
+                          <p className="text-sm text-muted-foreground">Live Q&A Session</p>
+                        </div>
+                        <Badge>Upcoming</Badge>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>Dec 30, 2025</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          <span>2:00 PM - 3:00 PM</span>
+                        </div>
+                      </div>
+                      <Button size="sm">Join Live Class</Button>
+                    </div>
+                    */}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="resources" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Course Resources
+                  </CardTitle>
+                  <CardDescription>
+                    Downloadable materials and additional resources
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No Resources Available</h3>
+                    <p className="text-muted-foreground">
+                      Additional resources will be made available as you progress through the course.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="discussions" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5" />
+                    Course Discussions
+                  </CardTitle>
+                  <CardDescription>
+                    Connect with fellow students and instructors
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Discussion Forum</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Join the conversation with other students and get help from instructors.
+                    </p>
+                    <Button>Join Discussion</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="sticky top-0 self-start space-y-6 h-fit">
           {/* Module List */}
           <Card>
             <CardHeader>
@@ -294,7 +434,7 @@ export default function CourseDetails() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {course.curriculum.map((module, moduleIdx) => (
+                {course.curriculum?.map((module, moduleIdx) => (
                   <div key={module.moduleId} className="space-y-2">
                     <h4 className="font-semibold text-sm">{module.title}</h4>
                     <div className="space-y-1 ml-4">
@@ -353,26 +493,26 @@ export default function CourseDetails() {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {currentLesson && (
-                <Button
-                  className="w-full"
-                  onClick={handleCompleteLesson}
-                  disabled={isLessonCompleted(currentModule?.moduleId || '', currentLesson.lessonId) || completingLesson}
-                >
-                  {completingLesson ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
+              {course?.isCompleted ? (
+                <>
+                  <Button variant="outline" className="w-full">
                     <CheckCircle className="h-4 w-4 mr-2" />
-                  )}
-                  {isLessonCompleted(currentModule?.moduleId || '', currentLesson.lessonId)
-                    ? 'Lesson Completed'
-                    : 'Mark as Complete'
-                  }
-                </Button>
+                    Course Completed!
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    Download Certificate
+                  </Button>
+                </>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Complete all lessons to unlock certificate download
+                  </p>
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    {Math.round(progress?.percentage || 0)}% complete
+                  </div>
+                </div>
               )}
-              <Button variant="outline" className="w-full">
-                Download Certificate
-              </Button>
             </CardContent>
           </Card>
         </div>

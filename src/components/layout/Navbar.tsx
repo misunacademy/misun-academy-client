@@ -105,6 +105,7 @@ export default function Navbar() {
             >
               <Link href="/" className='hover:text-primary'>হোম</Link>
               <Link href="/courses" className='hover:text-primary'>কোর্স সম্পর্কে</Link>
+              <Link href="/feedback" className='hover:text-primary'>শিক্ষার্থীদের মতামত</Link>
               <Link href="/about" className='hover:text-primary'>আমাদের সম্পর্কে</Link>
               {/* <Link href="/blogs">Blogs</Link> */}
               {!safeUser ? (
