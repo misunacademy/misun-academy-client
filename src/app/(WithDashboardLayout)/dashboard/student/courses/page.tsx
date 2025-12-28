@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +10,10 @@ import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studen
 
 export default function StudentCourses() {
   // Get enrolled courses from student dashboard data
-  const { data: dashboardData, isLoading: dashboardLoading } = useGetStudentDashboardDataQuery();
+  const { data: dashboardData, isLoading: dashboardLoading } = useGetStudentDashboardDataQuery(undefined);
 
   const enrolledCourses = dashboardData?.enrolledCourses || [];
-
+console.log("dashboardData",dashboardData);
   if (dashboardLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -34,7 +35,7 @@ export default function StudentCourses() {
             <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Courses Enrolled</h3>
             <p className="text-muted-foreground text-center mb-4">
-              You haven't enrolled in any courses yet. Browse available courses to start learning.
+              You haven&apos;t enrolled in any courses yet. Browse available courses to start learning.
             </p>
             <Link href="/courses">
               <Button>Browse Courses</Button>

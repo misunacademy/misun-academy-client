@@ -320,7 +320,7 @@ const EnrollmentCheckout = () => {
                                                             </FormControl>
                                                             <SelectContent>
                                                                 {coursesLoading ? (
-                                                                    <SelectItem value="" disabled>
+                                                                    <SelectItem value="loading" disabled>
                                                                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
                                                                         Loading courses...
                                                                     </SelectItem>
@@ -331,7 +331,7 @@ const EnrollmentCheckout = () => {
                                                                         </SelectItem>
                                                                     ))
                                                                 ) : (
-                                                                    <SelectItem value="" disabled>
+                                                                    <SelectItem value="no-courses" disabled>
                                                                         No courses available
                                                                     </SelectItem>
                                                                 )}
