@@ -19,16 +19,6 @@ export default function AdminCourses() {
 
   const courses = (coursesData?.data || []) as Course[];
 
-  // Normalize dates for display
-  const normalizedCourses: Course[] = courses.map((c) => ({
-    ...c,
-    enrollmentStartDate: c.enrollment?.startDate ? new Date(c.enrollment.startDate) : undefined,
-    enrollmentEndDate: c.enrollment?.endDate ? new Date(c.enrollment.endDate) : undefined,
-    courseStartDate: c.enrollment?.startDate ? new Date(c.enrollment.startDate) : undefined,
-    courseEndDate: c.enrollment?.endDate ? new Date(c.enrollment.endDate) : undefined,
-    enrollmentDeadline: c.enrollment?.enrollmentDeadline ? new Date(c.enrollment.enrollmentDeadline) : undefined,
-  }));
-
   const handleAddNewCourse = () => {
     router.push("/dashboard/admin/courses/new");
   };
@@ -64,7 +54,7 @@ export default function AdminCourses() {
 
       <CourseStats />
 
-      <CoursesTable courses={normalizedCourses} onEditCourse={handleEditCourse} onDeleteCourse={(id) => handleDeleteCourse(id)} />
+      <CoursesTable courses={courses} onEditCourse={handleEditCourse} onDeleteCourse={(id) => handleDeleteCourse(id)} />
 
       {/* Removed EditCourseDialog - now using page-based forms */}
     </div>

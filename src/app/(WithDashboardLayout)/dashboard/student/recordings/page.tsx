@@ -6,44 +6,28 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Play, BookOpen } from "lucide-react";
-import { useGetRecordingsQuery } from "@/redux/features/recording/recordingApi";
-import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studentApi";
-import { Course } from "@/types/common";
-
-interface Recording {
-    _id: string;
-    course: string | {
-        _id: string;
-        title: string;
-    };
-    title: string;
-    description?: string;
-    videoUrl: string;
-    videoType: "youtube" | "gdrive";
-    createdAt: string;
-}
+import { Play, BookOpen, Loader2, Video, Calendar, Clock } from "lucide-react";
+import { useGetStudentRecordingsQuery, useIncrementRecordingViewMutation, Recording } from "@/redux/features/recording/recordingApi";
+import { format } from "date-fns";
 
 export default function StudentRecordingsPage() {
     const [playingRecording, setPlayingRecording] = useState<Recording | null>(null);
 
-    const { data: recordingsData, isLoading: recordingsLoading } = useGetRecordingsQuery({});
-    const { data: dashboardData, isLoading: dashboardLoading } = useGetStudentDashboardDataQuery({});
-    const recordings = recordingsData?.data || [];
-    const enrolledCourses = Array.isArray(dashboardData?.data?.enrolledCourses) ? dashboardData.data.enrolledCourses : [];
-    // Filter recordings to only show for enrolled courses
-    const enrolledCourseIds = enrolledCourses.map((course: any) => course.courseId);
-    const accessibleRecordings = recordings.filter((recording: Recording) => {
-        const courseId = typeof recording.course === 'string' ? recording.course : recording.course?._id;
-        return enrolledCourseIds.includes(courseId);
+    const { data: recordings, isLoading, error } = useGetStudentRecordingsQuery();
+    const [incrementView] = useIncrementRecordingViewMutation();
+
+    // Debug logging
+    console.log('Student Recordings:', {
+        recordings,
+        isLoading,
+        error,
+        count: recordings?.length || 0
     });
 
     // Group recordings by course
-    const recordingsByCourse = accessibleRecordings.reduce((acc: Record<string, Recording[]>, recording: Recording) => {
-        const courseId = typeof recording.course === 'string' ? recording.course : recording.course?._id;
-        const enrolledCourse = enrolledCourses.find((course: Course) => course._id === courseId);
-        const courseTitle = enrolledCourse?.title || (typeof recording.course === 'string' ? 'Unknown Course' : recording.course?.title || 'Unknown Course');
-
+    const recordingsByCourse = (recordings || []).reduce((acc: Record<string, Recording[]>, recording: Recording) => {
+        const courseTitle = typeof recording.courseId === "object" ? recording.courseId.title : "Unknown Course";
+        
         if (!acc[courseTitle]) {
             acc[courseTitle] = [];
         }
@@ -51,21 +35,14 @@ export default function StudentRecordingsPage() {
         return acc;
     }, {});
 
-    const handlePlayRecording = (recording: Recording) => {
+    const handlePlayRecording = async (recording: Recording) => {
         setPlayingRecording(recording);
-    };
-
-    const getEmbedUrl = (videoUrl: string, videoType: "youtube" | "gdrive") => {
-        if (videoType === "youtube") {
-            // Convert YouTube watch URL to embed URL
-            const videoId = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
-            return videoId ? `https://www.youtube.com/embed/${videoId}` : videoUrl;
-        } else if (videoType === "gdrive") {
-            // Convert Google Drive share URL to embed URL
-            const fileId = videoUrl.match(/\/file\/d\/([^\/\?]+)/)?.[1];
-            return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : videoUrl;
+        // Increment view count
+        try {
+            await incrementView(recording._id);
+        } catch (error) {
+            console.error("Failed to increment view count:", error);
         }
-        return videoUrl;
     };
 
     return (
@@ -79,10 +56,10 @@ export default function StudentRecordingsPage() {
                 </div>
             </div>
 
-            {recordingsLoading || dashboardLoading ? (
+            {isLoading ? (
                 <Card>
                     <CardContent className="p-8 text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
                         <p>Loading recordings...</p>
                     </CardContent>
                 </Card>
@@ -106,7 +83,7 @@ export default function StudentRecordingsPage() {
                                     {courseTitle}
                                 </CardTitle>
                                 <CardDescription>
-                                    {Array.isArray(courseRecordings) ? courseRecordings.length : 0} recording{Array.isArray(courseRecordings) && courseRecordings.length !== 1 ? 's' : ''} available
+                                    {courseRecordings.length} recording{courseRecordings.length !== 1 ? 's' : ''} available
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -114,25 +91,51 @@ export default function StudentRecordingsPage() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Title</TableHead>
-                                            <TableHead>Description</TableHead>
-                                            <TableHead>Video Type</TableHead>
-                                            <TableHead>Recorded Date</TableHead>
+                                            <TableHead>Batch</TableHead>
+                                            <TableHead>Session Date</TableHead>
+                                            <TableHead>Duration</TableHead>
+                                            <TableHead>Source</TableHead>
                                             <TableHead>Action</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {Array.isArray(courseRecordings) && courseRecordings.map((recording: Recording) => (
+                                        {courseRecordings.map((recording: Recording) => (
                                             <TableRow key={recording._id}>
-                                                <TableCell className="font-medium">{recording.title}</TableCell>
-                                                <TableCell className="max-w-xs truncate">
-                                                    {recording.description || "No description"}
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <Video className="h-4 w-4 text-muted-foreground" />
+                                                        <div>
+                                                            <p className="font-medium">{recording.title}</p>
+                                                            {recording.description && (
+                                                                <p className="text-sm text-muted-foreground line-clamp-1">
+                                                                    {recording.description}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant={recording.videoType === "youtube" ? "default" : "secondary"}>
-                                                        {recording.videoType === "youtube" ? "YouTube" : "Google Drive"}
+                                                    {typeof recording.batchId === "object" ? recording.batchId.title : "N/A"}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-1 text-sm">
+                                                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                                                        {format(new Date(recording.sessionDate), "MMM dd, yyyy")}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    {recording.duration && (
+                                                        <div className="flex items-center gap-1 text-sm">
+                                                            <Clock className="h-4 w-4 text-muted-foreground" />
+                                                            {recording.duration} min
+                                                        </div>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant={recording.videoSource === "youtube" ? "default" : "secondary"}>
+                                                        {recording.videoSource === "youtube" ? "YouTube" : "Google Drive"}
                                                     </Badge>
                                                 </TableCell>
-                                                <TableCell>{new Date(recording.createdAt).toLocaleDateString()}</TableCell>
                                                 <TableCell>
                                                     <Button
                                                         variant="outline"
@@ -163,7 +166,7 @@ export default function StudentRecordingsPage() {
                     {playingRecording && (
                         <div className="aspect-video w-full">
                             <iframe
-                                src={getEmbedUrl(playingRecording.videoUrl, playingRecording.videoType)}
+                                src={playingRecording.videoUrl}
                                 className="w-full h-full rounded-lg"
                                 allowFullScreen
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

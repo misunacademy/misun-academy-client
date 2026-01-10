@@ -2,7 +2,7 @@ import { baseApi } from "@/redux/api/baseApi";
 
 const profileApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        getProfile: builder.query({
+        getUserProfile: builder.query({
             query: () => ({
                 url: '/profile',
                 method: 'GET',
@@ -17,7 +17,7 @@ const profileApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['Profile'],
         }),
-        updateProfile: builder.mutation({
+        updateUserProfile: builder.mutation({
             query: (updateData) => ({
                 url: '/profile',
                 method: 'PUT',
@@ -60,9 +60,9 @@ const profileApi = baseApi.injectEndpoints({
 });
 
 export const {
-    useGetProfileQuery,
+    useGetUserProfileQuery,
     useCreateProfileMutation,
-    useUpdateProfileMutation,
+    useUpdateUserProfileMutation,
     useDeleteProfileMutation,
     useUpdateInterestsMutation,
     useAddInterestMutation,

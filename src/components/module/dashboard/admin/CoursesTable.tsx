@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Search, Edit, Trash2 } from "lucide-react";
-import { format } from "date-fns";
 import { Course } from "@/types/common";
 
 interface CoursesTableProps {
@@ -57,49 +55,56 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
           <TableHeader>
             <TableRow>
               <TableHead>Course Title</TableHead>
-              <TableHead>Instructor</TableHead>
-              <TableHead>Students</TableHead>
-              <TableHead>Enrollment Period</TableHead>
-              <TableHead>Course Dates</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Level</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Duration</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {courses.map((course: Course) => (
-              <TableRow key={String(course._id)}>
-                <TableCell className="font-medium">{course.title}</TableCell>
-                <TableCell>{typeof course.instructor === 'string' ? course.instructor : course.instructor?.name || '—'}</TableCell>
-                <TableCell>{course.studentsCount ?? 0}</TableCell>
-                <TableCell>
-                  <div className="text-sm">
-                    <div>Start: {course.enrollmentStartDate ? format(new Date(course.enrollmentStartDate), 'MMM dd') : '—'}</div>
-                    <div>End: {course.enrollmentEndDate ? format(new Date(course.enrollmentEndDate), 'MMM dd') : '—'}</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm">
-                    <div>Start: {course.courseStartDate ? format(new Date(course.courseStartDate), 'MMM dd, yyyy') : '—'}</div>
-                    <div>End: {course.courseEndDate ? format(new Date(course.courseEndDate), 'MMM dd, yyyy') : '—'}</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={course.isPublished === true ? 'default' : 'secondary'}>
-                    {course.isPublished === true ? 'Active' : 'Draft'}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => onEditCourse(course)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => onDeleteCourse && onDeleteCourse(course?._id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+            {courses.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                  No courses found
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              courses.map((course: any) => (
+                <TableRow key={String(course._id)}>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">{course.title}</div>
+                      <div className="text-xs text-muted-foreground">{course.slug}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{course.category || '—'}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="capitalize">
+                      {course.level || 'N/A'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>BDT {course.price?.toLocaleString() || 0}</TableCell>
+                  <TableCell>{course.durationEstimate || '—'}</TableCell>
+                  <TableCell>
+                    <Badge variant={course.status === 'published' ? 'default' : course.status === 'archived' ? 'destructive' : 'secondary'}>
+                      {course.status || 'draft'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => onEditCourse(course)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => onDeleteCourse && onDeleteCourse(course?._id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </CardContent>

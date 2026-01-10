@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Users, Plus, Search, Edit, Trash2, UserCheck, UserX, Mail } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -21,7 +22,11 @@ interface User {
   email: string;
   role: string;
   createdAt: string;
-  isActive?: boolean;
+  status: 'active' | 'suspended' | 'deleted';
+  phone?: string;
+  address?: string;
+  image?: string;
+  avatar?: string;
 }
 
 export default function AdminUsers() {
@@ -33,6 +38,8 @@ export default function AdminUsers() {
   const [editUser, setEditUser] = useState<User | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -73,14 +80,18 @@ export default function AdminUsers() {
     }
   };
 
-  const handleDeleteUser = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
     try {
-      await deleteUserAction(id);
+      await deleteUserAction(userToDelete);
       toast.success('User deleted successfully');
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
       fetchUsers();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to delete user');
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
     }
   };
 
@@ -98,9 +109,7 @@ export default function AdminUsers() {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    const matchesStatus = statusFilter === "all" || 
-      (statusFilter === "active" && user.isActive !== false) ||
-      (statusFilter === "inactive" && user.isActive === false);
+    const matchesStatus = statusFilter === "all" || user.status === statusFilter;
     return matchesSearch && matchesRole && matchesStatus;
   });
 
@@ -109,7 +118,7 @@ export default function AdminUsers() {
       case 'superadmin': return 'destructive';
       case 'admin': return 'default';
       case 'instructor': return 'secondary';
-      case 'student': return 'outline';
+      case 'learner': return 'outline';
       default: return 'outline';
     }
   };
@@ -161,12 +170,12 @@ export default function AdminUsers() {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="role" className="text-right">Role</Label>
-                <Select name="role" defaultValue="student">
+                <Select name="role" defaultValue="learner">
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="student">Student</SelectItem>
+                    <SelectItem value="learner">Learner</SelectItem>
                     <SelectItem value="instructor">Instructor</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="superadmin">Super Admin</SelectItem>
@@ -205,12 +214,12 @@ export default function AdminUsers() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-role" className="text-right">Role</Label>
-                <Select name="role" defaultValue={editUser?.role || 'student'}>
+                <Select name="role" defaultValue={editUser?.role || 'learner'}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="student">Student</SelectItem>
+                    <SelectItem value="learner">Learner</SelectItem>
                     <SelectItem value="instructor">Instructor</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="superadmin">Super Admin</SelectItem>
@@ -219,13 +228,14 @@ export default function AdminUsers() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="edit-status" className="text-right">Status</Label>
-                <Select name="isActive" defaultValue={editUser?.isActive === false ? 'false' : 'true'}>
+                <Select name="status" defaultValue={editUser?.status || 'active'}>
                   <SelectTrigger className="col-span-3">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="true">Active</SelectItem>
-                    <SelectItem value="false">Inactive</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
+                    <SelectItem value="deleted">Deleted</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -257,7 +267,7 @@ export default function AdminUsers() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.filter(u => u.isActive !== false).length}</div>
+            <div className="text-2xl font-bold">{users.filter(u => u.status === 'active').length}</div>
             <p className="text-xs text-muted-foreground">Active accounts</p>
           </CardContent>
         </Card>
@@ -311,7 +321,7 @@ export default function AdminUsers() {
               <SelectItem value="superadmin">Super Admin</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
               <SelectItem value="instructor">Instructor</SelectItem>
-              <SelectItem value="student">Student</SelectItem>
+              <SelectItem value="learner">Learner</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -321,7 +331,8 @@ export default function AdminUsers() {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
+                <SelectItem value="deleted">Deleted</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -356,8 +367,8 @@ export default function AdminUsers() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={user.isActive === false ? 'secondary' : 'default'}>
-                      {user.isActive === false ? 'Inactive' : 'Active'}
+                    <Badge variant={user.status === 'active' ? 'default' : user.status === 'suspended' ? 'secondary' : 'destructive'}>
+                      {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
                     </Badge>
                   </TableCell>
                   <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
@@ -379,14 +390,17 @@ export default function AdminUsers() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleToggleStatus(user._id, user.isActive !== false)}
+                        onClick={() => handleToggleStatus(user._id, user.status === 'active')}
                       >
-                        {user.isActive === false ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
+                        {user.status !== 'active' ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteUser(user._id)}
+                        onClick={() => {
+                          setUserToDelete(user._id);
+                          setDeleteDialogOpen(true);
+                        }}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -398,6 +412,25 @@ export default function AdminUsers() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the user account
+              and remove their data from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setUserToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

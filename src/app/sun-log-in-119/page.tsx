@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useLoginMutation } from "@/redux/features/auth/authApi";
+import { useLoginMutation } from "@/redux/api/authApi";
 import { setError, setUser } from "@/redux/features/auth/authSlice";
 import Cookies from "js-cookie";
 

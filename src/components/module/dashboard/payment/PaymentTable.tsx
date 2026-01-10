@@ -67,9 +67,9 @@ interface PaymentData {
     status: string;
     method: string;
     createdAt: string;
-    student: Student;
-    course?: Course;
-    batch?: Batch;
+    student: Student | null;
+    course?: Course | null;
+    batch?: Batch | null;
     gatewayResponse?: { transactionId?: string, senderNumber?: string, bank_tran_id?: string, card_issuer?: string };
 }
 
@@ -132,8 +132,8 @@ const PaymentTable = () => {
                 header: 'Student',
                 cell: ({ row }) => {
                     return <div>
-                        <p>{row.original.student.name}</p>
-                        <p className='text-[12px]'>{row.original.student.email}</p>
+                        <p>{row.original.student?.name || 'N/A'}</p>
+                        <p className='text-[12px]'>{row.original.student?.email || 'N/A'}</p>
                     </div>
                 }
             },

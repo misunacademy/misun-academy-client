@@ -1,13 +1,14 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CheckCircle2, Clock, AlertCircle } from 'lucide-react';
 
-export default function PaymentStatus() {
+function PaymentStatusContent() {
     const searchParams = useSearchParams();
-    const status = searchParams.get('status') || 'failed';
+    const status = searchParams?.get('status') || 'failed';
 
     const getStatusContent = () => {
         switch (status) {
@@ -62,5 +63,13 @@ export default function PaymentStatus() {
                 </CardContent>
             </Card>
         </div>
+    );
+}
+
+export default function PaymentStatus() {
+    return (
+        <Suspense fallback={<div className="container mx-auto p-4 h-96 flex items-center justify-center">Loading...</div>}>
+            <PaymentStatusContent />
+        </Suspense>
     );
 }

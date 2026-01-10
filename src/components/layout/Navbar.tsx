@@ -29,6 +29,19 @@ export default function Navbar() {
   const { signOut } = useAuth();
   const router = useRouter();
 
+  // Normalize role to the dashboard segment used in routes
+  const getDashboardSegment = (role?: string) => {
+    const normalized = role?.toLowerCase();
+    const map: Record<string, string> = {
+      superadmin: 'admin',
+      admin: 'admin',
+      instructor: 'admin',
+      learner: 'student',
+      student: 'student',
+    };
+    return map[normalized ?? ''] ?? 'student';
+  };
+
   const handleLogout = async () => {
     const result = await signOut();
     if (result.success) {
@@ -146,19 +159,19 @@ export default function Navbar() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href={`/dashboard/${user?.role}/profile`} className="flex items-center">
+                      <Link href={`/dashboard/${getDashboardSegment(user?.role)}/profile`} className="flex items-center">
                         <UserCircle className="mr-2 h-4 w-4" />
                         Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href={`/dashboard/${user?.role}`} className="flex items-center">
+                      <Link href={`/dashboard/${getDashboardSegment(user?.role)}`} className="flex items-center">
                         <LayoutDashboard className="mr-2 h-4 w-4" />
                         Dashboard
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href={`/dashboard/${user?.role}/settings`} className="flex items-center">
+                      <Link href={`/dashboard/${getDashboardSegment(user?.role)}/settings`} className="flex items-center">
                         <Settings className="mr-2 h-4 w-4" />
                         Settings
                       </Link>

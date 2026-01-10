@@ -10,6 +10,17 @@ const courseApi = baseApi.injectEndpoints({
                 method: "GET",
                 params,
             }),
+            transformResponse: (response: any) => {
+                if (response.data && Array.isArray(response.data)) {
+                    response.data = response.data
+                        .filter((course: any) => course && course.status) // filter out undefined or courses without status
+                        .map((course: any) => ({
+                            ...course,
+                            isPublished: course.status === 'published',
+                        }));
+                }
+                return response;
+            },
             providesTags: ["Courses"],
         }),
         getCourseBySlug: builder.query<Course, string>({
@@ -17,7 +28,16 @@ const courseApi = baseApi.injectEndpoints({
                 url: `/courses/slug/${slug}`,
                 method: "GET",
             }),
-            transformResponse: (result) => (result as unknown as { data: ApiResponse<Course> }).data.data,
+            transformResponse: (result: { data: Course }) => {
+                const course = result?.data;
+                if (course && course.status) {
+                    return {
+                        ...course,
+                        isPublished: course.status === 'published',
+                    };
+                }
+                return course;
+            },
             providesTags: ["Courses"],
         }),
         getCourseById: builder.query<Course, string>({
@@ -25,7 +45,16 @@ const courseApi = baseApi.injectEndpoints({
                 url: `/courses/${id}`,
                 method: "GET",
             }),
-            transformResponse: (result) => (result as unknown as { data: { course: Course; enrolled: boolean; progress: any } }).data.course,
+            transformResponse: (result: { data: Course }) => {
+                const course = result?.data;
+                if (course && course.status) {
+                    return {
+                        ...course,
+                        isPublished: course.status === 'published',
+                    };
+                }
+                return course;
+            },
             providesTags: ["Courses"],
         }),
         createCourse: builder.mutation({
@@ -39,7 +68,7 @@ const courseApi = baseApi.injectEndpoints({
         updateCourse: builder.mutation({
             query: ({ id, ...courseData }) => ({
                 url: `/courses/${id}`,
-                method: "PATCH",
+                method: "PUT",
                 body: courseData,
             }),
             invalidatesTags: ["Courses"],

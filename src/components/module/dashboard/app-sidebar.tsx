@@ -1,6 +1,5 @@
 "use client";
-import { BookOpen, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video } from "lucide-react";
-import { useDispatch } from "react-redux";
+import { BookOpen, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video, Search, CreditCard, TrendingUp, ShieldCheck } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from 'next/link';
 import {
@@ -19,32 +18,61 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { logout } from "@/redux/features/auth/authSlice";
 
 import Image from "next/image";
 import { useAppSelector } from "@/redux/hooks";
+import { useAuth } from "@/hooks/useAuth";
+import { useEnrollment } from "@/hooks/useEnrollment";
+import { Role } from "@/types/common";
 
-// Menu items - Bengali version with existing routes
-const studentItems = [
+// Base menu items for all students (enrolled or not)
+const baseStudentItems = [
     {
         title: "ড্যাশবোর্ড",
         url: "/dashboard/student",
         icon: Home,
     },
     {
+        title: "কোর্স ব্রাউজ করুন",
+        url: "/dashboard/student/browse",
+        icon: Search,
+    },
+];
+
+// Menu items only for enrolled students
+const enrolledOnlyItems = [
+    {
         title: "আমার কোর্স",
         url: "/dashboard/student/courses",
         icon: BookOpen,
+        requiresEnrollment: true,
+    },
+    {
+        title: "প্রোগ্রেস ট্র্যাকিং",
+        url: "/dashboard/student/progress",
+        icon: TrendingUp,
+        requiresEnrollment: true,
     },
     {
         title: "লাইভ ক্লাস রেকর্ডিং",
         url: "/dashboard/student/recordings",
         icon: Video,
+        requiresEnrollment: true,
     },
     {
         title: "সার্টিফিকেট",
         url: "/dashboard/student/certificates",
         icon: Award,
+        requiresEnrollment: true,
+    },
+];
+
+// Bottom menu items for all students
+const bottomStudentItems = [
+    {
+        title: "পেমেন্ট হিস্ট্রি",
+        url: "/dashboard/student/payments",
+        icon: CreditCard,
     },
     {
         title: "প্রোফাইল",
@@ -70,11 +98,6 @@ const adminItems = [
         icon: BookOpen,
     },
     {
-        title: "লাইভ ক্লাস রেকর্ডিং",
-        url: "/dashboard/admin/recordings",
-        icon: Video,
-    },
-    {
         title: "ব্যাচ ম্যানেজমেন্ট",
         url: "/dashboard/admin/batch",
         icon: Group,
@@ -83,6 +106,16 @@ const adminItems = [
         title: "স্টুডেন্ট ম্যানেজমেন্ট",
         url: "/dashboard/admin/student",
         icon: User2,
+    },
+    {
+        title: "লাইভ ক্লাস রেকর্ডিং",
+        url: "/dashboard/admin/recordings",
+        icon: Video,
+    },
+    {
+        title: "সার্টিফিকেট অনুমোদন",
+        url: "/dashboard/admin/certificates",
+        icon: ShieldCheck,
     },
     {
         title: "পেমেন্ট ম্যানেজমেন্ট",
@@ -107,19 +140,39 @@ const adminItems = [
 ];
 
 export function AppSidebar() {
-    const dispatch = useDispatch();
     const pathname = usePathname();
-  const user = useAppSelector((state) => state?.auth?.user);
-    // Determine if we're in admin or student dashboard
-    const isAdmin = pathname.startsWith('/dashboard/admin');
+    const user = useAppSelector((state) => state?.auth?.user);
+    const { hasEnrollments } = useEnrollment();
+    
+    console.log("hasEnrollments",hasEnrollments);
+    // Determine if we're in admin or student dashboard based on user role
+    // Handle both uppercase (API) and lowercase (enum) role values
+    const userRole = user?.role?.toLowerCase() || '';
+    const isAdmin = [
+        Role.SUPERADMIN.toLowerCase(), 
+        Role.ADMIN.toLowerCase(), 
+        Role.INSTRUCTOR.toLowerCase()
+    ].includes(userRole);
+    
+    // Build student menu based on enrollment status
+    const studentItems = isAdmin ? [] : [
+        ...baseStudentItems,
+        ...(hasEnrollments ? enrolledOnlyItems : []),
+        ...bottomStudentItems,
+    ];
+    
     const items = isAdmin ? adminItems : studentItems;
+    
+    const panelText = isAdmin ? 'এডমিন প্যানেল' : 'শিক্ষার্থী প্যানেল';
 
     const router = useRouter();
+    const { signOut } = useAuth();
 
-    const handleSignOut = () => {
-        dispatch(logout());
-        // Use client-side navigation to avoid a full reload
-        router.push('/auth');
+    const handleSignOut = async () => {
+        const result = await signOut();
+        if (result.success) {
+            router.push('/auth');
+        }
     };
 
     return (
@@ -132,7 +185,7 @@ export function AppSidebar() {
                     </div>
                     <div>
                         <h2 className="text-lg font-bold text-gray-800">MISUN Academy</h2>
-                        <p className="text-xs text-gray-500">শিক্ষার্থী প্যানেল</p>
+                        <p className="text-xs text-gray-500">{panelText}</p>
                     </div>
                 </div>
             </div>

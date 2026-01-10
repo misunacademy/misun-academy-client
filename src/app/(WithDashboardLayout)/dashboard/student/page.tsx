@@ -27,7 +27,6 @@ export default async function StudentDashboard() {
                     },
                     cache: 'no-store',
                 });
-console.log('res',res)
                 if (res.ok) {
                     const payload = await res.json();
                     if (payload?.data) {

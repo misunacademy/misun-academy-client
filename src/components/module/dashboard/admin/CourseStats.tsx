@@ -5,12 +5,12 @@ import { useGetMetadataQuery } from "@/redux/features/student/studentApi";
 import { Course } from "@/types/common";
 
 export function CourseStats() {
-  const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery({ isPublished: true });
+  const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery({});
   const { data: dashboardData, isLoading: dashboardLoading } = useGetMetadataQuery(undefined);
 
   const courses = coursesData?.data || [];
   const totalCourses = courses.length;
-  const activeCourses = courses.filter((course:Course) => course.isPublished).length;
+  const activeCourses = courses.filter((course:Course) => course.status === 'published').length;
   const totalStudents = dashboardData?.data?.totalEnrolled || 0;
   const totalRevenue = dashboardData?.data?.totalIncome || 0;
 

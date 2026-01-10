@@ -7,6 +7,12 @@ import Container from '../ui/container';
 import { Globe2Icon, Locate, MailCheck, PhoneCall } from 'lucide-react';
 import Image from 'next/image';
 
+/***
+ * 
+ * 
+misunacademybd@gmail.com
+phone number : 01778371211
+ */
 export default function Footer() {
   return (
     <footer className="bg-gradient-to-t from-primary/30 to-primary/1 ">
@@ -23,11 +29,11 @@ export default function Footer() {
             </div>
             <div className="flex items-center gap-2">
               <PhoneCall className='text-primary w-6 h-6' />
-              <p>+88 01970713708</p>
+              <p>+88 01778371211</p>
             </div>
             <div className="flex items-center gap-2">
               <MailCheck className='text-primary w-6 h-6' />
-              <p>support@misun-academy.com</p>
+              <p>misunacademybd@gmail.com</p>
             </div>
             <div className="flex items-center gap-2">
               <Globe2Icon className='text-primary w-6 h-6' />

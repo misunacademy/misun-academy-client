@@ -4,7 +4,7 @@ const studentsApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         getEnrolledStudents: builder.query({
             query: (params) => ({
-                url: "/enrolled-student",
+                url: "/enrollments",
                 method: "GET",
                 params,
             }),
@@ -12,7 +12,7 @@ const studentsApi = baseApi.injectEndpoints({
         }),
         getPaymentHistory: builder.query({
             query: (params) => ({
-                url: "/payment",
+                url: "/payments/history",
                 method: "GET",
                 params,
             }),
@@ -20,15 +20,15 @@ const studentsApi = baseApi.injectEndpoints({
         }),
         updatePaymentStatus: builder.mutation({
             query: ({ transactionId, status }) => ({
-                url: `/payment/status/${transactionId}`,
-                method: "PATCH",
+                url: `/payments/${transactionId}/status`,
+                method: "PUT",
                 body: { status },
             }),
             invalidatesTags: ["Students"],
         }),
         getMetadata: builder.query({
             query: () => ({
-                url: "/dashboard",
+                url: "/dashboard/metadata",
                 method: "GET",
             }),
             providesTags: ["Students"],
@@ -42,7 +42,15 @@ const studentsApi = baseApi.injectEndpoints({
         }),
         enrollStudent: builder.mutation({
             query: (studentData) => ({
-                url: "/student",
+                url: "/enrollments",
+                method: "POST",
+                body: studentData,
+            }),
+            invalidatesTags: ["Students"],
+        }),
+        enrollStudentManual: builder.mutation({
+            query: (studentData) => ({
+                url: "/enrollments/manual",
                 method: "POST",
                 body: studentData,
             }),
@@ -57,7 +65,8 @@ export const {
     useUpdatePaymentStatusMutation,
     useGetMetadataQuery,
     useGetStudentDashboardDataQuery,
-    useEnrollStudentMutation
+    useEnrollStudentMutation,
+    useEnrollStudentManualMutation,
 } = studentsApi;
 
 

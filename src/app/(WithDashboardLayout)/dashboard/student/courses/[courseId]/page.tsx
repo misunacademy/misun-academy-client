@@ -40,8 +40,8 @@ interface CourseProgress {
 }
 
 export default function CourseDetails() {
-  const params = useParams();
-  const courseId = params.courseId as string;
+  const params = useParams<{ courseId: string }>();
+  const courseId = params.courseId;
 
   const [currentModuleIndex, setCurrentModuleIndex] = useState(0);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);

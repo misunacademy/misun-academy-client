@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { ArrowLeft, BookOpen, Sparkles, Eye, EyeOff } from "lucide-react";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, use } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useResetPasswordMutation } from "@/redux/features/auth/authApi";
+import { useResetPasswordMutation } from "@/redux/api/authApi";
 import { useAppDispatch } from "@/redux/hooks";
 import { setError } from "@/redux/features/auth/authSlice";
 
@@ -32,11 +32,11 @@ const ResetPasswordForm = () => {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const router = useRouter();
-    const searchParams = useSearchParams();
+    const searchParams = use(useSearchParams());
     const dispatch = useAppDispatch();
     const [resetPassword, { isLoading }] = useResetPasswordMutation();
 
-    const token = searchParams.get('token');
+    const token = searchParams?.get('token');
 
     const resetPasswordForm = useForm<ResetPasswordFormData>({
         resolver: zodResolver(resetPasswordSchema),

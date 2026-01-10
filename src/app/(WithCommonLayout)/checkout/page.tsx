@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAppSelector } from '@/redux/hooks';
 import EnrollmentCheckout from '@/components/module/checkout/EnrollmentCheckout';
 import {
     Dialog,
@@ -16,10 +17,25 @@ import { enrollmentPeriod, isEnrollmentRunning } from '@/constants/enrollment';
 import { AlertTriangle, Calendar, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
+import Cookies from 'js-cookie';
+import { toast } from 'sonner';
 
 const Page = () => {
     const [openModal, setOpenModal] = useState(false);
     const router = useRouter();
+    const user = useAppSelector((state) => state.auth.user);
+    const isLoading = useAppSelector((state) => state.auth.isLoading);
+
+    // Check authentication
+    useEffect(() => {
+        if (!isLoading) {
+            const token = Cookies.get('token');
+            if (!token || !user) {
+                toast.error('অনুগ্রহ করে প্রথমে লগইন করুন');
+                router.push('/auth');
+            }
+        }
+    }, [user, isLoading, router]);
 
     useEffect(() => {
         if (!isEnrollmentRunning) {
@@ -33,6 +49,23 @@ const Page = () => {
             router.back(); // Go back when modal is closed
         }
     };
+
+    // Show loading state while checking authentication
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="text-center space-y-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                    <p className="text-muted-foreground">লোড হচ্ছে...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Don't render checkout if not authenticated
+    if (!user || !Cookies.get('token')) {
+        return null;
+    }
 
     if (!isEnrollmentRunning) {
         return (

@@ -1,3 +1,4 @@
+import { use } from "react";
 import CourseForm from "../CourseForm";
 
 interface EditCoursePageProps {
@@ -6,7 +7,7 @@ interface EditCoursePageProps {
   }>;
 }
 
-export default async function EditCoursePage({ params }: EditCoursePageProps) {
-  const { courseId } = await params;
+export default function EditCoursePage({ params }: EditCoursePageProps) {
+  const { courseId } = use(params);
   return <CourseForm courseId={courseId} isNew={false} />;
 }

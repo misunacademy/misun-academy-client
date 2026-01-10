@@ -4,7 +4,7 @@ const batchApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         createBatch: builder.mutation({
             query: (batchData) => ({
-                url: "/batch",
+                url: "/batches",
                 method: "POST",
                 body: batchData,
             }),
@@ -12,14 +12,14 @@ const batchApi = baseApi.injectEndpoints({
         }),
         getAllBatches: builder.query({
             query: () => ({
-                url: "/batch",
+                url: "/batches",
                 method: "GET",
             }),
             providesTags: ["Batches"],
         }),
         updateBatch: builder.mutation({
             query: ({ id, ...updateData }) => ({
-                url: `/batch/${id}`,
+                url: `/batches/${id}`,
                 method: "PATCH",
                 body: updateData,
             }),

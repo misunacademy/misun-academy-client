@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
 export async function getUsersAction() {
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/users`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/admin/users`, {
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
@@ -35,7 +35,7 @@ export async function createUserAction(formData: FormData) {
 
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/users`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/admin/users`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -59,18 +59,18 @@ export async function updateUserAction(formData: FormData) {
   const name = formData.get('name') as string;
   const email = formData.get('email') as string;
   const role = formData.get('role') as string;
-  const isActive = formData.get('isActive') === 'true';
+  const status = formData.get('status') as string;
 
   const updateData: any = {};
   if (name) updateData.name = name;
   if (email) updateData.email = email;
   if (role) updateData.role = role;
-  updateData.isActive = isActive;
+  if (status) updateData.status = status;
 
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/users/${id}`, {
-    method: 'PATCH',
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/admin/users/${id}`, {
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -91,7 +91,7 @@ export async function deleteUserAction(id: string) {
 
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/users/${id}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/admin/users/${id}`, {
     method: 'DELETE',
     headers: {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -111,13 +111,13 @@ export async function toggleUserStatusAction(id: string, currentStatus: boolean)
 
   const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/users/${id}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/admin/users/${id}/status`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify({ isActive: !currentStatus }),
+    body: JSON.stringify({ status: !currentStatus ? 'active' : 'suspended' }),
   });
 
   if (!res.ok) {

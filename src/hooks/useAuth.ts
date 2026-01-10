@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { authClient } from '@/lib/auth-client';
 import { setSession, setLoading, logout, setUser } from '@/redux/features/auth/authSlice';
 import { signInWithEmail, signUpWithEmail } from '@/actions/auth';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
+import { authClient } from '@/lib/auth-client';
 
 // Utility function to serialize session data for Redux
 const serializeSession = (session: any) => {
@@ -104,7 +104,18 @@ export function useAuth() {
     const initAuth = async () => {
       dispatch(setLoading(true));
       try {
-        // Check Better Auth session first (for social login)
+        // First check if we already have a valid JWT token (user is already logged in)
+        const existingToken = Cookies.get('token');
+        if (existingToken) {
+          const serverUser = await checkServerAuth();
+          if (serverUser) {
+            dispatch(setUser(serverUser));
+            dispatch(setLoading(false));
+            return;
+          }
+        }
+
+        // Check Better Auth session (for social login)
         const session = await authClient.getSession();
         const betterPayload = (session as any)?.data ?? (session as any)?.user ?? (session as any)?.session;
         if (betterPayload && betterPayload.user?.email) {
@@ -116,11 +127,24 @@ export function useAuth() {
           });
           if (user) {
             dispatch(setUser(user));
+            toast.success("Google দিয়ে সফলভাবে লগইন হয়েছে!");
+            // Redirect to dashboard after successful social login
+            if (typeof window !== 'undefined') {
+              const roleMap: Record<string, string> = {
+                'superadmin': '/dashboard/admin',
+                'admin': '/dashboard/admin',
+                'instructor': '/dashboard/admin',
+                'learner': '/dashboard/student',
+              };
+              const dashboardPath = user.role ? roleMap[user.role.toLowerCase()] || '/dashboard/student' : '/dashboard/student';
+              window.location.href = dashboardPath;
+            }
           } else {
+            // If social login failed, fall back to session data
             dispatch(setSession(serializeSession(betterPayload)));
           }
         } else {
-          // Check server auth (for email/password login)
+          // No social session, check server auth
           const serverUser = await checkServerAuth();
           if (serverUser) {
             dispatch(setUser(serverUser));

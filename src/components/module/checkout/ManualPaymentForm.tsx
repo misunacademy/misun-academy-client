@@ -23,7 +23,7 @@ type PaymentForm = z.infer<typeof paymentSchema>;
 
 interface ManualPaymentFormProps {
     onBack: () => void;
-    onPaymentComplete: (data: PaymentForm) => void;
+    onPaymentComplete: (data: { senderNumber: string; transactionId: string }) => void;
 }
 
 const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps) => {

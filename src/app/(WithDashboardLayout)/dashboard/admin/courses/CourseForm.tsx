@@ -1,1557 +1,499 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
-import { useForm, Controller, useWatch, Resolver } from "react-hook-form";
+import Image from "next/image";
+import { useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
+import { useForm, type SubmitHandler, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, X, Save, ArrowLeft, Plus, Edit2, Trash2, Play, BookOpen } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { courseSchema, CourseFormData, ModuleFormData, LessonFormData, ResourceFormData } from "./course-schema";
+import { Switch } from "@/components/ui/switch";
 import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "@/redux/features/course/courseApi";
+import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { toast } from "sonner";
+import { Loader2, Book } from "lucide-react";
+
+const formSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  shortDescription: z.string().min(1, "Short description is required"),
+  fullDescription: z.string().min(1, "Full description is required"),
+  learningOutcomes: z.string().min(1, "Learning outcomes required"),
+  prerequisites: z.string().optional(),
+  targetAudience: z.string().min(1, "Target audience is required"),
+  thumbnailImage: z.string().url("Valid URL required"),
+  coverImage: z.string().url("Valid URL required").optional().or(z.literal("")),
+  durationEstimate: z.string().min(1, "Duration estimate is required"),
+  level: z.enum(["beginner", "intermediate", "advanced"]),
+  category: z.string().min(1, "Category is required"),
+  tags: z.string().optional(),
+  featured: z.boolean().optional().default(false),
+  status: z.enum(["draft", "published", "archived"]).optional().default("draft"),
+  price: z.coerce.number({ message: "Price must be a number" }).min(0, "Price must be positive"),
+  discountPercentage: z
+    .coerce.number({ message: "Discount must be a number" })
+    .min(0, "Min 0")
+    .max(100, "Max 100")
+    .optional(),
+});
+
+export type CourseFormValues = z.infer<typeof formSchema>;
+
+type ImageField = "thumbnailImage" | "coverImage";
 
 interface CourseFormProps {
-    courseId?: string;
-    isNew?: boolean;
-}
-
-// Module Dialog Component
-function ModuleDialog({
-    module,
-    onSave,
-    onCancel
-}: {
-    module: ModuleFormData | null;
-    onSave: (module: ModuleFormData) => void;
-    onCancel: () => void;
-}) {
-    const [moduleData, setModuleData] = useState<ModuleFormData>(
-        module || {
-            moduleId: `module-new`,
-            title: "",
-            description: "",
-            order: 0,
-            duration: 0,
-            lessons: [],
-        }
-    );
-    const [newLesson, setNewLesson] = useState<Partial<LessonFormData>>({
-        title: "",
-        type: "video",
-        duration: 0,
-        isPreview: false,
-        media: {
-            type: "youtube",
-            url: "",
-            thumbnail: "",
-        },
-        content: "",
-    });
-    const [editingLesson, setEditingLesson] = useState<LessonFormData | null>(null);
-    const [isEditingLesson, setIsEditingLesson] = useState(false);
-
-    const addLesson = () => {
-        if (newLesson.title && newLesson.type) {
-            const lesson: LessonFormData = {
-                lessonId: `lesson-${moduleData.lessons.length + 1}`,
-                title: newLesson.title,
-                type: newLesson.type,
-                duration: newLesson.duration || 0,
-                isPreview: newLesson.isPreview || false,
-                media: newLesson.media,
-                content: newLesson.content,
-            };
-            setModuleData(prev => ({
-                ...prev,
-                lessons: [...prev.lessons, lesson],
-            }));
-            setNewLesson({
-                title: "",
-                type: "video",
-                duration: 0,
-                isPreview: false,
-                media: {
-                    type: "youtube",
-                    url: "",
-                    thumbnail: "",
-                },
-                content: "",
-            });
-        }
-    };
-
-    const startEditingLesson = (lesson: LessonFormData) => {
-        setEditingLesson(lesson);
-        setNewLesson({
-            title: lesson.title,
-            type: lesson.type,
-            duration: lesson.duration || 0,
-            isPreview: lesson.isPreview || false,
-            media: lesson.media || {
-                type: "youtube",
-                url: "",
-                thumbnail: "",
-            },
-            content: lesson.content || "",
-        });
-        setIsEditingLesson(true);
-    };
-
-    const saveEditedLesson = () => {
-        if (editingLesson && newLesson.title && newLesson.type) {
-            const updatedLesson: LessonFormData = {
-                ...editingLesson,
-                title: newLesson.title,
-                type: newLesson.type,
-                duration: newLesson.duration || 0,
-                isPreview: newLesson.isPreview || false,
-                media: newLesson.media,
-                content: newLesson.content,
-            };
-            setModuleData(prev => ({
-                ...prev,
-                lessons: prev.lessons.map(l =>
-                    l.lessonId === editingLesson.lessonId ? updatedLesson : l
-                ),
-            }));
-            cancelLessonEdit();
-        }
-    };
-
-    const cancelLessonEdit = () => {
-        setEditingLesson(null);
-        setNewLesson({
-            title: "",
-            type: "video",
-            duration: 0,
-            isPreview: false,
-            media: {
-                type: "youtube",
-                url: "",
-                thumbnail: "",
-            },
-            content: "",
-        });
-        setIsEditingLesson(false);
-    };
-
-    const removeLesson = (lessonId: string) => {
-        setModuleData(prev => ({
-            ...prev,
-            lessons: prev.lessons.filter(l => l.lessonId !== lessonId),
-        }));
-    };
-
-    const handleSave = () => {
-        if (moduleData.title.trim()) {
-            onSave(moduleData);
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                <div className="p-6">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold">
-                            {module ? "Edit Day" : "Add New Day"}
-                        </h2>
-                        <Button variant="outline" size="sm" onClick={onCancel}>
-                            <X className="h-4 w-4" />
-                        </Button>
-                    </div>
-
-                    <div className="space-y-6">
-                        {/* Module Info */}
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label htmlFor="moduleTitle">Day Title *</Label>
-                                <Input
-                                    id="moduleTitle"
-                                    value={moduleData.title}
-                                    onChange={(e) => setModuleData(prev => ({ ...prev, title: e.target.value }))}
-                                    placeholder="e.g. Day 1: Introduction"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="moduleDuration">Duration (minutes)</Label>
-                                <Input
-                                    id="moduleDuration"
-                                    type="number"
-                                    value={moduleData.duration || ""}
-                                    onChange={(e) => setModuleData(prev => ({ ...prev, duration: Number(e.target.value) }))}
-                                    placeholder="Total duration for this day"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="moduleDescription">Description</Label>
-                            <Textarea
-                                id="moduleDescription"
-                                value={moduleData.description || ""}
-                                onChange={(e) => setModuleData(prev => ({ ...prev, description: e.target.value }))}
-                                placeholder="Brief description of what students will learn this day"
-                                className="min-h-[80px]"
-                            />
-                        </div>
-
-                        {/* Lessons */}
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <Label className="text-lg font-semibold">Lessons</Label>
-                                {!isEditingLesson && (
-                                    <Button type="button" onClick={addLesson} size="sm" variant="outline">
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Add Lesson
-                                    </Button>
-                                )}
-                            </div>
-
-                            {/* Add/Edit New Lesson Form */}
-                            <Card className="border-dashed">
-                                <CardContent className="pt-4">
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label>Lesson Title</Label>
-                                            <Input
-                                                value={newLesson.title || ""}
-                                                onChange={(e) => setNewLesson(prev => ({ ...prev, title: e.target.value }))}
-                                                placeholder="Lesson title"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Type</Label>
-                                            <Select
-                                                value={newLesson.type || "video"}
-                                                onValueChange={(value: "video" | "reading" |  "project") => setNewLesson(prev => ({ ...prev, type: value }))}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="video">Video</SelectItem>
-                                                    <SelectItem value="reading">Reading</SelectItem>
-                                                    
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Duration (min)</Label>
-                                            <Input
-                                                type="number"
-                                                value={newLesson.duration || ""}
-                                                onChange={(e) => setNewLesson(prev => ({ ...prev, duration: Number(e.target.value) }))}
-                                                placeholder="0"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Media Type</Label>
-                                            <Select
-                                                value={newLesson.media?.type || "youtube"}
-                                                onValueChange={(value: "youtube" | "gdrive" | "video") => setNewLesson(prev => ({
-                                                    ...prev,
-                                                    media: { ...prev.media!, type: value }
-                                                }))}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="youtube">YouTube</SelectItem>
-                                                    <SelectItem value="gdrive">Google Drive</SelectItem>
-                                                    <SelectItem value="video">Direct Video</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2 md:col-span-2">
-                                            <Label>Media URL</Label>
-                                            <Input
-                                                value={newLesson.media?.url || ""}
-                                                onChange={(e) => setNewLesson(prev => ({
-                                                    ...prev,
-                                                    media: { ...prev.media!, url: e.target.value }
-                                                }))}
-                                                placeholder="https://youtube.com/watch?v=... or https://drive.google.com/file/..."
-                                            />
-                                        </div>
-                                        <div className="space-y-2 md:col-span-2">
-                                            <Label>Thumbnail URL (optional)</Label>
-                                            <Input
-                                                value={newLesson.media?.thumbnail || ""}
-                                                onChange={(e) => setNewLesson(prev => ({
-                                                    ...prev,
-                                                    media: { ...prev.media!, thumbnail: e.target.value }
-                                                }))}
-                                                placeholder="https://example.com/thumbnail.jpg"
-                                            />
-                                        </div>
-                                        <div className="space-y-2 md:col-span-2">
-                                            <Label>Content/Description (optional)</Label>
-                                            <Textarea
-                                                value={newLesson.content || ""}
-                                                onChange={(e) => setNewLesson(prev => ({ ...prev, content: e.target.value }))}
-                                                placeholder="Additional content or description for this lesson"
-                                                className="min-h-[60px]"
-                                            />
-                                        </div>
-                                        <div className="space-y-2 flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                id="isPreview"
-                                                checked={newLesson.isPreview || false}
-                                                onChange={(e) => setNewLesson(prev => ({ ...prev, isPreview: e.target.checked }))}
-                                                className="rounded"
-                                            />
-                                            <Label htmlFor="isPreview" className="ml-2">Preview Lesson</Label>
-                                        </div>
-                                        <div className="space-y-2 flex items-end">
-                                            {isEditingLesson ? (
-                                                <div className="flex gap-2">
-                                                    <Button type="button" onClick={saveEditedLesson} className="flex-1">
-                                                        <Save className="h-4 w-4 mr-2" />
-                                                        Update Lesson
-                                                    </Button>
-                                                    <Button type="button" onClick={cancelLessonEdit} variant="outline">
-                                                        <X className="h-4 w-4 mr-2" />
-                                                        Cancel
-                                                    </Button>
-                                                </div>
-                                            ) : (
-                                                <Button type="button" onClick={addLesson} className="w-full">
-                                                    Add Lesson
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            {/* Existing Lessons */}
-                            {moduleData.lessons.length === 0 ? (
-                                <p className="text-sm text-muted-foreground italic text-center py-4">
-                                    No lessons added yet
-                                </p>
-                            ) : (
-                                <div className="space-y-2">
-                                    {moduleData.lessons.map((lesson, index) => (
-                                        <Card key={lesson.lessonId}>
-                                            <CardContent className="pt-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-3 flex-1">
-                                                        <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-sm font-semibold">
-                                                            {index + 1}
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                {lesson.type === 'video' && <Play className="h-4 w-4 text-red-500" />}
-                                                                {lesson.type === 'reading' && <BookOpen className="h-4 w-4 text-blue-500" />}
-                                                                <span className="font-medium">{lesson.title}</span>
-                                                                {lesson.isPreview && (
-                                                                    <Badge variant="secondary" className="text-xs">Preview</Badge>
-                                                                )}
-                                                            </div>
-                                                            <div className="text-sm text-muted-foreground space-y-1">
-                                                                {lesson.duration && (
-                                                                    <div>Duration: {lesson.duration} minutes</div>
-                                                                )}
-                                                                {lesson.media?.url && (
-                                                                    <div>Media: {lesson.media.type} - {lesson.media.url.length > 50 ? `${lesson.media.url.substring(0, 50)}...` : lesson.media.url}</div>
-                                                                )}
-                                                                {lesson.content && (
-                                                                    <div>Content: {lesson.content.length > 50 ? `${lesson.content.substring(0, 50)}...` : lesson.content}</div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Button
-                                                            type="button"
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => startEditingLesson(lesson)}
-                                                            disabled={isEditingLesson}
-                                                        >
-                                                            <Edit2 className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            type="button"
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => removeLesson(lesson.lessonId)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex justify-end gap-4 pt-4 border-t">
-                            <Button type="button" variant="outline" onClick={onCancel}>
-                                Cancel
-                            </Button>
-                            <Button type="button" onClick={handleSave} disabled={!moduleData.title.trim()}>
-                                {module ? "Update Day" : "Add Day"}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+  courseId?: string;
+  isNew?: boolean;
 }
 
 export default function CourseForm({ courseId, isNew = false }: CourseFormProps) {
-    const router = useRouter();
-    const [newTag, setNewTag] = useState("");
-    const [modules, setModules] = useState<ModuleFormData[]>([]);
-    const [editingModule, setEditingModule] = useState<ModuleFormData | null>(null);
-    const [isModuleDialogOpen, setIsModuleDialogOpen] = useState(false);
-    const [resources, setResources] = useState<ResourceFormData[]>([]);
-    const [newResource, setNewResource] = useState<Partial<ResourceFormData>>({
-        title: "",
-        type: "document",
-        url: "",
-        description: "",
-        isDownloadable: false,
-    });
+  const router = useRouter();
+  const { data: course, isFetching, error } = useGetCourseByIdQuery(courseId!, { skip: !courseId });
+  const [createCourse, { isLoading: creating }] = useCreateCourseMutation();
+  const [updateCourse, { isLoading: updating }] = useUpdateCourseMutation();
+  const [uploadImage, { isLoading: uploadingImage }] = useUploadSingleImageMutation();
+  const [selectedFiles, setSelectedFiles] = useState<Partial<Record<ImageField, File>>>({});
+  const [previews, setPreviews] = useState<Partial<Record<ImageField, string>>>({});
+  const [uploadingField, setUploadingField] = useState<ImageField | null>(null);
+  const fileInputRefs = useRef<Partial<Record<ImageField, HTMLInputElement | null>>>({});
 
-    const { data: courseData, isLoading: isLoadingCourse } = useGetCourseByIdQuery(courseId || "", {
-        skip: isNew || !courseId || courseId.trim() === "",
-    });
-    const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation();
-    const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation();
+  const form = useForm<CourseFormValues>({
+    resolver: zodResolver(formSchema) as Resolver<CourseFormValues>,
+    defaultValues: {
+      title: "",
+      shortDescription: "",
+      fullDescription: "",
+      learningOutcomes: "",
+      prerequisites: "",
+      targetAudience: "",
+      thumbnailImage: "",
+      coverImage: "",
+      durationEstimate: "",
+      level: "beginner",
+      category: "",
+      tags: "",
+      featured: false,
+      status: "draft",
+      price: 0,
+      discountPercentage: 0,
+    },
+  });
 
-    const isLoading = isCreating || isUpdating;
+  useEffect(() => {
+    if (course) {
+      const normalizeLevel = (lvl: unknown): "beginner" | "intermediate" | "advanced" => {
+        if (typeof lvl !== "string") return "beginner";
+        const val = lvl.trim().toLowerCase();
+        if (val === "intermediate" || val === "advanced") return val;
+        return "beginner";
+      };
 
-    const form = useForm<CourseFormData>({
-        resolver: zodResolver(courseSchema) as unknown as Resolver<CourseFormData>,
-        defaultValues: {
-            title: "",
-            subtitle: "",
-            description: "",
-            shortDescription: "",
-            category: "Programming",
-            subcategory: "",
-            level: "Beginner",
-            language: "English",
-            instructor: "",
-            durationHours: undefined,
-            durationWeeks: undefined,
-            hoursPerWeek: undefined,
-            price: undefined,
-            currency: "BDT",
-            discountPrice: undefined,
-            discountExpiry: undefined,
-            capacity: undefined,
-            enrollmentStatus: "open",
-            enrollmentStartDate: undefined,
-            enrollmentEndDate: undefined,
-            enrollmentDeadline: undefined,
-            thumbnailUrl: "",
-            coverImageUrl: "",
-            tags: [],
-            curriculum: [],
-            resources: [],
-            isPublished: false,
-            isFeatured: false,
-        },
-    });
+      const normalizedLevel = normalizeLevel((course as any).level);
+      console.log('Normalized level:', normalizedLevel);
 
-    const { register, handleSubmit, control, setValue, reset, formState: { errors } } = form;
-    const watchedTags = useWatch({ control, name: "tags", defaultValue: [] });
+      const formData = {
+        title: (course as any).title || "",
+        shortDescription: (course as any).shortDescription || "",
+        fullDescription: (course as any).fullDescription || "",
+        learningOutcomes: ((course as any).learningOutcomes || []).join("\n"),
+        prerequisites: ((course as any).prerequisites || []).join("\n"),
+        targetAudience: (course as any).targetAudience || "",
+        thumbnailImage: (course as any).thumbnailImage || "",
+        coverImage: (course as any).coverImage || "",
+        durationEstimate: (course as any).durationEstimate || "",
+        level: normalizedLevel,
+        category: (course as any).category || "",
+        tags: ((course as any).tags || []).join(", "),
+        featured: Boolean((course as any).featured),
+        status: (course as any).status || "draft",
+        price: (course as any).price ?? 0,
+        discountPercentage: (course as any).discountPercentage ?? 0,
+      };
 
-    // Load existing course data
-    React.useEffect(() => {
-        if (courseData && !isNew && courseId) {
-            const course = courseData;
+      form.reset(formData);
+      
+      // Force update the level field explicitly
+      setTimeout(() => {
+        form.setValue("level", normalizedLevel, { 
+          shouldDirty: false, 
+          shouldValidate: true,
+          shouldTouch: false
+        });
+      }, 0);
 
-            // Check if course data is valid
-            if (!course) {
-                console.error("Course data is null or undefined");
-                return;
-            }
-            reset({
-                title: course.title || "",
-                subtitle: course.subtitle || "",
-                description: course.description || "",
-                shortDescription: course.shortDescription || "",
-                category: course.category || "Programming",
-                subcategory: course.subcategory || "",
-                level: (course.level as "Beginner" | "Intermediate" | "Advanced" | "Expert") || "Beginner",
-                language: course.language || "English",
-                instructor: typeof course.instructor === "string" ? course.instructor : course.instructor?.name || "",
-                durationHours: course.duration && typeof course.duration === "object" ? course.duration.hours : undefined,
-                durationWeeks: course.duration && typeof course.duration === "object" ? course.duration.weeks : undefined,
-                hoursPerWeek: course.duration && typeof course.duration === "object" ? course.duration.hoursPerWeek : undefined,
-                price: course.pricing?.amount,
-                currency: course.pricing?.currency || "BDT",
-                discountPrice: course.pricing?.discountPrice,
-                discountExpiry: course.pricing?.discountExpiry ? new Date(course.pricing.discountExpiry) : undefined,
-                capacity: course.enrollment?.capacity,
-                enrollmentStatus: course.enrollment?.status || "open",
-                enrollmentStartDate: course.enrollment?.startDate ? new Date(course.enrollment.startDate) : undefined,
-                enrollmentEndDate: course.enrollment?.endDate ? new Date(course.enrollment.endDate) : undefined,
-                enrollmentDeadline: course.enrollment?.enrollmentDeadline ? new Date(course.enrollment.enrollmentDeadline) : undefined,
-                thumbnailUrl: course.thumbnailUrl || "",
-                coverImageUrl: course.coverImageUrl || "",
-                tags: course.tags || [],
-                curriculum: course.curriculum || [],
-                resources: course.resources || [],
-                isPublished: course.isPublished || false,
-                isFeatured: course.isFeatured || false,
-            });
+      setPreviews({
+        thumbnailImage: (course as any).thumbnailImage || undefined,
+        coverImage: (course as any).coverImage || undefined,
+      });
+    }
+  }, [course, form]);
 
-            // Set modules state separately
-            setModules(course.curriculum || []);
-            // Set resources state separately
-            setResources(course.resources || []);
-        }
-    }, [courseData, isNew, courseId, reset]);
+  const thumbnailValue = form.watch("thumbnailImage");
+  const coverValue = form.watch("coverImage");
+  const { errors } = form.formState;
 
-    const onSubmit = async (data: CourseFormData) => {
-        try {
-            // Generate slug from title if not provided
-            const generateSlug = (title: string) => {
-                return title
-                    .toString()
-                    .toLowerCase()
-                    .trim()
-                    .replace(/[^a-z0-9\s-]/g, '')
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-');
-            };
+  const handleFileChange = (field: ImageField, e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-            const coursePayload = {
-                title: data.title,
-                slug: data.title ? generateSlug(data.title) : '',
-                subtitle: data.subtitle,
-                description: data.description,
-                shortDescription: data.shortDescription,
-                category: data.category,
-                subcategory: data.subcategory,
-                level: data.level,
-                language: data.language,
-                instructor: data.instructor,
-                duration: {
-                    hours: data.durationHours,
-                    weeks: data.durationWeeks,
-                    hoursPerWeek: data.hoursPerWeek,
-                },
-                pricing: {
-                    amount: data.price,
-                    currency: data.currency,
-                    discountPrice: data.discountPrice,
-                    discountExpiry: data.discountExpiry,
-                },
-                enrollment: {
-                    capacity: data.capacity,
-                    status: data.enrollmentStatus,
-                    startDate: data.enrollmentStartDate,
-                    endDate: data.enrollmentEndDate,
-                    enrollmentDeadline: data.enrollmentDeadline,
-                },
-                thumbnailUrl: data.thumbnailUrl,
-                coverImageUrl: data.coverImageUrl,
-                tags: data.tags,
-                curriculum: data.curriculum,
-                resources: data.resources,
-                isPublished: data.isPublished,
-                isFeatured: data.isFeatured,
-            };
-
-            if (isNew) {
-                await createCourse(coursePayload).unwrap();
-                toast.success("Course created successfully!");
-                router.push("/dashboard/admin/courses");
-            } else if (courseId) {
-                await updateCourse({ id: courseId, ...coursePayload }).unwrap();
-                toast.success("Course updated successfully!");
-                router.push("/dashboard/admin/courses");
-            }
-        } catch (error) {
-            toast.error((error as Error)?.message || "Failed to save course");
-        }
-    };
-
-    const addTag = () => {
-        if (newTag.trim() && !watchedTags.includes(newTag.trim())) {
-            setValue("tags", [...watchedTags, newTag.trim()]);
-            setNewTag("");
-        }
-    };
-
-    const removeTag = (tagToRemove: string) => {
-        setValue("tags", watchedTags.filter(tag => tag !== tagToRemove));
-    };
-
-    const addResource = () => {
-        if (newResource.title && newResource.url) {
-            const resource: ResourceFormData = {
-                resourceId: `resource-${resources.length + 1}`,
-                title: newResource.title,
-                type: newResource.type || "document",
-                url: newResource.url,
-                description: newResource.description || "",
-                isDownloadable: newResource.isDownloadable || false,
-            };
-            const updatedResources = [...resources, resource];
-            setResources(updatedResources);
-            setValue("resources", updatedResources);
-            setNewResource({
-                title: "",
-                type: "document",
-                url: "",
-                description: "",
-                isDownloadable: false,
-            });
-        }
-    };
-
-    const removeResource = (resourceId: string) => {
-        const updatedResources = resources.filter(r => r.resourceId !== resourceId);
-        setResources(updatedResources);
-        setValue("resources", updatedResources);
-    };
-
-    if (!isNew && courseId && !isLoadingCourse && !courseData) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <div className="text-center">
-                    <p className="text-red-500 mb-2">Course not found</p>
-                    <p className="text-sm text-muted-foreground">
-                        The course with ID &quot;{courseId}&quot; could not be found
-                    </p>
-                    <Button
-                        variant="outline"
-                        onClick={() => router.back()}
-                        className="mt-4"
-                    >
-                        Go Back
-                    </Button>
-                </div>
-            </div>
-        );
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Invalid file type. Use JPG, PNG, or WEBP.");
+      e.target.value = "";
+      return;
     }
 
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error("File too large. Max size is 5MB.");
+      e.target.value = "";
+      return;
+    }
+
+    setSelectedFiles((prev) => ({ ...prev, [field]: file }));
+    setPreviews((prev) => ({ ...prev, [field]: URL.createObjectURL(file) }));
+  };
+
+  const uploadImageForField = async (field: ImageField) => {
+    const file = selectedFiles[field];
+    if (!file) {
+      toast.error("Select an image first");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      setUploadingField(field);
+      const result = await uploadImage(formData).unwrap();
+      const url = result.data.url;
+
+      form.setValue(field, url, { shouldDirty: true, shouldValidate: true });
+      setPreviews((prev) => ({ ...prev, [field]: url }));
+      toast.success(field === "thumbnailImage" ? "Thumbnail uploaded" : "Cover image uploaded");
+      setSelectedFiles((prev) => ({ ...prev, [field]: undefined }));
+
+      if (fileInputRefs.current[field]) {
+        fileInputRefs.current[field]!.value = "";
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || error?.message || "Upload failed");
+    } finally {
+      setUploadingField(null);
+    }
+  };
+
+  const onSubmit: SubmitHandler<CourseFormValues> = async (values) => {
+    const payload = {
+      title: values.title.trim(),
+      shortDescription: values.shortDescription.trim(),
+      fullDescription: values.fullDescription.trim(),
+      learningOutcomes: splitLines(values.learningOutcomes),
+      prerequisites: values.prerequisites ? splitLines(values.prerequisites) : [],
+      targetAudience: values.targetAudience.trim(),
+      thumbnailImage: values.thumbnailImage.trim(),
+      coverImage: values.coverImage?.trim() || undefined,
+      durationEstimate: values.durationEstimate.trim(),
+      level: values.level,
+      category: values.category.trim(),
+      tags: values.tags ? splitTags(values.tags) : [],
+      featured: values.featured ?? false,
+      status: values.status ?? "draft",
+      price: Number(values.price) || 0,
+      discountPercentage: values.discountPercentage ?? 0,
+    };
+
+    try {
+      if (isNew) {
+        await createCourse(payload).unwrap();
+        toast.success("Course created");
+      } else if (courseId) {
+        await updateCourse({ id: courseId, ...payload }).unwrap();
+        toast.success("Course updated");
+      }
+      router.push("/dashboard/admin/courses");
+    } catch (err: any) {
+        toast.error(err?.data?.message || err?.message || "Failed to save course");
+    }
+  };
+
+  const saving = creating || updating;
+
+  // Error handling
+  if (error) {
     return (
-        <div className="container mx-auto p-6 space-y-6">
-            <div className="flex items-center gap-4">
-                <Button variant="outline" onClick={() => router.back()}>
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back
-                </Button>
-                <div>
-                    <h1 className="text-3xl font-bold">
-                        {isNew ? "Create New Course" : "Edit Course"}
-                    </h1>
-                    <p className="text-muted-foreground">
-                        {isNew ? "Add a new course to your academy" : "Update course information"}
-                    </p>
-                </div>
-            </div>
-
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <Tabs defaultValue="basic" className="w-full">
-                    <TabsList className="grid w-full grid-cols-10">
-                        <TabsTrigger value="basic">Basic</TabsTrigger>
-                        <TabsTrigger value="category">Category</TabsTrigger>
-                        <TabsTrigger value="duration">Duration</TabsTrigger>
-                        <TabsTrigger value="pricing">Pricing</TabsTrigger>
-                        <TabsTrigger value="enrollment">Enrollment</TabsTrigger>
-                        <TabsTrigger value="media">Media</TabsTrigger>
-                        <TabsTrigger value="tags">Tags</TabsTrigger>
-                        <TabsTrigger value="resources">Resources</TabsTrigger>
-                        <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
-                        <TabsTrigger value="settings">Settings</TabsTrigger>
-                    </TabsList>
-                    {/* Basic Information */}
-                    <TabsContent value="basic">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Basic Information</CardTitle>
-                                <CardDescription>Essential course details</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="title">Course Title *</Label>
-                                    <Controller
-                                        name="title"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input
-                                                id="title"
-                                                {...field}
-                                                placeholder="Enter course title"
-                                            />
-                                        )}
-                                    />
-                                    {errors.title && (
-                                        <p className="text-sm text-red-500">{errors.title.message}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="subtitle">Subtitle</Label>
-                                    <Input
-                                        id="subtitle"
-                                        {...register("subtitle")}
-                                        placeholder="Brief subtitle for the course"
-                                    />
-                                    {errors.subtitle && (
-                                        <p className="text-sm text-red-500">{errors.subtitle.message}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="description">Description *</Label>
-                                    <Controller
-                                        name="description"
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Textarea
-                                                id="description"
-                                                {...field}
-                                                placeholder="Detailed course description"
-                                                className="min-h-[100px]"
-                                            />
-                                        )}
-                                    />
-                                    {errors.description && (
-                                        <p className="text-sm text-red-500">{errors.description.message}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="shortDescription">Short Description</Label>
-                                    <Textarea
-                                        id="shortDescription"
-                                        {...register("shortDescription")}
-                                        placeholder="Brief summary (appears in course cards)"
-                                        className="min-h-[60px]"
-                                    />
-                                    {errors.shortDescription && (
-                                        <p className="text-sm text-red-500">{errors.shortDescription.message}</p>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                {/* Category & Level */}
-                    <TabsContent value="category">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Category & Level</CardTitle>
-                                <CardDescription>Course classification and difficulty</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="category">Category *</Label>
-                                        <Controller
-                                            name="category"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Select onValueChange={field.onChange} value={field.value}>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select category" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="Programming">Programming</SelectItem>
-                                                        <SelectItem value="Design">Design</SelectItem>
-                                                        <SelectItem value="Business">Business</SelectItem>
-                                                        <SelectItem value="Marketing">Marketing</SelectItem>
-                                                        <SelectItem value="Data Science">Data Science</SelectItem>
-                                                        <SelectItem value="Other">Other</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            )}
-                                        />
-                                        {errors.category && (
-                                            <p className="text-sm text-red-500">{errors.category.message}</p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="level">Level *</Label>
-                                        <Controller
-                                            name="level"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Select onValueChange={field.onChange} value={field.value}>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select level" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="Beginner">Beginner</SelectItem>
-                                                        <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                                        <SelectItem value="Advanced">Advanced</SelectItem>
-                                                        <SelectItem value="Expert">Expert</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            )}
-                                        />
-                                        {errors.level && (
-                                            <p className="text-sm text-red-500">{errors.level.message}</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="subcategory">Subcategory</Label>
-                                        <Input
-                                            id="subcategory"
-                                            {...register("subcategory")}
-                                            placeholder="e.g. Web Development"
-                                        />
-                                        {errors.subcategory && (
-                                            <p className="text-sm text-red-500">{errors.subcategory.message}</p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="language">Language *</Label>
-                                        <Controller
-                                            name="language"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Select onValueChange={field.onChange} value={field.value}>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select language" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="English">English</SelectItem>
-                                                        <SelectItem value="Bengali">Bengali</SelectItem>
-                                                        <SelectItem value="Spanish">Spanish</SelectItem>
-                                                        <SelectItem value="French">French</SelectItem>
-                                                        <SelectItem value="German">German</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            )}
-                                        />
-                                        {errors.language && (
-                                            <p className="text-sm text-red-500">{errors.language.message}</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                    {/* Duration */}
-                    <TabsContent value="duration">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Duration</CardTitle>
-                                <CardDescription>Course duration and schedule</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid gap-4 md:grid-cols-3">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="durationHours">Total Hours</Label>
-                                        <Input
-                                            id="durationHours"
-                                            type="number"
-                                            {...register("durationHours", { valueAsNumber: true })}
-                                            placeholder="e.g. 40"
-                                        />
-                                        {errors.durationHours && (
-                                            <p className="text-sm text-red-500">{errors.durationHours.message}</p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="durationWeeks">Duration (Weeks)</Label>
-                                        <Input
-                                            id="durationWeeks"
-                                            type="number"
-                                            {...register("durationWeeks", { valueAsNumber: true })}
-                                            placeholder="e.g. 8"
-                                        />
-                                        {errors.durationWeeks && (
-                                            <p className="text-sm text-red-500">{errors.durationWeeks.message}</p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="hoursPerWeek">Hours per Week</Label>
-                                        <Input
-                                            id="hoursPerWeek"
-                                            type="number"
-                                            {...register("hoursPerWeek", { valueAsNumber: true })}
-                                            placeholder="e.g. 5"
-                                        />
-                                        {errors.hoursPerWeek && (
-                                            <p className="text-sm text-red-500">{errors.hoursPerWeek.message}</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                {/* Pricing */}
-                    <TabsContent value="pricing">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Pricing</CardTitle>
-                                <CardDescription>Course pricing and discounts</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="price">Price</Label>
-                                        <Input
-                                            id="price"
-                                            type="number"
-                                            {...register("price", { valueAsNumber: true })}
-                                            placeholder="Enter price"
-                                        />
-                                        {errors.price && (
-                                            <p className="text-sm text-red-500">{errors.price.message}</p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="currency">Currency</Label>
-                                        <Controller
-                                            name="currency"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Select onValueChange={field.onChange} value={field.value}>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select currency" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="BDT">BDT</SelectItem>
-                                                        <SelectItem value="USD">USD</SelectItem>
-                                                        <SelectItem value="EUR">EUR</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            )}
-                                        />
-                                        {errors.currency && (
-                                            <p className="text-sm text-red-500">{errors.currency.message}</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="discountPrice">Discount Price</Label>
-                                        <Input
-                                            id="discountPrice"
-                                            type="number"
-                                            {...register("discountPrice", { valueAsNumber: true })}
-                                            placeholder="Discounted price"
-                                        />
-                                        {errors.discountPrice && (
-                                            <p className="text-sm text-red-500">{errors.discountPrice.message}</p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="discountExpiry">Discount Expiry</Label>
-                                        <Controller
-                                            name="discountExpiry"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            className={cn(
-                                                                "w-full justify-start text-left font-normal",
-                                                                !field.value && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                                            {field.value ? format(field.value, "PPP") : "Pick a date"}
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            mode="single"
-                                                            selected={field.value || undefined}
-                                                            onSelect={field.onChange}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
-                                            )}
-                                        />
-                                        {errors.discountExpiry && (
-                                            <p className="text-sm text-red-500">{errors.discountExpiry.message}</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                    {/* Enrollment */}
-                    <TabsContent value="enrollment">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Enrollment Settings</CardTitle>
-                                <CardDescription>Configure enrollment options</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="capacity">Capacity</Label>
-                                        <Input
-                                            id="capacity"
-                                            type="number"
-                                            {...register("capacity", { valueAsNumber: true })}
-                                            placeholder="Maximum students"
-                                        />
-                                        {errors.capacity && (
-                                            <p className="text-sm text-red-500">{errors.capacity.message}</p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="enrollmentStatus">Enrollment Status</Label>
-                                        <Controller
-                                            name="enrollmentStatus"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Select onValueChange={field.onChange} value={field.value}>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select status" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="open">Open</SelectItem>
-                                                        <SelectItem value="closed">Closed</SelectItem>
-                                                        <SelectItem value="waitlist">Waitlist</SelectItem>
-                                                        <SelectItem value="coming_soon">Coming Soon</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            )}
-                                        />
-                                        {errors.enrollmentStatus && (
-                                            <p className="text-sm text-red-500">{errors.enrollmentStatus.message}</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="grid gap-4 md:grid-cols-3">
-                                    <div className="space-y-2">
-                                        <Label>Enrollment Start Date</Label>
-                                        <Controller
-                                            name="enrollmentStartDate"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            className={cn(
-                                                                "w-full justify-start text-left font-normal",
-                                                                !field.value && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                                            {field.value ? format(field.value, "PPP") : "Pick a date"}
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            mode="single"
-                                                            selected={field.value || undefined}
-                                                            onSelect={field.onChange}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
-                                            )}
-                                        />
-                                        {errors.enrollmentStartDate && (
-                                            <p className="text-sm text-red-500">{errors.enrollmentStartDate.message}</p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Enrollment End Date</Label>
-                                        <Controller
-                                            name="enrollmentEndDate"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            className={cn(
-                                                                "w-full justify-start text-left font-normal",
-                                                                !field.value && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                                            {field.value ? format(field.value, "PPP") : "Pick a date"}
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            mode="single"
-                                                            selected={field.value || undefined}
-                                                            onSelect={field.onChange}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
-                                            )}
-                                        />
-                                        {errors.enrollmentEndDate && (
-                                            <p className="text-sm text-red-500">{errors.enrollmentEndDate.message}</p>
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Enrollment Deadline</Label>
-                                        <Controller
-                                            name="enrollmentDeadline"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button
-                                                            variant="outline"
-                                                            className={cn(
-                                                                "w-full justify-start text-left font-normal",
-                                                                !field.value && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                                            {field.value ? format(field.value, "PPP") : "Pick a date"}
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0">
-                                                        <Calendar
-                                                            mode="single"
-                                                            selected={field.value || undefined}
-                                                            onSelect={field.onChange}
-                                                            initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                </Popover>
-                                            )}
-                                        />
-                                        {errors.enrollmentDeadline && (
-                                            <p className="text-sm text-red-500">{errors.enrollmentDeadline.message}</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* Media */}
-                    <TabsContent value="media">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Media</CardTitle>
-                                <CardDescription>Course images and media</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="thumbnailUrl">Thumbnail URL</Label>
-                                    <Input
-                                        id="thumbnailUrl"
-                                        {...register("thumbnailUrl")}
-                                        placeholder="https://example.com/thumbnail.jpg"
-                                    />
-                                    {errors.thumbnailUrl && (
-                                        <p className="text-sm text-red-500">{errors.thumbnailUrl.message}</p>
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="coverImageUrl">Cover Image URL</Label>
-                                    <Input
-                                        id="coverImageUrl"
-                                        {...register("coverImageUrl")}
-                                        placeholder="https://example.com/cover.jpg"
-                                    />
-                                    {errors.coverImageUrl && (
-                                        <p className="text-sm text-red-500">{errors.coverImageUrl.message}</p>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                {/* Tags */}
-                    <TabsContent value="tags">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Tags</CardTitle>
-                                <CardDescription>Add relevant tags for the course</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex gap-2">
-                                    <Input
-                                        value={newTag}
-                                        onChange={(e) => setNewTag(e.target.value)}
-                                        placeholder="Add a tag"
-                                        onKeyPress={(e) => e.key === 'Enter' && addTag()}
-                                    />
-                                    <Button type="button" onClick={addTag} variant="outline">
-                                        Add Tag
-                                    </Button>
-                                </div>
-                                {watchedTags.length > 0 && (
-                                    <div className="flex flex-wrap gap-2">
-                                        {watchedTags.map((tag, index) => (
-                                            <Badge key={index} variant="secondary" className="cursor-pointer">
-                                                {tag}
-                                                <X
-                                                    className="ml-1 h-3 w-3"
-                                                    onClick={() => removeTag(tag)}
-                                                />
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* Resources */}
-                    <TabsContent value="resources">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Course Resources</CardTitle>
-                                <CardDescription>Add downloadable resources, links, and supplementary materials for your course</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <p className="text-sm text-muted-foreground">
-                                        Add resources that students can access throughout the course
-                                    </p>
-                                    <Button
-                                        type="button"
-                                        onClick={addResource}
-                                        size="sm"
-                                        disabled={!newResource.title || !newResource.url}
-                                    >
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Add Resource
-                                    </Button>
-                                </div>
-
-                                {/* Add New Resource Form */}
-                                <Card className="border-dashed">
-                                    <CardContent className="pt-4">
-                                        <div className="grid gap-4 md:grid-cols-2">
-                                            <div className="space-y-2">
-                                                <Label>Resource Title *</Label>
-                                                <Input
-                                                    value={newResource.title || ""}
-                                                    onChange={(e) => setNewResource(prev => ({ ...prev, title: e.target.value }))}
-                                                    placeholder="e.g. Course Syllabus, Cheat Sheet"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>Type</Label>
-                                                <Select
-                                                    value={newResource.type || "document"}
-                                                    onValueChange={(value: "document" | "link" | "download" | "video" | "image") =>
-                                                        setNewResource(prev => ({ ...prev, type: value }))
-                                                    }
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="document">Document</SelectItem>
-                                                        <SelectItem value="link">External Link</SelectItem>
-                                                        <SelectItem value="download">Downloadable File</SelectItem>
-                                                        <SelectItem value="video">Video</SelectItem>
-                                                        <SelectItem value="image">Image</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            <div className="space-y-2 md:col-span-2">
-                                                <Label>URL *</Label>
-                                                <Input
-                                                    value={newResource.url || ""}
-                                                    onChange={(e) => setNewResource(prev => ({ ...prev, url: e.target.value }))}
-                                                    placeholder="https://example.com/resource.pdf"
-                                                />
-                                            </div>
-                                            <div className="space-y-2 md:col-span-2">
-                                                <Label>Description (optional)</Label>
-                                                <Textarea
-                                                    value={newResource.description || ""}
-                                                    onChange={(e) => setNewResource(prev => ({ ...prev, description: e.target.value }))}
-                                                    placeholder="Brief description of this resource"
-                                                    className="min-h-[60px]"
-                                                />
-                                            </div>
-                                            <div className="space-y-2 flex items-center">
-                                                <input
-                                                    type="checkbox"
-                                                    id="isDownloadable"
-                                                    checked={newResource.isDownloadable || false}
-                                                    onChange={(e) => setNewResource(prev => ({ ...prev, isDownloadable: e.target.checked }))}
-                                                    className="rounded"
-                                                />
-                                                <Label htmlFor="isDownloadable" className="ml-2">Downloadable</Label>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
-                                {/* Existing Resources */}
-                                {resources.length === 0 ? (
-                                    <div className="text-center py-8 text-muted-foreground">
-                                        <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                                        <p>No resources added yet</p>
-                                        <p className="text-sm">Add resources above to provide supplementary materials for your course</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-2">
-                                        {resources.map((resource, index) => (
-                                            <Card key={resource.resourceId}>
-                                                <CardContent className="pt-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-3 flex-1">
-                                                            <div className="flex items-center justify-center w-8 h-8 bg-green-100 text-green-600 rounded-full text-sm font-semibold">
-                                                                {index + 1}
-                                                            </div>
-                                                            <div className="flex-1">
-                                                                <div className="flex items-center gap-2 mb-1">
-                                                                    <span className="font-medium">{resource.title}</span>
-                                                                    <Badge variant="outline" className="text-xs">
-                                                                        {resource.type}
-                                                                    </Badge>
-                                                                    {resource.isDownloadable && (
-                                                                        <Badge variant="secondary" className="text-xs">
-                                                                            Downloadable
-                                                                        </Badge>
-                                                                    )}
-                                                                </div>
-                                                                <div className="text-sm text-muted-foreground space-y-1">
-                                                                    <div>URL: {resource.url.length > 50 ? `${resource.url.substring(0, 50)}...` : resource.url}</div>
-                                                                    {resource.description && (
-                                                                        <div>Description: {resource.description.length > 50 ? `${resource.description.substring(0, 50)}...` : resource.description}</div>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <Button
-                                                            type="button"
-                                                            variant="outline"
-                                                            size="sm"
-                                                            onClick={() => removeResource(resource.resourceId)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* Curriculum */}
-                    <TabsContent value="curriculum">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Curriculum</CardTitle>
-                                <CardDescription>Organize course content day by day</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <p className="text-sm text-muted-foreground">
-                                        Add modules (days) and lessons to structure your course content
-                                    </p>
-                                    <Button
-                                        type="button"
-                                        onClick={() => {
-                                            setEditingModule(null);
-                                            setIsModuleDialogOpen(true);
-                                        }}
-                                        size="sm"
-                                    >
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Add Day
-                                    </Button>
-                                </div>
-
-                                {modules.length === 0 ? (
-                                    <div className="text-center py-8 text-muted-foreground">
-                                        <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                                        <p>No modules added yet</p>
-                                        <p className="text-sm">Click &quot;Add Day&quot; to start building your course curriculum</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {modules.map((module, moduleIndex) => (
-                                            <Card key={module.moduleId} className="border-l-4 border-l-blue-500">
-                                                <CardHeader className="pb-3">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full text-sm font-semibold">
-                                                                {moduleIndex + 1}
-                                                            </div>
-                                                            <div>
-                                                                <CardTitle className="text-lg">{module.title}</CardTitle>
-                                                                {module.description && (
-                                                                    <CardDescription>{module.description}</CardDescription>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <Button
-                                                                type="button"
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => {
-                                                                    setEditingModule(module);
-                                                                    setIsModuleDialogOpen(true);
-                                                                }}
-                                                            >
-                                                                <Edit2 className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button
-                                                                type="button"
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => {
-                                                                    const updatedModules = modules.filter((_, i) => i !== moduleIndex);
-                                                                    setModules(updatedModules);
-                                                                    setValue("curriculum", updatedModules);
-                                                                }}
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                </CardHeader>
-                                                <CardContent>
-                                                    {module.lessons.length === 0 ? (
-                                                        <p className="text-sm text-muted-foreground italic">No lessons added to this day</p>
-                                                    ) : (
-                                                        <div className="space-y-2">
-                                                            {module.lessons.map((lesson, lessonIndex) => (
-                                                                <div key={lesson.lessonId} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                                                    <div className="flex items-center justify-center w-6 h-6 bg-white border rounded-full text-xs font-semibold">
-                                                                        {lessonIndex + 1}
-                                                                    </div>
-                                                                    <div className="flex-1">
-                                                                        <div className="flex items-center gap-2">
-                                                                            {lesson.type === 'video' && <Play className="h-4 w-4 text-red-500" />}
-                                                                            {lesson.type === 'reading' && <BookOpen className="h-4 w-4 text-blue-500" />}
-                                                                            <span className="font-medium">{lesson.title}</span>
-                                                                            {lesson.isPreview && (
-                                                                                <Badge variant="secondary" className="text-xs">Preview</Badge>
-                                                                            )}
-                                                                        </div>
-                                                                        <div className="text-sm text-muted-foreground mt-1">
-                                                                            {lesson.duration && <span>{lesson.duration} minutes</span>}
-                                                                            {lesson.media?.url && <span className="ml-2">• Media: {lesson.media.type}</span>}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                {/* Module Dialog */}
-                {isModuleDialogOpen && (
-                    <ModuleDialog
-                        module={editingModule}
-                        onSave={(moduleData) => {
-                            if (editingModule) {
-                                // Update existing module
-                                const updatedModules = modules.map(m =>
-                                    m.moduleId === editingModule.moduleId ? moduleData : m
-                                );
-                                setModules(updatedModules);
-                                setValue("curriculum", updatedModules);
-                            } else {
-                                // Add new module
-                                const newModules = [...modules, moduleData];
-                                setModules(newModules);
-                                setValue("curriculum", newModules);
-                            }
-                            setIsModuleDialogOpen(false);
-                            setEditingModule(null);
-                        }}
-                        onCancel={() => {
-                            setIsModuleDialogOpen(false);
-                            setEditingModule(null);
-                        }}
-                    />
-                )}
-
-                    {/* Settings */}
-                    <TabsContent value="settings">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Settings</CardTitle>
-                                <CardDescription>Course visibility and features</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="checkbox"
-                                        id="isPublished"
-                                        {...register("isPublished")}
-                                        className="rounded"
-                                    />
-                                    <Label htmlFor="isPublished">Publish Course</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="checkbox"
-                                        id="isFeatured"
-                                        {...register("isFeatured")}
-                                        className="rounded"
-                                    />
-                                    <Label htmlFor="isFeatured">Feature Course</Label>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
-
-                {/* Submit Button */}
-                <div className="flex justify-end gap-4">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => router.back()}
-                        disabled={isLoading}
-                    >
-                        Cancel
-                    </Button>
-                    <Button type="submit" disabled={isLoading}>
-                        <Save className="h-4 w-4 mr-2" />
-                        {isLoading ? "Saving..." : isNew ? "Create Course" : "Update Course"}
-                    </Button>
-                </div>
-            </form>
-        </div>
+      <div className="p-6 text-red-500">
+        Error loading course: {(error as any)?.data?.message || (error as any)?.message || 'Unknown error'}
+      </div>
     );
+  }
+
+  // Loading state for existing courses
+  if (!isNew && isFetching) {
+    return (
+      <div className="p-6 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+        <p className="mt-2">Loading course...</p>
+      </div>
+    );
+  }
+
+  // Course not found
+  if (!isNew && !course && !isFetching) {
+    return (
+      <div className="p-6 text-yellow-600">
+        Course not found. The course may have been deleted or you may not have permission to view it.
+      </div>
+    );
+  }
+
+  return (
+    <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">{isNew ? "Create Course" : "Edit Course"}</h1>
+          <p className="text-muted-foreground">Aligned with server course schema.</p>
+        </div>
+        {!isNew && courseId && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push(`/dashboard/admin/courses/${courseId}/content`)}
+          >
+            <Book className="h-4 w-4 mr-2" />
+            Manage Content
+          </Button>
+        )}
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Course Details</CardTitle>
+          <CardDescription>Required fields only</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Title">
+              <Input {...form.register("title")} placeholder="e.g. Introduction to Graphic Design" />
+            </Field>
+            <Field label="Category">
+              <Input {...form.register("category")} placeholder="e.g. Graphic Design" />
+            </Field>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Level">
+              <Select
+                value={form.watch("level")}
+                onValueChange={(v) => form.setValue("level", v as any, { shouldDirty: true, shouldValidate: true })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beginner">Beginner</SelectItem>
+                  <SelectItem value="intermediate">Intermediate</SelectItem>
+                  <SelectItem value="advanced">Advanced</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Duration Estimate">
+              <Input {...form.register("durationEstimate")} placeholder="e.g. 12 weeks" />
+            </Field>
+          </div>
+
+          <Field label="Short Description">
+            <Textarea {...form.register("shortDescription")} placeholder="Brief overview of the graphic design course (Max ~200 chars)" />
+          </Field>
+
+          <Field label="Full Description">
+            <Textarea {...form.register("fullDescription")} className="min-h-[140px]" placeholder="Detailed description of the graphic design course" />
+          </Field>
+
+          <Field label="Learning Outcomes (one per line)">
+            <Textarea
+              {...form.register("learningOutcomes")}
+              className="min-h-[120px]"
+              placeholder="e.g. Master Adobe Photoshop\nCreate stunning logos\nUnderstand color theory"
+            />
+          </Field>
+
+          <Field label="Prerequisites (one per line, optional)">
+            <Textarea
+              {...form.register("prerequisites")}
+              className="min-h-[100px]"
+              placeholder="e.g. Basic computer skills\nFamiliarity with design software"
+            />
+          </Field>
+
+          <Field label="Target Audience">
+            <Textarea {...form.register("targetAudience")} placeholder="e.g. Aspiring designers, marketers, freelancers" />
+          </Field>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Thumbnail Image (upload)">
+              <input type="hidden" {...form.register("thumbnailImage")} />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/jpg"
+                    ref={(el) => {
+                      fileInputRefs.current.thumbnailImage = el;
+                    }}
+                    onChange={(e) => handleFileChange("thumbnailImage", e)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={uploadingImage || uploadingField === "coverImage" || !selectedFiles.thumbnailImage}
+                    onClick={() => uploadImageForField("thumbnailImage")}
+                  >
+                    {uploadingField === "thumbnailImage" ? (
+                      <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Uploading</span>
+                    ) : (
+                      "Upload"
+                    )}
+                  </Button>
+                </div>
+                {thumbnailValue && (
+                  <p className="text-xs text-muted-foreground break-all">Saved URL: {thumbnailValue}</p>
+                )}
+                {previews.thumbnailImage && (
+                  <Image
+                    src={previews.thumbnailImage}
+                    alt="Thumbnail preview"
+                    width={512}
+                    height={288}
+                    className="h-32 w-full rounded border object-cover"
+                  />
+                )}
+                {errors.thumbnailImage && (
+                  <p className="text-sm text-red-500">{errors.thumbnailImage.message as string}</p>
+                )}
+              </div>
+            </Field>
+
+            <Field label="Cover Image (optional upload)">
+              <input type="hidden" {...form.register("coverImage")} />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/jpg"
+                    ref={(el) => {
+                      fileInputRefs.current.coverImage = el;
+                    }}
+                    onChange={(e) => handleFileChange("coverImage", e)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={uploadingImage || uploadingField === "thumbnailImage" || !selectedFiles.coverImage}
+                    onClick={() => uploadImageForField("coverImage")}
+                  >
+                    {uploadingField === "coverImage" ? (
+                      <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Uploading</span>
+                    ) : (
+                      "Upload"
+                    )}
+                  </Button>
+                </div>
+                {coverValue && (
+                  <p className="text-xs text-muted-foreground break-all">Saved URL: {coverValue}</p>
+                )}
+                {previews.coverImage && (
+                  <Image
+                    src={previews.coverImage}
+                    alt="Cover preview"
+                    width={512}
+                    height={288}
+                    className="h-32 w-full rounded border object-cover"
+                  />
+                )}
+                {errors.coverImage && (
+                  <p className="text-sm text-red-500">{errors.coverImage.message as string}</p>
+                )}
+              </div>
+            </Field>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <Field label="Price">
+              <Input type="number" step="0.01" {...form.register("price", { valueAsNumber: true })} />
+            </Field>
+            <Field label="Discount %">
+              <Input type="number" step="1" {...form.register("discountPercentage", { valueAsNumber: true })} />
+            </Field>
+            <Field label="Status">
+              <Select value={form.watch("status") as string}
+                onValueChange={(v) => form.setValue("status", v as any)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
+
+          <Field label="Tags (comma separated)">
+            <Input {...form.register("tags")} placeholder="photoshop, illustrator, design" />
+          </Field>
+
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={form.watch("featured")}
+              onCheckedChange={(checked) => form.setValue("featured", checked)}
+            />
+            <Label className="font-medium">Featured</Label>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-end">
+        <Button type="submit" disabled={saving || isFetching}>
+          {saving || isFetching ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+            </>
+          ) : (
+            "Save Course"
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function splitLines(value: string) {
+  return value
+    .split(/\r?\n|,/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function splitTags(value: string) {
+  return value
+    .split(/,|\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      {children}
+    </div>
+  );
 }

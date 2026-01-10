@@ -8,10 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, Phone, MapPin, Target, Briefcase, BookOpen, Trophy, Loader2 } from "lucide-react";
-import { useGetMeQuery, useUpdateUserProfileMutation } from "@/redux/features/auth/authApi";
-import { useGetProfileQuery, useUpdateProfileMutation as useUpdateProfileDataMutation, useAddInterestMutation, useRemoveInterestMutation } from "@/redux/features/profile/profileApi";
+import { useGetMeQuery, useUpdateProfileMutation } from "@/redux/api/authApi";
+import { useGetUserProfileQuery, useUpdateUserProfileMutation, useAddInterestMutation, useRemoveInterestMutation } from "@/redux/features/profile/profileApi";
 import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studentApi";
-import { useState } from "react";
+import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import * as React from "react";
 import Image from "next/image";
@@ -43,13 +44,15 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function StudentProfile() {
   const { data: userData, isLoading: userLoading, error: userError } = useGetMeQuery(undefined);
-  const { data: profileData, isLoading: profileLoading } = useGetProfileQuery(undefined);
+  const { data: profileData, isLoading: profileLoading } = useGetUserProfileQuery(undefined);
   const { data: dashboardData } = useGetStudentDashboardDataQuery(undefined);
-  const [updateUserProfile, { isLoading: isUpdatingUser }] = useUpdateUserProfileMutation();
-  const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileDataMutation();
+  const [updateUserProfile, { isLoading: isUpdatingUser }] = useUpdateProfileMutation();
+  const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateUserProfileMutation();
   const [addInterest] = useAddInterestMutation();
   const [removeInterest] = useRemoveInterestMutation();
+  const [uploadImage, { isLoading: uploadLoading }] = useUploadSingleImageMutation();
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isUpdating = isUpdatingUser || isUpdatingProfile;
 
   // React Hook Form setup
@@ -82,6 +85,62 @@ export default function StudentProfile() {
   } = form;
 
   const [newInterest, setNewInterest] = useState('');
+
+  // Handle photo upload
+  const handlePhotoClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file.");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Please select an image smaller than 5MB.");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const uploadResult = await uploadImage(formData).unwrap();
+      
+      await updateUserProfile({
+        profilePicture: uploadResult.data.url,
+      }).unwrap();
+
+      toast.success("Profile photo updated successfully.");
+      
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      let errorMessage = "Failed to upload photo. Please try again.";
+      
+      if (error && typeof error === 'object') {
+        if ('status' in error) {
+          const fetchError = error as { status: number; data?: any };
+          errorMessage = fetchError.data?.message || `Upload failed with status ${fetchError.status}`;
+        } else if ('data' in error) {
+          const apiError = error as { data?: { message?: string } };
+          errorMessage = apiError.data?.message || errorMessage;
+        } else if ('message' in error) {
+          const generalError = error as { message: string };
+          errorMessage = generalError.message;
+        }
+      }
+      
+      toast.error(errorMessage);
+    }
+  };
 
   // Update form data when user and profile data loads
   React.useEffect(() => {
@@ -203,7 +262,27 @@ export default function StudentProfile() {
             <h3 className="text-lg font-semibold">{user.name}</h3>
             <p className="text-sm text-muted-foreground">{user.email}</p>
           </div>
-          <Button variant="outline">Change Photo</Button>
+          <Button 
+            variant="outline" 
+            onClick={handlePhotoClick}
+            disabled={uploadLoading}
+          >
+            {uploadLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              "Change Photo"
+            )}
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoChange}
+          />
         </CardContent>
       </Card>
 

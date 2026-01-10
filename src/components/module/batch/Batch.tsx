@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState } from 'react';
@@ -19,17 +20,24 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { useCreateBatchMutation, useGetAllBatchesQuery, useUpdateBatchMutation } from '@/redux/features/batch/batchApi';
 import { useGetCoursesQuery } from '@/redux/features/course/courseApi';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function BatchDashboard() {
+    const [showForm, setShowForm] = useState(false);
+    const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
     const [title, setTitle] = useState('');
-    const [courseFee, setCourseFee] = useState('');
+    const [price, setPrice] = useState('');
     const [selectedCourse, setSelectedCourse] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [enrollmentStartDate, setEnrollmentStartDate] = useState('');
+    const [enrollmentEndDate, setEnrollmentEndDate] = useState('');
+    const [maxCapacity, setMaxCapacity] = useState('');
+    const [description, setDescription] = useState('');
     const { data: batches, isLoading, error } = useGetAllBatchesQuery(undefined);
     const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery({ isPublished: true });
     const [createBatch] = useCreateBatchMutation();
@@ -37,48 +45,118 @@ export default function BatchDashboard() {
 
     const courses = coursesData?.data || [];
 
-    const handleCreateBatch = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedCourse) {
             toast.error('Please select a course');
             return;
         }
+        
+        const batchData = {
+            title, 
+            price: Number(price), 
+            courseId: selectedCourse,
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+            enrollmentStartDate: new Date(enrollmentStartDate),
+            enrollmentEndDate: new Date(enrollmentEndDate),
+            maxCapacity: maxCapacity ? Number(maxCapacity) : undefined,
+            description: description || undefined,
+        };
+        
         try {
-            await createBatch({ title, courseFee: Number(courseFee), course: selectedCourse }).unwrap();
-            toast("Batch created successfully");
+            if (editingBatchId) {
+                await updateBatch({ id: editingBatchId, ...batchData }).unwrap();
+                toast.success("Batch updated successfully");
+                setEditingBatchId(null);
+                setShowForm(false);
+            } else {
+                await createBatch(batchData).unwrap();
+                toast.success("Batch created successfully");
+                setShowForm(false);
+            }
+            
+            // Reset form
             setTitle('');
-            setCourseFee('');
+            setPrice('');
             setSelectedCourse('');
+            setStartDate('');
+            setEndDate('');
+            setEnrollmentStartDate('');
+            setEnrollmentEndDate('');
+            setMaxCapacity('');
+            setDescription('');
         } catch (err) {
             console.log(err)
-            toast("Failed to create batch");
+            toast.error(editingBatchId ? "Failed to update batch" : "Failed to create batch");
         }
     };
 
-    const handleUpdateBatch = async (id: string, isCurrent: boolean) => {
-        try {
-            await updateBatch({ id, isCurrent }).unwrap();
-            toast("Batch updated successfully");
-        } catch (err) {
-            console.log(err)
-            toast("Failed to update batch");
-        }
+    const handleEdit = (batch: any) => {
+        setEditingBatchId(batch._id);
+        setTitle(batch.title);
+        setPrice(batch.price.toString());
+        setSelectedCourse(batch.courseId?._id || batch.courseId);
+        setStartDate(new Date(batch.startDate).toISOString().split('T')[0]);
+        setEndDate(new Date(batch.endDate).toISOString().split('T')[0]);
+        setEnrollmentStartDate(new Date(batch.enrollmentStartDate).toISOString().split('T')[0]);
+        setEnrollmentEndDate(new Date(batch.enrollmentEndDate).toISOString().split('T')[0]);
+        setMaxCapacity(batch.maxCapacity?.toString() || '');
+        setDescription(batch.description || '');
+        
+        // Show form and scroll to top
+        setShowForm(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-
-    console.log(batches)
+    
+    const handleCancelEdit = () => {
+        setEditingBatchId(null);
+        setTitle('');
+        setPrice('');
+        setSelectedCourse('');
+        setStartDate('');
+        setEndDate('');
+        setEnrollmentStartDate('');
+        setEnrollmentEndDate('');
+        setMaxCapacity('');
+        setDescription('');
+        setShowForm(false);
+    };
 
     return (
         <div className="space-y-6">
-            <Card className="mb-8">
+            {!showForm && (
+                <div className="flex justify-end">
+                    <Button onClick={() => setShowForm(true)} className="flex items-center gap-2">
+                        <Plus className="w-4 h-4" />
+                        Create New Batch
+                    </Button>
+                </div>
+            )}
+            
+            {showForm && (
+                <Card className="mb-8">
                 <CardHeader>
-                    <CardTitle>Create New Batch</CardTitle>
-                    <CardDescription>Add a new batch with title and course fee</CardDescription>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle>{editingBatchId ? 'Edit Batch' : 'Create New Batch'}</CardTitle>
+                            <CardDescription>
+                                {editingBatchId ? 'Update batch information' : 'Add a new batch with all required details'}
+                            </CardDescription>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => {
+                            setShowForm(false);
+                            handleCancelEdit();
+                        }}>
+                            <X className="w-4 h-4" />
+                        </Button>
+                    </div>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleCreateBatch} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <Label htmlFor="course">Select Course</Label>
-                            <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+                            <Label htmlFor="course">Select Course *</Label>
+                            <Select value={selectedCourse} onValueChange={setSelectedCourse} required>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Choose a course" />
                                 </SelectTrigger>
@@ -102,31 +180,110 @@ export default function BatchDashboard() {
                                 </SelectContent>
                             </Select>
                         </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="title">Batch Title *</Label>
+                                <Input
+                                    id="title"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    placeholder="e.g. Batch 6 - Winter 2026"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="price">Price (BDT) *</Label>
+                                <Input
+                                    id="price"
+                                    type="number"
+                                    value={price}
+                                    onChange={(e) => setPrice(e.target.value)}
+                                    placeholder="4000"
+                                    required
+                                />
+                            </div>
+                        </div>
+
                         <div>
-                            <Label htmlFor="title">Batch Title</Label>
+                            <Label htmlFor="description">Description</Label>
                             <Input
-                                id="title"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                placeholder="Enter batch title"
-                                required
+                                id="description"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="Brief description of this batch"
                             />
                         </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="startDate">Batch Start Date *</Label>
+                                <Input
+                                    id="startDate"
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="endDate">Batch End Date *</Label>
+                                <Input
+                                    id="endDate"
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="enrollmentStartDate">Enrollment Start *</Label>
+                                <Input
+                                    id="enrollmentStartDate"
+                                    type="date"
+                                    value={enrollmentStartDate}
+                                    onChange={(e) => setEnrollmentStartDate(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="enrollmentEndDate">Enrollment End *</Label>
+                                <Input
+                                    id="enrollmentEndDate"
+                                    type="date"
+                                    value={enrollmentEndDate}
+                                    onChange={(e) => setEnrollmentEndDate(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+
                         <div>
-                            <Label htmlFor="courseFee">Course Fee</Label>
+                            <Label htmlFor="maxCapacity">Max Capacity</Label>
                             <Input
-                                id="courseFee"
+                                id="maxCapacity"
                                 type="number"
-                                value={courseFee}
-                                onChange={(e) => setCourseFee(e.target.value)}
-                                placeholder="Enter course fee"
-                                required
+                                value={maxCapacity}
+                                onChange={(e) => setMaxCapacity(e.target.value)}
+                                placeholder="e.g. 30"
                             />
                         </div>
-                        <Button type="submit">Create Batch</Button>
+
+                        <div className="flex gap-2">
+                            <Button type="submit">{editingBatchId ? 'Update Batch' : 'Create Batch'}</Button>
+                            {editingBatchId && (
+                                <Button type="button" variant="outline" onClick={handleCancelEdit}>
+                                    Cancel
+                                </Button>
+                            )}
+                        </div>
                     </form>
                 </CardContent>
             </Card>
+            )}
 
             <Card>
                 <CardHeader>
@@ -144,30 +301,52 @@ export default function BatchDashboard() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead>Batch #</TableHead>
                                     <TableHead>Title</TableHead>
                                     <TableHead>Course</TableHead>
-                                    <TableHead>Course Fee</TableHead>
-                                    <TableHead>Current Batch</TableHead>
-                                    <TableHead>Action</TableHead>
+                                    <TableHead>Price</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Start Date</TableHead>
+                                    <TableHead>End Date</TableHead>
+                                    <TableHead>Enrollment</TableHead>
+                                    <TableHead>Capacity</TableHead>
+                                    <TableHead>Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {batches?.data && batches.data.length > 0 ? batches.data.map((batch: { _id: string, title: string, courseFee: number, isCurrent: boolean, course: { title: string } }) => (
+                                {batches?.data && batches.data.length > 0 ? batches.data.map((batch: any) => (
                                     <TableRow key={batch._id}>
+                                        <TableCell>#{batch.batchNumber}</TableCell>
                                         <TableCell>{batch.title}</TableCell>
-                                        <TableCell>{batch.course?.title || 'N/A'}</TableCell>
-                                        <TableCell>{batch.courseFee} (BDT)</TableCell>
-                                        <TableCell>{batch.isCurrent ? 'Yes' : 'No'}</TableCell>
+                                        <TableCell>{batch.courseId?.title || 'N/A'}</TableCell>
+                                        <TableCell>৳{batch.price}</TableCell>
                                         <TableCell>
-                                            <Switch
-                                                checked={batch.isCurrent}
-                                                onCheckedChange={() => handleUpdateBatch(batch._id, !batch.isCurrent)}
-                                            />
+                                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                                batch.status === 'running' ? 'bg-green-100 text-green-800' :
+                                                batch.status === 'upcoming' ? 'bg-blue-100 text-blue-800' :
+                                                batch.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                                                'bg-yellow-100 text-yellow-800'
+                                            }`}>
+                                                {batch.status}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell>{new Date(batch.startDate).toLocaleDateString()}</TableCell>
+                                        <TableCell>{new Date(batch.endDate).toLocaleDateString()}</TableCell>
+                                        <TableCell>{batch.currentEnrollment || 0}</TableCell>
+                                        <TableCell>{batch.maxCapacity || '∞'}</TableCell>
+                                        <TableCell>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => handleEdit(batch)}
+                                            >
+                                                Edit
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 )) : (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                        <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                                             No batches found
                                         </TableCell>
                                     </TableRow>

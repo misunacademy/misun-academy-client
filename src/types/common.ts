@@ -1,11 +1,73 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// Enums and Types from server
+// Enums and Types from server (matching server-side enums)
 export enum Role {
-    STUDENT = 'student',
+    LEARNER = 'learner',
     INSTRUCTOR = 'instructor',
     ADMIN = 'admin',
     SUPERADMIN = 'superadmin',
+}
+
+export enum UserStatus {
+    Active = 'active',
+    Suspended = 'suspended',
+    Deleted = 'deleted',
+}
+
+export enum EnrollmentStatus {
+    Pending = 'pending',
+    PaymentPending = 'payment-pending',
+    Active = 'active',
+    Completed = 'completed',
+    Suspended = 'suspended',
+    Refunded = 'refunded',
+    PaymentFailed = 'payment-failed',
+}
+
+export enum BatchStatus {
+    Draft = 'draft',
+    Upcoming = 'upcoming',
+    Running = 'running',
+    Completed = 'completed',
+}
+
+export enum CourseStatus {
+    Draft = 'draft',
+    Published = 'published',
+    Archived = 'archived',
+}
+
+export enum CourseLevel {
+    Beginner = 'beginner',
+    Intermediate = 'intermediate',
+    Advanced = 'advanced',
+}
+
+export enum LessonType {
+    Video = 'video',
+    Reading = 'reading',
+    Quiz = 'quiz',
+    Project = 'project',
+}
+
+export enum SubmissionStatus {
+    Submitted = 'submitted',
+    UnderReview = 'under-review',
+    RevisionRequested = 'revision-requested',
+    Approved = 'approved',
+    Rejected = 'rejected',
+}
+
+export enum CertificateStatus {
+    Active = 'active',
+    Revoked = 'revoked',
+}
+
+export enum ProgressStatus {
+    Locked = 'locked',
+    Unlocked = 'unlocked',
+    InProgress = 'in-progress',
+    Completed = 'completed',
 }
 
 export enum Status {
@@ -158,12 +220,12 @@ export interface IRecording {
 }
 
 // Course Types
-export type LessonType = 'video' | 'reading';
+// export type LessonType = 'video' | 'reading'; // Removed duplicate declaration
 
 export interface ILesson {
     lessonId: string;
     title: string;
-    type: LessonType;
+    type: 'video' | 'reading' | 'quiz' | 'project';
     duration?: number;
     isPreview?: boolean;
     content?: any;
@@ -365,7 +427,7 @@ export interface Course {
     students?: number;
     studentsCount?: number;
     price?: number;
-    status?: 'active' | 'draft' | 'archived';
+    status?: 'draft' | 'published' | 'archived';
     categoryDisplay?: string;
     schedule?: string;
 

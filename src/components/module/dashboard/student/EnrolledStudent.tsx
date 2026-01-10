@@ -54,10 +54,10 @@ interface Course {
 
 interface StudentData {
     _id: string;
-    student: Student;
+    student: Student | null;
     studentId: string;
-    batch: Batch;
-    course: Course; // Added course interface
+    batch: Batch | null;
+    course: Course | null;
     status: string;
     createdAt: string;
 }
@@ -82,32 +82,32 @@ const EnrolledStudentTable = () => {
             {
                 accessorKey: "studentId",
                 header: "Student ID",
-                cell: ({ row }) => row.original.studentId,
+                cell: ({ row }) => row.original.studentId || 'N/A',
             },
             {
                 accessorKey: "name",
                 header: "Name",
-                cell: ({ row }) => row.original.student.name,
+                cell: ({ row }) => row.original.student?.name || 'N/A',
             },
             {
                 accessorKey: "email",
                 header: "Email",
-                cell: ({ row }) => row.original.student.email,
+                cell: ({ row }) => row.original.student?.email || 'N/A',
             },
             {
                 accessorKey: "phone",
                 header: "Phone",
-                cell: ({ row }) => row.original.student.phone,
+                cell: ({ row }) => row.original.student?.phone || 'N/A',
             },
             {
                 accessorKey: "course",
                 header: "Course",
-                cell: ({ row }) => row.original.course.title,
+                cell: ({ row }) => row.original.course?.title || 'N/A',
             },
             {
                 accessorKey: "batch",
                 header: "Batch",
-                cell: ({ row }) => row.original.batch.title,
+                cell: ({ row }) => row.original.batch?.title || 'N/A',
             },
             {
                 accessorKey: "status",

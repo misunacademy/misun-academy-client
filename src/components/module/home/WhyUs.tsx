@@ -104,7 +104,7 @@ const WhyChooseSection = () => {
 
 
   const stats = [
-    { icon: Users, value: "৭০০+", label: "শিক্ষার্থী ভর্তি হয়েছেন" },
+    { icon: Users, value: "১৫০০+", label: "শিক্ষার্থী ভর্তি হয়েছেন" },
     { icon: Star, value: "৪.৯", label: "কোর্স রেটিং" },
     { icon: Clock, value: "৪ মাস", label: "মেয়াদ" }
   ];

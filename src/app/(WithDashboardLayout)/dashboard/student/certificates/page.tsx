@@ -8,7 +8,7 @@ import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studen
 import { Loader2 } from "lucide-react";
 
 export default function StudentCertificates() {
-  const { data: dashboardData, isLoading } = useGetStudentDashboardDataQuery();
+  const { data: dashboardData, isLoading } = useGetStudentDashboardDataQuery({});
 
   if (isLoading) {
     return (
