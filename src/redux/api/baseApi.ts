@@ -56,6 +56,10 @@ const baseQueryWithRefreshToken: BaseQueryFn<
         if (isSocialLogin) {
             console.warn('[baseApi] social login detected, dispatching logout without refresh');
             api.dispatch(logout());
+            if (typeof window !== 'undefined') {
+                toast.error('Your session has expired. Please login again.');
+                window.location.href = '/login';
+            }
             return result;
         }
 
@@ -64,6 +68,10 @@ const baseQueryWithRefreshToken: BaseQueryFn<
         if (!refreshToken) {
             console.warn('[baseApi] no refreshToken available, dispatching logout');
             api.dispatch(logout());
+            if (typeof window !== 'undefined') {
+                toast.error('Your session has expired. Please login again.');
+                window.location.href = '/login';
+            }
             return result;
         }
 
@@ -95,6 +103,10 @@ const baseQueryWithRefreshToken: BaseQueryFn<
         } else {
             console.warn('[baseApi] refresh failed, dispatching logout');
             api.dispatch(logout());
+            if (typeof window !== 'undefined') {
+                toast.error('Your session has expired. Please login again.');
+                window.location.href = '/login';
+            }
         }
     }
 

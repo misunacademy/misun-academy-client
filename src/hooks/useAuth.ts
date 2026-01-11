@@ -221,7 +221,12 @@ export function useAuth() {
     try {
       await authClient.signOut();
       Cookies.remove('token');
+      Cookies.remove('refreshToken');
       dispatch(logout());
+      // Redirect to login page after logout
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
       return { success: true };
     } catch (error: any) {
       return { success: false, error: error.message };
