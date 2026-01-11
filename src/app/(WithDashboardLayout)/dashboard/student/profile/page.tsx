@@ -192,10 +192,10 @@ export default function StudentProfile() {
 
   const onSubmit: SubmitHandler<ProfileFormData> = async (data) => {
     try {
-      // Save user basic info (name, email)
+      // Save user basic info (name, phoneNumber, profilePicture)
       await updateUserProfile({
         name: data.name,
-        email: data.email
+        phoneNumber: data.phone
       }).unwrap();
 
       // Filter out empty strings and undefined values for enum fields

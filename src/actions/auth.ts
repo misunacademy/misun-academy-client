@@ -29,8 +29,14 @@ export async function signInWithEmail(email: string, password: string) {
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        const errorMessage = error.errorMessages?.[0]?.message || error.message || 'Login failed';
+        let errorMessage = 'Login failed';
+        try {
+            const error = await response.json();
+            errorMessage = error.errorMessages?.[0]?.message || error.message || 'Login failed';
+        } catch (parseError) {
+            // If response is not JSON (e.g., HTML error page), use status text
+            errorMessage = `Login failed: ${response.status} ${response.statusText}`;
+        }
         throw new Error(errorMessage);
     }
 
@@ -51,8 +57,14 @@ export async function signUpWithEmail(name: string, email: string, password: str
     });
 
     if (!response.ok) {
-        const error = await response.json();
-        const errorMessage = error.errorMessages?.[0]?.message || error.message || 'Registration failed';
+        let errorMessage = 'Registration failed';
+        try {
+            const error = await response.json();
+            errorMessage = error.errorMessages?.[0]?.message || error.message || 'Registration failed';
+        } catch (parseError) {
+            // If response is not JSON (e.g., HTML error page), use status text
+            errorMessage = `Registration failed: ${response.status} ${response.statusText}`;
+        }
         throw new Error(errorMessage);
     }
 
