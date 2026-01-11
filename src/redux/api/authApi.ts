@@ -58,6 +58,7 @@ export interface UserResponse {
   emailVerified: boolean;
   phoneNumber?: string;
   profilePicture?: string;
+  image?: string; // Alternative field name used by server
   status: 'active' | 'suspended' | 'deleted';
   createdAt: string;
   updatedAt: string;

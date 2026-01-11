@@ -225,7 +225,7 @@ export function useAuth() {
       dispatch(logout());
       // Redirect to login page after logout
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        window.location.href = '/auth';
       }
       return { success: true };
     } catch (error: any) {

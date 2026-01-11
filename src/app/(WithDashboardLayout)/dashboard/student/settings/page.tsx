@@ -120,16 +120,26 @@ export default function StudentSettings() {
         newPassword,
       }).unwrap();
 
-      toast.success("Password changed successfully.");
+      toast.success("Password changed successfully. Please log in again with your new password.");
 
       // Clear form
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error) {
-      const errorMessage = error && typeof error === 'object' && 'data' in error 
-        ? (error.data as { message?: string })?.message 
-        : "Failed to change password.";
+      console.error("Password change error:", error);
+      let errorMessage = "Failed to change password.";
+      
+      if (error && typeof error === 'object') {
+        if ('data' in error) {
+          const apiError = error as { data?: { message?: string } };
+          errorMessage = apiError.data?.message || errorMessage;
+        } else if ('message' in error) {
+          const generalError = error as { message: string };
+          errorMessage = generalError.message;
+        }
+      }
+      
       toast.error(errorMessage);
     }
   };
