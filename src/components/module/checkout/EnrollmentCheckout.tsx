@@ -111,6 +111,14 @@ const EnrollmentCheckout = () => {
                 batchId: data.batchId,
             }).unwrap();
 
+            console.log('Payment response:', res);
+
+            if (!res?.data?.paymentUrl) {
+                toast.error("Failed to get payment URL. Please try again.");
+                setIsProcessing(false);
+                return;
+            }
+
             toast.success("Redirecting to SSLCommerz...", {
                 description: "You'll be redirected to complete your payment securely.",
             });
@@ -118,8 +126,9 @@ const EnrollmentCheckout = () => {
             setRedirectUrl(res.data.paymentUrl);
 
         } catch (error: unknown) {
+            console.error('Payment error:', error);
             const paymentError = error as PaymentError;
-            toast.error(paymentError?.data?.message || "Payment Error");
+            toast.error(paymentError?.data?.message || "Payment initiation failed. Please try again.");
             setIsProcessing(false);
         }
     };

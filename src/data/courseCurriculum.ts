@@ -48,14 +48,14 @@ export const courseCurriculum = {
           "type": "practical",
           "duration": "2 hours"
         },
+        // {
+        //   "id": 8,
+        //   "title": "Shape Creation and Custom Shape Creation",
+        //   "type": "practical",
+        //   "duration": "2.5 hours"
+        // },
         {
           "id": 8,
-          "title": "Shape Creation and Custom Shape Creation",
-          "type": "practical",
-          "duration": "2.5 hours"
-        },
-        {
-          "id": 9,
           "title": "Basic to Advance Animation in Photoshop (Cartoon, Google Ad)",
           "type": "practical",
           "duration": "4 hours"
@@ -83,7 +83,7 @@ export const courseCurriculum = {
           "duration": "3 hours"
         },
         {
-          "title": "Image Manipulation Masterclass",
+          "title": "Advance Image Manipulation Masterclass",
           "duration": "4 hours"
         },
         {

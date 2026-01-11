@@ -6,7 +6,7 @@ export const photoshopModules = [
     { title: "Advance Gradient and perfect background Selection", duration: "2.5 hours", type: "practical" },
     { title: "Pen tool special class", duration: "3 hours", type: "practical" },
     { title: "Typography Special Class", duration: "2 hours", type: "practical" },
-    { title: "Shape Creation and Custom shape creation", duration: "2.5 hours", type: "practical" },
+    // { title: "Shape Creation and Custom shape creation", duration: "2.5 hours", type: "practical" },
     { title: "Basic to Advance Animation In Photoshop (Cartoon, google Add)", duration: "4 hours", type: "practical" }
 ];
 
@@ -16,7 +16,7 @@ export const photoshopProjects = [
     { title: "Youtube Thumbnail Design Masterclass", duration: "3 hours" },
     { title: "Facebook Cover Design Special Class", duration: "2 hours" },
     { title: "Natok Thumbnail Design Special Class", duration: "3 hours" },
-    { title: "Image Manipulation Masterclass", duration: "4 hours" },
+    { title: "Advance Image Manipulation Masterclass", duration: "4 hours" },
     { title: "Advance Image Editing with Advanced Glowing Effect Special Class", duration: "3 hours" },
     { title: "Product Manipulation Special Class", duration: "3 hours" },
     { title: "Use AI In Your Design (AI Implementation Masterclass)", duration: "2 hours" },
