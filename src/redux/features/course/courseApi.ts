@@ -28,13 +28,13 @@ const courseApi = baseApi.injectEndpoints({
                 url: `/courses/slug/${slug}`,
                 method: "GET",
             }),
-            transformResponse: (result: { data: Course }) => {
-                const course = result?.data;
+            transformResponse: (result: any) => {
+                const course = (result as any)?.data as Course;
                 if (course && course.status) {
                     return {
                         ...course,
                         isPublished: course.status === 'published',
-                    };
+                    } as Course;
                 }
                 return course;
             },
@@ -45,13 +45,13 @@ const courseApi = baseApi.injectEndpoints({
                 url: `/courses/${id}`,
                 method: "GET",
             }),
-            transformResponse: (result: { data: Course }) => {
-                const course = result?.data;
+            transformResponse: (result: any) => {
+                const course = (result as any)?.data as Course;
                 if (course && course.status) {
                     return {
                         ...course,
                         isPublished: course.status === 'published',
-                    };
+                    } as Course;
                 }
                 return course;
             },

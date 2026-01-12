@@ -12,6 +12,7 @@ import { useGetCoursesQuery } from "@/redux/features/course/courseApi";
 import { useGetAllBatchesQuery } from "@/redux/features/batch/batchApi";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import clsx from "clsx";
 
 interface Course {
   _id: string;
@@ -68,7 +69,8 @@ export default function BrowseCoursesPage() {
 
   const courses: Course[] = coursesData?.data || [];
   const batches: Batch[] = batchesData?.data || [];
-
+  console.log("courses", courses);
+  console.log("batches", batches);
   // Filter published courses
   const publishedCourses = courses.filter((course) =>
     course.status === 'published'
@@ -83,7 +85,7 @@ export default function BrowseCoursesPage() {
   // Get active batches for a course
   const getActiveBatches = (courseId: string) => {
     return batches.filter((batch) =>
-      batch.courseId === courseId && (batch.status === 'running' || batch.status === 'upcoming')
+      (batch.courseId as any)?._id === courseId && (batch.status === 'running' || batch.status === 'upcoming')
     );
   };
 
@@ -92,6 +94,21 @@ export default function BrowseCoursesPage() {
     const activeBatches = getActiveBatches(courseId);
     if (activeBatches.length === 0) return null;
     return Math.min(...activeBatches.map(b => b.price));
+  };
+
+  // Calculate discounted price
+  const getDiscountedPrice = (price: number, discountPercentage?: number) => {
+    if (!discountPercentage || discountPercentage === 0) return price;
+    return price - (price * discountPercentage / 100);
+  };
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('bn-BD', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   if (isLoading) {
@@ -134,7 +151,7 @@ export default function BrowseCoursesPage() {
             const activeBatches = getActiveBatches(course._id);
             const hasActiveBatches = activeBatches.length > 0;
             const cheapestPrice = getCheapestPrice(course._id);
-
+            console.log(activeBatches);
             return (
               <Card key={course._id} className="overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
                 {/* Thumbnail */}
@@ -150,7 +167,14 @@ export default function BrowseCoursesPage() {
                     {/* Price Badge Overlay */}
                     {cheapestPrice && (
                       <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1.5 rounded-full font-bold text-sm shadow-lg">
-                        ৳{cheapestPrice}
+                        ৳{cheapestPrice.toLocaleString('bn-BD')}
+                      </div>
+                    )}
+                    {/* Featured Badge */}
+                    {course.featured && (
+                      <div className="absolute top-3 left-3 bg-amber-500 text-white px-2.5 py-1 rounded-full font-medium text-xs shadow-lg flex items-center gap-1">
+                        <Award className="h-3 w-3" />
+                        ফিচারড
                       </div>
                     )}
                   </div>
@@ -175,8 +199,8 @@ export default function BrowseCoursesPage() {
                     {course.level && (
                       <Badge variant="outline" className="gap-1">
                         <TrendingUp className="h-3 w-3" />
-                        {course.level === 'beginner' ? 'শিক্ষানবিস' : 
-                         course.level === 'intermediate' ? 'মধ্যম' : 'উন্নত'}
+                        {course.level === 'beginner' ? 'শিক্ষানবিস' :
+                          course.level === 'intermediate' ? 'মধ্যম' : 'উন্নত'}
                       </Badge>
                     )}
                     {course.category && (
@@ -187,7 +211,7 @@ export default function BrowseCoursesPage() {
                     )}
                   </div>
 
-                  <CardDescription className="line-clamp-2 min-h-[40px]">
+                  <CardDescription className="line-clamp-2">
                     {course.shortDescription || "বিস্তারিত বিবরণ শীঘ্রই যোগ করা হবে"}
                   </CardDescription>
                 </CardHeader>
@@ -197,48 +221,92 @@ export default function BrowseCoursesPage() {
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Users className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">{activeBatches.length} ব্যাচ</span>
+                      <span className="truncate">
+                        {activeBatches.length > 0
+                          ? `ব্যাচ ${activeBatches[0].batchNumber}${activeBatches.length > 1 ? ` +${activeBatches.length - 1}` : ''}`
+                          : 'কোন ব্যাচ নেই'}
+                      </span>
                     </div>
                     {course.durationEstimate && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">{course.durationEstimate} week</span>
-                      </div>
-                    )}
-                    {course.category && (
-                      <div className="flex items-center gap-2 text-muted-foreground col-span-2">
-                        <BookOpen className="h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">{course.category}</span>
+                        <span className="truncate">{course.durationEstimate}</span>
                       </div>
                     )}
                   </div>
+
+                  {/* Tags */}
+                  {course.tags && course.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {course.tags.slice(0, 3).map((tag, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                      {course.tags.length > 3 && (
+                        <Badge variant="secondary" className="text-xs">
+                          +{course.tags.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
 
                   {/* Available Batches Preview */}
                   {hasActiveBatches && (
                     <div className="space-y-2 flex-1">
                       <p className="text-xs font-medium text-muted-foreground">উপলব্ধ ব্যাচসমূহ:</p>
-                      {activeBatches.slice(0, 2).map((batch) => (
-                        <div
-                          key={batch._id}
-                          className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg text-xs border border-border/50"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{batch.title}</p>
-                            <p className="text-muted-foreground flex items-center gap-1 mt-0.5">
-                              <span className="truncate">Batch #{batch.batchNumber}</span>
-                              <span>•</span>
-                              <span className="flex items-center gap-0.5">
-                                <Users className="h-3 w-3" />
-                                {batch.currentEnrollment || 0}{batch.maxCapacity ? `/${batch.maxCapacity}` : ''}
-                              </span>
-                            </p>
+                      {activeBatches?.slice(0, 2)?.map((batch) => {
+                        const discountedPrice = course.discountPercentage
+                          ? getDiscountedPrice(batch.price, course.discountPercentage)
+                          : batch.price;
+                        const hasDiscount = course.discountPercentage && course.discountPercentage > 0;
+
+                        return (
+                          <div
+                            key={batch._id}
+                            className="flex flex-col gap-2 p-2.5 bg-muted/50 rounded-lg text-xs border border-border/50"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{batch.title}</p>
+                                <p className="text-muted-foreground flex items-center gap-1 mt-0.5">
+                                  <span className="truncate">Batch {batch.batchNumber}</span>
+                                  <span>•</span>
+                                  <span className="flex items-center gap-0.5">
+                                    <Users className="h-3 w-3" />
+                                    {batch.currentEnrollment || 0}{batch.maxCapacity ? `/${batch.maxCapacity}` : ''}
+                                  </span>
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-end gap-0.5 ml-2 flex-shrink-0">
+                                {hasDiscount && (
+                                  <span className="text-[10px] text-muted-foreground line-through">
+                                    ৳{batch.price.toLocaleString('bn-BD')}
+                                  </span>
+                                )}
+                                <div className="flex items-center gap-0.5 font-bold text-primary">
+                                  <DollarSign className="h-3.5 w-3.5" />
+                                  {discountedPrice.toLocaleString('bn-BD')}
+                                </div>
+                                {hasDiscount && (
+                                  <Badge variant="destructive" className="text-[10px] px-1 py-0">
+                                    -{course.discountPercentage}%
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/30">
+                              <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                <span>শুরু: {formatDate(batch.startDate)}</span>
+                              </div>
+                              <div className="text-[10px] text-muted-foreground">
+                                এনরোল: {formatDate(batch.enrollmentEndDate)} পর্যন্ত
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-0.5 font-bold text-primary ml-2 flex-shrink-0">
-                            <DollarSign className="h-3.5 w-3.5" />
-                            {batch.price}
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                       {activeBatches.length > 2 && (
                         <p className="text-xs text-center text-muted-foreground py-1">
                           আরও {activeBatches.length - 2} টি ব্যাচ উপলব্ধ

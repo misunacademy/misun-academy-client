@@ -32,7 +32,7 @@ export default function LoginPage() {
     try {
       const response = await adminLogin(formData).unwrap();
       console.log(response)
-      dispatch(setUser(response.user));
+      dispatch(setUser(response.data.user));
       Cookies.set('token', response.data.token, { expires: 7 });
       // Redirect to dashboard or home page
       window.location.href = '/dashboard';

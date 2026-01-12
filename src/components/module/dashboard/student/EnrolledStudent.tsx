@@ -1,10 +1,9 @@
 'use client';
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
     flexRender,
     getCoreRowModel,
     getSortedRowModel,
-    getFilteredRowModel,
     getPaginationRowModel,
     useReactTable,
     ColumnDef,
@@ -65,18 +64,30 @@ interface StudentData {
 const EnrolledStudentTable = () => {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
+
+    // Debounce search to avoid too many API calls
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(1); // Reset to first page when searching
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [search]);
 
     // RTK Query params for fetching students
     const { data, isLoading, isError } = useGetEnrolledStudentsQuery({
         page,
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined,
     });
 
     const students = data?.data || [];
     const meta = data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
-
+console.log("students",students);
+console.log("meta",meta);
     const columns = useMemo<ColumnDef<StudentData>[]>(
         () => [
             {
@@ -132,15 +143,12 @@ const EnrolledStudentTable = () => {
         columns,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         state: {
-            globalFilter: search,
             pagination: { pageIndex: page - 1, pageSize: meta.limit },
         },
-        // onSortingChange: setSorting,
-        onGlobalFilterChange: setSearch,
         manualPagination: true,
+        manualFiltering: true,
         pageCount: meta.totalPages,
     });
 
@@ -170,12 +178,18 @@ const EnrolledStudentTable = () => {
                 <CardContent>
                     <div className="flex justify-between mb-4">
                         <Input
-                            placeholder="Search students..."
+                            placeholder="Search by ID, email or phone..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="max-w-sm"
                         />
-                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <Select 
+                            value={statusFilter} 
+                            onValueChange={(value) => {
+                                setStatusFilter(value);
+                                setPage(1); // Reset to first page when filter changes
+                            }}
+                        >
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder="Filter by status" />
                             </SelectTrigger>

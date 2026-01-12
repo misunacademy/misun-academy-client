@@ -8,7 +8,9 @@ const studentsApi = baseApi.injectEndpoints({
                 method: "GET",
                 params,
             }),
-            providesTags: ["Students"],
+            providesTags: (result, error, arg) => [
+                { type: "Students", id: `LIST-${arg.search}-${arg.status}-${arg.page}` }
+            ],
         }),
         getPaymentHistory: builder.query({
             query: (params) => ({
