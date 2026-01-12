@@ -49,6 +49,7 @@ const uploadApi = baseApi.injectEndpoints({
         method: "POST",
         body: formData,
         // Don't set Content-Type header - browser will set it with boundary
+        timeout: 30000, // 30 second timeout
       }),
       invalidatesTags: ["Uploads"],
     }),
@@ -59,6 +60,7 @@ const uploadApi = baseApi.injectEndpoints({
         url: "/upload/multiple",
         method: "POST",
         body: formData,
+        timeout: 60000, // 60 second timeout for multiple files
       }),
       invalidatesTags: ["Uploads"],
     }),
@@ -69,6 +71,7 @@ const uploadApi = baseApi.injectEndpoints({
         url: "/upload/with-data",
         method: "POST",
         body: formData,
+        timeout: 30000,
       }),
       invalidatesTags: ["Uploads"],
     }),

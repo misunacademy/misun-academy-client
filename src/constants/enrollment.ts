@@ -27,8 +27,11 @@ export const enrollmentData = {
 export const courseInfo = {
     title: "Complete Graphics Design With Freelancing (Batch-05)",
     subtitle: "From Beginner to Professional Designer",
+    shortDescription: "Master Adobe Photoshop and Illustrator with hands-on projects and real-world examples. Learn professional design techniques and start your freelancing career.",
+    thumbnailImage: "/images/course-thumbnail.jpg", // Add a default thumbnail path
     price: 4000,
     duration: "4 months",
+    durationEstimate: "4", // Add duration estimate as string
     instructor: "Mithun Sarkar",
     features: [
         "50+ hours of premium design tutorials",

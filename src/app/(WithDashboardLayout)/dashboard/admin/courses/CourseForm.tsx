@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "@/redux/features/course/courseApi";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { toast } from "sonner";
-import { Loader2, Book } from "lucide-react";
+import { Loader2, Book, Plus, X } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -40,6 +40,9 @@ const formSchema = z.object({
     .min(0, "Min 0")
     .max(100, "Max 100")
     .optional(),
+  instructor: z.string().optional(),
+  features: z.array(z.string()).optional().default([]),
+  highlights: z.array(z.string()).optional().default([]),
 });
 
 export type CourseFormValues = z.infer<typeof formSchema>;
@@ -51,6 +54,54 @@ interface CourseFormProps {
   isNew?: boolean;
 }
 
+interface ArrayFieldProps {
+  label: string;
+  items: string[];
+  onAdd: () => void;
+  onRemove: (index: number) => void;
+  onUpdate: (index: number, value: string) => void;
+  placeholder?: string;
+}
+
+function ArrayField({ label, items, onAdd, onRemove, onUpdate, placeholder }: ArrayFieldProps) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <div className="space-y-2">
+        {items.map((item, index) => (
+          <div key={index} className="flex items-center gap-2">
+            <Input
+              value={item}
+              onChange={(e) => onUpdate(index, e.target.value)}
+              placeholder={placeholder}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onRemove(index)}
+              className="text-red-600 hover:text-red-700"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        ))}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onAdd}
+          className="w-full"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add {label.toLowerCase().replace(/s$/, '')}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function CourseForm({ courseId, isNew = false }: CourseFormProps) {
   const router = useRouter();
   const { data: course, isFetching, error } = useGetCourseByIdQuery(courseId!, { skip: !courseId });
@@ -60,6 +111,8 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
   const [selectedFiles, setSelectedFiles] = useState<Partial<Record<ImageField, File>>>({});
   const [previews, setPreviews] = useState<Partial<Record<ImageField, string>>>({});
   const [uploadingField, setUploadingField] = useState<ImageField | null>(null);
+  const [features, setFeatures] = useState<string[]>([]);
+  const [highlights, setHighlights] = useState<string[]>([]);
   const fileInputRefs = useRef<Partial<Record<ImageField, HTMLInputElement | null>>>({});
 
   const form = useForm<CourseFormValues>({
@@ -81,6 +134,9 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
       status: "draft",
       price: 0,
       discountPercentage: 0,
+      instructor: "",
+      features: [],
+      highlights: [],
     },
   });
 
@@ -113,6 +169,9 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
         status: (course as any).status || "draft",
         price: (course as any).price ?? 0,
         discountPercentage: (course as any).discountPercentage ?? 0,
+        instructor: (course as any).instructor || "",
+        features: (course as any).features || [],
+        highlights: (course as any).highlights || [],
       };
 
       form.reset(formData);
@@ -130,6 +189,9 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
         thumbnailImage: (course as any).thumbnailImage || undefined,
         coverImage: (course as any).coverImage || undefined,
       });
+
+      setFeatures((course as any).features || []);
+      setHighlights((course as any).highlights || []);
     }
   }, [course, form]);
 
@@ -207,6 +269,9 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
       status: values.status ?? "draft",
       price: Number(values.price) || 0,
       discountPercentage: values.discountPercentage ?? 0,
+      instructor: values.instructor?.trim() || undefined,
+      features: features,
+      highlights: highlights,
     };
 
     try {
@@ -304,7 +369,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
               </Select>
             </Field>
             <Field label="Duration Estimate">
-              <Input {...form.register("durationEstimate")} placeholder="e.g. 12 weeks" />
+              <Input {...form.register("durationEstimate")} placeholder="e.g. 4 months" />
             </Field>
           </div>
 
@@ -335,6 +400,36 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
           <Field label="Target Audience">
             <Textarea {...form.register("targetAudience")} placeholder="e.g. Aspiring designers, marketers, freelancers" />
           </Field>
+
+          <Field label="Instructor (optional)">
+            <Input {...form.register("instructor")} placeholder="e.g. Mithun Sarkar" />
+          </Field>
+
+          <ArrayField
+            label="Features"
+            items={features}
+            onAdd={() => setFeatures([...features, ""])}
+            onRemove={(index) => setFeatures(features.filter((_, i) => i !== index))}
+            onUpdate={(index, value) => {
+              const newFeatures = [...features];
+              newFeatures[index] = value;
+              setFeatures(newFeatures);
+            }}
+            placeholder="e.g. 50+ hours of premium design tutorials"
+          />
+
+          <ArrayField
+            label="Highlights"
+            items={highlights}
+            onAdd={() => setHighlights([...highlights, ""])}
+            onRemove={(index) => setHighlights(highlights.filter((_, i) => i !== index))}
+            onUpdate={(index, value) => {
+              const newHighlights = [...highlights];
+              newHighlights[index] = value;
+              setHighlights(newHighlights);
+            }}
+            placeholder="e.g. Adobe Photoshop"
+          />
 
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Thumbnail Image (upload)">

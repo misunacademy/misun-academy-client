@@ -31,6 +31,7 @@ export default function BatchDashboard() {
     const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
     const [title, setTitle] = useState('');
     const [price, setPrice] = useState('');
+    const [status, setStatus] = useState('draft');
     const [selectedCourse, setSelectedCourse] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -39,11 +40,21 @@ export default function BatchDashboard() {
     const [maxCapacity, setMaxCapacity] = useState('');
     const [description, setDescription] = useState('');
     const { data: batches, isLoading, error } = useGetAllBatchesQuery(undefined);
-    const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery({ isPublished: true });
+    const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery({ status: "published" });
     const [createBatch] = useCreateBatchMutation();
     const [updateBatch] = useUpdateBatchMutation();
 
     const courses = coursesData?.data || [];
+
+    const handleStatusChange = async (batchId: string, newStatus: string) => {
+        try {
+            await updateBatch({ id: batchId, status: newStatus }).unwrap();
+            toast.success(`Batch status updated to ${newStatus}`);
+        } catch (error) {
+            toast.error('Failed to update batch status');
+            console.error('Status update error:', error);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -55,6 +66,7 @@ export default function BatchDashboard() {
         const batchData = {
             title, 
             price: Number(price), 
+            status,
             courseId: selectedCourse,
             startDate: new Date(startDate),
             endDate: new Date(endDate),
@@ -79,6 +91,7 @@ export default function BatchDashboard() {
             // Reset form
             setTitle('');
             setPrice('');
+            setStatus('draft');
             setSelectedCourse('');
             setStartDate('');
             setEndDate('');
@@ -96,6 +109,7 @@ export default function BatchDashboard() {
         setEditingBatchId(batch._id);
         setTitle(batch.title);
         setPrice(batch.price.toString());
+        setStatus(batch.status || 'draft');
         setSelectedCourse(batch.courseId?._id || batch.courseId);
         setStartDate(new Date(batch.startDate).toISOString().split('T')[0]);
         setEndDate(new Date(batch.endDate).toISOString().split('T')[0]);
@@ -113,6 +127,7 @@ export default function BatchDashboard() {
         setEditingBatchId(null);
         setTitle('');
         setPrice('');
+        setStatus('draft');
         setSelectedCourse('');
         setStartDate('');
         setEndDate('');
@@ -181,7 +196,7 @@ export default function BatchDashboard() {
                             </Select>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <Label htmlFor="title">Batch Title *</Label>
                                 <Input
@@ -202,6 +217,20 @@ export default function BatchDashboard() {
                                     placeholder="4000"
                                     required
                                 />
+                            </div>
+                            <div>
+                                <Label htmlFor="status">Status</Label>
+                                <Select value={status} onValueChange={setStatus}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="draft">Draft</SelectItem>
+                                        <SelectItem value="upcoming">Upcoming</SelectItem>
+                                        <SelectItem value="running">Running</SelectItem>
+                                        <SelectItem value="completed">Completed</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
 
@@ -335,13 +364,29 @@ export default function BatchDashboard() {
                                         <TableCell>{batch.currentEnrollment || 0}</TableCell>
                                         <TableCell>{batch.maxCapacity || '∞'}</TableCell>
                                         <TableCell>
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm"
-                                                onClick={() => handleEdit(batch)}
-                                            >
-                                                Edit
-                                            </Button>
+                                            <div className="flex items-center gap-2">
+                                                <Select 
+                                                    value={batch.status} 
+                                                    onValueChange={(newStatus) => handleStatusChange(batch._id, newStatus)}
+                                                >
+                                                    <SelectTrigger className="w-24 h-8">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="draft">Draft</SelectItem>
+                                                        <SelectItem value="upcoming">Upcoming</SelectItem>
+                                                        <SelectItem value="running">Running</SelectItem>
+                                                        <SelectItem value="completed">Completed</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm"
+                                                    onClick={() => handleEdit(batch)}
+                                                >
+                                                    Edit
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 )) : (

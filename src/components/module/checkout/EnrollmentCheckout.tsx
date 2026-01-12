@@ -79,19 +79,24 @@ const EnrollmentCheckout = () => {
         const enrollmentStart = batch.enrollmentStartDate ? new Date(batch.enrollmentStartDate) : null;
         const enrollmentEnd = batch.enrollmentEndDate ? new Date(batch.enrollmentEndDate) : null;
 
-        // Check if batch is currently open for enrollment
+        // Check if batch is currently open for enrollment OR will be open soon
         const isEnrollmentOpen = enrollmentStart && enrollmentEnd &&
-            now >= enrollmentStart && now <= enrollmentEnd;
+            now <= enrollmentEnd; // Allow batches where enrollment hasn't ended yet
 
         // Check if batch has capacity (if maxCapacity is set)
         const hasCapacity = !batch.maxCapacity ||
             (batch.currentEnrollment < batch.maxCapacity);
 
-        // Batch must have Published/Running status and be within enrollment period
+        // Batch must have upcoming/running status and be within enrollment period
         return isEnrollmentOpen && hasCapacity &&
             (batch.status === 'upcoming' || batch.status === 'running');
     });
 
+    // Get selected batch based on form value
+    const selectedBatch = batches.find((batch: any) => String(batch._id) === form.watch('batchId')) || null;
+    const selectedCourse = selectedBatch?.courseId; // Course info is static for now
+console.log("batches",batches);
+console.log("selectedBatch",selectedBatch);
     // Auto-select first batch if available and none selected
     useEffect(() => {
         if (batches.length > 0 && !form.getValues('batchId')) {
@@ -99,10 +104,29 @@ const EnrollmentCheckout = () => {
         }
     }, [batches, form]);
 
-    // Get selected batch details
-    const selectedBatchId = form.watch('batchId');
-    const selectedBatch = batches.find((batch: any) => String(batch._id) === selectedBatchId);
-    const selectedCourse = selectedBatch?.courseId;
+    // Get enrollment status for selected batch
+    const getEnrollmentStatus = (batch: any) => {
+        if (!batch) return null;
+
+        const now = new Date();
+        const enrollmentStart = batch.enrollmentStartDate ? new Date(batch.enrollmentStartDate) : null;
+        const enrollmentEnd = batch.enrollmentEndDate ? new Date(batch.enrollmentEndDate) : null;
+
+        if (!enrollmentStart || !enrollmentEnd) return { canEnroll: false, message: 'Enrollment dates not set' };
+
+        if (now >= enrollmentStart && now <= enrollmentEnd) {
+            return { canEnroll: true, message: 'Enrollment is open' };
+        } else if (now < enrollmentStart) {
+            return {
+                canEnroll: false,
+                message: `Enrollment opens on ${enrollmentStart.toLocaleDateString()}`
+            };
+        } else {
+            return { canEnroll: false, message: 'Enrollment has closed' };
+        }
+    };
+
+    const enrollmentStatus = selectedBatch ? getEnrollmentStatus(selectedBatch) : null;
 
     const processSSLCommerzPayment = async (data: EnrollmentForm) => {
         setIsProcessing(true);
@@ -271,7 +295,7 @@ const EnrollmentCheckout = () => {
                                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                             <div className="flex items-center gap-1">
                                                 <Clock className="w-4 h-4" />
-                                                <span>{selectedCourse.durationEstimate || '4'} Months</span>
+                                                <span>{selectedCourse.durationEstimate || '0'} Months</span>
                                             </div>
                                         </div>
                                     </>
@@ -300,6 +324,15 @@ const EnrollmentCheckout = () => {
                                                         <strong>Enrollment Ends:</strong> {new Date(selectedBatch.enrollmentEndDate).toLocaleDateString()}
                                                     </p>
                                                 )}
+                                                {enrollmentStatus && (
+                                                    <div className={`text-xs px-2 py-1 rounded-full inline-block ${
+                                                        enrollmentStatus.canEnroll
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-yellow-100 text-yellow-800'
+                                                    }`}>
+                                                        {enrollmentStatus.message}
+                                                    </div>
+                                                )}
                                                 {selectedBatch.maxCapacity && (
                                                     <div className="flex items-center gap-2">
                                                         <div className="flex-1 bg-background rounded-full h-2 overflow-hidden">
@@ -323,12 +356,19 @@ const EnrollmentCheckout = () => {
                                         <div>
                                             <h4 className="font-semibold mb-3">What you&apos;ll learn:</h4>
                                             <div className="grid gap-2  grid-cols-1 sm:grid-cols-2">
-                                                <div className="flex-1 text-center items-start gap-2 bg-accent/30 rounded-md  bg-black text-white">
+                                                {
+                                                    selectedCourse.highlights && selectedCourse.highlights.map((highlight: string, index: number) => (
+                                                        <div key={index} className="flex-1 text-center items-start gap-2 bg-accent/30 rounded-md  bg-black text-white">
+                                                            <span className="text-xs">{highlight}</span>
+                                                        </div>
+                                                    ))
+                                                }
+                                                {/* <div className="flex-1 text-center items-start gap-2 bg-accent/30 rounded-md  bg-black text-white">
                                                     <span className="text-xs">Adobe Photoshop</span>
                                                 </div>
                                                 <div className="flex-1 text-center items-start gap-2 bg-accent/30 rounded-md  bg-black text-white">
                                                     <span className="text-xs">Adobe Illustrator</span>
-                                                </div>
+                                                </div> */}
                                             </div>
                                         </div>
 
@@ -337,7 +377,15 @@ const EnrollmentCheckout = () => {
                                         <div>
                                             <h4 className="font-semibold mb-2">Course includes:</h4>
                                             <ul className="space-y-1 text-sm">
-                                                <li className="flex items-center gap-2">
+                                                {
+                                                    selectedCourse.features && selectedCourse.features.map((feature: string, index: number) => (
+                                                        <li key={index} className="flex items-center gap-2">
+                                                            <CheckCircle className="w-4 h-4 text-success" />
+                                                            <span>{feature}</span>
+                                                        </li>
+                                                    ))
+                                                }
+                                                {/* <li className="flex items-center gap-2">
                                                     <CheckCircle className="w-4 h-4 text-success" />
                                                     <span>50+ hours of premium design tutorials</span>
                                                 </li>
@@ -360,7 +408,7 @@ const EnrollmentCheckout = () => {
                                                 <li className="flex items-center gap-2">
                                                     <CheckCircle className="w-4 h-4 text-success" />
                                                     <span>Job placement assistance</span>
-                                                </li>
+                                                </li> */}
                                             </ul>
                                         </div>
                                     </div>
@@ -563,17 +611,17 @@ const EnrollmentCheckout = () => {
                                                                         {/* Payment Gateway Icons */}
                                                                         <div className=" items-center gap-2 pt-2 border-t">
                                                                             <span className="text-xs text-muted-foreground">Accepted:</span>
-                                                                            <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-2 flex-wrap">
-                                                                                <Image src={one} alt="" className="object-contain border" />
-                                                                                <Image src={two} alt="Nagad" className="object-contain border" />
-                                                                                <Image src={three} alt="Rocket" className="object-contain border" />
-                                                                                <Image src={four} alt="Bank" className="object-contain border" />
-                                                                                <Image src={six} alt="Cards" className="object-contain border" />
-                                                                                <Image src={seven} alt="Cards" className="object-contain border" />
-                                                                                <Image src={eight} alt="Cards" className="object-contain border" />
-                                                                                <Image src={nine} alt="Cards" className="object-contain border" />
-                                                                                <Image src={ten} alt="Cards" className="object-contain border" />
-                                                                                <Image src={five} alt="Cards" className="object-contain border" />
+                                                                            <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-2 flex-wrap">
+                                                                                <Image src={one} alt="payment gateway" className="object-contain border" />
+                                                                                <Image src={two} alt="payment gateway" className="object-contain border" />
+                                                                                <Image src={three} alt="payment gateway" className="object-contain border" />
+                                                                                <Image src={four} alt="payment gateway" className="object-contain border" />
+                                                                                <Image src={six} alt="payment gateway" className="object-contain border" />
+                                                                                <Image src={seven} alt="payment gateway" className="object-contain border" />
+                                                                                <Image src={eight} alt="payment gateway" className="object-contain border" />
+                                                                                <Image src={nine} alt="payment gateway" className="object-contain border" />
+                                                                                <Image src={ten} alt="payment gateway" className="object-contain border" />
+                                                                                <Image src={five} alt="payment gateway" className="object-contain border" />
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -642,13 +690,15 @@ const EnrollmentCheckout = () => {
                                                     <Button
                                                         type="submit"
                                                         className="w-full h-12 text-lg glow-effect"
-                                                        disabled={!(form.formState.isValid && agreed) || isProcessing}
+                                                        disabled={!(form.formState.isValid && agreed) || isProcessing || !enrollmentStatus?.canEnroll}
                                                     >
                                                         {isProcessing ? (
                                                             <>
                                                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                                                 Processing...
                                                             </>
+                                                        ) : !enrollmentStatus?.canEnroll ? (
+                                                            'Enrollment Not Available'
                                                         ) : (
                                                             'Complete Enrollment'
                                                         )}
