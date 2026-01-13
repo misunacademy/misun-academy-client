@@ -6,7 +6,8 @@ import { signInWithEmail, signUpWithEmail } from '@/actions/auth';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
-
+import { useEnrollment } from './useEnrollment';
+import { useRouter } from 'next/navigation';
 // Utility function to serialize session data for Redux
 const serializeSession = (session: any) => {
   if (!session) return null;
@@ -41,6 +42,7 @@ const serializeSession = (session: any) => {
 
 // Function to check server auth
 const checkServerAuth = async () => {
+
   const token = Cookies.get('token');
   if (!token) return null;
 
@@ -98,7 +100,8 @@ const handleSocialLogin = async (userData: { email: string; name?: string; image
 
 export function useAuth() {
   const dispatch = useDispatch();
-
+  const { hasEnrollments } = useEnrollment();
+  const router = useRouter();
   useEffect(() => {
     // Initialize auth state
     const initAuth = async () => {
@@ -134,10 +137,11 @@ export function useAuth() {
                 'superadmin': '/dashboard/admin',
                 'admin': '/dashboard/admin',
                 'instructor': '/dashboard/admin',
-                'learner': '/dashboard/student',
+                'learner': `${hasEnrollments ? '/dashboard/student' : '/checkout'}`,
               };
               const dashboardPath = user.role ? roleMap[user.role.toLowerCase()] || '/dashboard/student' : '/dashboard/student';
-              window.location.href = dashboardPath;
+              // window.location.href = dashboardPath;
+              router.push(dashboardPath);
             }
           } else {
             // If social login failed, fall back to session data
@@ -225,7 +229,8 @@ export function useAuth() {
       dispatch(logout());
       // Redirect to login page after logout
       if (typeof window !== 'undefined') {
-        window.location.href = '/auth';
+        // window.location.href = '/auth';
+        router.push('/auth');
       }
       return { success: true };
     } catch (error: any) {
@@ -244,7 +249,9 @@ export function useAuth() {
 
       if (result.data?.url) {
         // Redirect to the OAuth provider
-        window.location.href = result.data.url;
+        // window.location.href = result.data.url;
+        router.push(result.data.url);
+
         return { success: true };
       } else {
         return { success: false, error: 'No redirect URL received' };

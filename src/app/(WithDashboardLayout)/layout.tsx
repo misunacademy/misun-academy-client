@@ -82,7 +82,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="relative">
                                     <Bell className="h-4 w-4" />
-                                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">3</span>
+                                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">0</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-80">
@@ -90,11 +90,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem>
                                     <div className="flex flex-col space-y-1">
-                                        <p className="text-sm font-medium">New course available</p>
-                                        <p className="text-xs text-muted-foreground">React Advanced Patterns is now live</p>
+                                        <p className="text-sm font-medium">This features is Coming soon</p>
+                                        <p className="text-xs text-muted-foreground">Please stay tuned for updates.</p>
                                     </div>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                {/* <DropdownMenuItem>
                                     <div className="flex flex-col space-y-1">
                                         <p className="text-sm font-medium">Certificate earned</p>
                                         <p className="text-xs text-muted-foreground">Congratulations on completing JavaScript Basics</p>
@@ -105,7 +105,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                                         <p className="text-sm font-medium">Assignment due</p>
                                         <p className="text-xs text-muted-foreground">Web Development project due in 2 days</p>
                                     </div>
-                                </DropdownMenuItem>
+                                </DropdownMenuItem> */}
                             </DropdownMenuContent>
                         </DropdownMenu>
 

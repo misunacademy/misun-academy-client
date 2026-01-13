@@ -22,7 +22,7 @@ export default function PaymentHistoryPage() {
   if (error) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p className="text-red-500">পেমেন্ট হিস্ট্রি লোড করতে ব্যর্থ হয়েছে</p>
+        <p className="text-red-500">Failed to load payment history</p>
       </div>
     );
   }
@@ -34,21 +34,21 @@ export default function PaymentHistoryPage() {
         return (
           <Badge variant="default" className="flex items-center gap-1">
             <CheckCircle className="h-3 w-3" />
-            সফল
+            Successful
           </Badge>
         );
       case 'pending':
         return (
           <Badge variant="secondary" className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            অপেক্ষমাণ
+            Pending
           </Badge>
         );
       case 'failed':
         return (
           <Badge variant="destructive" className="flex items-center gap-1">
             <XCircle className="h-3 w-3" />
-            ব্যর্থ
+            Failed
           </Badge>
         );
       default:
@@ -59,15 +59,15 @@ export default function PaymentHistoryPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">পেমেন্ট হিস্ট্রি</h1>
-        <p className="text-muted-foreground">আপনার সকল পেমেন্ট লেনদেনের তালিকা</p>
+        <h1 className="text-3xl font-bold">Payment History</h1>
+        <p className="text-muted-foreground">List of all your payment transactions</p>
       </div>
 
       {payments.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <CreditCard className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">কোনো পেমেন্ট রেকর্ড পাওয়া যায়নি</p>
+            <p className="text-muted-foreground">No payment records found</p>
           </CardContent>
         </Card>
       ) : (
@@ -78,10 +78,10 @@ export default function PaymentHistoryPage() {
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <CardTitle className="text-lg">
-                      {payment.course?.title || 'কোর্স তথ্য নেই'}
+                      {payment.course?.title || 'No course information'}
                     </CardTitle>
                     <CardDescription>
-                      ব্যাচ: {payment.batch?.title || 'N/A'} ({payment.batch?.batchCode || 'N/A'})
+                      Batch: {payment.batch?.title || 'N/A'} ({payment.batch?.batchCode || 'N/A'})
                     </CardDescription>
                   </div>
                   {getStatusBadge(payment.status)}
@@ -90,35 +90,35 @@ export default function PaymentHistoryPage() {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-muted-foreground">লেনদেন আইডি</p>
+                    <p className="text-muted-foreground">Transaction ID</p>
                     <p className="font-mono text-xs mt-1">{payment.transactionId}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">পরিমাণ</p>
+                    <p className="text-muted-foreground">Amount</p>
                     <p className="font-semibold text-lg mt-1">
-                      ৳{payment.amount.toLocaleString()}
+                      BDT {payment.amount.toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">পেমেন্ট মাধ্যম</p>
+                    <p className="text-muted-foreground">Payment Method</p>
                     <p className="capitalize mt-1">{payment.method || 'N/A'}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">তারিখ</p>
+                    <p className="text-muted-foreground">Date</p>
                     <p className="mt-1">
-                      {new Date(payment.createdAt).toLocaleDateString('bn-BD')}
+                      {new Date(payment.createdAt).toLocaleDateString('en-US')}
                     </p>
                   </div>
                 </div>
 
                 {payment.gatewayResponse && (
                   <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs">
-                    <p className="text-muted-foreground mb-2">পেমেন্ট তথ্য:</p>
+                    <p className="text-muted-foreground mb-2">Payment Info:</p>
                     {payment.gatewayResponse.bank_tran_id && (
-                      <p>ব্যাংক লেনদেন: {payment.gatewayResponse.bank_tran_id}</p>
+                      <p>Bank Transaction: {payment.gatewayResponse.bank_tran_id}</p>
                     )}
                     {payment.gatewayResponse.card_issuer && (
-                      <p>কার্ড ইস্যুকারী: {payment.gatewayResponse.card_issuer}</p>
+                      <p>Card Issuer: {payment.gatewayResponse.card_issuer}</p>
                     )}
                   </div>
                 )}

@@ -27,7 +27,7 @@ export default function AdminSettings() {
     sslcommerz: true,
     taxEnabled: true,
     taxRate: "15",
-    currencySymbol: "৳",
+    currencySymbol: "BDT",
   });
 
   const handleSave = async () => {
@@ -118,7 +118,7 @@ export default function AdminSettings() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="bdt">BDT (৳)</SelectItem>
+                    <SelectItem value="bdt">BDT (BDT)</SelectItem>
                     <SelectItem value="usd">USD ($)</SelectItem>
                     <SelectItem value="eur">EUR (€)</SelectItem>
                   </SelectContent>

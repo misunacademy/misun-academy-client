@@ -28,6 +28,7 @@ import eight from "@/assets/images/payments/eight.png"
 import nine from "@/assets/images/payments/nine.png"
 import ten from "@/assets/images/payments/ten.png"
 import phonepay from "@/assets/images/payments/phonepay.png"
+import { useRouter } from "next/navigation";
 
 
 
@@ -58,7 +59,7 @@ const EnrollmentCheckout = () => {
     const [enrollStudent] = useEnrollStudentMutation();
     const [enrollStudentManual] = useEnrollStudentManualMutation();
     const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
-
+    const router = useRouter();
     // Initialize form first
     const form = useForm<EnrollmentForm>({
         resolver: zodResolver(enrollmentSchema),
@@ -95,8 +96,7 @@ const EnrollmentCheckout = () => {
     // Get selected batch based on form value
     const selectedBatch = batches.find((batch: any) => String(batch._id) === form.watch('batchId')) || null;
     const selectedCourse = selectedBatch?.courseId; // Course info is static for now
-console.log("batches",batches);
-console.log("selectedBatch",selectedBatch);
+
     // Auto-select first batch if available and none selected
     useEffect(() => {
         if (batches.length > 0 && !form.getValues('batchId')) {
@@ -205,9 +205,10 @@ console.log("selectedBatch",selectedBatch);
 
     useEffect(() => {
         if (redirectUrl) {
-            window.location.href = redirectUrl;
+            // window.location.href = redirectUrl;
+            router.push(redirectUrl);
         }
-    }, [redirectUrl]);
+    }, [redirectUrl, router]);
 
     if (currentStep === 3) {
         return (
@@ -274,7 +275,7 @@ console.log("selectedBatch",selectedBatch);
             <div className="container mx-auto px-4 py-8">
                 <div className="grid lg:grid-cols-3 gap-8">
                     {/* Course Info - Left Side */}
-                    <div className="lg:col-span-1 space-y-6 sticky top-24 self-start">
+                    <div className="lg:col-span-1 space-y-6 sm:sticky top-24 self-start">
                         <Card className="glass-card form-animate">
                             <CardHeader>
                                 {batchesLoading ? (
@@ -291,7 +292,7 @@ console.log("selectedBatch",selectedBatch);
                                             />
                                         </div>
                                         <h3 className="font-bold text-lg mb-2">{selectedCourse.title}</h3>
-                                        <p className="text-sm text-muted-foreground mb-3">{selectedCourse.shortDescription}</p>
+                                        {/* <p className="text-sm text-muted-foreground mb-3">{selectedCourse.shortDescription}</p> */}
                                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                             <div className="flex items-center gap-1">
                                                 <Clock className="w-4 h-4" />
@@ -308,7 +309,7 @@ console.log("selectedBatch",selectedBatch);
                             {selectedCourse && (
                                 <CardContent>
                                     <div className="space-y-4">
-                                        {selectedBatch && (
+                                        {/* {selectedBatch && (
                                             <div className="bg-accent/50 rounded-lg p-3 space-y-2">
                                                 <div>
                                                     <h4 className="font-semibold text-sm mb-1">Selected Batch</h4>
@@ -349,7 +350,7 @@ console.log("selectedBatch",selectedBatch);
                                                     </div>
                                                 )}
                                             </div>
-                                        )}
+                                        )} */}
 
                                         <Separator />
 
@@ -479,8 +480,8 @@ console.log("selectedBatch",selectedBatch);
                                                             <div className="grid grid-cols-2 gap-3 pt-2 border-t">
                                                                 {selectedBatch.startDate && (
                                                                     <div>
-                                                                        <p className="text-xs text-muted-foreground">Batch Starts</p>
-                                                                        <p className="text-sm font-medium">{new Date(selectedBatch.startDate).toLocaleDateString()}</p>
+                                                                        <p className="text-xs text-muted-foreground">Enrollment Starts</p>
+                                                                        <p className="text-sm font-medium">{new Date(selectedBatch.enrollmentStartDate).toLocaleDateString()}</p>
                                                                     </div>
                                                                 )}
                                                                 {selectedBatch.enrollmentEndDate && (
@@ -546,7 +547,7 @@ console.log("selectedBatch",selectedBatch);
                                                         <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
                                                             <iframe
                                                                 className="w-full h-full"
-                                                                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                                                                src="https://www.youtube.com/embed/hc6YyM1JFVY"
                                                                 title="Payment Tutorial"
                                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                                                 allowFullScreen

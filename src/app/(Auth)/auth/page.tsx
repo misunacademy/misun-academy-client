@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { useAppSelector } from "@/redux/hooks";
+import { useEnrollment } from "@/hooks/useEnrollment";
 
 
 // Validation schemas
@@ -53,6 +54,7 @@ const AuthPage = () => {
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const router = useRouter();
     const { signIn, signUp, signInWithGoogle } = useAuth();
+     const { hasEnrollments } = useEnrollment();
     // const user = useAppSelector((state ) => state.auth.user);
 
 
@@ -99,7 +101,7 @@ const AuthPage = () => {
                 'superadmin': '/dashboard/admin',
                 'admin': '/dashboard/admin',
                 'instructor': '/dashboard/admin',
-                'learner': '/dashboard/student',
+                'learner': `${hasEnrollments ? '/dashboard/student' : '/checkout'}`,
             };
             const dashboardPath = result.user?.role ? roleMap[result.user.role.toLowerCase()] || '/dashboard/student' : '/dashboard/student';
             router.push(dashboardPath);
@@ -110,14 +112,13 @@ const AuthPage = () => {
 
     const handleRegister = async (data: RegisterFormData) => {
         const result = await signUp(data.name, data.email, data.password);
-        console.log("result",result);
         if (result.success) {
             // Map user role to correct dashboard path
             const roleMap: Record<string, string> = {
                 'superadmin': '/dashboard/admin',
                 'admin': '/dashboard/admin',
                 'instructor': '/dashboard/admin',
-                'learner': '/dashboard/student',
+                'learner': `${hasEnrollments ? '/dashboard/student' : '/checkout'}`,
             };
             const dashboardPath = result.user?.role ? roleMap[result.user.role.toLowerCase()] || '/dashboard/student' : '/dashboard/student';
             router.push(dashboardPath);

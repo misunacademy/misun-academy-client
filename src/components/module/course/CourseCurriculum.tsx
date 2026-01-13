@@ -37,7 +37,7 @@ const CourseCurriculum = () => {
         <div className="min-h-screen bg-white font-sans">
             <section className="py-10">
                 <div className="container mx-auto px-4">
-                    
+
                     {/* Header */}
                     <div className="text-center mb-12">
                         <h2 className="text-4xl md:text-5xl font-bold mb-4 font-bangla text-black">
@@ -48,12 +48,12 @@ const CourseCurriculum = () => {
                         </p>
                     </div>
 
-                    <div className="grid gap-6 max-w-5xl mx-auto">
-                        
+                    <div className="grid gap-6 max-w-6xl mx-auto">
+
                         {/* Dynamic Mapping over the courses array */}
                         {courseCurriculum.courses.map((course, index) => {
                             const isOpen = openStates[index] || false;
-                            
+
                             // Calculate total items for the badge
                             const moduleCount = course.modules?.length || 0;
                             const projectCount = course.projects?.length || 0;
@@ -61,8 +61,8 @@ const CourseCurriculum = () => {
 
                             return (
                                 <div key={index} className="rounded-2xl bg-emerald-50 overflow-hidden transition-all duration-300 hover:shadow-sm">
-                                    <Collapsible 
-                                        open={isOpen} 
+                                    <Collapsible
+                                        open={isOpen}
                                         onOpenChange={() => toggleSection(index)}
                                     >
                                         {/* FIX: The Trigger wraps the content. No manual onClick needed. */}
@@ -89,7 +89,7 @@ const CourseCurriculum = () => {
                                         <CollapsibleContent>
                                             <CardContent className="pt-0 px-6 pb-6">
                                                 <div className="grid gap-8">
-                                                    
+
                                                     {/* Modules Section */}
                                                     {course.modules && course.modules.length > 0 && (
                                                         <div>
@@ -132,19 +132,20 @@ const CourseCurriculum = () => {
 // --- Sub Components ---
 
 const ModuleItem = ({ data }: { data: any }) => (
-    <div className="flex flex-col md:flex-row md:items-center justify-between p-3 rounded-lg bg-[#6ee7b7] hover:bg-[#34d399] transition-colors text-black shadow-sm">
+    <div className="flex flex-col md:flex-row md:items-center justify-between p-3 rounded-lg bg-[#84d6b5] hover:bg-[#34d399] transition-colors text-black shadow-sm">
         <div className="flex items-center gap-3 flex-1">
-            <div className="min-w-[24px] h-6 flex items-center justify-center text-sm font-semibold opacity-70 ">
+            <div className="min-w-[24px] h-6 flex items-center justify-center text-sm font-semibold opacity-70 text-white">
                 {data.id}
             </div>
             <span className="text-sm font-medium leading-tight">{data.title}</span>
-        </div>
-        <div className="flex items-center gap-3 mt-2 md:mt-0 md:pl-4 justify-between md:justify-end min-w-[140px]">
             {data.type && (
                 <Badge className="bg-black text-white hover:bg-gray-800 border-0 text-[10px] px-2 py-0.5 h-5 rounded-md uppercase">
                     {data.type}
                 </Badge>
             )}
+        </div>
+        <div className="flex items-center gap-3 mt-2 md:mt-0 md:pl-4 justify-between md:justify-end min-w-[140px]">
+
             <span className="text-xs text-gray-700 opacity-80 whitespace-nowrap">{data.duration}</span>
         </div>
     </div>
@@ -157,11 +158,12 @@ const ProjectItem = ({ data }: { data: any }) => (
                 <Trophy className="h-4 w-4" />
             </div>
             <span className="text-sm font-medium leading-tight">{data.title}</span>
-        </div>
-        <div className="flex items-center gap-3 mt-2 md:mt-0 md:pl-4 justify-between md:justify-end min-w-[140px]">
             <Badge className="bg-black/10 text-black hover:bg-black/20 border-0 text-[10px] px-2 py-0.5 h-5 rounded-md">
                 PROJECT
             </Badge>
+        </div>
+        <div className="flex items-center gap-3 mt-2 md:mt-0 md:pl-4 justify-between md:justify-end min-w-[140px]">
+
             <span className="text-xs text-gray-700 opacity-80 whitespace-nowrap">{data.duration}</span>
         </div>
     </div>

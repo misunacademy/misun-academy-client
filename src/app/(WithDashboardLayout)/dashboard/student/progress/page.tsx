@@ -24,7 +24,7 @@ export default function ProgressPage() {
   if (error) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <p className="text-red-500">প্রগতি তথ্য লোড করতে ব্যর্থ হয়েছে</p>
+        <p className="text-red-500">Failed to load progress data</p>
       </div>
     );
   }
@@ -40,8 +40,8 @@ export default function ProgressPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">আমার প্রগতি</h1>
-        <p className="text-muted-foreground">কোর্স সম্পন্নকরণ এবং শেখার অগ্রগতি ট্র্যাক করুন</p>
+        <h1 className="text-3xl font-bold">My Progress</h1>
+        <p className="text-muted-foreground">Track course completion and learning progress</p>
       </div>
 
       {/* Overall Progress */}
@@ -49,14 +49,14 @@ export default function ProgressPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            সার্বিক অগ্রগতি
+            Overall Progress
           </CardTitle>
-          <CardDescription>সকল এনরোল করা কোর্সের গড় অগ্রগতি</CardDescription>
+          <CardDescription>Average progress of all enrolled courses</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">সম্পন্ন হয়েছে</span>
+              <span className="text-muted-foreground">Completed</span>
               <span className="font-semibold">{overallProgress}%</span>
             </div>
             <Progress value={overallProgress} className="h-2" />
@@ -67,8 +67,8 @@ export default function ProgressPage() {
       {/* Course-wise Progress */}
       <Tabs defaultValue="active" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="active">সক্রিয় কোর্স ({activeEnrollments.length})</TabsTrigger>
-          <TabsTrigger value="completed">সম্পন্ন কোর্স</TabsTrigger>
+          <TabsTrigger value="active">Active Courses ({activeEnrollments.length})</TabsTrigger>
+          <TabsTrigger value="completed">Completed Courses</TabsTrigger>
         </TabsList>
 
         <TabsContent value="active" className="space-y-4">
@@ -76,7 +76,7 @@ export default function ProgressPage() {
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">কোনো সক্রিয় কোর্স নেই</p>
+                <p className="text-muted-foreground">No active courses</p>
               </CardContent>
             </Card>
           ) : (
@@ -91,14 +91,14 @@ export default function ProgressPage() {
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
                         <CardTitle className="text-lg">
-                          {enrollment.course?.title || 'কোর্স তথ্য নেই'}
+                          {enrollment.course?.title || 'No course information'}
                         </CardTitle>
                         <CardDescription>
-                          ব্যাচ: {enrollment.batch?.title || 'N/A'}
+                          Batch: {enrollment.batch?.title || 'N/A'}
                         </CardDescription>
                       </div>
                       <Badge variant={progress === 100 ? "default" : "secondary"}>
-                        {progress === 100 ? "সম্পন্ন" : "চলমান"}
+                        {progress === 100 ? "Completed" : "Ongoing"}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -106,7 +106,7 @@ export default function ProgressPage() {
                     {/* Progress Bar */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">কোর্স অগ্রগতি</span>
+                        <span className="text-muted-foreground">Course Progress</span>
                         <span className="font-semibold">{progress}%</span>
                       </div>
                       <Progress value={progress} className="h-2" />
@@ -117,21 +117,21 @@ export default function ProgressPage() {
                       <div className="flex items-center gap-2">
                         <BookOpen className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs text-muted-foreground">পাঠ</p>
+                          <p className="text-xs text-muted-foreground">Lessons</p>
                           <p className="font-semibold">{completedLessons}/{totalLessons}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Video className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs text-muted-foreground">ভিডিও দেখা হয়েছে</p>
+                          <p className="text-xs text-muted-foreground">Videos Watched</p>
                           <p className="font-semibold">{enrollment.watchedVideos?.length || 0}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Award className="h-4 w-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs text-muted-foreground">কুইজ স্কোর</p>
+                          <p className="text-xs text-muted-foreground">Quiz Score</p>
                           <p className="font-semibold">{enrollment.quizScore || 0}%</p>
                         </div>
                       </div>
@@ -139,7 +139,7 @@ export default function ProgressPage() {
 
                     {/* Enrollment Date */}
                     <div className="text-xs text-muted-foreground pt-2 border-t">
-                      এনরোল করেছেন: {new Date(enrollment.createdAt).toLocaleDateString('bn-BD')}
+                      Enrolled on: {new Date(enrollment.createdAt).toLocaleDateString('en-US')}
                     </div>
                   </CardContent>
                 </Card>
@@ -152,7 +152,7 @@ export default function ProgressPage() {
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Award className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">এখনো কোনো কোর্স সম্পন্ন করেননি</p>
+              <p className="text-muted-foreground">No courses completed yet</p>
             </CardContent>
           </Card>
         </TabsContent>

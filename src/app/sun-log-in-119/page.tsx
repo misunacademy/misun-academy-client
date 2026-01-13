@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useLoginMutation } from "@/redux/api/authApi";
 import { setError, setUser } from "@/redux/features/auth/authSlice";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 interface FormData {
   email: string;
@@ -19,7 +20,7 @@ export default function LoginPage() {
   });
     const [adminLogin, { isLoading }] = useLoginMutation();
   const dispatch = useDispatch();
-
+    const router = useRouter();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -35,7 +36,8 @@ export default function LoginPage() {
       dispatch(setUser(response.data.user));
       Cookies.set('token', response.data.token, { expires: 7 });
       // Redirect to dashboard or home page
-      window.location.href = '/dashboard';
+      // window.location.href = '/dashboard';
+      router.push('/dashboard/admin');
     } catch (error: unknown) {
       console.log(error)
       dispatch(setError('Login failed'));

@@ -104,7 +104,7 @@ export default function BrowseCoursesPage() {
 
   // Format date for display
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('bn-BD', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -123,8 +123,8 @@ export default function BrowseCoursesPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">কোর্স ব্রাউজ করুন</h1>
-          <p className="text-muted-foreground">এনরোলমেন্টের জন্য উপলব্ধ কোর্স এবং ব্যাচ দেখুন</p>
+          <h1 className="text-3xl font-bold">Browse Courses</h1>
+          <p className="text-muted-foreground">View available courses and batches for enrollment</p>
         </div>
       </div>
 
@@ -132,7 +132,7 @@ export default function BrowseCoursesPage() {
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="কোর্স খুঁজুন..."
+          placeholder="Search courses..."
           className="pl-9"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -144,14 +144,13 @@ export default function BrowseCoursesPage() {
         {filteredCourses.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">কোনো কোর্স পাওয়া যায়নি</p>
+            <p className="text-muted-foreground">No courses found</p>
           </div>
         ) : (
           filteredCourses.map((course) => {
             const activeBatches = getActiveBatches(course._id);
             const hasActiveBatches = activeBatches.length > 0;
             const cheapestPrice = getCheapestPrice(course._id);
-            console.log(activeBatches);
             return (
               <Card key={course._id} className="overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
                 {/* Thumbnail */}
@@ -167,14 +166,14 @@ export default function BrowseCoursesPage() {
                     {/* Price Badge Overlay */}
                     {cheapestPrice && (
                       <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1.5 rounded-full font-bold text-sm shadow-lg">
-                        ৳{cheapestPrice.toLocaleString('bn-BD')}
+                        BDT {cheapestPrice.toLocaleString('en-US')}
                       </div>
                     )}
                     {/* Featured Badge */}
                     {course.featured && (
                       <div className="absolute top-3 left-3 bg-amber-500 text-white px-2.5 py-1 rounded-full font-medium text-xs shadow-lg flex items-center gap-1">
                         <Award className="h-3 w-3" />
-                        ফিচারড
+                        Featured
                       </div>
                     )}
                   </div>
@@ -190,7 +189,7 @@ export default function BrowseCoursesPage() {
                       {course.title}
                     </CardTitle>
                     <Badge variant={hasActiveBatches ? "default" : "secondary"} className="flex-shrink-0">
-                      {hasActiveBatches ? "খোলা" : "শীঘ্রই"}
+                      {hasActiveBatches ? "Open" : "Coming Soon"}
                     </Badge>
                   </div>
 
@@ -199,8 +198,8 @@ export default function BrowseCoursesPage() {
                     {course.level && (
                       <Badge variant="outline" className="gap-1">
                         <TrendingUp className="h-3 w-3" />
-                        {course.level === 'beginner' ? 'শিক্ষানবিস' :
-                          course.level === 'intermediate' ? 'মধ্যম' : 'উন্নত'}
+                        {course.level === 'beginner' ? 'Beginner' :
+                          course.level === 'intermediate' ? 'Intermediate' : 'Advanced'}
                       </Badge>
                     )}
                     {course.category && (
@@ -212,7 +211,7 @@ export default function BrowseCoursesPage() {
                   </div>
 
                   <CardDescription className="line-clamp-2">
-                    {course.shortDescription || "বিস্তারিত বিবরণ শীঘ্রই যোগ করা হবে"}
+                    {course.shortDescription || "Detailed description will be added soon"}
                   </CardDescription>
                 </CardHeader>
 
@@ -223,14 +222,14 @@ export default function BrowseCoursesPage() {
                       <Users className="h-4 w-4 flex-shrink-0" />
                       <span className="truncate">
                         {activeBatches.length > 0
-                          ? `ব্যাচ ${activeBatches[0].batchNumber}${activeBatches.length > 1 ? ` +${activeBatches.length - 1}` : ''}`
-                          : 'কোন ব্যাচ নেই'}
+                          ? `Batch ${activeBatches[0].batchNumber}${activeBatches.length > 1 ? ` +${activeBatches.length - 1}` : ''}`
+                          : 'No batches available'}
                       </span>
                     </div>
                     {course.durationEstimate && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Clock className="h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">{course.durationEstimate}</span>
+                        <span className="truncate">{course.durationEstimate} Months</span>
                       </div>
                     )}
                   </div>
@@ -254,7 +253,7 @@ export default function BrowseCoursesPage() {
                   {/* Available Batches Preview */}
                   {hasActiveBatches && (
                     <div className="space-y-2 flex-1">
-                      <p className="text-xs font-medium text-muted-foreground">উপলব্ধ ব্যাচসমূহ:</p>
+                      <p className="text-xs font-medium text-muted-foreground">Available Batches:</p>
                       {activeBatches?.slice(0, 2)?.map((batch) => {
                         const discountedPrice = course.discountPercentage
                           ? getDiscountedPrice(batch.price, course.discountPercentage)
@@ -281,12 +280,12 @@ export default function BrowseCoursesPage() {
                               <div className="flex flex-col items-end gap-0.5 ml-2 flex-shrink-0">
                                 {hasDiscount && (
                                   <span className="text-[10px] text-muted-foreground line-through">
-                                    ৳{batch.price.toLocaleString('bn-BD')}
+                                    BDT {batch.price.toLocaleString('en-US')}
                                   </span>
                                 )}
                                 <div className="flex items-center gap-0.5 font-bold text-primary">
                                   <DollarSign className="h-3.5 w-3.5" />
-                                  {discountedPrice.toLocaleString('bn-BD')}
+                                    {discountedPrice.toLocaleString('en-US')}
                                 </div>
                                 {hasDiscount && (
                                   <Badge variant="destructive" className="text-[10px] px-1 py-0">
@@ -298,10 +297,10 @@ export default function BrowseCoursesPage() {
                             <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/30">
                               <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                                 <Calendar className="h-3 w-3" />
-                                <span>শুরু: {formatDate(batch.startDate)}</span>
+                                <span>Start: {formatDate(batch.startDate)}</span>
                               </div>
                               <div className="text-[10px] text-muted-foreground">
-                                এনরোল: {formatDate(batch.enrollmentEndDate)} পর্যন্ত
+                                Enroll: until {formatDate(batch.enrollmentEndDate)}
                               </div>
                             </div>
                           </div>
@@ -309,7 +308,7 @@ export default function BrowseCoursesPage() {
                       })}
                       {activeBatches.length > 2 && (
                         <p className="text-xs text-center text-muted-foreground py-1">
-                          আরও {activeBatches.length - 2} টি ব্যাচ উপলব্ধ
+                          {activeBatches.length - 2} more batches available
                         </p>
                       )}
                     </div>
@@ -318,7 +317,7 @@ export default function BrowseCoursesPage() {
                   {!hasActiveBatches && (
                     <div className="flex-1 flex items-center justify-center py-4 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4 mr-2" />
-                      শীঘ্রই নতুন ব্যাচ আসছে
+                      New batches coming soon
                     </div>
                   )}
 
@@ -330,7 +329,7 @@ export default function BrowseCoursesPage() {
                     disabled={!hasActiveBatches}
                   >
                     <Link href={hasActiveBatches ? `/courses/${course.slug || course._id}` : '#'}>
-                      {hasActiveBatches ? 'বিস্তারিত দেখুন ও এনরোল করুন' : 'শীঘ্রই আসছে'}
+                      {hasActiveBatches ? 'View Details & Enroll' : 'Coming Soon'}
                     </Link>
                   </Button>
                 </CardContent>

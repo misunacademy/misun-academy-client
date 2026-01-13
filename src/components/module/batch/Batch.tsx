@@ -348,7 +348,7 @@ export default function BatchDashboard() {
                                         <TableCell>#{batch.batchNumber}</TableCell>
                                         <TableCell>{batch.title}</TableCell>
                                         <TableCell>{batch.courseId?.title || 'N/A'}</TableCell>
-                                        <TableCell>৳{batch.price}</TableCell>
+                                        <TableCell>BDT {batch.price}</TableCell>
                                         <TableCell>
                                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                                 batch.status === 'running' ? 'bg-green-100 text-green-800' :

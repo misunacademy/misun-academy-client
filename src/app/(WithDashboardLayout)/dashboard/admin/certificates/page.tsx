@@ -34,21 +34,21 @@ const CertificateTable = ({ certificates, onViewDetails }: { certificates: Certi
         return (
           <Badge variant="default" className="flex items-center gap-1 w-fit">
             <CheckCircle className="h-3 w-3" />
-            অনুমোদিত
+            Approved
           </Badge>
         );
       case 'Pending':
         return (
           <Badge variant="secondary" className="flex items-center gap-1 w-fit">
             <Clock className="h-3 w-3" />
-            অপেক্ষমাণ
+            Pending
           </Badge>
         );
       case 'Rejected':
         return (
           <Badge variant="destructive" className="flex items-center gap-1 w-fit">
             <XCircle className="h-3 w-3" />
-            প্রত্যাখ্যাত
+            Rejected
           </Badge>
         );
       default:
@@ -60,19 +60,19 @@ const CertificateTable = ({ certificates, onViewDetails }: { certificates: Certi
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>শিক্ষার্থী</TableHead>
-          <TableHead>কোর্স</TableHead>
-          <TableHead>ব্যাচ</TableHead>
-          <TableHead>আবেদনের তারিখ</TableHead>
-          <TableHead>স্ট্যাটাস</TableHead>
-          <TableHead>অ্যাকশন</TableHead>
+          <TableHead>Student</TableHead>
+          <TableHead>Course</TableHead>
+          <TableHead>Batch</TableHead>
+          <TableHead>Application Date</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {certificates.length === 0 ? (
           <TableRow>
             <TableCell colSpan={6} className="text-center text-muted-foreground">
-              কোনো ডেটা পাওয়া যায়নি
+              No data found
             </TableCell>
           </TableRow>
         ) : (
@@ -84,7 +84,7 @@ const CertificateTable = ({ certificates, onViewDetails }: { certificates: Certi
               </TableCell>
               <TableCell>{cert.course?.title || 'N/A'}</TableCell>
               <TableCell>{cert.batch?.title || 'N/A'}</TableCell>
-              <TableCell>{new Date(cert.createdAt).toLocaleDateString('bn-BD')}</TableCell>
+              <TableCell>{new Date(cert.createdAt).toLocaleDateString('en-US')}</TableCell>
               <TableCell>{getStatusBadge(cert.status)}</TableCell>
               <TableCell>
                 <Button
@@ -93,7 +93,7 @@ const CertificateTable = ({ certificates, onViewDetails }: { certificates: Certi
                   onClick={() => onViewDetails(cert)}
                 >
                   <Eye className="h-4 w-4 mr-1" />
-                  বিস্তারিত
+                  Details
                 </Button>
               </TableCell>
             </TableRow>
@@ -124,17 +124,17 @@ export default function CertificateManagementPage() {
         id: certificateId,
         data: { status: 'Approved', approvedAt: new Date().toISOString() }
       }).unwrap();
-      toast.success('সার্টিফিকেট অনুমোদন সফল হয়েছে');
+      toast.success('Certificate approval successful');
       refetch();
       setReviewDialogOpen(false);
     } catch {
-      toast.error('অনুমোদন ব্যর্থ হয়েছে');
+      toast.error('Approval failed');
     }
   };
 
   const handleReject = async (certificateId: string) => {
     if (!rejectionReason.trim()) {
-      toast.error('প্রত্যাখ্যানের কারণ লিখুন');
+      toast.error('Please provide a rejection reason');
       return;
     }
 
@@ -147,12 +147,12 @@ export default function CertificateManagementPage() {
           rejectedAt: new Date().toISOString()
         }
       }).unwrap();
-      toast.success('সার্টিফিকেট প্রত্যাখ্যান সফল হয়েছে');
+      toast.success('Certificate rejection successful');
       refetch();
       setReviewDialogOpen(false);
       setRejectionReason("");
     } catch {
-      toast.error('প্রত্যাখ্যান ব্যর্থ হয়েছে');
+      toast.error('Rejection failed');
     }
   };
 
@@ -167,21 +167,21 @@ export default function CertificateManagementPage() {
         return (
           <Badge variant="default" className="flex items-center gap-1 w-fit">
             <CheckCircle className="h-3 w-3" />
-            অনুমোদিত
+            Approved
           </Badge>
         );
       case 'Pending':
         return (
           <Badge variant="secondary" className="flex items-center gap-1 w-fit">
             <Clock className="h-3 w-3" />
-            অপেক্ষমাণ
+            Pending
           </Badge>
         );
       case 'Rejected':
         return (
           <Badge variant="destructive" className="flex items-center gap-1 w-fit">
             <XCircle className="h-3 w-3" />
-            প্রত্যাখ্যাত
+            Rejected
           </Badge>
         );
       default:
@@ -200,27 +200,27 @@ export default function CertificateManagementPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">সার্টিফিকেট অনুমোদন</h1>
-        <p className="text-muted-foreground">শিক্ষার্থীদের সার্টিফিকেট আবেদন পর্যালোচনা করুন</p>
+        <h1 className="text-3xl font-bold">Certificate Approval</h1>
+        <p className="text-muted-foreground">Review student certificate applications</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
-            <CardDescription>অপেক্ষমাণ</CardDescription>
+            <CardDescription>Pending</CardDescription>
             <CardTitle className="text-3xl">{pendingCertificates.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardDescription>অনুমোদিত</CardDescription>
+            <CardDescription>Approved</CardDescription>
             <CardTitle className="text-3xl text-green-600">{approvedCertificates.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardDescription>প্রত্যাখ্যাত</CardDescription>
+            <CardDescription>Rejected</CardDescription>
             <CardTitle className="text-3xl text-red-600">{rejectedCertificates.length}</CardTitle>
           </CardHeader>
         </Card>
@@ -230,13 +230,13 @@ export default function CertificateManagementPage() {
       <Tabs defaultValue="pending" className="space-y-4">
         <TabsList>
           <TabsTrigger value="pending">
-            অপেক্ষমাণ ({pendingCertificates.length})
+            Pending ({pendingCertificates.length})
           </TabsTrigger>
           <TabsTrigger value="approved">
-            অনুমোদিত ({approvedCertificates.length})
+            Approved ({approvedCertificates.length})
           </TabsTrigger>
           <TabsTrigger value="rejected">
-            প্রত্যাখ্যাত ({rejectedCertificates.length})
+            Rejected ({rejectedCertificates.length})
           </TabsTrigger>
         </TabsList>
 
@@ -269,9 +269,9 @@ export default function CertificateManagementPage() {
       <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>সার্টিফিকেট পর্যালোচনা</DialogTitle>
+            <DialogTitle>Certificate Review</DialogTitle>
             <DialogDescription>
-              শিক্ষার্থীর তথ্য যাচাই করে সার্টিফিকেট অনুমোদন বা প্রত্যাখ্যান করুন
+              Verify student information and approve or reject certificate
             </DialogDescription>
           </DialogHeader>
 
@@ -279,30 +279,30 @@ export default function CertificateManagementPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">শিক্ষার্থী</p>
+                  <p className="text-muted-foreground">Student</p>
                   <p className="font-medium">{selectedCertificate.user?.name}</p>
                   <p className="text-xs text-muted-foreground">{selectedCertificate.user?.email}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">কোর্স</p>
+                  <p className="text-muted-foreground">Course</p>
                   <p className="font-medium">{selectedCertificate.course?.title}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">ব্যাচ</p>
+                  <p className="text-muted-foreground">Batch</p>
                   <p className="font-medium">{selectedCertificate.batch?.title}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">কোর্স সম্পন্ন</p>
+                  <p className="text-muted-foreground">Course Completed</p>
                   <p className="font-medium">{selectedCertificate.completionPercentage || 0}%</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">আবেদনের তারিখ</p>
+                  <p className="text-muted-foreground">Application Date</p>
                   <p className="font-medium">
-                    {new Date(selectedCertificate.createdAt).toLocaleDateString('bn-BD')}
+                    {new Date(selectedCertificate.createdAt).toLocaleDateString('en-US')}
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">বর্তমান স্ট্যাটাস</p>
+                  <p className="text-muted-foreground">Current Status</p>
                   {getStatusBadge(selectedCertificate.status)}
                 </div>
               </div>
@@ -310,9 +310,9 @@ export default function CertificateManagementPage() {
               {selectedCertificate.status.toLowerCase() === 'pending' && (
                 <>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">প্রত্যাখ্যানের কারণ (যদি প্রযোজ্য হয়)</label>
+                    <label className="text-sm font-medium">Rejection Reason (if applicable)</label>
                     <Textarea
-                      placeholder="শিক্ষার্থীকে জানানোর জন্য কারণ লিখুন..."
+                      placeholder="Enter reason to inform the student..."
                       value={rejectionReason}
                       onChange={(e) => setRejectionReason(e.target.value)}
                       rows={3}
@@ -325,7 +325,7 @@ export default function CertificateManagementPage() {
                       onClick={() => setReviewDialogOpen(false)}
                       disabled={isUpdating}
                     >
-                      বাতিল
+                      Cancel
                     </Button>
                     <Button
                       variant="destructive"
@@ -333,7 +333,7 @@ export default function CertificateManagementPage() {
                       disabled={isUpdating}
                     >
                       <XCircle className="h-4 w-4 mr-1" />
-                      প্রত্যাখ্যান
+                      Reject
                     </Button>
                     <Button
                       onClick={() => handleApprove(selectedCertificate._id)}
@@ -344,7 +344,7 @@ export default function CertificateManagementPage() {
                       ) : (
                         <CheckCircle className="h-4 w-4 mr-1" />
                       )}
-                      অনুমোদন
+                      Approve
                     </Button>
                   </DialogFooter>
                 </>
@@ -352,8 +352,8 @@ export default function CertificateManagementPage() {
 
               {selectedCertificate.status === 'Rejected' && (
                 <div className="p-3 bg-red-50 rounded-md border border-red-200">
-                  <p className="text-sm font-medium text-red-800 mb-1">প্রত্যাখ্যানের কারণ:</p>
-                  <p className="text-sm text-red-700">{selectedCertificate.rejectionReason || 'কারণ উল্লেখ করা হয়নি'}</p>
+                  <p className="text-sm font-medium text-red-800 mb-1">Rejection Reason:</p>
+                  <p className="text-sm text-red-700">{selectedCertificate.rejectionReason || 'No reason specified'}</p>
                 </div>
               )}
             </div>

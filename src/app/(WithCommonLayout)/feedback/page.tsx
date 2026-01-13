@@ -94,7 +94,7 @@ const Feedback = () => {
 
                         <div className="bg-primary-foreground/10 backdrop-blur-sm rounded-xl p-6 transform hover:scale-105 transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '500ms' }}>
                             <TrendingUp className="w-10 h-10 text-primary-foreground mx-auto mb-3" />
-                            <div className="text-3xl font-bold text-primary-foreground">৫ম</div>
+                            <div className="text-3xl font-bold text-primary-foreground">৬ষ্ঠ</div>
                             <div className="text-primary-foreground/80">ব্যাচ চলছে</div>
                         </div>
 

@@ -2,16 +2,12 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Target, Eye, Users, ArrowRight, Sparkles, ChevronDown } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { Debbroto, Mithun, Nurnobi } from "@/assets/images";
 
 const AboutUs = () => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
+  const [isVisible, setIsVisible] = useState(true);
 
   const teamMembers = [
     {

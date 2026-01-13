@@ -28,12 +28,12 @@ import { Role } from "@/types/common";
 // Base menu items for all students (enrolled or not)
 const baseStudentItems = [
     {
-        title: "ড্যাশবোর্ড",
+        title: "Dashboard",
         url: "/dashboard/student",
         icon: Home,
     },
     {
-        title: "কোর্স ব্রাউজ করুন",
+        title: "Browse Courses",
         url: "/dashboard/student/browse",
         icon: Search,
     },
@@ -42,25 +42,25 @@ const baseStudentItems = [
 // Menu items only for enrolled students
 const enrolledOnlyItems = [
     {
-        title: "আমার কোর্স",
+        title: "My Courses",
         url: "/dashboard/student/courses",
         icon: BookOpen,
         requiresEnrollment: true,
     },
     {
-        title: "প্রোগ্রেস ট্র্যাকিং",
+        title: "Progress Tracking",
         url: "/dashboard/student/progress",
         icon: TrendingUp,
         requiresEnrollment: true,
     },
     {
-        title: "লাইভ ক্লাস রেকর্ডিং",
+        title: "Live Class Recordings",
         url: "/dashboard/student/recordings",
         icon: Video,
         requiresEnrollment: true,
     },
     {
-        title: "সার্টিফিকেট",
+        title: "Certificates",
         url: "/dashboard/student/certificates",
         icon: Award,
         requiresEnrollment: true,
@@ -70,17 +70,17 @@ const enrolledOnlyItems = [
 // Bottom menu items for all students
 const bottomStudentItems = [
     {
-        title: "পেমেন্ট হিস্ট্রি",
+        title: "Payment History",
         url: "/dashboard/student/payments",
         icon: CreditCard,
     },
     {
-        title: "প্রোফাইল",
+        title: "Profile",
         url: "/dashboard/student/profile",
         icon: User2,
     },
     {
-        title: "সেটিংস",
+        title: "Settings",
         url: "/dashboard/student/settings",
         icon: Settings,
     },
@@ -88,52 +88,52 @@ const bottomStudentItems = [
 
 const adminItems = [
     {
-        title: "ড্যাশবোর্ড",
+        title: "Dashboard",
         url: "/dashboard/admin",
         icon: Home,
     },
     {
-        title: "কোর্স ম্যানেজমেন্ট",
+        title: "Course Management",
         url: "/dashboard/admin/courses",
         icon: BookOpen,
     },
     {
-        title: "ব্যাচ ম্যানেজমেন্ট",
+        title: "Batch Management",
         url: "/dashboard/admin/batch",
         icon: Group,
     },
     {
-        title: "স্টুডেন্ট ম্যানেজমেন্ট",
+        title: "Student Management",
         url: "/dashboard/admin/student",
         icon: User2,
     },
     {
-        title: "লাইভ ক্লাস রেকর্ডিং",
+        title: "Live Class Recordings",
         url: "/dashboard/admin/recordings",
         icon: Video,
     },
     {
-        title: "সার্টিফিকেট অনুমোদন",
+        title: "Certificate Approval",
         url: "/dashboard/admin/certificates",
         icon: ShieldCheck,
     },
     {
-        title: "পেমেন্ট ম্যানেজমেন্ট",
+        title: "Payment Management",
         url: "/dashboard/admin/payment",
         icon: DollarSign,
     },
     {
-        title: "রিপোর্টস",
+        title: "Reports",
         url: "/dashboard/admin/reports",
         icon: FileText,
     },
     {
-        title: "ইউজার ম্যানেজমেন্ট",
+        title: "User Management",
         url: "/dashboard/admin/users",
         icon: Users,
     },
     {
-        title: "সেটিংস",
+        title: "Settings",
         url: "/dashboard/admin/settings",
         icon: Settings,
     },
@@ -163,7 +163,7 @@ export function AppSidebar() {
     
     const items = isAdmin ? adminItems : studentItems;
     
-    const panelText = isAdmin ? 'এডমিন প্যানেল' : 'শিক্ষার্থী প্যানেল';
+    const panelText = isAdmin ? 'Admin Panel' : 'Student Panel';
 
     const router = useRouter();
     const { signOut } = useAuth();
@@ -246,10 +246,10 @@ export function AppSidebar() {
 
                                         <div className="flex flex-col items-start truncate">
                                             <span className="text-sm font-medium text-gray-800 truncate">
-                                                {user?.name || "অতিথি"}
+                                                {user?.name || "Guest"}
                                             </span>
                                             <span className="text-xs text-gray-500 truncate">
-                                                {user?.email || "ইমেইল নেই"}
+                                                {user?.email || "No email"}
                                             </span>
                                         </div>
 
@@ -262,7 +262,7 @@ export function AppSidebar() {
                                 className="w-[--radix-popper-anchor-width]"
                             >
                                 <DropdownMenuItem onClick={handleSignOut} className="flex justify-around items-center">
-                                    <span>সাইন আউট</span>
+                                    <span>Sign Out</span>
                                     <LogOut className="mr-2 h-4 w-4 text-red-600" />
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
