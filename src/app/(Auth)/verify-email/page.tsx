@@ -5,10 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import Cookies from 'js-cookie';
+import { useAppDispatch } from '@/redux/hooks';
+import { setUser } from '@/redux/features/auth/authSlice';
+import { getValidatedRedirectUrl } from '@/lib/authUtils';
+import { useEnrollment } from '@/hooks/useEnrollment';
 
 const VerifyEmailPage = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const dispatch = useAppDispatch();
+    const { hasEnrollments } = useEnrollment();
     const token = searchParams.get('token');
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>(token ? 'loading' : 'error');
     const [message, setMessage] = useState(token ? '' : 'Invalid verification link');
@@ -27,9 +34,28 @@ const VerifyEmailPage = () => {
                 });
 
                 if (response.ok) {
+                    const data = await response.json();
+                    const result = data.data;
+
+                    // Store token in cookies and update Redux state
+                    if (result.token) {
+                        Cookies.set('token', result.token, { expires: 7, secure: false });
+                        if (result.refreshToken) {
+                            Cookies.set('refreshToken', result.refreshToken, { expires: 30, secure: false });
+                        }
+                        dispatch(setUser(result.user));
+                    }
+
                     setStatus('success');
-                    setMessage('Email verified successfully! You can now log in.');
+                    setMessage('Email verified successfully! You are now logged in.');
                     toast.success('Email verified successfully!');
+
+                    // Redirect to intended page after a short delay
+                    setTimeout(() => {
+                        const redirectTo = searchParams.get('redirectTo');
+                        const redirectUrl = getValidatedRedirectUrl(redirectTo, result.user.role, hasEnrollments);
+                        router.push(redirectUrl);
+                    }, 2000);
                 } else {
                     const error = await response.json();
                     setStatus('error');
@@ -44,7 +70,7 @@ const VerifyEmailPage = () => {
         };
 
         verifyEmail();
-    }, [token]);
+    }, [token, dispatch, router, searchParams, hasEnrollments]);
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -85,9 +111,13 @@ const VerifyEmailPage = () => {
                         <div className="text-center">
                             <p className="text-gray-600 mb-6">{message}</p>
                             {status === 'success' && (
-                                <Button onClick={() => router.push('/auth')} className="w-full">
-                                    Go to Login
-                                </Button>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-center">
+                                        <CheckCircle className="w-6 h-6 text-green-600 mr-2" />
+                                        <span className="text-green-600 font-medium">Redirecting to dashboard...</span>
+                                    </div>
+                                    <p className="text-sm text-gray-500">You will be automatically redirected in a few seconds.</p>
+                                </div>
                             )}
                             {status === 'error' && (
                                 <div className="space-y-4">
