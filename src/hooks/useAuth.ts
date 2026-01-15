@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
 import { useEnrollment } from './useEnrollment';
 import { useRouter } from 'next/navigation';
+import { getValidatedRedirectUrl } from '@/lib/authUtils';
 // Utility function to serialize session data for Redux
 const serializeSession = (session: any) => {
   if (!session) return null;
@@ -102,6 +103,8 @@ export function useAuth() {
   const dispatch = useDispatch();
   const { hasEnrollments } = useEnrollment();
   const router = useRouter();
+
+  // Function to get validated redirect URL
   useEffect(() => {
     // Initialize auth state
     const initAuth = async () => {
@@ -131,18 +134,10 @@ export function useAuth() {
           if (user) {
             dispatch(setUser(user));
             toast.success("Google দিয়ে সফলভাবে লগইন হয়েছে!");
-            // Redirect to dashboard after successful social login
-            if (typeof window !== 'undefined') {
-              const roleMap: Record<string, string> = {
-                'superadmin': '/dashboard/admin',
-                'admin': '/dashboard/admin',
-                'instructor': '/dashboard/admin',
-                'learner': `${hasEnrollments ? '/dashboard/student' : '/checkout'}`,
-              };
-              const dashboardPath = user.role ? roleMap[user.role.toLowerCase()] || '/dashboard/student' : '/dashboard/student';
-              // window.location.href = dashboardPath;
-              router.push(dashboardPath);
-            }
+            // Redirect to intended page or default
+            const redirectTo = new URLSearchParams(window.location.search).get('redirectTo');
+            const redirectUrl = getValidatedRedirectUrl(redirectTo, betterPayload.user?.role);
+            router.push(redirectUrl);
           } else {
             // If social login failed, fall back to session data
             dispatch(setSession(serializeSession(betterPayload)));
@@ -165,7 +160,7 @@ export function useAuth() {
     };
 
     initAuth();
-  }, [dispatch]);
+  }, [dispatch,router]);
 
   const signIn = async (email: string, password: string) => {
     dispatch(setLoading(true));
@@ -199,21 +194,15 @@ export function useAuth() {
     try {
       const result = await signUpWithEmail(name, email, password);
 
-      if (result.token) {
-        // Store token and refresh token in cookies
-        Cookies.set('token', result.token, { expires: 7 }); // 7 days
-        if (result.refreshToken) {
-          Cookies.set('refreshToken', result.refreshToken, { expires: 30 }); // refresh token long-lived
-        }
-        dispatch(setUser(result.user));
-        toast.success('অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!');
-        return { success: true, user: result.user };
+      // Registration successful, but no token returned until email verification
+      // The result should contain userId and email
+      if (result.userId && result.email) {
+        // Don't store token or set user in Redux - user needs to verify email first
+        return { success: true, email: result.email };
       } else {
-        // toast.error('Registration failed');
-        return { success: false, error: 'Registration failed' };
+        return { success: false, error: 'Registration failed - invalid response' };
       }
     } catch (error: any) {
-      // toast.error(error.message || 'Registration failed');
       return { success: false, error: error.message };
     } finally {
       dispatch(setLoading(false));

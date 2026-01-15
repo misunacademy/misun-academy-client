@@ -110,7 +110,7 @@ export const courseCurriculum = {
     },
     {
       "title": "Illustrator Wizard",
-      "description": "Become a wizard in printing design and vector graphics",
+      "description": "Become a wizard in printing design and vector graphic",
       "totalModules": 19,
       "level": "Tool Based - Basic to Advanced",
       "modules": [

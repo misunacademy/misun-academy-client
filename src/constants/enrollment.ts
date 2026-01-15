@@ -25,7 +25,7 @@ export const enrollmentData = {
 
 
 export const courseInfo = {
-    title: "Complete Graphics Design With Freelancing (Batch-05)",
+    title: "Complete Graphic Design With Freelancing (Batch-05)",
     subtitle: "From Beginner to Professional Designer",
     shortDescription: "Master Adobe Photoshop and Illustrator with hands-on projects and real-world examples. Learn professional design techniques and start your freelancing career.",
     thumbnailImage: "/images/course-thumbnail.jpg", // Add a default thumbnail path
