@@ -289,11 +289,9 @@ export default function StudentProfile() {
       {/* Tabbed Sections */}
       <form id="profile-form" onSubmit={handleSubmit(onSubmit)}>
         <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="personal">Personal</TabsTrigger>
           <TabsTrigger value="professional">Professional</TabsTrigger>
-          <TabsTrigger value="learning">Learning</TabsTrigger>
-          <TabsTrigger value="interests">Interests</TabsTrigger>
         </TabsList>
 
         <TabsContent value="personal" className="space-y-6">
@@ -307,7 +305,7 @@ export default function StudentProfile() {
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName">First Name <span className="text-red-500">*</span></Label>
                   <Input
                     id="firstName"
                     {...register('name')}
@@ -337,7 +335,7 @@ export default function StudentProfile() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email <span className="text-red-500">*</span></Label>
                 <Input
                   id="email"
                   type="email"
@@ -351,10 +349,11 @@ export default function StudentProfile() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">Phone <span className="text-red-500">*</span></Label>
                 <Input
                   id="phone"
                   {...register('phone')}
+                  required
                   placeholder="+1 (555) 123-4567"
                 />
                 {errors.phone && (
@@ -363,11 +362,24 @@ export default function StudentProfile() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <Textarea
+                  id="address"
+                  {...register('address')}
+                  placeholder="Your full address..."
+                  className="min-h-[80px]"
+                />
+                {errors.address && (
+                  <p className="text-sm text-red-500">{errors.address.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="bio">Bio</Label>
                 <Textarea
                   id="bio"
                   {...register('bio')}
-                  placeholder="Tell us about yourself..."
+                  placeholder="Tell us about your design philosophy, favorite tools, and creative journey..."
                   className="min-h-[100px]"
                 />
                 {errors.bio && (
@@ -424,7 +436,7 @@ export default function StudentProfile() {
                   <Input
                     id="currentJob"
                     {...register('currentJob')}
-                    placeholder="e.g. Software Developer"
+                    placeholder="e.g. Graphic Designer, UI/UX Designer, Art Director"
                   />
                   {errors.currentJob && (
                     <p className="text-sm text-red-500">{errors.currentJob.message}</p>
@@ -435,7 +447,7 @@ export default function StudentProfile() {
                   <Input
                     id="industry"
                     {...register('industry')}
-                    placeholder="e.g. Technology, Healthcare"
+                    placeholder="e.g. Advertising, Digital Media, Branding, Web Design"
                   />
                   {errors.industry && (
                     <p className="text-sm text-red-500">{errors.industry.message}</p>
@@ -464,192 +476,6 @@ export default function StudentProfile() {
                   <p className="text-sm text-red-500">{errors.experience.message}</p>
                 )}
               </div>
-
-              <Button
-                type="submit"
-                form="profile-form"
-                disabled={isUpdating || isSubmitting}
-              >
-                {(isUpdating || isSubmitting) ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Save Changes
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="learning" className="space-y-6">
-          {/* Learning Progress Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5" />
-                Learning Progress Summary
-              </CardTitle>
-              <CardDescription>Your learning journey at a glance</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{dashboardData?.enrolledCoursesCount || 0}</div>
-                  <p className="text-sm text-muted-foreground">Enrolled Courses</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{dashboardData?.completedCoursesCount || 0}</div>
-                  <p className="text-sm text-muted-foreground">Completed Courses</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{dashboardData?.upcomingClasses || 0}</div>
-                  <p className="text-sm text-muted-foreground">Upcoming Classes</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                Learning Preferences
-              </CardTitle>
-              <CardDescription>Help us personalize your learning experience</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="skillLevel">Current Skill Level</Label>
-                  <Select
-                    value={watch('skillLevel') || ''}
-                    onValueChange={(value) => setValue('skillLevel', value as any)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your skill level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="beginner">Beginner</SelectItem>
-                      <SelectItem value="intermediate">Intermediate</SelectItem>
-                      <SelectItem value="advanced">Advanced</SelectItem>
-                      <SelectItem value="expert">Expert</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.skillLevel && (
-                    <p className="text-sm text-red-500">{errors.skillLevel.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="preferredLearningStyle">Preferred Learning Style</Label>
-                  <Select
-                    value={watch('preferredLearningStyle') || ''}
-                    onValueChange={(value) => setValue('preferredLearningStyle', value as any)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="How do you learn best?" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="visual">Visual (videos, diagrams)</SelectItem>
-                      <SelectItem value="auditory">Auditory (podcasts, lectures)</SelectItem>
-                      <SelectItem value="kinesthetic">Hands-on (projects, exercises)</SelectItem>
-                      <SelectItem value="reading">Reading/Writing</SelectItem>
-                      <SelectItem value="mixed">Mixed approach</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.preferredLearningStyle && (
-                    <p className="text-sm text-red-500">{errors.preferredLearningStyle.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="learningGoals">Learning Goals</Label>
-                <Textarea
-                  id="learningGoals"
-                  {...register('learningGoals')}
-                  placeholder="What do you want to achieve through our courses?"
-                  className="min-h-[80px]"
-                />
-                {errors.learningGoals && (
-                  <p className="text-sm text-red-500">{errors.learningGoals.message}</p>
-                )}
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="timeZone">Time Zone</Label>
-                  <Input
-                    id="timeZone"
-                    {...register('timeZone')}
-                    placeholder="e.g. UTC+6 (Bangladesh)"
-                  />
-                  {errors.timeZone && (
-                    <p className="text-sm text-red-500">{errors.timeZone.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="availability">Weekly Availability</Label>
-                  <Select
-                    value={watch('availability') || ''}
-                    onValueChange={(value) => setValue('availability', value as any)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="How much time can you dedicate?" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5-10">5-10 hours/week</SelectItem>
-                      <SelectItem value="10-20">10-20 hours/week</SelectItem>
-                      <SelectItem value="20-30">20-30 hours/week</SelectItem>
-                      <SelectItem value="30+">30+ hours/week</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.availability && (
-                    <p className="text-sm text-red-500">{errors.availability.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                form="profile-form"
-                disabled={isUpdating || isSubmitting}
-              >
-                {(isUpdating || isSubmitting) ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Save Changes
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="interests" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Areas of Interest
-              </CardTitle>
-              <CardDescription>Topics and skills you&apos;re interested in learning</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  value={newInterest}
-                  onChange={(e) => setNewInterest(e.target.value)}
-                  placeholder="Add an interest (e.g. React, Python, Data Science)"
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddInterest()}
-                />
-                <Button onClick={handleAddInterest} variant="outline">Add</Button>
-              </div>
-
-              {watch('areasOfInterest') && watch('areasOfInterest').length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {watch('areasOfInterest').map((interest, index) => (
-                    <Badge key={index} variant="secondary" className="cursor-pointer" onClick={() => handleRemoveInterest(interest)}>
-                      {interest} ×
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              {(!watch('areasOfInterest') || watch('areasOfInterest').length === 0) && (
-                <p className="text-sm text-muted-foreground">No interests added yet. Add some topics you&apos;re interested in learning!</p>
-              )}
 
               <Button
                 type="submit"

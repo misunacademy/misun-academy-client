@@ -271,10 +271,10 @@ export default function BrowseCoursesPage() {
                                 <p className="text-muted-foreground flex items-center gap-1 mt-0.5">
                                   <span className="truncate">Batch {batch.batchNumber}</span>
                                   <span>•</span>
-                                  <span className="flex items-center gap-0.5">
+                                  {/* <span className="flex items-center gap-0.5">
                                     <Users className="h-3 w-3" />
                                     {batch.currentEnrollment || 0}{batch.maxCapacity ? `/${batch.maxCapacity}` : ''}
-                                  </span>
+                                  </span> */}
                                 </p>
                               </div>
                               <div className="flex flex-col items-end gap-0.5 ml-2 flex-shrink-0">
@@ -328,7 +328,8 @@ export default function BrowseCoursesPage() {
                     variant={hasActiveBatches ? "default" : "outline"}
                     disabled={!hasActiveBatches}
                   >
-                    <Link href={hasActiveBatches ? `/courses/${course.slug || course._id}` : '#'}>
+                    {/* /${course.slug || course._id} */}
+                    <Link href={hasActiveBatches ? `/courses` : '#'}>
                       {hasActiveBatches ? 'View Details & Enroll' : 'Coming Soon'}
                     </Link>
                   </Button>

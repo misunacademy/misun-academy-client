@@ -90,8 +90,8 @@ export default function StudentCertificates() {
               <p className="text-sm text-muted-foreground">Completion Rate</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">-</div>
-              <p className="text-sm text-muted-foreground">Average Grade</p>
+              {/* <div className="text-2xl font-bold text-primary">-</div>
+              <p className="text-sm text-muted-foreground">Average Grade</p> */}
             </div>
           </div>
         </CardContent>

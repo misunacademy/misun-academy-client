@@ -20,7 +20,7 @@ interface EnrolledCourse {
   shortDescription: string;
   instructor: { name: string } | null;
   batchTitle: string;
-  batchCode: string;
+  batchNumber: string;
   enrolledAt: string;
   status: string;
 }

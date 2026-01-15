@@ -86,8 +86,8 @@ const EnrolledStudentTable = () => {
 
     const students = data?.data || [];
     const meta = data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
-console.log("students",students);
-console.log("meta",meta);
+    console.log("students", students);
+    console.log("meta", meta);
     const columns = useMemo<ColumnDef<StudentData>[]>(
         () => [
             {
@@ -111,6 +111,11 @@ console.log("meta",meta);
                 cell: ({ row }) => row.original.student?.phone || 'N/A',
             },
             {
+                accessorKey: "address",
+                header: "Address",
+                cell: ({ row }) => row.original.student?.address || 'N/A',
+            },
+            {
                 accessorKey: "course",
                 header: "Course",
                 cell: ({ row }) => row.original.course?.title || 'N/A',
@@ -125,7 +130,19 @@ console.log("meta",meta);
                 header: "Status",
                 cell: ({ row }) => {
                     const status = row.original.status;
-                    return <Badge variant={(status === 'success') ? "default" : status === "failed" ? "destructive" : "outline"}>{status}</Badge>;
+                    const getVariant = (status: string) => {
+                        switch (status) {
+                            case 'active': return 'default';
+                            case 'payment-pending': return 'secondary';
+                            case 'pending': return 'outline';
+                            case 'completed': return 'default';
+                            case 'suspended': return 'destructive';
+                            case 'payment-failed': return 'destructive';
+                            case 'refunded': return 'outline';
+                            default: return 'outline';
+                        }
+                    };
+                    return <Badge variant={getVariant(status)} className="capitalize">{status.replace('-', ' ')}</Badge>;
                 },
             },
             {
@@ -183,8 +200,8 @@ console.log("meta",meta);
                             onChange={(e) => setSearch(e.target.value)}
                             className="max-w-sm"
                         />
-                        <Select 
-                            value={statusFilter} 
+                        <Select
+                            value={statusFilter}
                             onValueChange={(value) => {
                                 setStatusFilter(value);
                                 setPage(1); // Reset to first page when filter changes
@@ -195,9 +212,13 @@ console.log("meta",meta);
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Status</SelectItem>
-                                <SelectItem value="success">Success</SelectItem>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="payment-pending">Payment Pending</SelectItem>
                                 <SelectItem value="pending">Pending</SelectItem>
-                                <SelectItem value="failed">Failed</SelectItem>
+                                <SelectItem value="completed">Completed</SelectItem>
+                                <SelectItem value="suspended">Suspended</SelectItem>
+                                <SelectItem value="payment-failed">Payment Failed</SelectItem>
+                                <SelectItem value="refunded">Refunded</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

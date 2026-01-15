@@ -13,7 +13,7 @@ interface StudentDashboardData {
         courseTitle: string;
         courseSlug: string;
         batchTitle: string;
-        batchCode: string;
+        batchNumber: string;
         enrolledAt: string;
         status: string;
     }>;
@@ -131,7 +131,7 @@ export default function StudentDashboardClient() {
                                         <div className="flex flex-col">
                                             <p className="text-sm font-medium">{course.courseTitle}</p>
                                             <p className="text-xs text-muted-foreground">
-                                                {course.batchTitle} ({course.batchCode})
+                                                {course.batchTitle} ({course.batchNumber})
                                             </p>
                                         </div>
                                         <div className="text-xs text-muted-foreground">
