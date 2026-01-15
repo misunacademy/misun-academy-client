@@ -143,26 +143,26 @@ export function AppSidebar() {
     const pathname = usePathname();
     const user = useAppSelector((state) => state?.auth?.user);
     const { hasEnrollments } = useEnrollment();
-    
-    console.log("hasEnrollments",hasEnrollments);
+
+    console.log("hasEnrollments", hasEnrollments);
     // Determine if we're in admin or student dashboard based on user role
     // Handle both uppercase (API) and lowercase (enum) role values
     const userRole = user?.role?.toLowerCase() || '';
     const isAdmin = [
-        Role.SUPERADMIN.toLowerCase(), 
-        Role.ADMIN.toLowerCase(), 
+        Role.SUPERADMIN.toLowerCase(),
+        Role.ADMIN.toLowerCase(),
         Role.INSTRUCTOR.toLowerCase()
     ].includes(userRole);
-    
+
     // Build student menu based on enrollment status
     const studentItems = isAdmin ? [] : [
         ...baseStudentItems,
         ...(hasEnrollments ? enrolledOnlyItems : []),
         ...bottomStudentItems,
     ];
-    
+
     const items = isAdmin ? adminItems : studentItems;
-    
+
     const panelText = isAdmin ? 'Admin Panel' : 'Student Panel';
 
     const router = useRouter();
@@ -203,8 +203,9 @@ export function AppSidebar() {
                                             className={`
                                                 px-4 py-3 rounded-lg transition-all duration-200
                                                 hover:bg-gray-100
+                                               
                                                 ${isActive
-                                                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 shadow-md'
+                                                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 shadow-md  hover:text-white'
                                                     : 'text-gray-700'
                                                 }
                                             `}
