@@ -9,7 +9,7 @@ export const metadata = generateMetadata({
   description:
     'ঘরে বসেই ডিজাইন শেখা এবং সফল ক্যারিয়ার গড়ার সেরা সুযোগ। MISUN Academy-এর সাথে শুরু হোক আপনার গ্রাফিক্স ডিজাইন জার্নি। | Learn from home, build your creative career with MISUN Academy.',
   keywords: [
-    'Graphics Design Course',
+    'Graphic Design Course',
     'Freelancing',
     'course details',
     'misun academy course',
