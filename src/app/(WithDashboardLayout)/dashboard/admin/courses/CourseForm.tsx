@@ -183,6 +183,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
           shouldValidate: true,
           shouldTouch: false
         });
+        form.setValue("status", (course as any).status || "draft", { shouldDirty: false, shouldValidate: true, shouldTouch: false });
       }, 0);
 
       setPreviews({
@@ -273,7 +274,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
       features: features,
       highlights: highlights,
     };
-
+console.log(payload);
     try {
       if (isNew) {
         await createCourse(payload).unwrap();
@@ -385,7 +386,11 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
             <Textarea
               {...form.register("learningOutcomes")}
               className="min-h-[120px]"
-              placeholder="e.g. Master Adobe Photoshop\nCreate stunning logos\nUnderstand color theory"
+              placeholder="e.g. Master Adobe Creative Suite (Photoshop, Illustrator, InDesign)
+Create professional logos and branding materials
+Apply color theory and typography principles
+Design responsive web graphics and UI elements
+Build a professional portfolio showcasing design work"
             />
           </Field>
 
@@ -393,12 +398,15 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
             <Textarea
               {...form.register("prerequisites")}
               className="min-h-[100px]"
-              placeholder="e.g. Basic computer skills\nFamiliarity with design software"
+              placeholder="e.g. Basic computer literacy and file management
+Familiarity with Windows/Mac operating systems
+Creative mindset and attention to detail
+No prior design experience required (beginner-friendly)"
             />
           </Field>
 
           <Field label="Target Audience">
-            <Textarea {...form.register("targetAudience")} placeholder="e.g. Aspiring designers, marketers, freelancers" />
+            <Textarea {...form.register("targetAudience")} placeholder="e.g. Aspiring graphic designers, UI/UX enthusiasts, marketing professionals, small business owners, freelancers, students, career changers interested in creative fields" />
           </Field>
 
           <Field label="Instructor (optional)">
@@ -415,7 +423,11 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
               newFeatures[index] = value;
               setFeatures(newFeatures);
             }}
-            placeholder="e.g. 50+ hours of premium design tutorials"
+            placeholder="e.g. 50+ hours of hands-on design tutorials with Adobe Creative Suite
+Real-world projects including logo design, branding, and web graphics
+Personal feedback and portfolio reviews from industry experts
+Lifetime access to design resources and templates
+Certificate of completion recognized by design professionals"
           />
 
           <ArrayField
@@ -428,7 +440,11 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
               newHighlights[index] = value;
               setHighlights(newHighlights);
             }}
-            placeholder="e.g. Adobe Photoshop"
+            placeholder="e.g. Adobe Photoshop, Illustrator, InDesign
+Figma and Sketch for UI/UX design
+Typography and color theory mastery
+Logo design and branding strategies
+Portfolio development and client presentation"
           />
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -528,7 +544,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
             </Field>
             <Field label="Status">
               <Select value={form.watch("status") as string}
-                onValueChange={(v) => form.setValue("status", v as any)}>
+                onValueChange={(v) => form.setValue("status", v as any, { shouldDirty: true, shouldValidate: true })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -542,7 +558,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
           </div>
 
           <Field label="Tags (comma separated)">
-            <Input {...form.register("tags")} placeholder="photoshop, illustrator, design" />
+            <Input {...form.register("tags")} placeholder="photoshop, illustrator, indesign, graphic design, ui/ux, branding, typography, color theory, logo design, portfolio" />
           </Field>
 
           <div className="flex items-center gap-2">
