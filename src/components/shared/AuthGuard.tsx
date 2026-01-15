@@ -60,12 +60,14 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
 
                 setIsAuthenticated(false);
                 console.warn('[AuthGuard] No valid session or token — redirecting to /auth');
-                router.push('/auth');
+                const redirectUrl = `/auth?redirectTo=${encodeURIComponent(pathname)}`;
+                router.push(redirectUrl);
             } catch (error) {
                 console.error('Auth check failed:', error);
                 setIsAuthenticated(false);
                 console.warn('[AuthGuard] Error during auth check — redirecting to /auth', error);
-                router.push('/auth');
+                const redirectUrl = `/auth?redirectTo=${encodeURIComponent(pathname)}`;
+                router.push(redirectUrl);
             } finally {
                 setIsLoading(false);
             }
@@ -80,7 +82,7 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
             // Check if user is accessing admin routes
             const isAdminRoute = pathname.startsWith('/dashboard/admin');
             const isStudentRoute = pathname.startsWith('/dashboard/student');
-            
+
             const hasAdminAccess = ['superadmin', 'admin', 'instructor'].includes(userRole.toLowerCase());
             const hasStudentAccess = userRole.toLowerCase() === 'learner';
 
