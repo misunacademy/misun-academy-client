@@ -415,7 +415,7 @@ function ModuleFormDialog({ open, mode, data, courseId, onClose, onSuccess }: {
             <Input
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="Introduction to Web Development"
+              placeholder="Introduction to Adobe Photoshop"
               required
             />
           </div>
@@ -424,7 +424,7 @@ function ModuleFormDialog({ open, mode, data, courseId, onClose, onSuccess }: {
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Brief description of what students will learn..."
+              placeholder="Learn essential Photoshop tools and techniques for professional graphic design work..."
               required
             />
           </div>
@@ -456,7 +456,10 @@ function ModuleFormDialog({ open, mode, data, courseId, onClose, onSuccess }: {
             <Textarea
               value={formData.learningObjectives}
               onChange={(e) => setFormData({ ...formData, learningObjectives: e.target.value })}
-              placeholder="Understand HTML basics&#10;Create responsive layouts&#10;Build interactive forms"
+              placeholder="Master Photoshop selection tools and layers
+Create professional photo manipulations
+Apply advanced masking and compositing techniques
+Design graphics for web and print media"
               rows={4}
             />
           </div>
@@ -503,6 +506,17 @@ function LessonFormDialog({ open, mode, moduleId, data, onClose, onSuccess }: {
       if (mode === 'create') {
         await createLesson({ moduleId: moduleId!, ...formData }).unwrap();
         toast.success('Lesson created successfully');
+        setFormData({
+          title: '',
+          description: '',
+          type: 'video',
+          videoSource: 'youtube',
+          videoId: '',
+          videoUrl: '',
+          videoDuration: 0,
+          content: '',
+          isMandatory: true,
+        });
       } else {
         await updateLesson({ lessonId: data!._id, ...formData }).unwrap();
         toast.success('Lesson updated successfully');
@@ -525,7 +539,7 @@ function LessonFormDialog({ open, mode, moduleId, data, onClose, onSuccess }: {
             <Input
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="Getting Started with HTML"
+              placeholder="Photoshop Interface and Basic Tools"
               required
             />
           </div>
@@ -534,7 +548,7 @@ function LessonFormDialog({ open, mode, moduleId, data, onClose, onSuccess }: {
             <Textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="What students will learn in this lesson..."
+              placeholder="Master the Photoshop workspace, learn essential tools, and create your first design project..."
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -547,8 +561,6 @@ function LessonFormDialog({ open, mode, moduleId, data, onClose, onSuccess }: {
                 <SelectContent>
                   <SelectItem value="video">Video</SelectItem>
                   <SelectItem value="reading">Reading</SelectItem>
-                  <SelectItem value="quiz">Quiz</SelectItem>
-                  <SelectItem value="project">Project</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -611,7 +623,22 @@ function LessonFormDialog({ open, mode, moduleId, data, onClose, onSuccess }: {
               <Textarea
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                placeholder="Lesson content in markdown format..."
+                placeholder="## Photoshop Tools Overview
+
+### Essential Tools for Graphic Designers
+
+**Selection Tools:**
+- Marquee tools for geometric selections
+- Lasso tools for freeform selections
+- Magic Wand for color-based selections
+
+**Image Editing:**
+- Clone Stamp for content removal
+- Healing Brush for photo retouching
+- Content-Aware Fill for intelligent removal
+
+### Practice Exercise
+Create a composite image using at least 3 different selection techniques..."
                 rows={8}
               />
             </div>
