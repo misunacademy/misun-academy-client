@@ -37,7 +37,7 @@ export default function BatchDashboard() {
     const [endDate, setEndDate] = useState('');
     const [enrollmentStartDate, setEnrollmentStartDate] = useState('');
     const [enrollmentEndDate, setEnrollmentEndDate] = useState('');
-    const [maxCapacity, setMaxCapacity] = useState('');
+    // const [maxCapacity, setMaxCapacity] = useState('');
     const [description, setDescription] = useState('');
     const { data: batches, isLoading, error } = useGetAllBatchesQuery(undefined);
     const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery({ status: "published" });
@@ -72,7 +72,7 @@ export default function BatchDashboard() {
             endDate: new Date(endDate),
             enrollmentStartDate: new Date(enrollmentStartDate),
             enrollmentEndDate: new Date(enrollmentEndDate),
-            maxCapacity: maxCapacity ? Number(maxCapacity) : undefined,
+            // maxCapacity: maxCapacity ? Number(maxCapacity) : undefined,
             description: description || undefined,
         };
         
@@ -97,7 +97,7 @@ export default function BatchDashboard() {
             setEndDate('');
             setEnrollmentStartDate('');
             setEnrollmentEndDate('');
-            setMaxCapacity('');
+            // setMaxCapacity('');
             setDescription('');
         } catch (err) {
             console.log(err)
@@ -115,7 +115,7 @@ export default function BatchDashboard() {
         setEndDate(new Date(batch.endDate).toISOString().split('T')[0]);
         setEnrollmentStartDate(new Date(batch.enrollmentStartDate).toISOString().split('T')[0]);
         setEnrollmentEndDate(new Date(batch.enrollmentEndDate).toISOString().split('T')[0]);
-        setMaxCapacity(batch.maxCapacity?.toString() || '');
+        // setMaxCapacity(batch.maxCapacity?.toString() || '');
         setDescription(batch.description || '');
         
         // Show form and scroll to top
@@ -133,7 +133,7 @@ export default function BatchDashboard() {
         setEndDate('');
         setEnrollmentStartDate('');
         setEnrollmentEndDate('');
-        setMaxCapacity('');
+        // setMaxCapacity('');
         setDescription('');
         setShowForm(false);
     };
@@ -290,7 +290,7 @@ export default function BatchDashboard() {
                             </div>
                         </div>
 
-                        <div>
+                        {/* <div>
                             <Label htmlFor="maxCapacity">Max Capacity</Label>
                             <Input
                                 id="maxCapacity"
@@ -299,7 +299,7 @@ export default function BatchDashboard() {
                                 onChange={(e) => setMaxCapacity(e.target.value)}
                                 placeholder="e.g. 30"
                             />
-                        </div>
+                        </div> */}
 
                         <div className="flex gap-2">
                             <Button type="submit">{editingBatchId ? 'Update Batch' : 'Create Batch'}</Button>

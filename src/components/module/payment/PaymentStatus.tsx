@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import Congratulations from '@/components/module/payment/congratulations';
 
 function PaymentStatusContent() {
     const searchParams = useSearchParams();
@@ -47,8 +48,8 @@ function PaymentStatusContent() {
     const { icon, title, description } = getStatusContent();
 
     return (
-        <div className="container mx-auto p-4 h-96">
-            <Card className="max-w-md mx-auto">
+        <div className="container mx-auto p-4 min-h-screen flex flex-col items-center justify-center  ">
+            <Card className={`max-w-md mx-auto`}>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         {icon}
@@ -62,6 +63,9 @@ function PaymentStatusContent() {
                     </Alert>
                 </CardContent>
             </Card>
+            {
+                status === 'success' && <Congratulations />
+            }
         </div>
     );
 }
