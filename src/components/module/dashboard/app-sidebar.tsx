@@ -47,12 +47,12 @@ const enrolledOnlyItems = [
         icon: BookOpen,
         requiresEnrollment: true,
     },
-    {
-        title: "Progress Tracking",
-        url: "/dashboard/student/progress",
-        icon: TrendingUp,
-        requiresEnrollment: true,
-    },
+    // {
+    //     title: "Progress Tracking",
+    //     url: "/dashboard/student/progress",
+    //     icon: TrendingUp,
+    //     requiresEnrollment: true,
+    // },
     {
         title: "Live Class Recordings",
         url: "/dashboard/student/recordings",
