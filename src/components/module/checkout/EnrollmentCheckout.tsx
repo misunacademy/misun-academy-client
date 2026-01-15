@@ -58,7 +58,6 @@ const EnrollmentCheckout = () => {
     const [enrollmentData, setEnrollmentData] = useState<EnrollmentForm | null>(null);
     const [enrollStudent] = useEnrollStudentMutation();
     const [enrollStudentManual] = useEnrollStudentManualMutation();
-    const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
     const router = useRouter();
     // Initialize form first
     const form = useForm<EnrollmentForm>({
@@ -84,12 +83,9 @@ const EnrollmentCheckout = () => {
         const isEnrollmentOpen = enrollmentStart && enrollmentEnd &&
             now <= enrollmentEnd; // Allow batches where enrollment hasn't ended yet
 
-        // Check if batch has capacity (if maxCapacity is set)
-        const hasCapacity = !batch.maxCapacity ||
-            (batch.currentEnrollment < batch.maxCapacity);
 
         // Batch must have upcoming/running status and be within enrollment period
-        return isEnrollmentOpen && hasCapacity &&
+        return isEnrollmentOpen &&
             (batch.status === 'upcoming' || batch.status === 'running');
     });
 
@@ -105,29 +101,30 @@ const EnrollmentCheckout = () => {
     }, [batches, form]);
 
     // Get enrollment status for selected batch
-    const getEnrollmentStatus = (batch: any) => {
-        if (!batch) return null;
+    // const getEnrollmentStatus = (batch: any) => {
+    //     if (!batch) return null;
 
-        const now = new Date();
-        const enrollmentStart = batch.enrollmentStartDate ? new Date(batch.enrollmentStartDate) : null;
-        const enrollmentEnd = batch.enrollmentEndDate ? new Date(batch.enrollmentEndDate) : null;
+    //     const now = new Date();
+    //     const enrollmentStart = batch.enrollmentStartDate ? new Date(batch.enrollmentStartDate) : null;
+    //     const enrollmentEnd = batch.enrollmentEndDate ? new Date(batch.enrollmentEndDate) : null;
 
-        if (!enrollmentStart || !enrollmentEnd) return { canEnroll: false, message: 'Enrollment dates not set' };
+    //     if (!enrollmentStart || !enrollmentEnd) return { canEnroll: false, message: 'Enrollment dates not set' };
 
-        if (now >= enrollmentStart && now <= enrollmentEnd) {
-            return { canEnroll: true, message: 'Enrollment is open' };
-        } else if (now < enrollmentStart) {
-            return {
-                canEnroll: false,
-                message: `Enrollment opens on ${enrollmentStart.toLocaleDateString()}`
-            };
-        } else {
-            return { canEnroll: false, message: 'Enrollment has closed' };
-        }
-    };
+    //     if (now >= enrollmentStart && now <= enrollmentEnd) {
+    //         return { canEnroll: true, message: 'Enrollment is open' };
+    //     } else if (now < enrollmentStart) {
+    //         return {
+    //             canEnroll: false,
+    //             message: `Enrollment opens on ${enrollmentStart.toLocaleDateString()}`
+    //         };
+    //     } else {
+    //         return { canEnroll: false, message: 'Enrollment has closed' };
+    //     }
+    // };
 
-    const enrollmentStatus = selectedBatch ? getEnrollmentStatus(selectedBatch) : null;
+    // const enrollmentStatus = selectedBatch ? getEnrollmentStatus(selectedBatch) : null;
 
+    // console.log("enrollmentStatus", enrollmentStatus);
     const processSSLCommerzPayment = async (data: EnrollmentForm) => {
         setIsProcessing(true);
         try {
@@ -147,23 +144,12 @@ const EnrollmentCheckout = () => {
                 description: "You'll be redirected to complete your payment securely.",
             });
 
-            setRedirectUrl(res.data.paymentUrl);
-
+            router.push(res.data.paymentUrl);
         } catch (error: unknown) {
             console.error('Payment error:', error);
             const paymentError = error as PaymentError;
             toast.error(paymentError?.data?.message || "Payment initiation failed. Please try again.");
             setIsProcessing(false);
-        }
-    };
-
-    const onSubmit = (data: EnrollmentForm) => {
-        setEnrollmentData(data);
-
-        if (data.paymentMethod === "SSLCommerz") {
-            processSSLCommerzPayment(data);
-        } else if (data.paymentMethod === "phonePay") {
-            setCurrentStep(2);
         }
     };
 
@@ -184,7 +170,8 @@ const EnrollmentCheckout = () => {
                 toast.success("Payment submitted successfully!", {
                     description: "We'll verify your payment within 12-24 hours."
                 });
-                setCurrentStep(3);
+                // Redirect to congratulations page
+                router.push('/');
             }
         }
         catch (err: unknown) {
@@ -195,60 +182,20 @@ const EnrollmentCheckout = () => {
         }
     };
 
-    const goBack = () => {
-        if (currentStep === 2) setCurrentStep(1);
-        else if (currentStep === 3) setCurrentStep(1);
-        else window.history.back();
+    const onSubmit = (data: EnrollmentForm) => {
+        setEnrollmentData(data);
+
+        if (data.paymentMethod === "SSLCommerz") {
+            processSSLCommerzPayment(data);
+        } else if (data.paymentMethod === "phonePay") {
+            setCurrentStep(2);
+        }
     };
 
-    // Redirect effect
-
-    useEffect(() => {
-        if (redirectUrl) {
-            // window.location.href = redirectUrl;
-            router.push(redirectUrl);
-        }
-    }, [redirectUrl, router]);
-
-    if (currentStep === 3) {
-        return (
-            <div className="min-h-screen gradient-bg">
-                <div className="bg-background/80 backdrop-blur-sm border-b sticky top-0 z-50">
-                    <div className="container mx-auto px-4 py-4">
-                        <div className="flex items-center gap-4">
-                            <Button variant="ghost" size="sm" onClick={goBack}>
-                                <ArrowLeft className="w-4 h-4 mr-2" />
-                                Back
-                            </Button>
-                            <div className="flex items-center gap-2">
-                                <Sparkles className="w-5 h-5 text-primary" />
-                                <span className="font-semibold">Enrollment Successful</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="container mx-auto px-4 py-8 max-w-2xl">
-                    <Card className="glass-card">
-                        <CardContent className="p-6">
-                            <div className="text-center">
-                                <div className="w-16 h-16 bg-success rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <CheckCircle className="w-8 h-8 text-success-foreground" />
-                                </div>
-                                <h3 className="text-2xl font-bold mb-2">Enrollment Successful!</h3>
-                                <p className="text-muted-foreground mb-6">
-                                    Thank you for enrolling! We&apos;ll contact you within 24 hours to confirm your enrollment and payment details.
-                                </p>
-                                <Button onClick={goBack} className="w-full">
-                                    Back to Home
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        );
-    }
+    const goBack = () => {
+        if (currentStep === 2) setCurrentStep(1);
+        else window.history.back();
+    };
 
 
 
@@ -265,7 +212,7 @@ const EnrollmentCheckout = () => {
                         <div className="flex items-center gap-2">
                             <Sparkles className="w-5 h-5 text-primary" />
                             <span className="font-semibold">
-                                {currentStep === 1 ? 'Payment Method' : currentStep === 2 ? 'Manual Payment' : 'Course Enrollment'}
+                                {currentStep === 1 ? 'Payment Method' : 'Manual Payment'}
                             </span>
                         </div>
                     </div>
@@ -309,48 +256,6 @@ const EnrollmentCheckout = () => {
                             {selectedCourse && (
                                 <CardContent>
                                     <div className="space-y-4">
-                                        {/* {selectedBatch && (
-                                            <div className="bg-accent/50 rounded-lg p-3 space-y-2">
-                                                <div>
-                                                    <h4 className="font-semibold text-sm mb-1">Selected Batch</h4>
-                                                    <p className="text-sm font-medium">{selectedBatch.title}</p>
-                                                </div>
-                                                {selectedBatch.startDate && (
-                                                    <p className="text-xs text-muted-foreground">
-                                                        <strong>Batch Starts:</strong> {new Date(selectedBatch.startDate).toLocaleDateString()}
-                                                    </p>
-                                                )}
-                                                {selectedBatch.enrollmentEndDate && (
-                                                    <p className="text-xs text-muted-foreground">
-                                                        <strong>Enrollment Ends:</strong> {new Date(selectedBatch.enrollmentEndDate).toLocaleDateString()}
-                                                    </p>
-                                                )}
-                                                {enrollmentStatus && (
-                                                    <div className={`text-xs px-2 py-1 rounded-full inline-block ${
-                                                        enrollmentStatus.canEnroll
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-yellow-100 text-yellow-800'
-                                                    }`}>
-                                                        {enrollmentStatus.message}
-                                                    </div>
-                                                )}
-                                                {selectedBatch.maxCapacity && (
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="flex-1 bg-background rounded-full h-2 overflow-hidden">
-                                                            <div
-                                                                className="bg-primary h-full transition-all"
-                                                                style={{
-                                                                    width: `${Math.min((selectedBatch.currentEnrollment / selectedBatch.maxCapacity) * 100, 100)}%`
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                                            {selectedBatch.currentEnrollment}/{selectedBatch.maxCapacity}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )} */}
 
                                         <Separator />
 
@@ -364,12 +269,7 @@ const EnrollmentCheckout = () => {
                                                         </div>
                                                     ))
                                                 }
-                                                {/* <div className="flex-1 text-center items-start gap-2 bg-accent/30 rounded-md  bg-black text-white">
-                                                    <span className="text-xs">Adobe Photoshop</span>
-                                                </div>
-                                                <div className="flex-1 text-center items-start gap-2 bg-accent/30 rounded-md  bg-black text-white">
-                                                    <span className="text-xs">Adobe Illustrator</span>
-                                                </div> */}
+
                                             </div>
                                         </div>
 
@@ -386,30 +286,7 @@ const EnrollmentCheckout = () => {
                                                         </li>
                                                     ))
                                                 }
-                                                {/* <li className="flex items-center gap-2">
-                                                    <CheckCircle className="w-4 h-4 text-success" />
-                                                    <span>50+ hours of premium design tutorials</span>
-                                                </li>
-                                                <li className="flex items-center gap-2">
-                                                    <CheckCircle className="w-4 h-4 text-success" />
-                                                    <span>Hands-on projects with real-world examples</span>
-                                                </li>
-                                                <li className="flex items-center gap-2">
-                                                    <CheckCircle className="w-4 h-4 text-success" />
-                                                    <span>Lifetime access to course materials</span>
-                                                </li>
-                                                <li className="flex items-center gap-2">
-                                                    <CheckCircle className="w-4 h-4 text-success" />
-                                                    <span>Certificate of completion</span>
-                                                </li>
-                                                <li className="flex items-center gap-2">
-                                                    <CheckCircle className="w-4 h-4 text-success" />
-                                                    <span>1-on-1 mentorship sessions</span>
-                                                </li>
-                                                <li className="flex items-center gap-2">
-                                                    <CheckCircle className="w-4 h-4 text-success" />
-                                                    <span>Job placement assistance</span>
-                                                </li> */}
+
                                             </ul>
                                         </div>
                                     </div>
@@ -491,24 +368,6 @@ const EnrollmentCheckout = () => {
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                            {selectedBatch.maxCapacity && (
-                                                                <div className="pt-2">
-                                                                    <div className="flex justify-between items-center mb-1">
-                                                                        <p className="text-xs text-muted-foreground">Enrollment Progress</p>
-                                                                        <span className="text-xs font-medium">
-                                                                            {selectedBatch.currentEnrollment}/{selectedBatch.maxCapacity} seats
-                                                                        </span>
-                                                                    </div>
-                                                                    <div className="bg-background rounded-full h-2 overflow-hidden">
-                                                                        <div
-                                                                            className="bg-primary h-full transition-all"
-                                                                            style={{
-                                                                                width: `${Math.min((selectedBatch.currentEnrollment / selectedBatch.maxCapacity) * 100, 100)}%`
-                                                                            }}
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            )}
                                                         </div>
                                                     </div>
                                                     <Separator />
@@ -583,8 +442,8 @@ const EnrollmentCheckout = () => {
                                                                 {/* SSLCommerz with Gateway Icons */}
                                                                 <div
                                                                     className={`payment-card relative cursor-pointer rounded-lg border-2 p-4 transition-all ${field.value === 'SSLCommerz'
-                                                                            ? 'border-primary bg-accent shadow-medium'
-                                                                            : 'border-border hover:border-primary/50'
+                                                                        ? 'border-primary bg-accent shadow-medium'
+                                                                        : 'border-border hover:border-primary/50'
                                                                         }`}
                                                                     onClick={() => field.onChange('SSLCommerz')}
                                                                 >
@@ -596,12 +455,12 @@ const EnrollmentCheckout = () => {
                                                                             <CreditCard className="w-6 h-6 text-green-600" />
                                                                             <div className="flex-1">
                                                                                 <h4 className="font-medium">SSLCommerz</h4>
-                                                                                <p className="text-sm text-muted-foreground">Pay with bKash, Rocket, Nagad, bank, or others</p>
+                                                                                {/* <p className="text-sm text-muted-foreground">Pay with bKash, Rocket, Nagad, bank, or others</p> */}
                                                                             </div>
                                                                             <div
                                                                                 className={`w-4 h-4 rounded-full border-2 ${field.value === 'SSLCommerz'
-                                                                                        ? 'border-primary bg-primary'
-                                                                                        : 'border-muted-foreground'
+                                                                                    ? 'border-primary bg-primary'
+                                                                                    : 'border-muted-foreground'
                                                                                     }`}
                                                                             >
                                                                                 {field.value === 'SSLCommerz' && (
@@ -611,18 +470,18 @@ const EnrollmentCheckout = () => {
                                                                         </div>
                                                                         {/* Payment Gateway Icons */}
                                                                         <div className=" items-center gap-2 pt-2 border-t">
-                                                                            <span className="text-xs text-muted-foreground">Accepted:</span>
+                                                                            <span className="text-xs text-muted-foreground">Pay with:</span>
                                                                             <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-2 flex-wrap">
-                                                                                <Image src={one} alt="payment gateway" className="object-contain border" />
-                                                                                <Image src={two} alt="payment gateway" className="object-contain border" />
-                                                                                <Image src={three} alt="payment gateway" className="object-contain border" />
-                                                                                <Image src={four} alt="payment gateway" className="object-contain border" />
-                                                                                <Image src={six} alt="payment gateway" className="object-contain border" />
-                                                                                <Image src={seven} alt="payment gateway" className="object-contain border" />
-                                                                                <Image src={eight} alt="payment gateway" className="object-contain border" />
-                                                                                <Image src={nine} alt="payment gateway" className="object-contain border" />
-                                                                                <Image src={ten} alt="payment gateway" className="object-contain border" />
-                                                                                <Image src={five} alt="payment gateway" className="object-contain border" />
+                                                                                <Image src={one} alt="payment gateway" className="object-contain border h-[60px] min-w-[240px]" />
+                                                                                <Image src={two} alt="payment gateway" className="object-contain border h-[60px] min-w-[240px]" />
+                                                                                <Image src={three} alt="payment gateway" className="object-contain border h-[60px] min-w-[240px]" />
+                                                                                <Image src={four} alt="payment gateway" className="object-contain border h-[60px] min-w-[240px]" />
+                                                                                <Image src={six} alt="payment gateway" className="object-contain border h-[60px] min-w-[240px]" />
+                                                                                <Image src={seven} alt="payment gateway" className="object-contain border h-[60px] min-w-[240px]" />
+                                                                                <Image src={eight} alt="payment gateway" className="object-contain border h-[60px] min-w-[240px]" />
+                                                                                <Image src={nine} alt="payment gateway" className="object-contain border h-[60px] min-w-[240px]" />
+                                                                                <Image src={ten} alt="payment gateway" className="object-contain border h-[60px] min-w-[240px]" />
+                                                                                <Image src={five} alt="payment gateway" className="object-contain border h-[60px] min-w-[240px]" />
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -630,33 +489,33 @@ const EnrollmentCheckout = () => {
                                                                 {/* Manual Payment */}
                                                                 <div
                                                                     className={`payment-card relative cursor-pointer rounded-lg border-2 p-4 transition-all ${field.value === 'phonePay'
-                                                                            ? 'border-primary bg-accent shadow-medium'
-                                                                            : 'border-border hover:border-primary/50'
+                                                                        ? 'border-primary bg-accent shadow-medium'
+                                                                        : 'border-border hover:border-primary/50'
                                                                         }`}
                                                                     onClick={() => field.onChange('phonePay')}
                                                                 >
                                                                     <div className="flex items-center gap-3">
 
-                                                                            <Smartphone className="w-6 h-6 text-blue-600" />
-                                                                            <div className="flex-1">
-                                                                                <h4 className="font-medium">Phone Pay</h4>
-                                                                                <p className="text-sm text-muted-foreground">Pay with your phone pay account</p>
-                                                                            </div>
-                                                                            <div
-                                                                                className={`w-4 h-4 rounded-full border-2 ${field.value === 'phonePay'
-                                                                                        ? 'border-primary bg-primary'
-                                                                                        : 'border-muted-foreground'
-                                                                                    }`}
-                                                                            >
-                                                                                {field.value === 'phonePay' && (
-                                                                                    <div className="w-full h-full rounded-full bg-primary-foreground scale-50" />
-                                                                                )}
-                                                                            </div>
+                                                                        <Smartphone className="w-6 h-6 text-blue-600" />
+                                                                        <div className="flex-1">
+                                                                            <h4 className="font-medium">Phone Pay</h4>
+                                                                            <p className="text-sm text-muted-foreground">Pay with your phone pay account</p>
+                                                                        </div>
+                                                                        <div
+                                                                            className={`w-4 h-4 rounded-full border-2 ${field.value === 'phonePay'
+                                                                                ? 'border-primary bg-primary'
+                                                                                : 'border-muted-foreground'
+                                                                                }`}
+                                                                        >
+                                                                            {field.value === 'phonePay' && (
+                                                                                <div className="w-full h-full rounded-full bg-primary-foreground scale-50" />
+                                                                            )}
+                                                                        </div>
 
                                                                     </div>
-                                                                     <div className="border-t h-24">
-                                                                            <Image src={phonepay} alt="Phone Pay" className="object-contain  mt-2 h-20"/>
-                                                                        </div>
+                                                                    <div className="border-t h-24">
+                                                                        <Image src={phonepay} alt="Phone Pay" className="object-contain border mt-2 h-[60px] min-w-[240px]" />
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <FormMessage />
@@ -691,16 +550,19 @@ const EnrollmentCheckout = () => {
                                                     <Button
                                                         type="submit"
                                                         className="w-full h-12 text-lg glow-effect"
-                                                        disabled={!(form.formState.isValid && agreed) || isProcessing || !enrollmentStatus?.canEnroll}
+                                                        // || !enrollmentStatus?.canEnroll
+                                                        disabled={!(form.formState.isValid && agreed) || isProcessing }
                                                     >
                                                         {isProcessing ? (
                                                             <>
                                                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                                                 Processing...
                                                             </>
-                                                        ) : !enrollmentStatus?.canEnroll ? (
-                                                            'Enrollment Not Available'
-                                                        ) : (
+                                                        )
+                                                        //  : !enrollmentStatus?.canEnroll ? (
+                                                        //     'Enrollment Not Available'
+                                                        // ) 
+                                                        : (
                                                             'Complete Enrollment'
                                                         )}
                                                     </Button>

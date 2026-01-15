@@ -27,8 +27,6 @@ interface ManualPaymentFormProps {
 }
 
 const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps) => {
-    const [paymentSubmitted, setPaymentSubmitted] = useState(false);
-
     const form = useForm<PaymentForm>({
         resolver: zodResolver(paymentSchema),
         defaultValues: {
@@ -46,30 +44,8 @@ const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps
     };
 
     const onSubmit = (data: PaymentForm) => {
-        setPaymentSubmitted(true);
         onPaymentComplete(data);
-        //toast("Payment information submitted! We'll verify and confirm shortly.");
     };
-
-    if (paymentSubmitted) {
-        return (
-            <Card className="glass-card form-animate">
-                <CardContent className="p-8 text-center">
-                    <div className="w-16 h-16 bg-success rounded-full flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle className="w-8 h-8 text-success-foreground" />
-                    </div>
-                    <h3 className="text-2xl font-bold mb-2">Payment Information Received!</h3>
-                    <p className="text-muted-foreground mb-6">
-                        We&apos;ll verify your payment within 12-24 hours and confirm your enrollment via Email.
-                    </p>
-                    <Button onClick={onBack} variant="outline">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to Form
-                    </Button>
-                </CardContent>
-            </Card>
-        );
-    }
 
     return (
         <div className="space-y-6">
