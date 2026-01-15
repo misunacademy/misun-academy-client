@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useMemo, useCallback } from 'react';
 import {
@@ -37,7 +38,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useGetPaymentHistoryQuery, useUpdatePaymentStatusMutation } from '@/redux/features/student/studentApi';
+import { useGetPaymentHistoryQuery, useUpdatePaymentStatusMutation, useVerifyManualPaymentMutation } from '@/redux/features/student/studentApi';
 import { toast } from 'sonner';
 
 // Define interfaces
@@ -57,7 +58,7 @@ interface Course {
 interface Batch {
     _id: string;
     title: string;
-    batchCode: string;
+    batchNumber: string;
 }
 
 interface PaymentData {
@@ -70,7 +71,7 @@ interface PaymentData {
     student: Student | null;
     course?: Course | null;
     batch?: Batch | null;
-    gatewayResponse?: { transactionId?: string, senderNumber?: string, bank_tran_id?: string, card_issuer?: string };
+    gatewayResponse?: { transactionId?: string, senderNumber?: string, phonePeTransactionId?: string, bank_tran_id?: string, card_issuer?: string };
 }
 
 const PaymentTable = () => {
@@ -88,6 +89,7 @@ const PaymentTable = () => {
         status: statusFilter !== 'all' ? statusFilter : undefined,
     });
     const [updatePaymentStatus] = useUpdatePaymentStatusMutation();
+    const [verifyManualPayment] = useVerifyManualPaymentMutation();
 
     const payments = data?.data || [];
     const meta = data?.meta || { total: 0, page: '1', limit: 10, totalPages: 1 };
@@ -96,8 +98,19 @@ const PaymentTable = () => {
         console.log({ selectedStatus })
         if (selectedTransactionId && selectedStatus) {
             try {
-                await updatePaymentStatus({ transactionId: selectedTransactionId, status: selectedStatus }).unwrap();
-                toast.success('Payment status updated successfully');
+                // Find the payment to determine the method
+                const payment = payments.find((p:any) => p.transactionId === selectedTransactionId);
+                
+                if (payment?.method === 'PhonePay' && payment.status === 'review') {
+                    // For manual payments in review/pending status, use verify endpoint
+                    const approved = selectedStatus === 'success';
+                    await verifyManualPayment({ transactionId: selectedTransactionId, approved }).unwrap();
+                    toast.success(approved ? 'Payment approved successfully' : 'Payment rejected');
+                } else {
+                    // For other payments, use general status update
+                    await updatePaymentStatus({ transactionId: selectedTransactionId, status: selectedStatus }).unwrap();
+                    toast.success('Payment status updated successfully');
+                }
                 refetch();
             } catch (error) {
                 console.log(error)
@@ -107,7 +120,7 @@ const PaymentTable = () => {
         setOpenDialog(false);
         setSelectedStatus(null);
         setSelectedTransactionId(null);
-    }, [selectedTransactionId, selectedStatus, updatePaymentStatus, refetch]);
+    }, [selectedTransactionId, selectedStatus, updatePaymentStatus, verifyManualPayment, refetch, payments]);
 
     const columns = useMemo<ColumnDef<PaymentData>[]>(
         () => [
@@ -155,8 +168,8 @@ const PaymentTable = () => {
                 cell: ({ row }) => {
                     return <div>
                         <p className='font-medium'>{row.original.batch?.title || 'N/A'}</p>
-                        {row.original.batch?.batchCode && (
-                            <p className='text-[12px] text-gray-500'>Code: {row.original.batch.batchCode}</p>
+                        {row.original.batch?.batchNumber && (
+                            <p className='text-[12px] text-gray-500'>Code: {row.original.batch.batchNumber}</p>
                         )}
                     </div>
                 }
@@ -167,15 +180,15 @@ const PaymentTable = () => {
                 cell: ({ row }) => {
                     return <div>
                         {
-                            (row.original.method === 'phonePay' && row.original.gatewayResponse) && (
+                            (row.original.method === 'PhonePay' && row.original.gatewayResponse) && (
                                 <div>
                                     <p className='text-[12px] font-bold'>{row.original?.gatewayResponse?.senderNumber}</p>
-                                    <p>{row.original?.gatewayResponse?.transactionId}</p>
+                                    <p>{row.original?.gatewayResponse?.phonePeTransactionId }</p>
                                 </div>
                             )
                         }
                         {
-                            (row.original.method !== 'paytm' && row.original.gatewayResponse) && (
+                            (row.original.method === 'SSLCommerz' && row.original.gatewayResponse) && (
                                 <div>
                                     <p className='text-[12px] font-bold'>{row.original?.gatewayResponse?.card_issuer}</p>
                                     <p>{row.original?.gatewayResponse?.bank_tran_id}</p>
@@ -220,7 +233,9 @@ const PaymentTable = () => {
                                                     ? 'destructive'
                                                     : status === 'pending'
                                                         ? 'secondary'
-                                                        : 'outline'
+                                                        : status === 'review'
+                                                            ? 'outline'
+                                                            : 'outline'
                                         }
                                         className="capitalize w-full justify-center"
                                     >
@@ -228,9 +243,19 @@ const PaymentTable = () => {
                                     </Badge>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="success">Success</SelectItem>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                    <SelectItem value="failed">Failed</SelectItem>
+                                    {/* For manual payments in review, only show approve/reject options */}
+                                    {row.original.method === 'PhonePay' && status === 'review' ? (
+                                        <>
+                                            <SelectItem value="success">Approve</SelectItem>
+                                            <SelectItem value="failed">Reject</SelectItem>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <SelectItem value="success">Success</SelectItem>
+                                            <SelectItem value="pending">Pending</SelectItem>
+                                            <SelectItem value="failed">Failed</SelectItem>
+                                        </>
+                                    )}
                                 </SelectContent>
                             </Select>
                             <AlertDialog open={openDialog && selectedTransactionId === transactionId} onOpenChange={setOpenDialog}>
@@ -312,6 +337,7 @@ const PaymentTable = () => {
                                 <SelectItem value="all">All Status</SelectItem>
                                 <SelectItem value="success">Success</SelectItem>
                                 <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="review">Review</SelectItem>
                                 <SelectItem value="failed">Failed</SelectItem>
                             </SelectContent>
                         </Select>
