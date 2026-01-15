@@ -177,14 +177,14 @@ export default function Navbar() {
                       </Link>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem asChild>
+                    {/* <DropdownMenuItem asChild>
                         <Link href={`/support`} className="flex items-center">
                         <HelpCircleIcon className="mr-2 h-4 w-4" />
         
                       Support
                       </Link>
                       </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator /> */}
                     <DropdownMenuItem onClick={handleLogout} className="flex items-center text-red-600">
                       <LogOut className="mr-2 h-4 w-4" />
                       Log out

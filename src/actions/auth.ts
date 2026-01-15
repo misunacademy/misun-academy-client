@@ -74,12 +74,26 @@ export async function signUpWithEmail(name: string, email: string, password: str
     return data.data ?? data;
 }
 
-export async function signInWithSocial(provider: "google" | "github" | "discord") {
-    // const auth = await getAuth();
-    const result = await auth.api.signInSocial({
-        body: {
-            provider,
-        }
+export async function resendVerificationEmail(email: string) {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/resend-verification`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
     });
-    return result;
+
+    if (!response.ok) {
+        let errorMessage = 'Resend failed';
+        try {
+            const error = await response.json();
+            errorMessage = error.errorMessages?.[0]?.message || error.message || 'Resend failed';
+        } catch (parseError) {
+            errorMessage = `Resend failed: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+    return data.data ?? data;
 }
