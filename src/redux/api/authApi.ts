@@ -132,12 +132,13 @@ const authApi = baseApi.injectEndpoints({
      * Verify email with token
      * POST /api/v1/auth/verify-email
      */
-    verifyEmail: build.mutation<MessageResponse, { token: string }>({
+    verifyEmail: build.mutation<AuthResponse, { token: string }>({
       query: (data) => ({
         url: "/auth/verify-email",
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["Profile"],
     }),
 
     /**

@@ -28,6 +28,14 @@ const studentsApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Students"],
         }),
+        verifyManualPayment: builder.mutation({
+            query: ({ transactionId, approved }) => ({
+                url: `/payments/${transactionId}/verify`,
+                method: "POST",
+                body: { approved },
+            }),
+            invalidatesTags: ["Students"],
+        }),
         getMetadata: builder.query({
             query: () => ({
                 url: "/dashboard/metadata",
@@ -65,6 +73,7 @@ export const {
     useGetEnrolledStudentsQuery,
     useGetPaymentHistoryQuery,
     useUpdatePaymentStatusMutation,
+    useVerifyManualPaymentMutation,
     useGetMetadataQuery,
     useGetStudentDashboardDataQuery,
     useEnrollStudentMutation,

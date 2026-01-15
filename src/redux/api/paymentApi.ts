@@ -11,18 +11,34 @@ export interface PaymentInitiateRequest {
 
 export interface PaymentResponse {
   _id: string;
-  enrollmentId: string;
+  enrollmentId?: string; // Optional - assigned after enrollment confirmation
+  transactionId: string; // Unique transaction ID across all payment methods
   userId: string;
   batchId: string;
   amount: number;
-  transactionId: string;
-  gatewayTransactionId?: string;
-  status: 'pending' | 'success' | 'failed' | 'cancelled';
-  paymentMethod?: string;
+  currency: string;
+  status: 'pending' | 'success' | 'failed' | 'review' | 'cancel';
+  method: string; // Changed from paymentMethod to method to match backend
   gatewayResponse?: any;
-  paidAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  verifiedAt?: string; // Date as string from API
+  verifiedBy?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  paidAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  batch?: {
+    _id: string;
+    title: string;
+    batchNumber: string;
+  };
+  course?: {
+    _id: string;
+    title: string;
+    slug: string;
+  };
 }
 
 const paymentApi = baseApi.injectEndpoints({

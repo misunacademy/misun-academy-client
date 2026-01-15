@@ -9,7 +9,17 @@ export interface EnrollmentResponse {
   _id: string;
   enrollmentId: string;
   userId: string;
-  batchId: string;
+  batchId: {
+    _id: string;
+    title: string;
+    courseId: {
+      _id: string;
+      title: string;
+      thumbnailImage?: string;
+      category?: string;
+      level?: string;
+    };
+  };
   status: 'pending' | 'payment-pending' | 'active' | 'completed' | 'suspended' | 'refunded' | 'payment-failed';
   enrolledAt?: Date;
   // Lifetime access - no expiry field
@@ -17,7 +27,11 @@ export interface EnrollmentResponse {
   certificateId?: string;
   certificateIssued: boolean;
   completedAt?: Date;
-  progress?: number;
+  progress?: {
+    totalModules: number;
+    completedModules: number;
+    overallProgress: number;
+  };
   completedLessons?: string[];
   watchedVideos?: string[];
   quizScore?: number;
