@@ -1,11 +1,11 @@
 
 "use client";
 import { ArrowLeft, BookOpen, Sparkles, Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
@@ -20,6 +20,7 @@ import { Switch } from "@/components/ui/switch";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { useAppSelector } from "@/redux/hooks";
 import { useEnrollment } from "@/hooks/useEnrollment";
+import { getValidatedRedirectUrl } from "@/lib/authUtils";
 
 
 // Validation schemas
@@ -52,10 +53,28 @@ const AuthPage = () => {
     const [showRegisterPassword, setShowRegisterPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [showVerificationModal, setShowVerificationModal] = useState(false);
+    const [registeredEmail, setRegisteredEmail] = useState('');
     const router = useRouter();
     const { signIn, signUp, signInWithGoogle } = useAuth();
-     const { hasEnrollments } = useEnrollment();
-    // const user = useAppSelector((state ) => state.auth.user);
+    const { hasEnrollments } = useEnrollment();
+    const searchParams = useSearchParams();
+    const redirectTo = searchParams.get('redirectTo');
+
+    // Validate redirect URL to prevent open-redirect attacks
+
+    // Check if user is already authenticated
+    const user = useAppSelector((state) => state.auth.user);
+    const isAuthenticated = !!user;
+
+    const validatedRedirectUrl = getValidatedRedirectUrl(redirectTo, user?.role, hasEnrollments);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            // User is already logged in, redirect to intended page
+            router.push(validatedRedirectUrl);
+        }
+    }, [isAuthenticated, validatedRedirectUrl, router]);
 
 
 
@@ -96,15 +115,7 @@ const AuthPage = () => {
     const handleLogin = async (data: LoginFormData) => {
         const result = await signIn(data.email, data.password);
         if (result.success) {
-            // Map user role to correct dashboard path
-            const roleMap: Record<string, string> = {
-                'superadmin': '/dashboard/admin',
-                'admin': '/dashboard/admin',
-                'instructor': '/dashboard/admin',
-                'learner': `${hasEnrollments ? '/dashboard/student' : '/checkout'}`,
-            };
-            const dashboardPath = result.user?.role ? roleMap[result.user.role.toLowerCase()] || '/dashboard/student' : '/dashboard/student';
-            router.push(dashboardPath);
+            router.push(getValidatedRedirectUrl(redirectTo, result.user.role, hasEnrollments));
         } else {
             toast.error(result.error || "লগইন ব্যর্থ হয়েছে");
         }
@@ -113,15 +124,9 @@ const AuthPage = () => {
     const handleRegister = async (data: RegisterFormData) => {
         const result = await signUp(data.name, data.email, data.password);
         if (result.success) {
-            // Map user role to correct dashboard path
-            const roleMap: Record<string, string> = {
-                'superadmin': '/dashboard/admin',
-                'admin': '/dashboard/admin',
-                'instructor': '/dashboard/admin',
-                'learner': `${hasEnrollments ? '/dashboard/student' : '/checkout'}`,
-            };
-            const dashboardPath = result.user?.role ? roleMap[result.user.role.toLowerCase()] || '/dashboard/student' : '/dashboard/student';
-            router.push(dashboardPath);
+            setRegisteredEmail(result.email || data.email);
+            setShowVerificationModal(true);
+            toast.success('অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে! অনুগ্রহ করে আপনার ইমেইল যাচাই করুন।');
         } else {
             toast.error(result.error || "রেজিস্ট্রেশন ব্যর্থ হয়েছে");
         }
@@ -433,6 +438,72 @@ const AuthPage = () => {
                                 </div>
                             </form>
                         </Form>
+                    </div>
+                </div>
+            )}
+
+            {/* Email Verification Modal */}
+            {showVerificationModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+                        <div className="mb-4">
+                            <div className="flex items-center justify-center mb-4">
+                                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
+                                    <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <h2 className="text-xl font-semibold text-center">ইমেইল যাচাই করুন</h2>
+                            <p className="text-sm text-gray-600 mt-2 text-center">
+                                আপনার অ্যাকাউন্ট সক্রিয় করতে, অনুগ্রহ করে আপনার ইমেইল যাচাই করুন।
+                            </p>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="bg-gray-50 p-4 rounded-lg">
+                                <p className="text-sm text-gray-700">
+                                    <strong>ইমেইল:</strong> {registeredEmail}
+                                </p>
+                                <p className="text-sm text-gray-600 mt-2">
+                                    আমরা আপনার ইমেইলে একটি যাচাই লিঙ্ক পাঠিয়েছি। অনুগ্রহ করে আপনার ইমেইল চেক করুন এবং লিঙ্কে ক্লিক করে আপনার অ্যাকাউন্ট যাচাই করুন।
+                                </p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600 mb-4">
+                                    ইমেইল পাননি? স্প্যাম ফোল্ডার চেক করুন অথবা আবার পাঠান।
+                                </p>
+                                <Button
+                                    variant="outline"
+                                    onClick={async () => {
+                                        try {
+                                            await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/resend-verification`, {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                },
+                                                body: JSON.stringify({ email: registeredEmail }),
+                                            });
+                                            toast.success('যাচাই ইমেইল আবার পাঠানো হয়েছে!');
+                                        } catch (error) {
+                                            toast.error('ইমেইল পাঠাতে ব্যর্থ হয়েছে');
+                                        }
+                                    }}
+                                >
+                                    যাচাই ইমেইল আবার পাঠান
+                                </Button>
+                            </div>
+                            <div className="flex justify-end">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        setShowVerificationModal(false);
+                                        setAuthMode('login');
+                                    }}
+                                >
+                                    লগইন করুন
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
