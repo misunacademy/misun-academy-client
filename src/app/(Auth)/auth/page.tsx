@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client";
 import { ArrowLeft, BookOpen, Sparkles, Eye, EyeOff } from "lucide-react";

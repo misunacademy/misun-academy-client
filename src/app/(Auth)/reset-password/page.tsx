@@ -66,7 +66,9 @@ const ResetPasswordForm = () => {
             router.push('/auth');
         } catch (error: any) {
             console.error("Reset password failed:", error);
-            dispatch(setError(error?.data?.message || "Reset password failed"));
+            const errorMessage = error?.data?.message || "Reset password failed";
+            toast.error(errorMessage);
+            dispatch(setError(errorMessage));
         }
     };
 
