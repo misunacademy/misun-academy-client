@@ -9,9 +9,9 @@ import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
 
 export default function ProgressPage() {
   const { data, isLoading, error } = useGetEnrollmentsQuery();
-
   const enrollments = data?.data || [];
   const activeEnrollments = enrollments.filter((e) => e.status.toLowerCase() === 'active');
+  console.log(activeEnrollments);
 
   if (isLoading) {
     return (
@@ -31,7 +31,7 @@ export default function ProgressPage() {
 
   const calculateOverallProgress = () => {
     if (activeEnrollments.length === 0) return 0;
-    const total = activeEnrollments.reduce((sum, e) => sum + (e.progress || 0), 0);
+    const total = activeEnrollments.reduce((sum, e) => sum + (e.progress?.overallProgress || 0), 0);
     return Math.round(total / activeEnrollments.length);
   };
 
@@ -81,7 +81,7 @@ export default function ProgressPage() {
             </Card>
           ) : (
             activeEnrollments.map((enrollment) => {
-              const progress = enrollment.progress || 0;
+              const progress = enrollment.progress?.overallProgress || 0;
               const completedLessons = enrollment.completedLessons?.length || 0;
               const totalLessons = enrollment.course?.totalLessons || 0;
 
@@ -91,10 +91,10 @@ export default function ProgressPage() {
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
                         <CardTitle className="text-lg">
-                          {enrollment.course?.title || 'No course information'}
+                          {enrollment.batchId?.courseId?.title || 'No course information'}
                         </CardTitle>
                         <CardDescription>
-                          Batch: {enrollment.batch?.title || 'N/A'}
+                          Batch: {enrollment.batchId?.title || 'N/A'}
                         </CardDescription>
                       </div>
                       <Badge variant={progress === 100 ? "default" : "secondary"}>
@@ -129,11 +129,11 @@ export default function ProgressPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Award className="h-4 w-4 text-muted-foreground" />
+                        {/* <Award className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <p className="text-xs text-muted-foreground">Quiz Score</p>
                           <p className="font-semibold">{enrollment.quizScore || 0}%</p>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
 
