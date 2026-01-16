@@ -20,6 +20,7 @@ export interface InstructorProfileResponse {
 }
 
 const instructorApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (build) => ({
     // Get instructor profile
     getInstructorProfile: build.query<{ data: InstructorProfileResponse }, void>({

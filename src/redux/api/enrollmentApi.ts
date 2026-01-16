@@ -47,6 +47,7 @@ export interface EnrollmentResponse {
 }
 
 const enrollmentApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (build) => ({
     // Initiate enrollment
     initiateEnrollment: build.mutation<any, EnrollmentInitiateRequest>({

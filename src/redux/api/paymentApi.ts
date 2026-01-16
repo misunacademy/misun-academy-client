@@ -42,6 +42,7 @@ export interface PaymentResponse {
 }
 
 const paymentApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (build) => ({
     // Initiate payment
     initiatePayment: build.mutation<{ data: { paymentUrl: string } }, PaymentInitiateRequest>({

@@ -51,6 +51,7 @@ export interface LessonResponse {
 }
 
 const courseApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (build) => ({
     // Get all courses (public)
     getAllCourses: build.query<{ data: CourseResponse[] }, { status?: string; category?: string; level?: string }>({

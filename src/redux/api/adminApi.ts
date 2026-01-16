@@ -66,7 +66,9 @@ export interface MessageResponse {
 // ADMIN API ENDPOINTS
 // ============================================================================
 
-const adminApi = baseApi.injectEndpoints({  endpoints: (build) => ({
+const adminApi = baseApi.injectEndpoints({  
+  overrideExisting: true,
+  endpoints: (build) => ({
     /**
      * Get all users (with filters and pagination)
      * GET /api/v1/admin/users

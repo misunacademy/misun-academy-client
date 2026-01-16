@@ -34,6 +34,7 @@ export interface ModuleProgressResponse {
 }
 
 const progressApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (build) => ({
     // Update lesson progress (track video watch time)
     // Server route: POST /content/progress/lessons/:lessonId

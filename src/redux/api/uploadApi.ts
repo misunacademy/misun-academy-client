@@ -41,6 +41,7 @@ export interface UploadWithDataResult {
 }
 
 const uploadApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (build) => ({
     // Upload single image
     uploadSingleImage: build.mutation<{ data: UploadResult }, FormData>({

@@ -2,6 +2,7 @@
 import { baseApi } from "./baseApi";
 
 const dashboardApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (build) => ({
     // Get admin dashboard analytics
     getAdminDashboard: build.query<{ data: any }, void>({

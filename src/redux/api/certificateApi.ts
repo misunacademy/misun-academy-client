@@ -33,6 +33,7 @@ export interface CertificateResponse {
 }
 
 const certificateApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (build) => ({
     // Student: Request certificate (creates pending request)
     requestCertificate: build.mutation<{ data: CertificateResponse }, string>({

@@ -100,6 +100,7 @@ export interface MessageResponse {
 // ============================================================================
 
 const authApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (build) => ({
     /**
      * Register new user (email/password)
