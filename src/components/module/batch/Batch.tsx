@@ -338,7 +338,7 @@ export default function BatchDashboard() {
                                     <TableHead>Start Date</TableHead>
                                     <TableHead>End Date</TableHead>
                                     <TableHead>Enrollment</TableHead>
-                                    <TableHead>Capacity</TableHead>
+                                    {/* <TableHead>Capacity</TableHead> */}
                                     <TableHead>Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -362,7 +362,7 @@ export default function BatchDashboard() {
                                         <TableCell>{new Date(batch.startDate).toLocaleDateString()}</TableCell>
                                         <TableCell>{new Date(batch.endDate).toLocaleDateString()}</TableCell>
                                         <TableCell>{batch.currentEnrollment || 0}</TableCell>
-                                        <TableCell>{batch.maxCapacity || '∞'}</TableCell>
+                                        {/* <TableCell>{batch.maxCapacity || '∞'}</TableCell> */}
                                         <TableCell>
                                             <div className="flex items-center gap-2">
                                                 <Select 

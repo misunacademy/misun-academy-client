@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import duration from "dayjs/plugin/duration";
 import { CalendarCheck, CalendarX } from "lucide-react";
-import { enrollmentData, enrollmentPeriod } from "@/constants/enrollment";
+import { useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
 import { Card, CardContent } from "@/components/ui/card";
 
 dayjs.extend(relativeTime);
@@ -17,31 +17,65 @@ const formatCountdown = (diffInMillis: number) => {
     return `${months} ${dur.days()} দিন ${dur.hours()} ঘণ্টা ${dur.minutes()} মিনিট ${dur.seconds()} সেকেন্ড`;
 };
 
+const formatDate = (date: Date | string) => {
+    return dayjs(date).format('DD MMMM, YYYY');
+};
+
 export const EnrollmentSection = () => {
     const [now, setNow] = useState(dayjs());
-    const start = dayjs(enrollmentData.startDate);
-    const end = dayjs(enrollmentData.endDate);
-
-    const isUpcoming = now.isBefore(start);
-    const isOngoing = now.isAfter(start) && now.isBefore(end);
-    const isEnded = now.isAfter(end);
-
     const [countdown, setCountdown] = useState("");
 
+    const { data: batchData, isLoading } = useGetCurrentEnrollmentBatchQuery({});
+
+    const batch = batchData?.data;
+
+    const start = batch ? dayjs(batch.enrollmentStartDate) : null;
+    const end = batch ? dayjs(batch.enrollmentEndDate) : null;
+
+    const isUpcoming = start && now.isBefore(start);
+    const isOngoing = start && end && now.isAfter(start) && now.isBefore(end);
+    const isEnded = end && now.isAfter(end);
+
     useEffect(() => {
+        if (!batch) return;
+
         const interval = setInterval(() => {
             const current = dayjs();
             setNow(current);
 
             if (isUpcoming) {
-                setCountdown(formatCountdown(start.diff(current)));
+                setCountdown(formatCountdown(start!.diff(current)));
             } else if (isOngoing) {
-                setCountdown(formatCountdown(end.diff(current)));
+                setCountdown(formatCountdown(end!.diff(current)));
             }
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [start, end, isUpcoming, isOngoing]);
+    }, [batch, start, end, isUpcoming, isOngoing]);
+
+    if (isLoading) {
+        return (
+            <section className="py-16 px-4 bg-primary/15 font-bangla">
+                <div className="max-w-6xl mx-auto space-y-8">
+                    <div className="text-center">
+                        <p>Loading enrollment information...</p>
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
+    if (!batch) {
+        return (
+            <section className="py-16 px-4 bg-primary/15 font-bangla">
+                <div className="max-w-6xl mx-auto space-y-8">
+                    <div className="text-center">
+                        <p>No active enrollment batches available at the moment.</p>
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section className="py-16 px-4 bg-primary/15 font-bangla">
@@ -76,16 +110,16 @@ export const EnrollmentSection = () => {
                     <div className="mt-6 text-gray-700 font-medium flex flex-row texl-lg md:text-xl justify-center gap-4">
                         <div className="flex flex-wrap items-center gap-2">
                             <CalendarCheck size={20} className="text-green-600" />
-                            <p>এনরোলমেন্ট শুরু: <span className="text-primary font-semibold"><span className='font-bold'>{enrollmentPeriod.startDate}</span></span></p>
+                            <p>এনরোলমেন্ট শুরু: <span className="text-primary font-semibold">{formatDate(batch.enrollmentStartDate)}</span></p>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
                             <CalendarX size={20} className="text-red-600" />
-                            <p>এনরোলমেন্ট শেষ: <span className="text-primary font-bold">{enrollmentPeriod.endDate}</span></p>
+                            <p>এনরোলমেন্ট শেষ: <span className="text-primary font-bold">{formatDate(batch.enrollmentEndDate)}</span></p>
                         </div>
                     </div>
                     <div className="flex justify-center">
                         <div className="mt-4 w-fit border border-primary/20 rounded-lg px-6 py-4 bg-primary text-white font-bold font-bangla text-xl">
-                            কোর্স ফি: মাত্র ৪,০০০ টাকা
+                            কোর্স ফি: মাত্র {batch.price} টাকা
                         </div>
                     </div>
                 </div>

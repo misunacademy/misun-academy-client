@@ -27,6 +27,7 @@ export interface BatchResponse {
 }
 
 const batchApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (build) => ({
     // Get all batches (public - filtered)
     getAllBatches: build.query<{ data: BatchResponse[] }, { courseId?: string; status?: string; isPublished?: boolean }>({
@@ -41,6 +42,15 @@ const batchApi = baseApi.injectEndpoints({
     getUpcomingBatches: build.query<{ data: BatchResponse[] }, { courseId?: string }>({
       query: (params) => ({
         url: "/batches/upcoming",
+        params,
+      }),
+      providesTags: ["Batches"],
+    }),
+
+    // Get current enrollment batch
+    getCurrentEnrollmentBatch: build.query<{ data: BatchResponse | null }, { courseId?: string }>({
+      query: (params) => ({
+        url: "/batches/current-enrollment",
         params,
       }),
       providesTags: ["Batches"],
@@ -98,6 +108,7 @@ const batchApi = baseApi.injectEndpoints({
 export const {
   useGetAllBatchesQuery,
   useGetUpcomingBatchesQuery,
+  useGetCurrentEnrollmentBatchQuery,
   useGetBatchByIdQuery,
   useCreateBatchMutation,
   useUpdateBatchMutation,
