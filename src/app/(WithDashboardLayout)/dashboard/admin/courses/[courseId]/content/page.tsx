@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -121,6 +121,10 @@ export default function CourseContentPage() {
     setLessonDialog({ open: true, mode: 'create', moduleId });
   };
 
+  const handleEditLesson = (lesson: Lesson) => {
+    setLessonDialog({ open: true, mode: 'edit', data: lesson });
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -171,34 +175,41 @@ export default function CourseContentPage() {
                 setDeleteModuleDialogOpen(true);
               }}
               onAddLesson={() => handleCreateLesson(module._id)}
+              onEditLesson={handleEditLesson}
             />
           ))}
         </div>
       )}
 
-      <ModuleFormDialog
-        open={moduleDialog.open}
-        mode={moduleDialog.mode}
-        data={moduleDialog.data}
-        courseId={courseId}
-        onClose={() => setModuleDialog({ open: false, mode: 'create' })}
-        onSuccess={() => {
-          refetch();
-          setModuleDialog({ open: false, mode: 'create' });
-        }}
-      />
+      {moduleDialog.open && (
+        <ModuleFormDialog
+          key={`${moduleDialog.mode}-${moduleDialog.data?._id || 'create'}-${moduleDialog.open ? 'open' : 'closed'}`}
+          open={moduleDialog.open}
+          mode={moduleDialog.mode}
+          data={moduleDialog.data}
+          courseId={courseId}
+          onClose={() => setModuleDialog({ open: false, mode: 'create' })}
+          onSuccess={() => {
+            refetch();
+            setModuleDialog({ open: false, mode: 'create' });
+          }}
+        />
+      )}
 
-      <LessonFormDialog
-        open={lessonDialog.open}
-        mode={lessonDialog.mode}
-        moduleId={lessonDialog.moduleId}
-        data={lessonDialog.data}
-        onClose={() => setLessonDialog({ open: false, mode: 'create' })}
-        onSuccess={() => {
-          refetch();
-          setLessonDialog({ open: false, mode: 'create' });
-        }}
-      />
+      {lessonDialog.open && (
+        <LessonFormDialog
+          key={`${lessonDialog.mode}-${lessonDialog.data?._id || 'create'}-${lessonDialog.open ? 'open' : 'closed'}`}
+          open={lessonDialog.open}
+          mode={lessonDialog.mode}
+          moduleId={lessonDialog.moduleId}
+          data={lessonDialog.data}
+          onClose={() => setLessonDialog({ open: false, mode: 'create' })}
+          onSuccess={() => {
+            refetch();
+            setLessonDialog({ open: false, mode: 'create' });
+          }}
+        />
+      )}
 
       {/* Delete Module Confirmation Dialog */}
       <AlertDialog open={deleteModuleDialogOpen} onOpenChange={setDeleteModuleDialogOpen}>
@@ -222,7 +233,7 @@ export default function CourseContentPage() {
   );
 }
 
-function ModuleCard({ module, index, expanded, onToggle, onEdit, onDelete, onAddLesson }: {
+function ModuleCard({ module, index, expanded, onToggle, onEdit, onDelete, onAddLesson, onEditLesson }: {
   module: Module;
   index: number;
   expanded: boolean;
@@ -230,6 +241,7 @@ function ModuleCard({ module, index, expanded, onToggle, onEdit, onDelete, onAdd
   onEdit: () => void;
   onDelete: () => void;
   onAddLesson: () => void;
+  onEditLesson: (lesson: Lesson) => void;
 }) {
   const { data: lessonsData } = useGetModuleLessonsQuery(module._id, { skip: !expanded });
   const [deleteLesson] = useDeleteLessonMutation();
@@ -319,7 +331,7 @@ function ModuleCard({ module, index, expanded, onToggle, onEdit, onDelete, onAdd
                     </div>
                     <div className="flex items-center gap-2">
                       {lesson.isMandatory && <Badge variant="outline" className="text-xs">Required</Badge>}
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => onEditLesson(lesson)}>
                         <Edit className="h-3 w-3" />
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => {
@@ -506,17 +518,6 @@ function LessonFormDialog({ open, mode, moduleId, data, onClose, onSuccess }: {
       if (mode === 'create') {
         await createLesson({ moduleId: moduleId!, ...formData }).unwrap();
         toast.success('Lesson created successfully');
-        setFormData({
-          title: '',
-          description: '',
-          type: 'video',
-          videoSource: 'youtube',
-          videoId: '',
-          videoUrl: '',
-          videoDuration: 0,
-          content: '',
-          isMandatory: true,
-        });
       } else {
         await updateLesson({ lessonId: data!._id, ...formData }).unwrap();
         toast.success('Lesson updated successfully');
@@ -583,7 +584,7 @@ function LessonFormDialog({ open, mode, moduleId, data, onClose, onSuccess }: {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="youtube">YouTube</SelectItem>
-                    <SelectItem value="gdrive">Google Drive</SelectItem>
+                  <SelectItem value="googledrive">Google Drive</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -10,7 +10,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studentApi";
 import { toast } from "sonner";
-import thumbnail from "../../../../../assets/images/course-thumbnail.png";
+import thumbnail from "../../../../../assets/images/batch-6-web-cover.png";
 
 interface EnrolledCourse {
   id: string;
@@ -125,12 +125,12 @@ export default function StudentCourses() {
                       </div>
 
                       {/* Stats Grid */}
-                      <div className="grid grid-cols-3 gap-4 py-3 border-y">
+                      <div className=" gap-4 py-3 border-y">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <div className="flex flex-col">
-                            <span className="text-xs text-muted-foreground">Enrolled</span>
-                            <span className="text-sm font-medium">
+                          <div className="flex items-center gap-2">
+                            <span className=" text-muted-foreground">Enrolled :</span>
+                            <span className=" font-medium">
                               {new Date(enrollment.enrolledAt).toLocaleDateString('en-US', { 
                                 month: 'short', 
                                 day: 'numeric',
@@ -140,11 +140,13 @@ export default function StudentCourses() {
                           </div>
                         </div>
                         
-                        <div className="flex items-center gap-2">
+                        {/* <div className="flex items-center gap-2">
                           <TrendingUp className="h-4 w-4 text-muted-foreground" />
                           <div className="flex flex-col">
                             <span className="text-xs text-muted-foreground">Progress</span>
-                            <span className="text-sm font-medium">0%</span>
+                            <span className="text-sm font-medium">
+                              {enrollment.status === 'completed' ? '100%' : '0%'}
+                            </span>
                           </div>
                         </div>
                         
@@ -152,9 +154,11 @@ export default function StudentCourses() {
                           <Award className="h-4 w-4 text-muted-foreground" />
                           <div className="flex flex-col">
                             <span className="text-xs text-muted-foreground">Certificate</span>
-                            <span className="text-sm font-medium text-muted-foreground">Pending</span>
+                            <span className="text-sm font-medium text-muted-foreground">
+                              {enrollment.status === 'completed' ? 'Issued' : 'Pending'}
+                            </span>
                           </div>
-                        </div>
+                        </div> */}
                       </div>
 
                       {/* Action Buttons */}
