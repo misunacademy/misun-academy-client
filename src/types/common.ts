@@ -234,6 +234,12 @@ export interface ILesson {
         url: string;
         thumbnail?: string;
     };
+    resources?: {
+        title: string;
+        type: 'link' | 'text';
+        url?: string;
+        textContent?: string;
+    }[];
 }
 
 export interface IModule {
@@ -344,6 +350,12 @@ export interface Lesson {
         url?: string;
         thumbnail?: string;
     };
+    resources?: {
+        title: string;
+        type: 'link' | 'text';
+        url?: string;
+        textContent?: string;
+    }[];
 }
 
 export interface Module {

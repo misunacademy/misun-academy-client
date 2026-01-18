@@ -61,6 +61,12 @@ interface Lesson {
   videoDuration?: number;
   content?: string;
   isMandatory: boolean;
+  resources?: {
+    title: string;
+    type: 'link' | 'text';
+    url?: string;
+    textContent?: string;
+  }[];
 }
 
 export default function CourseContentPage() {
@@ -509,7 +515,28 @@ function LessonFormDialog({ open, mode, moduleId, data, onClose, onSuccess }: {
     videoDuration: data?.videoDuration || 0,
     content: data?.content || '',
     isMandatory: data?.isMandatory ?? true,
+    resources: data?.resources || [],
   });
+
+  const handleAddResource = () => {
+    setFormData({
+      ...formData,
+      resources: [...formData.resources, { title: '', type: 'link', url: '', textContent: '' }]
+    });
+  };
+
+  const handleUpdateResource = (index: number, field: string, value: string) => {
+    const updatedResources = [...formData.resources];
+    updatedResources[index] = { ...updatedResources[index], [field]: value };
+    setFormData({ ...formData, resources: updatedResources });
+  };
+
+  const handleRemoveResource = (index: number) => {
+    setFormData({
+      ...formData,
+      resources: formData.resources.filter((_, i) => i !== index)
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -644,6 +671,88 @@ Create a composite image using at least 3 different selection techniques..."
               />
             </div>
           )}
+
+          {/* Resources Section */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Label>Resources</Label>
+              <Button type="button" variant="outline" size="sm" onClick={handleAddResource}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Resource
+              </Button>
+            </div>
+            {formData.resources.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No resources added yet</p>
+            ) : (
+              <div className="space-y-3">
+                {formData.resources.map((resource, index) => (
+                  <Card key={index} className="p-3">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-medium">Resource {index + 1}</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveResource(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div>
+                        <Label className="text-xs">Title *</Label>
+                        <Input
+                          value={resource.title}
+                          onChange={(e) => handleUpdateResource(index, 'title', e.target.value)}
+                          placeholder="Resource title"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Type *</Label>
+                        <Select
+                          value={resource.type}
+                          onValueChange={(value) => handleUpdateResource(index, 'type', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="link">Link</SelectItem>
+                            <SelectItem value="text">Text</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {resource.type === 'link' && (
+                        <div>
+                          <Label className="text-xs">URL *</Label>
+                          <Input
+                            value={resource.url}
+                            onChange={(e) => handleUpdateResource(index, 'url', e.target.value)}
+                            placeholder="https://example.com"
+                            type="url"
+                            required
+                          />
+                        </div>
+                      )}
+                      {resource.type === 'text' && (
+                        <div>
+                          <Label className="text-xs">Text Content *</Label>
+                          <Textarea
+                            value={resource.textContent}
+                            onChange={(e) => handleUpdateResource(index, 'textContent', e.target.value)}
+                            placeholder="Enter text content here..."
+                            rows={3}
+                            required
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>

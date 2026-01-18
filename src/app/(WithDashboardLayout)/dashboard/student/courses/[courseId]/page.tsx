@@ -22,7 +22,8 @@ import {
   X,
   Lock,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ExternalLink
 } from "lucide-react";
 import { VideoPlayer } from "@/components/module/dashboard/student/VideoPlayer";
 import Link from "next/link";
@@ -221,6 +222,17 @@ export default function CourseDetails() {
   // Calculate progress percentage based on completed lessons
   const calculatedPercentage = totalLessons > 0 ? Math.round((completedLessonsCount / totalLessons) * 100) : 0;
 
+  // Collect all resources from lessons
+  const allResources = course.curriculum?.flatMap(module => 
+    module.lessons?.flatMap(lesson => 
+      lesson.resources?.map(resource => ({
+        ...resource,
+        lessonTitle: lesson.title,
+        moduleTitle: module.title,
+      })) || []
+    ) || []
+  ) || [];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -404,11 +416,11 @@ export default function CourseDetails() {
 
           {/* Course Tabs */}
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="live-classes">Live Classes</TabsTrigger>
               <TabsTrigger value="resources">Resources</TabsTrigger>
-              <TabsTrigger value="discussions">Discussions</TabsTrigger>
+              {/* <TabsTrigger value="discussions">Discussions</TabsTrigger> */}
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
@@ -530,22 +542,64 @@ export default function CourseDetails() {
                     Course Resources
                   </CardTitle>
                   <CardDescription>
-                    Downloadable materials and additional resources
+                    Downloadable materials and additional resources from lessons
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8">
-                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No Resources Available</h3>
-                    <p className="text-muted-foreground">
-                      Additional resources will be made available as you progress through the course.
-                    </p>
-                  </div>
+                  {allResources.length === 0 ? (
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No Resources Available</h3>
+                      <p className="text-muted-foreground">
+                        Additional resources will be made available as you progress through the course.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {allResources.map((resource, index) => (
+                        <div key={index} className="border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 mt-1">
+                              {resource.type === 'link' ? (
+                                <ExternalLink className="h-5 w-5 text-blue-600" />
+                              ) : (
+                                <FileText className="h-5 w-5 text-green-600" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-sm mb-1">{resource.title}</h4>
+                              <p className="text-xs text-muted-foreground mb-2">
+                                From: {resource.moduleTitle} → {resource.lessonTitle}
+                              </p>
+                              {resource.type === 'link' && resource.url && (
+                                <a
+                                  href={resource.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                >
+                                  Open Link
+                                  <ExternalLink className="h-3 w-3" />
+                                </a>
+                              )}
+                              {resource.type === 'text' && resource.textContent && (
+                                <div className="mt-2 p-3 bg-muted rounded-md">
+                                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                    {resource.textContent}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="discussions" className="space-y-4">
+            {/* <TabsContent value="discussions" className="space-y-4">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -567,7 +621,7 @@ export default function CourseDetails() {
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
+            </TabsContent> */}
           </Tabs>
         </div>
 
@@ -581,7 +635,7 @@ export default function CourseDetails() {
                 Course Modules
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 h-[70vh] overflow-y-auto *:scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               <div className="space-y-6">
                 {course.curriculum?.map((module, moduleIdx) => {
                   const moduleCompletedLessons = module.lessons.filter(lesson => 
