@@ -1,7 +1,7 @@
 "use client"
 import { AppSidebar } from "@/components/module/dashboard/app-sidebar"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { Bell, User, ExternalLink } from "lucide-react"
+import { Bell, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import {
@@ -34,10 +34,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             '/dashboard/admin/reports': 'Reports',
             '/dashboard/admin/settings': 'Settings',
             '/dashboard/student': 'Student Dashboard',
+            '/dashboard/student/browse': 'Browse Courses',
             '/dashboard/student/courses': 'My Courses',
             '/dashboard/student/recordings': 'Live Class Recordings',
             '/dashboard/student/certificates': 'Certificates',
+            '/dashboard/student/enrollment-poster': 'Enrollment Poster',
             '/dashboard/student/profile': 'Profile',
+            '/dashboard/student/payments': 'Payments History',
             '/dashboard/student/settings': 'Settings',
         }
 
