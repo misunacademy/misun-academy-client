@@ -6,9 +6,9 @@ import { signInWithEmail, signUpWithEmail } from '@/actions/auth';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
 import { authClient } from '@/lib/auth-client';
-import { useEnrollment } from './useEnrollment';
 import { useRouter } from 'next/navigation';
 import { getValidatedRedirectUrl } from '@/lib/authUtils';
+import { useEnrollment } from './useEnrollment';
 // Utility function to serialize session data for Redux
 const serializeSession = (session: any) => {
   if (!session) return null;
@@ -62,6 +62,27 @@ const checkServerAuth = async () => {
     console.error('Failed to validate server token:', error);
   }
   return null;
+};
+
+// Function to check if user has enrollments
+const checkHasEnrollments = async (token: string) => {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/enrollments/me`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const enrollments = data.data || [];
+      const activeEnrollments = enrollments.filter((e: any) => e.status === 'active');
+      return activeEnrollments.length > 0;
+    }
+  } catch (error) {
+    console.error('Failed to check enrollments:', error);
+  }
+  return false;
 };
 
 // Function to handle social login
@@ -134,10 +155,13 @@ export function useAuth() {
           if (user) {
             dispatch(setUser(user));
             toast.success("Google দিয়ে সফলভাবে লগইন হয়েছে!");
-            // Redirect to intended page or default
-            const redirectTo = new URLSearchParams(window.location.search).get('redirectTo');
-            const redirectUrl = getValidatedRedirectUrl(redirectTo, betterPayload.user?.role);
-            router.push(redirectUrl);
+            // Check enrollments and redirect
+            const token = Cookies.get('token');
+            if (token) {
+              const currentHasEnrollments = await checkHasEnrollments(token);
+              const redirectUrl = getValidatedRedirectUrl(null, betterPayload.user?.role, currentHasEnrollments);
+              router.push(redirectUrl);
+            }
           } else {
             // If social login failed, fall back to session data
             dispatch(setSession(serializeSession(betterPayload)));
@@ -160,7 +184,7 @@ export function useAuth() {
     };
 
     initAuth();
-  }, [dispatch,router]);
+  }, [dispatch, router, hasEnrollments]);
 
   const signIn = async (email: string, password: string) => {
     dispatch(setLoading(true));
@@ -175,6 +199,10 @@ export function useAuth() {
         }        // Debug: confirm cookies presence after login
         console.debug('[useAuth] after signIn cookies token:', !!Cookies.get('token'), 'refreshToken:', !!Cookies.get('refreshToken'));
         dispatch(setUser(result.user));
+        // Check enrollments and redirect
+        const currentHasEnrollments = await checkHasEnrollments(result.token);
+        const redirectUrl = getValidatedRedirectUrl(null, result.user?.role, currentHasEnrollments);
+        router.push(redirectUrl);
         // toast.success('সফলভাবে লগইন হয়েছে!');
         return { success: true, user: result.user };
       } else {

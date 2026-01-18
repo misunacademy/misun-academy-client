@@ -251,13 +251,13 @@ const AuthPage = () => {
                                             )}
                                         />
 
-                                        <div className="flex items-center justify-between text-sm">
-                                            <div className="flex items-center gap-2">
+                                        <div className="flex items-center justify-end text-sm">
+                                            {/* <div className="flex items-center gap-2">
                                                 <Switch id="remember" />
                                                 <Label htmlFor="remember" className="text-muted-foreground">
                                                     মনে রাখুন
                                                 </Label>
-                                            </div>
+                                            </div> */}
                                             <button
                                                 type="button"
                                                 className="text-emerald-600 hover:text-emerald-700 font-medium"

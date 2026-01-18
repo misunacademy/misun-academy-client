@@ -15,18 +15,20 @@ const SAFE_ROUTES = new Set([
 
 export const getValidatedRedirectUrl = (
   url: string | null,
-  role?: string,
-  hasEnrollments?: boolean
+  role: string,
+  hasEnrollments: boolean
 ): string => {
 
   // 🎯 Single source of truth for default redirect
   const defaultRedirect =
     role && ADMIN_ROLES.has(role.toLowerCase())
       ? '/dashboard/admin'
-      : hasEnrollments
+      : (hasEnrollments
         ? '/dashboard/student'
-        : '/checkout';
+        : '/checkout');
 
+        console.log("hasEnrollments",hasEnrollments);
+        console.log("defaultRedirect",defaultRedirect);
   if (!url) return defaultRedirect;
 
   // ❌ Block absolute or malformed URLs
