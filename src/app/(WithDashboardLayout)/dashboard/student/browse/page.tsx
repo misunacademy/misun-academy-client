@@ -69,8 +69,7 @@ export default function BrowseCoursesPage() {
 
   const courses: Course[] = coursesData?.data || [];
   const batches: Batch[] = batchesData?.data || [];
-  console.log("courses", courses);
-  console.log("batches", batches);
+
   // Filter published courses
   const publishedCourses = courses.filter((course) =>
     course.status === 'published'

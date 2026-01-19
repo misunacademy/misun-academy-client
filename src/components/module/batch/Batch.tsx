@@ -365,7 +365,7 @@ export default function BatchDashboard() {
                                         {/* <TableCell>{batch.maxCapacity || '∞'}</TableCell> */}
                                         <TableCell>
                                             <div className="flex items-center gap-2">
-                                                {batch.status !== 'completed' && (
+                                                {/* {batch.status !== 'completed' && (
                                                     <Button 
                                                         onClick={() => handleStatusChange(batch._id, 'completed')}
                                                         variant="outline" 
@@ -374,7 +374,7 @@ export default function BatchDashboard() {
                                                     >
                                                         Mark Completed
                                                     </Button>
-                                                )}
+                                                )} */}
                                                 <Select 
                                                     value={batch.status} 
                                                     onValueChange={(newStatus) => handleStatusChange(batch._id, newStatus)}

@@ -132,7 +132,8 @@ export const baseApi = createApi({
         'Dashboard',
         'Uploads',
         'Modules',
-        'Lessons'
+        'Lessons',
+        'Settings'
     ],
     endpoints: () => ({}),
 });

@@ -27,8 +27,7 @@ export const getValidatedRedirectUrl = (
         ? '/dashboard/student'
         : '/checkout');
 
-        console.log("hasEnrollments",hasEnrollments);
-        console.log("defaultRedirect",defaultRedirect);
+   
   if (!url) return defaultRedirect;
 
   // ❌ Block absolute or malformed URLs

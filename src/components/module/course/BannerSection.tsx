@@ -1,9 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { enrollmentPeriod } from '@/constants/enrollment';
 import { DiamondMinus } from 'lucide-react';
+import Countdown from './Countdown';
+
 
 export default function BannerSection() {
+
+
   return (
     <section className="grid place-items-center h-full relative overflow-hidden font-bangla">
       <div className="relative z-50 flex flex-col items-center justify-center mt-20 md:mt-24 mb-24">
@@ -17,10 +22,11 @@ export default function BannerSection() {
         <p className="w-auto sm:w-10/12 text-[16px] leading-[150%] tracking-[0] text-center max-w-6xl mt-8 mx-5 font-bangla">
           Complete Graphic Design With Freelancing (Batch-06) – এই কোর্সটি আপনাকে বেসিক থেকে অ্যাডভান্স লেভেল পর্যন্ত গ্রাফিক্স ডিজাইন শেখাবে বাস্তব প্রজেক্ট ও ক্লাইন্ট হান্টিং স্ট্র্যাটেজির মাধ্যমে। ২৪/৭ সাপোর্ট, <strong>১:১</strong> মেন্টরশিপ, লাইভ ক্লাস এবং AI ইনটিগ্রেটেড ডিজাইনের সাহায্যে আপনি নিজেকে গড়ে তুলতে পারবেন একজন দক্ষ ফ্রিল্যান্স ডিজাইনার হিসেবে।
         </p>
-
+        <Countdown />
         <div className="my-8 border border-primary/20 rounded-lg px-6 py-4 bg-primary text-white font-bold font-bangla text-xl">
           কোর্স ফি: মাত্র ৪,০০০ টাকা
         </div>
+
 
         {/* Timeline Section */}
         <div className="flex flex-col lg:flex-row gap-4 md:gap-6 lg:gap-7 gap-y-8 lg:gap-y-0 mb-8 mt-6 lg:mt-4 lg:mx-24 rounded-[16px] py-12 lg:py-8 px-12 w-80 mx-auto md:w-[600px] lg:w-auto items-center justify-center border-2 border-primary/15 bg-gradient-to-br from-primary/10 to-primary/5">

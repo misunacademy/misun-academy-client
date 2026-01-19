@@ -31,6 +31,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             '/dashboard/admin/payment': 'Payment Management',
             '/dashboard/admin/batch': 'Batch Management',
             '/dashboard/admin/users': 'User Management',
+            '/dashboard/admin/dynamic-updates': 'Dynamic Updates',
             '/dashboard/admin/reports': 'Reports',
             '/dashboard/admin/settings': 'Settings',
             '/dashboard/student': 'Student Dashboard',

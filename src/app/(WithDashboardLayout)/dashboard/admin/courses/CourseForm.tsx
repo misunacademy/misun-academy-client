@@ -150,7 +150,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
       };
 
       const normalizedLevel = normalizeLevel((course as any).level);
-      console.log('Normalized level:', normalizedLevel);
+
 
       const formData = {
         title: (course as any).title || "",
@@ -274,7 +274,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
       features: features,
       highlights: highlights,
     };
-console.log(payload);
+
     try {
       if (isNew) {
         await createCourse(payload).unwrap();

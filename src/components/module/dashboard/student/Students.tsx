@@ -289,7 +289,7 @@ const Students = () => {
     });
 
     const students = data?.data || [];
-    console.log({ data })
+  
     const totalPages = data?.meta?.totalPages || 1;
     const totalRecords = data?.meta?.total || 0;
 

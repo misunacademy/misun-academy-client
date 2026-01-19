@@ -86,8 +86,7 @@ const EnrolledStudentTable = () => {
 
     const students = data?.data || [];
     const meta = data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
-    console.log("students", students);
-    console.log("meta", meta);
+
     const columns = useMemo<ColumnDef<StudentData>[]>(
         () => [
             {

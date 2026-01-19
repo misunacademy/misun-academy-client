@@ -18,7 +18,7 @@ interface SkillItemProps {
 
 const SkillItem = ({ image, name, delay = 0, index }: SkillItemProps) => {
     //const isEven = index % 2 === 0;
-    console.log(index);
+
 
     return (
         <div

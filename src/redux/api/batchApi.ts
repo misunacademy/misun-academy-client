@@ -5,7 +5,7 @@ export interface BatchResponse {
   _id: string;
   title: string;
   batchNumber: number;
-  courseId: string;
+  courseId: any; // Can be string or populated course object
   startDate: Date;
   endDate: Date;
   enrollmentStartDate: Date;

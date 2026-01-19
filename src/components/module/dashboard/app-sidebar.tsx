@@ -1,5 +1,5 @@
 "use client";
-import { BookOpen, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video, Search, CreditCard, ShieldCheck, ImageDown, TrendingUp } from "lucide-react";
+import { BookOpen, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video, Search, CreditCard, ShieldCheck, ImageDown, TrendingUp, Globe } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from 'next/link';
 import {
@@ -139,6 +139,11 @@ const adminItems = [
         icon: Users,
     },
     {
+        title: "Dynamic Updates",
+        url: "/dashboard/admin/dynamic-updates",
+        icon: Globe,
+    },
+    {
         title: "Settings",
         url: "/dashboard/admin/settings",
         icon: Settings,
@@ -150,7 +155,6 @@ export function AppSidebar() {
     const user = useAppSelector((state) => state?.auth?.user);
     const { hasEnrollments } = useEnrollment();
 
-    console.log("hasEnrollments", hasEnrollments);
     // Determine if we're in admin or student dashboard based on user role
     // Handle both uppercase (API) and lowercase (enum) role values
     const userRole = user?.role?.toLowerCase() || '';

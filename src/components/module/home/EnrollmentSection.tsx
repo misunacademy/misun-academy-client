@@ -1,64 +1,59 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import duration from "dayjs/plugin/duration";
 import { CalendarCheck, CalendarX } from "lucide-react";
 import { useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
-import { Card, CardContent } from "@/components/ui/card";
+import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
+import { useGetSettingsQuery } from "@/redux/api/settingsApi";
+import Countdown from "../course/Countdown";
 
 dayjs.extend(relativeTime);
 dayjs.extend(duration);
 
-const formatCountdown = (diffInMillis: number) => {
-    const dur = dayjs.duration(diffInMillis);
-    const months = dur.months() ? `${dur.months()} মাস` : "";
-    return `${months} ${dur.days()} দিন ${dur.hours()} ঘণ্টা ${dur.minutes()} মিনিট ${dur.seconds()} সেকেন্ড`;
-};
 
 const formatDate = (date: Date | string) => {
     return dayjs(date).format('DD MMMM, YYYY');
 };
 
 export const EnrollmentSection = () => {
-    const [now, setNow] = useState(dayjs());
-    const [countdown, setCountdown] = useState("");
+    const { data: settingsData, isLoading: settingsLoading } = useGetSettingsQuery();
+    const featuredCourseId = (settingsData?.data?.featuredEnrollmentCourse as any)?._id;
+    const featuredBatchId = (settingsData?.data?.featuredEnrollmentBatch as any)?._id;
 
-    const { data: batchData, isLoading } = useGetCurrentEnrollmentBatchQuery({});
+    const { data: batchData, isLoading: batchLoading } = useGetCurrentEnrollmentBatchQuery(
+        { courseId: featuredCourseId },
+        { skip: !featuredCourseId || !!featuredBatchId }
+    );
 
-    const batch = batchData?.data;
+    const { data: featuredBatchData, isLoading: featuredBatchLoading } = useGetBatchByIdQuery(
+        featuredBatchId || "",
+        { skip: !featuredBatchId }
+    );
 
-    const start = batch ? dayjs(batch.enrollmentStartDate) : null;
-    const end = batch ? dayjs(batch.enrollmentEndDate) : null;
+    const batch = featuredBatchData?.data || batchData?.data;
 
-    const isUpcoming = start && now.isBefore(start);
-    const isOngoing = start && end && now.isAfter(start) && now.isBefore(end);
-    const isEnded = end && now.isAfter(end);
 
-    useEffect(() => {
-        if (!batch) return;
-
-        const interval = setInterval(() => {
-            const current = dayjs();
-            setNow(current);
-
-            if (isUpcoming) {
-                setCountdown(formatCountdown(start!.diff(current)));
-            } else if (isOngoing) {
-                setCountdown(formatCountdown(end!.diff(current)));
-            }
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, [batch, start, end, isUpcoming, isOngoing]);
-
-    if (isLoading) {
+    if (settingsLoading || batchLoading || featuredBatchLoading) {
         return (
             <section className="py-16 px-4 bg-primary/15 font-bangla">
                 <div className="max-w-6xl mx-auto space-y-8">
                     <div className="text-center">
                         <p>Loading enrollment information...</p>
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
+    if (!featuredCourseId) {
+        return (
+            <section className="py-16 px-4 bg-primary/15 font-bangla">
+                <div className="max-w-6xl mx-auto space-y-8">
+                    <div className="text-center">
+                        <p>No featured course selected for enrollment.</p>
                     </div>
                 </div>
             </section>
@@ -88,20 +83,7 @@ export const EnrollmentSection = () => {
                     <p>তাই আর দেরি না করে এখনই প্রস্তুতি নিন, কারণ সময় শেষ হয়ে গেলে আবার অপেক্ষা...!</p>
 
                     {/* Countdown Timer */}
-                    {!isEnded && (
-                        <Card className="mx-auto max-w-2xl bg-gradient-to-tr from-primary to-primary/90 shadow-elegant border-0">
-                            <CardContent className="p-8">
-                                <div className="text-center space-y-2">
-                                    <p className="text-white/90 text-lg font-bangla">
-                                        {isUpcoming ? "এনরোলমেন্ট শুরু হতে বাকি:" : "এনরোলমেন্ট শেষ হতে বাকি:"}
-                                    </p>
-                                    <div className="text-3xl md:text-4xl font-bold text-white font-bangla animate-countdown-pulse">
-                                        {countdown}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
+                    <Countdown/>
                 </div>
 
                 {/* Information Cards Grid */}

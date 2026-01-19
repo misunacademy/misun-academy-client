@@ -95,7 +95,7 @@ const PaymentTable = () => {
     const meta = data?.meta || { total: 0, page: '1', limit: 10, totalPages: 1 };
 
     const handleConfirmStatusChange = useCallback(async () => {
-        console.log({ selectedStatus })
+  
         if (selectedTransactionId && selectedStatus) {
             try {
                 // Find the payment to determine the method

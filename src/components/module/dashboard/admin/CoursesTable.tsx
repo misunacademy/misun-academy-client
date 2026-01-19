@@ -14,7 +14,7 @@ interface CoursesTableProps {
 }
 
 export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesTableProps) {
-  console.log("courses",courses);
+
   return (
     <Card>
       <CardHeader>

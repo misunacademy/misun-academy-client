@@ -132,7 +132,7 @@ const EnrollmentCheckout = () => {
                 batchId: data.batchId,
             }).unwrap();
 
-            console.log('Payment response:', res);
+       
 
             if (!res?.data?.paymentUrl) {
                 toast.error("Failed to get payment URL. Please try again.");
