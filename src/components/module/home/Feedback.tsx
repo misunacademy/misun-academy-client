@@ -82,9 +82,9 @@ export default function Feedback() {
                       <p className='text-sm'>{item.studentId}({item.batch})</p>
                     </div>
                     <p className="mt-5 text-center lg:text-sm">
-                      {item.testimonial.length > 500
+                      {item.testimonial && item.testimonial.length > 500
                         ? item.testimonial.slice(0, 500) + '...'
-                        : item.testimonial}
+                        : item.testimonial || ''}
                     </p>
                   </div>
                 </div>
@@ -108,7 +108,7 @@ export default function Feedback() {
                 </div>
 
                 <p className="mt-5 text-center text-sm">
-                  {item.testimonial}
+                  {item.testimonial || ''}
                 </p>
               </div>
             </div>

@@ -17,9 +17,9 @@ const Feedback = () => {
 
     // Get unique batches and count testimonials per batch
     const batchInfo = useMemo(() => {
-        const batches = [...new Set(studentFeedbacks.map(feedback => feedback.batch))].sort();
+        const batches = [...new Set(studentFeedbacks.map(feedback => feedback.batch!))].sort();
         const counts = studentFeedbacks.reduce((acc, feedback) => {
-            acc[feedback.batch] = (acc[feedback.batch] || 0) + 1;
+            acc[feedback.batch!] = (acc[feedback.batch!] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
         return { batches, counts };
@@ -159,11 +159,11 @@ const Feedback = () => {
                                 {paginatedTestimonials.map((feedback, index) => (
                                     <TestimonialCard
                                         key={`${feedback.studentId}-${currentPage}`}
-                                        name={feedback.name}
-                                        batch={feedback.batch}
+                                        name={feedback.name!}
+                                        batch={feedback.batch!}
                                         studentId={feedback?.studentId || "N/A"}
-                                        testimonial={feedback.testimonial}
-                                        postLink={feedback.post_link}
+                                        testimonial={feedback.testimonial!}
+                                        postLink={feedback.post_link!}
                                         index={index}
                                     />
                                 ))}

@@ -14,6 +14,8 @@ export async function getUsersAction() {
   });
 
   if (!res.ok) {
+    const errorText = await res.text();
+    console.error(`Failed to fetch users: ${res.status} ${res.statusText} - ${errorText}`);
     throw new Error(`Failed to fetch users`);
   }
 
