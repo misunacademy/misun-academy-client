@@ -25,10 +25,13 @@ export const enrollmentData = {
 
 
 export const courseInfo = {
-    title: "Complete Graphics Design With Freelancing (Batch-05)",
+    title: "Complete Graphic Design With Freelancing (Batch-05)",
     subtitle: "From Beginner to Professional Designer",
+    shortDescription: "Master Adobe Photoshop and Illustrator with hands-on projects and real-world examples. Learn professional design techniques and start your freelancing career.",
+    thumbnailImage: "/images/course-thumbnail.jpg", // Add a default thumbnail path
     price: 4000,
     duration: "4 months",
+    durationEstimate: "4", // Add duration estimate as string
     instructor: "Mithun Sarkar",
     features: [
         "50+ hours of premium design tutorials",
@@ -70,7 +73,7 @@ export const paymentInfo = {
     instructions: [
         "Open your PhonePe app",
         "Send money to the number above",
-        "Enter the exact amount: ₹3,000",
+        "Enter the exact amount: BDT 3,000",
         "Add reference: 'MA-5'",
         "Complete the payment",
         "Fill in your payment details below"

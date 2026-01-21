@@ -104,14 +104,14 @@ const WhyChooseSection = () => {
 
 
   const stats = [
-    { icon: Users, value: "৭০০+", label: "শিক্ষার্থী ভর্তি হয়েছেন" },
+    { icon: Users, value: "১৫০০+", label: "শিক্ষার্থী ভর্তি হয়েছেন" },
     { icon: Star, value: "৪.৯", label: "কোর্স রেটিং" },
     { icon: Clock, value: "৪ মাস", label: "মেয়াদ" }
   ];
 
   return (
-    <section className="bg-gradient-hero mb-20">
-      <div className="container mx-auto px-4">
+    <section className="bg-gradient-hero mb-20"> 
+      <div className="container max-w-7xl  mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16 animate-fade-up">
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 font-bangla rounded-full text-sm font-medium mb-4 animate-glow">

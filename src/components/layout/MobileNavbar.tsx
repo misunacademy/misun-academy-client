@@ -45,6 +45,13 @@ export default function MobileNavbar() {
                 </Link>
                 <Link
                     onClick={() => setIsOpen(!isOpen)}
+                    href="/feedback"
+                    className="text-lg h-14 flex items-center border-b border-dark font-bangla"
+                >
+                    শিক্ষার্থীদের মতামত
+                </Link>
+                <Link
+                    onClick={() => setIsOpen(!isOpen)}
                     href="/about"
                     className="text-lg h-14 flex items-center border-b border-dark font-bangla"
                 >
@@ -57,7 +64,12 @@ export default function MobileNavbar() {
                 >
                     Blogs
                 </Link> */}
+                <Link href={"/auth"}
+                 className="text-lg h-14 flex items-center border-b border-dark font-bangla text-emerald-600 "
+                >
+                    লগইন
 
+                </Link>
                 <div className='flex space-x-4 pt-6 pb-2'>
                     <Link
                         onClick={() => setIsOpen(!isOpen)}

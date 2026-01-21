@@ -1,293 +1,172 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
-    Image,
+    Image as ImageIcon,
     Palette,
     Target,
     ChevronDown,
     ChevronRight,
     Trophy,
+    BookOpen
 } from "lucide-react";
-import Link from "next/link";
-import { clientHuntingModules, illustratorModules, illustratorProjects, photoshopModules, photoshopProjects } from "@/constants/curriculum";
+// Import your specific data structure
+import { courseCurriculum } from "@/data/courseCurriculum";
 
 const CourseCurriculum = () => {
-    const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
-        photoshop: false,
-        illustrator: false,
-        client: false
-    });
+    // State to track which sections are open by index
+    // Initialize with index 0 (Photoshop) open by default
+    const [openStates, setOpenStates] = useState<{ [key: number]: boolean }>({ 0: true });
 
-    const toggleSection = (section: string) => {
-        setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+    const toggleSection = (index: number) => {
+        setOpenStates(prev => ({ ...prev, [index]: !prev[index] }));
     };
 
-
+    // Helper to dynamically get the icon based on the course title
+    const getIcon = (title: string) => {
+        if (title.includes("Photoshop")) return <ImageIcon className="h-6 w-6 text-emerald-600" />;
+        if (title.includes("Illustrator")) return <Palette className="h-6 w-6 text-emerald-600" />;
+        if (title.includes("Client")) return <Target className="h-6 w-6 text-emerald-600" />;
+        return <BookOpen className="h-6 w-6 text-emerald-600" />;
+    };
 
     return (
-        <div className="min-h-screen bg-background">
-            {/* Course Curriculum */}
-            <section className="py-2">
+        <div className="min-h-screen bg-white font-sans">
+            <section className="py-10">
                 <div className="container mx-auto px-4">
-                    <div className="text-center mb-16">
-                        <h2 className="text-4xl md:text-5xl font-bold mb-6 font-bangla">কোর্স <span className="text-primary">কারিকুলাম</span></h2>
-                        <p className="text-sm font-bangla text-secondary max-w-2xl mx-auto">
+
+                    {/* Header */}
+                    <div className="text-center mb-12">
+                        <h2 className="text-4xl md:text-5xl font-bold mb-4 font-bangla text-black">
+                            কোর্স <span className="text-emerald-500">কারিকুলাম</span>
+                        </h2>
+                        <p className="text-sm md:text-base font-bangla text-gray-600 max-w-2xl mx-auto">
                             একেবারে শুরু থেকে প্রফেশনাল ডিজাইনার হওয়ার একটি পূর্ণাঙ্গ ভ্রমণ, হাতে-কলমে প্রকল্প এবং ক্লায়েন্ট হান্টিং কৌশলসহ।
                         </p>
                     </div>
 
-                    <div className="grid gap-8 max-w-6xl mx-auto">
-                        {/* Photoshop Hero Section */}
-                        <Card className="bg-primary/10 border-0 overflow-hidden hover:shadow-glow transition-all duration-300">
-                            <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 rounded-lg bg-gradient-photoshop">
-                                            <Image className="h-8 w-8 text-primary" />
-                                        </div>
-                                        <div>
-                                            <CardTitle className="text-2xl mb-2 text-primary">Photoshop Hero</CardTitle>
-                                            <CardDescription className="text-md">
-                                                Master image editing, manipulation, and digital design
-                                            </CardDescription>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <Badge variant="secondary" className="bg-creative-purple/20 text-creative-purple border-0 hover:bg-primary/10">
-                                            20 Modules
-                                        </Badge>
-                                        <Collapsible open={openSections.photoshop} onOpenChange={() => toggleSection('photoshop')}>
-                                            <CollapsibleTrigger asChild>
-                                                <Button variant="ghost" size="sm">
-                                                    {openSections.photoshop ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                                </Button>
-                                            </CollapsibleTrigger>
-                                        </Collapsible>
-                                    </div>
-                                </div>
-                            </CardHeader>
+                    <div className="grid gap-6 max-w-6xl mx-auto">
 
-                            <Collapsible open={openSections.photoshop} onOpenChange={() => toggleSection('photoshop')}>
-                                <CollapsibleContent>
-                                    <CardContent className="pt-0">
-                                        <div className="grid gap-6">
-                                            {/* Tool Based Classes */}
-                                            <div>
-                                                <h4 className="font-semibold text-lg mb-4 text-secondary">Tool Based - Basic to Advanced</h4>
-                                                <div className="grid gap-3">
-                                                    {photoshopModules.map((module, index) => (
-                                                        <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-primary/50 hover:bg-primary/70 transition-colors">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="w-8 h-8 rounded-full bg-gradient-photoshop flex items-center justify-center text-white text-sm font-medium">
-                                                                    {index + 1}
-                                                                </div>
-                                                                <span className="font-medium">{module.title}</span>
-                                                                <Badge variant={module.type === 'theory' ? 'outline' : 'secondary'} className="text-xs hidden md:block">
-                                                                    {module.type}
-                                                                </Badge>
-                                                            </div>
-                                                            <span className="text-sm text-muted-foreground">{module.duration}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
+                        {/* Dynamic Mapping over the courses array */}
+                        {courseCurriculum.courses.map((course, index) => {
+                            const isOpen = openStates[index] || false;
 
-                                            {/* Project Based Classes */}
-                                            <div>
-                                                <h4 className="font-semibold text-lg mb-4 text-creative-purple">Project Based Classes (With Client Hunting Special Tricks)</h4>
-                                                <div className="grid gap-3">
-                                                    {photoshopProjects.map((project, index) => (
-                                                        <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-primary/50 hover:bg-primary/70 transition-colors">
-                                                            <div className="flex items-center gap-3">
-                                                                <Trophy className="h-5 w-5 text-creative-orange" />
-                                                                <span className="font-medium">{project.title}</span>
-                                                                <Badge className="bg-creative-orange/20 text-creative-orange border-0 text-xs hidden md:block">
-                                                                    Project
-                                                                </Badge>
-                                                            </div>
-                                                            <span className="text-sm text-muted-foreground">{project.duration}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </CollapsibleContent>
-                            </Collapsible>
-                        </Card>
+                            // Calculate total items for the badge
+                            const moduleCount = course.modules?.length || 0;
+                            const projectCount = course.projects?.length || 0;
+                            const totalItems = moduleCount + projectCount;
 
-                        {/* Illustrator Wizard Section */}
-                        <Card className="bg-primary/10 border-0 overflow-hidden hover:shadow-glow transition-all duration-300">
-                            <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 rounded-lg bg-gradient-illustrator">
-                                            <Palette className="h-8 w-8 text-primary" />
-                                        </div>
-                                        <div>
-                                            <CardTitle className="text-2xl mb-2 text-primary">Illustrator Wizard</CardTitle>
-                                            <CardDescription className="text-lg">
-                                                Become a wizard in printing design and vector graphics
-                                            </CardDescription>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <Badge variant="secondary" className="bg-creative-blue/20 text-creative-blue border-0 hover">
-                                            19 Modules
-                                        </Badge>
-                                        <Collapsible open={openSections.illustrator} onOpenChange={() => toggleSection('illustrator')}>
-                                            <CollapsibleTrigger asChild>
-                                                <Button variant="ghost" size="sm">
-                                                    {openSections.illustrator ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                                </Button>
-                                            </CollapsibleTrigger>
-                                        </Collapsible>
-                                    </div>
-                                </div>
-                            </CardHeader>
-
-                            <Collapsible open={openSections.illustrator} onOpenChange={() => toggleSection('illustrator')}>
-                                <CollapsibleContent>
-                                    <CardContent className="pt-0">
-                                        <div className="grid gap-6">
-                                            {/* Tool Based Classes */}
-                                            <div>
-                                                <h4 className="font-semibold text-lg mb-4 text-creative-blue">Tool Based - Basic to Advanced</h4>
-                                                <div className="grid gap-3">
-                                                    {illustratorModules.map((module, index) => (
-                                                        <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-primary/50 hover:bg-primary/70 transition-colors">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="w-8 h-8 rounded-full bg-gradient-illustrator flex items-center justify-center text-white text-sm font-medium">
-                                                                    {index + 1}
-                                                                </div>
-                                                                <span className="font-medium">{module.title}</span>
-                                                                <Badge variant={module.type === 'theory' ? 'outline' : 'secondary'} className="text-xs hidden md:block">
-                                                                    {module.type}
-                                                                </Badge>
-                                                            </div>
-                                                            <span className="text-sm text-muted-foreground">{module.duration}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Project Based Classes */}
-                                            <div>
-                                                <h4 className="font-semibold text-lg mb-4 text-creative-blue">Project Based Classes (With Client Hunting Special Tricks)</h4>
-                                                <div className="grid gap-3">
-                                                    {illustratorProjects.map((project, index) => (
-                                                        <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-primary/50 hover:bg-primary/70 transition-colors">
-                                                            <div className="flex items-center gap-3">
-                                                                <Trophy className="h-5 w-5 text-creative-cyan" />
-                                                                <span className="font-medium">{project.title}</span>
-                                                                <Badge className="bg-creative-cyan/20 text-creative-cyan border-0 text-xs hidden md:block">
-                                                                    Project
-                                                                </Badge>
-                                                            </div>
-                                                            <span className="text-sm text-muted-foreground">{project.duration}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </CollapsibleContent>
-                            </Collapsible>
-                        </Card>
-
-                        {/* Client Hunting Guardian Section */}
-                        <Card className="bg-primary/10 border-0 overflow-hidden hover:shadow-glow transition-all duration-300">
-                            <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 rounded-lg bg-gradient-client">
-                                            <Target className="h-8 w-8 text-primary" />
-                                        </div>
-                                        <div>
-                                            <CardTitle className="text-2xl mb-2 text-primary">Guardian in Client Hunting</CardTitle>
-                                            <CardDescription className="text-lg">
-                                                Master the art of finding and securing clients
-                                            </CardDescription>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <Badge variant="secondary" className="bg-creative-green/20 text-creative-green border-0 hover:bg-primary/10">
-                                            10 Modules
-                                        </Badge>
-                                        <Collapsible open={openSections.client} onOpenChange={() => toggleSection('client')}>
-                                            <CollapsibleTrigger asChild>
-                                                <Button variant="ghost" size="sm">
-                                                    {openSections.client ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                                </Button>
-                                            </CollapsibleTrigger>
-                                        </Collapsible>
-                                    </div>
-                                </div>
-                            </CardHeader>
-
-                            <Collapsible open={openSections.client} onOpenChange={() => toggleSection('client')}>
-                                <CollapsibleContent>
-                                    <CardContent className="pt-0">
-                                        <div className="grid gap-3">
-                                            {clientHuntingModules.map((module, index) => (
-                                                <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-primary/50 hover:bg-primary/70 transition-colors">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-gradient-client flex items-center justify-center text-white text-sm font-medium">
-                                                            {index + 1}
-                                                        </div>
-                                                        <span className="font-medium">{module.title}</span>
-                                                        <Badge className="bg-creative-green/20 text-creative-green border-0 text-xs hidden md:block">
-                                                            Strategy
-                                                        </Badge>
+                            return (
+                                <div key={index} className="rounded-2xl bg-emerald-50 overflow-hidden transition-all duration-300 hover:shadow-sm">
+                                    <Collapsible
+                                        open={isOpen}
+                                        onOpenChange={() => toggleSection(index)}
+                                    >
+                                        {/* FIX: The Trigger wraps the content. No manual onClick needed. */}
+                                        <CollapsibleTrigger asChild>
+                                            <div className="p-6 flex items-center justify-between cursor-pointer hover:bg-emerald-100/50 transition-colors select-none">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="p-2">
+                                                        {getIcon(course.title)}
                                                     </div>
-                                                    <span className="text-sm text-muted-foreground">{module.duration}</span>
+                                                    <div className="text-left">
+                                                        <h3 className="text-xl font-bold text-emerald-600">{course.title}</h3>
+                                                        <p className="text-xs text-gray-500">{course.description}</p>
+                                                    </div>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </CardContent>
-                                </CollapsibleContent>
-                            </Collapsible>
-                        </Card>
-                    </div>
+                                                <div className="flex items-center gap-4">
+                                                    <span className="text-xs font-medium text-gray-600 hidden md:block">
+                                                        {totalItems} Modules
+                                                    </span>
+                                                    {isOpen ? <ChevronDown className="h-4 w-4 text-gray-600" /> : <ChevronRight className="h-4 w-4 text-gray-600" />}
+                                                </div>
+                                            </div>
+                                        </CollapsibleTrigger>
 
-                    {/* Course Promise */}
-                    <div className="mt-20 text-center font-bangla mb-12">
-                        <Card className="bg-gradient-to-r from-primary to-primary/80 p-10 border-0 mx-auto">
-                            <div className="text-white">
-                                <h3 className="text-4xl font-bold mb-6">Our Promise to You</h3>
-                                <p className="text-lg mb-6 opacity-90 text-secondary">
-                                    এতো শুধুমাত্র কোর্সের একটা ওভারভিউ, আরও অনেক অনেক বিষয় সম্পর্কে আলোচনা করা হবে আমার এই কোর্সে।
-                                    তাই আর দেরি না করে এখনই ভর্তি হয়ে যান গ্রাফিক্স ডিজাইনার হওয়ার মিশনে।
-                                </p>
-                                <div className="bg-white/10 rounded-lg p-6 mb-6 text-secondary">
-                                    <p className="text-xl font-semibold mb-4 text-white">
-                                        কিন্তু কথা কিন্তু একটাই ৪ মাস অবশ্যই আমার গাইডলাইন মানবেন, তাহলে এই কথা দিচ্ছি কোর্স সম্পর্কে আপনার ধারনা আমি পাল্টে দিব।
-                                    </p>
-                                    <p className="text-lg">
-                                        এবং যদি ৪ মাস লেগে থাকতে পারেন তাহলে কাজ কীভাবে না পান সেইটা আমি অবশ্যই দেখবো।
-                                    </p>
+                                        <CollapsibleContent>
+                                            <CardContent className="pt-0 px-6 pb-6">
+                                                <div className="grid gap-8">
+
+                                                    {/* Modules Section */}
+                                                    {course.modules && course.modules.length > 0 && (
+                                                        <div>
+                                                            <h4 className="font-medium text-sm text-gray-600 mb-4">
+                                                                {course.level || "Modules"}
+                                                            </h4>
+                                                            <div className="grid gap-3">
+                                                                {course.modules.map((module) => (
+                                                                    <ModuleItem key={module.id} data={module} />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Projects Section (Only renders if projects exist) */}
+                                                    {course.projects && course.projects.length > 0 && (
+                                                        <div>
+                                                            <h4 className="font-semibold text-sm text-gray-700 mb-4">Project Based Classes</h4>
+                                                            <div className="grid gap-3">
+                                                                {course.projects.map((project, pIndex) => (
+                                                                    <ProjectItem key={pIndex} data={project} />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </CardContent>
+                                        </CollapsibleContent>
+                                    </Collapsible>
                                 </div>
-                                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                    <Link href={"/checkout"}>
-                                        <Button variant={"outline"} className='cursor-pointer hover:bg-secondary hover:text-white'>এনরোল করুন</Button>
-                                    </Link>
-                                    <Link href={"/feedback"}>
-                                        <Button variant="secondary" size="lg" className="bg-white/20 text-white border-white/20 hover:bg-white/30">
-                                            সফলতার গল্প দেখুন
-                                        </Button>
-                                    </Link>
-                                </div>
-                            </div>
-                        </Card>
+                            );
+                        })}
                     </div>
                 </div>
             </section>
         </div>
     );
 };
+
+// --- Sub Components ---
+
+const ModuleItem = ({ data }: { data: any }) => (
+    <div className="flex flex-col md:flex-row md:items-center justify-between p-3 rounded-lg bg-[#84d6b5] hover:bg-[#34d399] transition-colors text-black shadow-sm">
+        <div className="flex items-center gap-3 flex-1">
+            <div className="min-w-[24px] h-6 flex items-center justify-center text-sm font-semibold opacity-70 text-white">
+                {data.id}
+            </div>
+            <span className="text-sm font-medium leading-tight">{data.title}</span>
+            {data.type && (
+                <Badge className="bg-black text-white hover:bg-gray-800 border-0 text-[10px] px-2 py-0.5 h-5 rounded-md uppercase">
+                    {data.type}
+                </Badge>
+            )}
+        </div>
+        <div className="flex items-center gap-3 mt-2 md:mt-0 md:pl-4 justify-between md:justify-end min-w-[140px]">
+
+            <span className="text-xs text-gray-700 opacity-80 whitespace-nowrap">{data.duration}</span>
+        </div>
+    </div>
+);
+
+const ProjectItem = ({ data }: { data: any }) => (
+    <div className="flex flex-col md:flex-row md:items-center justify-between p-3 rounded-lg bg-[#6ee7b7] hover:bg-[#34d399] transition-colors text-black shadow-sm">
+        <div className="flex items-center gap-3 flex-1">
+            <div className="min-w-[24px] h-6 flex items-center justify-center opacity-70">
+                <Trophy className="h-4 w-4" />
+            </div>
+            <span className="text-sm font-medium leading-tight">{data.title}</span>
+            <Badge className="bg-black/10 text-black hover:bg-black/20 border-0 text-[10px] px-2 py-0.5 h-5 rounded-md">
+                PROJECT
+            </Badge>
+        </div>
+        <div className="flex items-center gap-3 mt-2 md:mt-0 md:pl-4 justify-between md:justify-end min-w-[140px]">
+
+            <span className="text-xs text-gray-700 opacity-80 whitespace-nowrap">{data.duration}</span>
+        </div>
+    </div>
+);
 
 export default CourseCurriculum;

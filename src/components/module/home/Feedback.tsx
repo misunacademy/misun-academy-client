@@ -36,7 +36,7 @@ export default function Feedback() {
   }, [api]);
 
   return (
-    <div className="overflow-hidden mt-36">
+    <div className="overflow-hidden mt-36 ">
       <h1 className="text-[32px] md:text-4xl lg:text-6xl font-bold font-bangla text-center pt-4 mb-20 text-secondary uppercase">
         স্টুডেন্ট <span className="text-primary">ফিডব্যাক</span>
       </h1>

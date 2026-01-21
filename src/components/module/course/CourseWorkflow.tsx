@@ -54,7 +54,7 @@ const workflowSteps = [
 
 export default function CourseWorkflow() {
     return (
-        <Container className="mb-16 md:mb-36">
+        <Container className="mb-16 md:mb-36 max-w-7xl mx-auto">
             <section className="">
                 <div className="p-4">
                     <div className="text-center">

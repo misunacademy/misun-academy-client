@@ -21,7 +21,7 @@ export default function HeroSection() {
         }}
       >
         <div
-          className='min-h-screen grid grid-cols-1 md:grid-cols-2 container mx-auto items-center px-4'
+          className='min-h-screen grid grid-cols-1 md:grid-cols-2 container mx-auto items-center px-4 max-w-7xl'
         >
           <div className='font-bangla space-y-4'>
             <h1 className='text-6xl font-bold text-primary'>গ্রাফিক্স ডিজাইন কোর্স</h1>

@@ -8,7 +8,23 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'securepay.sslcommerz.com',
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.fbcd.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
     ],
   },
 };

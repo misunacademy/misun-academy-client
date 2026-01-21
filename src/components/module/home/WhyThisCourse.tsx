@@ -6,7 +6,7 @@ import PlayButton from '@/components/shared/PlayButton';
 
 export default function WhyThisCourse() {
   return (
-    <Container className="mb-20 pt-20">
+    <Container className="mb-20 pt-20 max-w-7xl mx-auto">
       <h1 className="text-6xl font-bangla font-bold text-secondary text-center uppercase">
         এই <span className="text-primary">কোর্সটি</span> কেন করবেন?
       </h1>

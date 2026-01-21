@@ -24,6 +24,10 @@ const BreadcrumbJsonLd = () => {
             name: 'এনরোল করুন',
             item: 'https://www.misun-academy.com/checkout',
         },
+        '/auth':{
+            name: 'লগইন / রেজিস্ট্রেশন',
+            item: 'https://www.misun-academy.com/auth',
+        }
     };
 
     // Generate breadcrumb trail

@@ -48,10 +48,32 @@ const baseQueryWithRefreshToken: BaseQueryFn<
         toast.error(result.error.data.message);
     }
     if (result?.error?.status === 401) {
+        console.warn('[baseApi] 401 from request:', args);
         //* Send Refresh
         // console.log('Sending refresh token');
 
+        const isSocialLogin = !!Cookies.get('better-auth.session_token');
+        if (isSocialLogin) {
+            console.warn('[baseApi] social login detected, dispatching logout without refresh');
+            api.dispatch(logout());
+            if (typeof window !== 'undefined') {
+                toast.error('Your session has expired. Please login again.');
+                window.location.href = '/auth';
+            }
+            return result;
+        }
+
         const refreshToken = Cookies.get("refreshToken");
+
+        if (!refreshToken) {
+            console.warn('[baseApi] no refreshToken available, dispatching logout');
+            api.dispatch(logout());
+            if (typeof window !== 'undefined') {
+                toast.error('Your session has expired. Please login again.');
+                window.location.href = '/auth';
+            }
+            return result;
+        }
 
         const res = await fetch(
             `${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/refresh-token`,
@@ -60,8 +82,8 @@ const baseQueryWithRefreshToken: BaseQueryFn<
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${refreshToken}`,
-                }
+                },
+                body: JSON.stringify({ refreshToken }),
             }
         );
 
@@ -70,12 +92,21 @@ const baseQueryWithRefreshToken: BaseQueryFn<
         if (data?.data?.token) {
             // const user = (api.getState() as RootState).auth.user;
             Cookies.set("token", data?.data?.token, {
-                secure: true,
+                secure: false,
                 sameSite: "Lax",
             });
+            if (data?.data?.refreshToken) {
+                Cookies.set("refreshToken", data?.data?.refreshToken, { secure: false, sameSite: 'Lax' });
+            }
+            console.warn('[baseApi] refresh succeeded, retrying original request');
             result = await baseQuery(args, api, extraOptions);
         } else {
+            console.warn('[baseApi] refresh failed, dispatching logout');
             api.dispatch(logout());
+            if (typeof window !== 'undefined') {
+                toast.error('Your session has expired. Please login again.');
+                window.location.href = '/auth';
+            }
         }
     }
 
@@ -85,6 +116,24 @@ const baseQueryWithRefreshToken: BaseQueryFn<
 export const baseApi = createApi({
     reducerPath: "baseApi",
     baseQuery: baseQueryWithRefreshToken,
-    tagTypes: ['Users', "Students", "Batches", "Pricing-Plan"],
+    tagTypes: [
+        'Users', 
+        'Students', 
+        'Batches', 
+        'Pricing-Plan', 
+        'Courses', 
+        'CourseEnrollments', 
+        'Profile', 
+        'Payments', 
+        'Recordings',
+        'Certificates',
+        'Instructors',
+        'Progress',
+        'Dashboard',
+        'Uploads',
+        'Modules',
+        'Lessons',
+        'Settings'
+    ],
     endpoints: () => ({}),
 });

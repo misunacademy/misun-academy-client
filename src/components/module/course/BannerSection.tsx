@@ -1,9 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { enrollmentPeriod } from '@/constants/enrollment';
 import { DiamondMinus } from 'lucide-react';
+import Countdown from './Countdown';
+
 
 export default function BannerSection() {
+
+
   return (
     <section className="grid place-items-center h-full relative overflow-hidden font-bangla">
       <div className="relative z-50 flex flex-col items-center justify-center mt-20 md:mt-24 mb-24">
@@ -15,9 +20,9 @@ export default function BannerSection() {
         </h2>
 
         <p className="w-auto sm:w-10/12 text-[16px] leading-[150%] tracking-[0] text-center max-w-6xl mt-8 mx-5 font-bangla">
-          Complete Graphics Design With Freelancing (Batch-06) – এই কোর্সটি আপনাকে বেসিক থেকে অ্যাডভান্স লেভেল পর্যন্ত গ্রাফিক্স ডিজাইন শেখাবে বাস্তব প্রজেক্ট ও ক্লাইন্ট হান্টিং স্ট্র্যাটেজির মাধ্যমে। ২৪/৭ সাপোর্ট, <strong>১:১</strong> মেন্টরশিপ, লাইভ ক্লাস এবং AI ইনটিগ্রেটেড ডিজাইনের সাহায্যে আপনি নিজেকে গড়ে তুলতে পারবেন একজন দক্ষ ফ্রিল্যান্স ডিজাইনার হিসেবে।
+          Complete Graphic Design With Freelancing (Batch-06) – এই কোর্সটি আপনাকে বেসিক থেকে অ্যাডভান্স লেভেল পর্যন্ত গ্রাফিক্স ডিজাইন শেখাবে বাস্তব প্রজেক্ট ও ক্লাইন্ট হান্টিং স্ট্র্যাটেজির মাধ্যমে। ২৪/৭ সাপোর্ট, <strong>১:১</strong> মেন্টরশিপ, লাইভ ক্লাস এবং AI ইনটিগ্রেটেড ডিজাইনের সাহায্যে আপনি নিজেকে গড়ে তুলতে পারবেন একজন দক্ষ ফ্রিল্যান্স ডিজাইনার হিসেবে।
         </p>
-
+        <Countdown />
         <div className="my-8 border border-primary/20 rounded-lg px-6 py-4 bg-primary text-white font-bold font-bangla text-xl">
           কোর্স ফি: মাত্র ৪,০০০ টাকা
         </div>

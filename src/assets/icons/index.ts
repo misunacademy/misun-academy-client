@@ -7,7 +7,6 @@ import YouTube from './YouTube';
 import LinkedIn from './LinkedIn';
 import Video from './Video';
 import Assignment from './Assignment';
-import Quiz from './Quiz';
 import LeftArrow from './LeftArrow';
 import Duration from './Duration';
 import SearchOnline from './SearchOnline';
@@ -27,7 +26,6 @@ export {
   LinkedIn,
   Video,
   Assignment,
-  Quiz,
   LeftArrow,
   Duration,
   SearchOnline,

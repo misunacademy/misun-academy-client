@@ -7,11 +7,17 @@ import Container from '../ui/container';
 import { Globe2Icon, Locate, MailCheck, PhoneCall } from 'lucide-react';
 import Image from 'next/image';
 
+/***
+ * 
+ * 
+misunacademybd@gmail.com
+phone number : 01778371211
+ */
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-t from-primary/30 to-primary/1">
-      <Container className="grid grid-cols-1 md:grid-cols-3 gap-4 py-16 px-6 md:px-0">
-        <div className="order-1 col-start-1 col-span-1 row-start-1 space-y-4 order-1">
+    <footer className="bg-gradient-to-t from-primary/30 to-primary/1 ">
+      <Container className="grid grid-cols-1 md:grid-cols-3 gap-4 py-16 px-6 md:px-0 max-w-7xl mx-auto">
+        <div className="order-1 col-start-1 col-span-1 row-start-1 space-y-4 ">
           <div className="place-self-start mb-10 mt-2">
             {/* <Logo /> */}
             <h1 className='text-2xl font-bold text-primary'>Misun Academy</h1>
@@ -23,11 +29,11 @@ export default function Footer() {
             </div>
             <div className="flex items-center gap-2">
               <PhoneCall className='text-primary w-6 h-6' />
-              <p>+88 01970713708</p>
+              <p>+88 01778371211</p>
             </div>
             <div className="flex items-center gap-2">
               <MailCheck className='text-primary w-6 h-6' />
-              <p>support@misun-academy.com</p>
+              <p>misunacademybd@gmail.com</p>
             </div>
             <div className="flex items-center gap-2">
               <Globe2Icon className='text-primary w-6 h-6' />
@@ -96,7 +102,7 @@ export default function Footer() {
           </div>
         </div>
       </Container>
-      <div className='hidden mt-4 mb-4 sm:flex justify-center'>
+      <div className='hidden mt-4 mb-4 sm:flex justify-center max-w-7xl mx-auto'>
         <Image
           src={"https://securepay.sslcommerz.com/public/image/SSLCommerz-Pay-With-logo-All-Size-03.png"}
           alt='SSLCommerz'
