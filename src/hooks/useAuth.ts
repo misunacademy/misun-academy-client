@@ -154,7 +154,7 @@ export function useAuth() {
           });
           if (user) {
             dispatch(setUser(user));
-            toast.success("Google দিয়ে সফলভাবে লগইন হয়েছে!");
+            // toast.success("Google দিয়ে সফলভাবে লগইন হয়েছে!");
             // Check enrollments and redirect
             const token = Cookies.get('token');
             if (token) {
@@ -247,7 +247,7 @@ export function useAuth() {
       // Redirect to login page after logout
       if (typeof window !== 'undefined') {
         // window.location.href = '/auth';
-        router.push('/auth');
+        router.push('/');
       }
       return { success: true };
     } catch (error: any) {

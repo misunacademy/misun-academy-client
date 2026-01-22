@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Card, CardContent } from '@/components/ui/card';
-import React from 'react';
 import { useEffect, useState } from 'react';
 import { useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
 import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
@@ -20,11 +19,9 @@ const formatCountdown = (diffInMillis: number) => {
   return countdownStr;
 };
 
-const formatDate = (date: Date | string) => {
-  return dayjs(date).format('DD MMMM, YYYY');
-};
+
 const Countdown = () => {
-     const [now, setNow] = useState(dayjs());
+  const [now, setNow] = useState(dayjs());
   const [countdown, setCountdown] = useState("");
   const [status, setStatus] = useState<'upcoming' | 'ongoing' | 'ended'>('ended');
 
@@ -92,49 +89,39 @@ const Countdown = () => {
     );
   }
 
-  if (!featuredCourseId) {
+  if (!featuredCourseId || !batch) {
     return (
-      <section className="py-16 px-4 bg-primary/15 font-bangla">
+      <section className="py-16 px-4  font-bangla">
         <div className="max-w-6xl mx-auto space-y-8">
           <div className="text-center">
-            <p>No featured course selected for enrollment.</p>
+            <p>Countdown data is not available.</p>
           </div>
         </div>
       </section>
     );
   }
 
-  if (!batch) {
-    return (
-      <section className="py-16 px-4 bg-primary/15 font-bangla">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <div className="text-center">
-            <p>No active enrollment batches available at the moment.</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-    return (
-        <div className="text-center space-y-4 animate-fade-in mt-5">
- 
-          {/* Countdown Timer */}
-          {status !== 'ended' && (
-            <Card className="mx-auto max-w-2xl bg-gradient-to-tr from-primary to-primary/90 shadow-elegant border-0">
-              <CardContent className="p-8">
-                <div className="text-center space-y-2">
-                  <p className="text-white/90 text-lg font-bangla">
-                    {status === 'upcoming' ? "এনরোলমেন্ট শুরু হতে বাকি:" : "এনরোলমেন্ট শেষ হতে বাকি:"}
-                  </p>
-                  <div className="text-3xl md:text-4xl font-bold text-white font-bangla animate-countdown-pulse">
-                    {countdown}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-    );
+
+  return (
+    <div className="text-center space-y-4 animate-fade-in mt-5">
+
+      {/* Countdown Timer */}
+      {status !== 'ended' && (
+        <Card className="mx-auto max-w-2xl bg-gradient-to-tr from-primary to-primary/90 shadow-elegant border-0">
+          <CardContent className="p-8">
+            <div className="text-center space-y-2">
+              <p className="text-white/90 text-lg font-bangla">
+                {status === 'upcoming' ? "এনরোলমেন্ট শুরু হতে বাকি:" : "এনরোলমেন্ট শেষ হতে বাকি:"}
+              </p>
+              <div className="text-3xl md:text-4xl font-bold text-white font-bangla animate-countdown-pulse">
+                {countdown}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
 };
 
 export default Countdown;

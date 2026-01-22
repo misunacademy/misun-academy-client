@@ -16,8 +16,6 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { useAppSelector } from "@/redux/hooks";
 import { useEnrollment } from "@/hooks/useEnrollment";
@@ -105,7 +103,7 @@ const AuthPage = () => {
     });
 
     const handleGoogleLogin = async () => {
-        toast.info("Google OAuth-এ রিডাইরেক্ট করা হচ্ছে...");
+        // toast.info("Google OAuth-এ রিডাইরেক্ট করা হচ্ছে...");
         const result = await signInWithGoogle();
         if (!result.success) {
             toast.error(result.error || "Google লগইন ব্যর্থ হয়েছে");

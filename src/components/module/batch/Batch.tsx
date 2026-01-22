@@ -48,11 +48,25 @@ export default function BatchDashboard() {
 
     const handleStatusChange = async (batchId: string, newStatus: string) => {
         try {
+            console.log('Updating batch status:', { batchId, newStatus });
+            
+            // Prevent multiple rapid updates
+            const currentStatus = batches?.data?.find((b: any) => b._id === batchId)?.status;
+            if (currentStatus === newStatus) {
+                console.log('Status already set to:', newStatus);
+                return;
+            }
+            
             await updateBatch({ id: batchId, status: newStatus }).unwrap();
             toast.success(`Batch status updated to ${newStatus}`);
-        } catch (error) {
-            toast.error('Failed to update batch status');
+        } catch (error: any) {
             console.error('Status update error:', error);
+            const errorMessage = error?.data?.message || error?.message || 'Failed to update batch status';
+            toast.error(errorMessage);
+            
+            // Optionally refetch data on error to ensure UI is in sync
+            // This will help if the update failed but UI shows success
+            // refetch(); // Uncomment if needed
         }
     };
 
@@ -68,15 +82,16 @@ export default function BatchDashboard() {
             price: Number(price), 
             status,
             courseId: selectedCourse,
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
-            enrollmentStartDate: new Date(enrollmentStartDate),
-            enrollmentEndDate: new Date(enrollmentEndDate),
+            startDate: startDate, // Send as string, not Date object
+            endDate: endDate, // Send as string, not Date object
+            enrollmentStartDate: enrollmentStartDate, // Send as string, not Date object
+            enrollmentEndDate: enrollmentEndDate, // Send as string, not Date object
             // maxCapacity: maxCapacity ? Number(maxCapacity) : undefined,
             description: description || undefined,
         };
         
         try {
+   
             if (editingBatchId) {
                 await updateBatch({ id: editingBatchId, ...batchData }).unwrap();
                 toast.success("Batch updated successfully");
@@ -99,9 +114,10 @@ export default function BatchDashboard() {
             setEnrollmentEndDate('');
             // setMaxCapacity('');
             setDescription('');
-        } catch (err) {
-            console.log(err)
-            toast.error(editingBatchId ? "Failed to update batch" : "Failed to create batch");
+        } catch (err: any) {
+            console.error('Batch operation error:', err);
+            const errorMessage = err?.data?.message || err?.message || (editingBatchId ? "Failed to update batch" : "Failed to create batch");
+            toast.error(errorMessage);
         }
     };
 
@@ -110,7 +126,8 @@ export default function BatchDashboard() {
         setTitle(batch.title);
         setPrice(batch.price.toString());
         setStatus(batch.status || 'draft');
-        setSelectedCourse(batch.courseId?._id || batch.courseId);
+        // Handle courseId properly - it might be an object or string
+        setSelectedCourse(typeof batch.courseId === 'object' ? batch.courseId._id : batch.courseId);
         setStartDate(new Date(batch.startDate).toISOString().split('T')[0]);
         setEndDate(new Date(batch.endDate).toISOString().split('T')[0]);
         setEnrollmentStartDate(new Date(batch.enrollmentStartDate).toISOString().split('T')[0]);

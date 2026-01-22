@@ -17,7 +17,14 @@ const Feedback = () => {
 
     // Get unique batches and count testimonials per batch
     const batchInfo = useMemo(() => {
-        const batches = [...new Set(studentFeedbacks.map(feedback => feedback.batch!))].sort();
+        const batches: string[] = [
+            ...new Set(
+                studentFeedbacks
+                    .map(feedback => feedback.batch)
+                    .filter((batch): batch is string => batch !== undefined)
+            ),
+        ].sort((a, b) => b.localeCompare(a));
+
         const counts = studentFeedbacks.reduce((acc, feedback) => {
             acc[feedback.batch!] = (acc[feedback.batch!] || 0) + 1;
             return acc;
@@ -28,7 +35,7 @@ const Feedback = () => {
     // Filter testimonials based on selected batch
     const filteredTestimonials = useMemo(() => {
         if (selectedBatch === "all") {
-            return studentFeedbacks;
+            return [...studentFeedbacks].reverse();
         }
         return studentFeedbacks.filter(feedback => feedback.batch === selectedBatch);
     }, [selectedBatch]);
@@ -158,7 +165,7 @@ const Feedback = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
                                 {paginatedTestimonials.map((feedback, index) => (
                                     <TestimonialCard
-                                        key={`${feedback.studentId}-${currentPage}`}
+                                        key={index}
                                         name={feedback.name!}
                                         batch={feedback.batch!}
                                         studentId={feedback?.studentId || "N/A"}

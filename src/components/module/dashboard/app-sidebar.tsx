@@ -63,7 +63,7 @@ const enrolledOnlyItems = [
         title: "Enrollment Poster",
         url: "/dashboard/student/enrollment-poster",
         icon: ImageDown,
-        requiresEnrollment: true,
+        requiresEnrollment: true,   
     },
     {
         title: "Certificates",
@@ -181,7 +181,7 @@ export function AppSidebar() {
     const handleSignOut = async () => {
         const result = await signOut();
         if (result.success) {
-            router.push('/auth');
+            router.push('/');
         }
     };
 

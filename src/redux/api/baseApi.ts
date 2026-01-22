@@ -11,12 +11,6 @@ import {
 import { logout } from "../features/auth/authSlice";
 import { toast } from "sonner";
 import Cookies from 'js-cookie';
-// import { RootState } from "../store";
-
-// const baseQuery = fetchBaseQuery({
-//   baseUrl: process.env.NEXT_PUBLIC_BASE_API_URL,
-//   credentials: "include",
-// });
 
 const baseQuery = fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_BASE_API_URL,
@@ -68,10 +62,10 @@ const baseQueryWithRefreshToken: BaseQueryFn<
         if (!refreshToken) {
             console.warn('[baseApi] no refreshToken available, dispatching logout');
             api.dispatch(logout());
-            if (typeof window !== 'undefined') {
-                toast.error('Your session has expired. Please login again.');
-                // window.location.href = '/auth';
-            }
+            // if (typeof window !== 'undefined') {
+            //     toast.error('Your session has expired. Please login again.');
+            //     // window.location.href = '/auth';
+            // }
             return result;
         }
 
@@ -103,10 +97,10 @@ const baseQueryWithRefreshToken: BaseQueryFn<
         } else {
             console.warn('[baseApi] refresh failed, dispatching logout');
             api.dispatch(logout());
-            if (typeof window !== 'undefined') {
-                toast.error('Your session has expired. Please login again.');
-                // window.location.href = '/auth';
-            }
+            // if (typeof window !== 'undefined') {
+            //     toast.error('Your session has expired. Please login again.');
+            //     // window.location.href = '/auth';
+            // }
         }
     }
 
