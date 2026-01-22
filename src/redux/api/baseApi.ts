@@ -58,7 +58,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
             api.dispatch(logout());
             if (typeof window !== 'undefined') {
                 toast.error('Your session has expired. Please login again.');
-                window.location.href = '/auth';
+                // window.location.href = '/auth';
             }
             return result;
         }
@@ -70,7 +70,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
             api.dispatch(logout());
             if (typeof window !== 'undefined') {
                 toast.error('Your session has expired. Please login again.');
-                window.location.href = '/auth';
+                // window.location.href = '/auth';
             }
             return result;
         }
@@ -105,7 +105,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
             api.dispatch(logout());
             if (typeof window !== 'undefined') {
                 toast.error('Your session has expired. Please login again.');
-                window.location.href = '/auth';
+                // window.location.href = '/auth';
             }
         }
     }
