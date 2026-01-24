@@ -148,6 +148,11 @@ const adminItems = [
         url: "/dashboard/admin/settings",
         icon: Settings,
     },
+        {
+        title: "Profile",
+        url: "/dashboard/admin/profile",
+        icon: User2,
+    },
 ];
 
 export function AppSidebar() {

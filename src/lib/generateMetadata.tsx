@@ -1,4 +1,3 @@
-// src/lib/seo/generateMetadata.ts
 import type { Metadata } from 'next';
 
 interface GenerateMetadataParams {

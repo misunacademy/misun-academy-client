@@ -8,21 +8,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Shield, Loader2, User } from "lucide-react";
-import { useGetProfileQuery, useUpdateProfileMutation, useChangePasswordMutation } from "@/redux/api/authApi";
+import {  useUpdateProfileMutation, useChangePasswordMutation, useGetMeQuery } from "@/redux/api/authApi";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { toast } from "sonner";
 
 export default function StudentSettings() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // API hooks
-  const { data: profileData, isLoading: profileLoading } = useGetProfileQuery();
+  const { data: userData, isLoading: userLoading } = useGetMeQuery(undefined);
   const [updateProfile, { isLoading: updateLoading }] = useUpdateProfileMutation();
   const [uploadImage, { isLoading: uploadLoading }] = useUploadSingleImageMutation();
   const [changePassword, { isLoading: passwordLoading }] = useChangePasswordMutation();
 
-  const user = profileData?.data;
-
+  const user = userData?.data;
   // Form state - initialize from user data
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -30,7 +29,7 @@ export default function StudentSettings() {
 
   const userInitials = user?.name
     ?.split(" ")
-    .map((n) => n[0])
+    .map((n:any) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2) || "U";
@@ -62,21 +61,21 @@ export default function StudentSettings() {
       formData.append("image", file);
 
       const uploadResult = await uploadImage(formData).unwrap();
-      
+
       // Update profile with new image URL
       await updateProfile({
         profilePicture: uploadResult.data.url,
       }).unwrap();
 
       toast.success("Profile photo updated successfully.");
-      
+
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
     } catch (error) {
       let errorMessage = "Failed to upload photo. Please try again.";
-      
+
       if (error && typeof error === 'object') {
         if ('status' in error) {
           const fetchError = error as { status: number; data?: any };
@@ -89,7 +88,7 @@ export default function StudentSettings() {
           errorMessage = generalError.message;
         }
       }
-      
+
       toast.error(errorMessage);
     }
   };
@@ -129,7 +128,7 @@ export default function StudentSettings() {
     } catch (error) {
       console.error("Password change error:", error);
       let errorMessage = "Failed to change password.";
-      
+
       if (error && typeof error === 'object') {
         if ('data' in error) {
           const apiError = error as { data?: { message?: string } };
@@ -139,12 +138,12 @@ export default function StudentSettings() {
           errorMessage = generalError.message;
         }
       }
-      
+
       toast.error(errorMessage);
     }
   };
 
-  if (profileLoading) {
+  if (userLoading) {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -172,7 +171,7 @@ export default function StudentSettings() {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={user?.profilePicture} alt={user?.name} />
+                <AvatarImage src={user?.image} alt={user?.name} />
                 <AvatarFallback>{userInitials}</AvatarFallback>
               </Avatar>
               <div className="flex-1">
@@ -205,9 +204,9 @@ export default function StudentSettings() {
                 onChange={handlePhotoChange}
               />
             </div>
-            <p className="text-xs text-muted-foreground">
+            {/* <p className="text-xs text-muted-foreground">
               Recommended: Square image, at least 400x400px. Max size: 5MB.
-            </p>
+            </p> */}
           </CardContent>
         </Card>
 

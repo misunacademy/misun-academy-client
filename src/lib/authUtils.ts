@@ -30,16 +30,16 @@ export const getValidatedRedirectUrl = (
    
   if (!url) return defaultRedirect;
 
-  // ❌ Block absolute or malformed URLs
+  //  Block absolute or malformed URLs
   if (!url.startsWith('/')) return defaultRedirect;
 
-  // ❌ Prevent auth loops
+  //  Prevent auth loops
   if (url.startsWith('/auth')) return defaultRedirect;
 
-  // ✅ Allow dashboards
+  //  Allow dashboards
   if (url.startsWith('/dashboard')) return url;
 
-  // ✅ Allow known public routes
+  //  Allow known public routes
   if (SAFE_ROUTES.has(url)) return url;
 
   return defaultRedirect;

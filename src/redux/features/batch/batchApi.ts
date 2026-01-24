@@ -25,6 +25,13 @@ const batchApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Batches"],
         }),
+        deleteBatch: builder.mutation({
+            query: (id) => ({
+                url: `/batches/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Batches"],
+        }),
     }),
 });
 
@@ -32,4 +39,5 @@ export const {
     useCreateBatchMutation,
     useGetAllBatchesQuery,
     useUpdateBatchMutation,
+    useDeleteBatchMutation,
 } = batchApi;

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,8 +16,8 @@ export default function DynamicUpdates() {
     const { data: batchesData, isLoading: batchesLoading, error: batchesError } = useGetAllBatchesQuery({});
     const { data: settingsData, isLoading: settingsLoading, error: settingsError, refetch: refetchSettings } = useGetSettingsQuery();
     const courses = coursesData?.data || [];
-    const batches = batchesData?.data || [];
-    const settings = settingsData?.data || {};
+    const batches = useMemo(() => batchesData?.data || [], [batchesData?.data]);
+    const settings = useMemo(() => settingsData?.data || {}, [settingsData?.data]);
 
     const [selectedCourse, setSelectedCourse] = useState<string>("none");
     const [selectedBatch, setSelectedBatch] = useState<string>("none");
@@ -27,10 +27,10 @@ export default function DynamicUpdates() {
     const [saving, setSaving] = useState(false);
     const [updateSettings] = useUpdateSettingsMutation();
 
-    // Filter batches based on selected course
+    // Filter batches based on selected course, but always include the currently selected batch
     const filteredBatches = selectedCourse && selectedCourse !== "none"
-        ? batches.filter((batch: any) => batch.courseId?._id === selectedCourse)
-        : [];
+        ? batches.filter((batch: any) => batch.courseId?._id === selectedCourse || batch._id === selectedBatch)
+        : selectedBatch && selectedBatch !== "none" ? batches.filter((batch: any) => batch._id === selectedBatch) : [];
 
     // Set initial values when settings load
     React.useEffect(() => {
@@ -79,7 +79,7 @@ export default function DynamicUpdates() {
             setEditMode(false);
             refetchSettings();
             toast.success("Settings updated successfully");
-        } catch (err) {
+        } catch {
             toast.error("Failed to update settings");
         } finally {
             setSaving(false);

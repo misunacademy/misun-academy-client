@@ -1,9 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/**
- * Centralized API Configuration
- * Handles error transformation, token management, and common API behaviors
- */
-
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 
 /**

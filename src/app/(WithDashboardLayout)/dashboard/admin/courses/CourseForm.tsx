@@ -34,12 +34,6 @@ const formSchema = z.object({
   tags: z.string().optional(),
   featured: z.boolean().optional().default(false),
   status: z.enum(["draft", "published", "archived"]).optional().default("draft"),
-  price: z.coerce.number({ message: "Price must be a number" }).min(0, "Price must be positive"),
-  discountPercentage: z
-    .coerce.number({ message: "Discount must be a number" })
-    .min(0, "Min 0")
-    .max(100, "Max 100")
-    .optional(),
   instructor: z.string().optional(),
   features: z.array(z.string()).optional().default([]),
   highlights: z.array(z.string()).optional().default([]),
@@ -132,8 +126,6 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
       tags: "",
       featured: false,
       status: "draft",
-      price: 0,
-      discountPercentage: 0,
       instructor: "",
       features: [],
       highlights: [],
@@ -268,8 +260,6 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
       tags: values.tags ? splitTags(values.tags) : [],
       featured: values.featured ?? false,
       status: values.status ?? "draft",
-      price: Number(values.price) || 0,
-      discountPercentage: values.discountPercentage ?? 0,
       instructor: values.instructor?.trim() || undefined,
       features: features,
       highlights: highlights,
@@ -490,8 +480,20 @@ Portfolio development and client presentation"
                 )}
               </div>
             </Field>
-
-            <Field label="Cover Image (optional upload)">
+   <Field label="Status">
+              <Select value={form.watch("status") as string}
+                onValueChange={(v) => form.setValue("status", v as any, { shouldDirty: true, shouldValidate: true })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+            {/* <Field label="Cover Image (optional upload)">
               <input type="hidden" {...form.register("coverImage")} />
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -532,29 +534,12 @@ Portfolio development and client presentation"
                   <p className="text-sm text-red-500">{errors.coverImage.message as string}</p>
                 )}
               </div>
-            </Field>
+            </Field> */}
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
-            <Field label="Price">
-              <Input type="number" step="0.01" {...form.register("price", { valueAsNumber: true })} />
-            </Field>
-            <Field label="Discount %">
-              <Input type="number" step="1" {...form.register("discountPercentage", { valueAsNumber: true })} />
-            </Field>
-            <Field label="Status">
-              <Select value={form.watch("status") as string}
-                onValueChange={(v) => form.setValue("status", v as any, { shouldDirty: true, shouldValidate: true })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
+ 
+         
           </div>
 
           <Field label="Tags (comma separated)">

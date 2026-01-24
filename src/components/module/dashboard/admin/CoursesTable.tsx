@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,7 +58,6 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
               <TableHead>Course Title</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Level</TableHead>
-              <TableHead>Price</TableHead>
               <TableHead>Duration</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
@@ -85,7 +85,6 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
                       {course.level || 'N/A'}
                     </Badge>
                   </TableCell>
-                  <TableCell>BDT {course.price?.toLocaleString() || 0}</TableCell>
                   <TableCell>{course.durationEstimate || '—'}</TableCell>
                   <TableCell>
                     <Badge variant={course.status === 'published' ? 'default' : course.status === 'archived' ? 'destructive' : 'secondary'}>

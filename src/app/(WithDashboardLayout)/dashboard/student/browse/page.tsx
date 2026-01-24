@@ -12,7 +12,7 @@ import { useGetCoursesQuery } from "@/redux/features/course/courseApi";
 import { useGetAllBatchesQuery } from "@/redux/features/batch/batchApi";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
-import clsx from "clsx";
+
 
 interface Course {
   _id: string;
@@ -253,7 +253,7 @@ export default function BrowseCoursesPage() {
                   {hasActiveBatches && (
                     <div className="space-y-2 flex-1">
                       <p className="text-xs font-medium text-muted-foreground">Available Batches:</p>
-                      {activeBatches?.slice(0, 2)?.map((batch) => {
+                      {activeBatches?.slice(0, 1)?.map((batch) => {
                         const discountedPrice = course.discountPercentage
                           ? getDiscountedPrice(batch.price, course.discountPercentage)
                           : batch.price;
@@ -267,14 +267,14 @@ export default function BrowseCoursesPage() {
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1 min-w-0">
                                 <p className="font-medium truncate">{batch.title}</p>
-                                <p className="text-muted-foreground flex items-center gap-1 mt-0.5">
+                                {/* <p className="text-muted-foreground flex items-center gap-1 mt-0.5">
                                   <span className="truncate">Batch {batch.batchNumber}</span>
                                   <span>•</span>
-                                  {/* <span className="flex items-center gap-0.5">
+                                  <span className="flex items-center gap-0.5">
                                     <Users className="h-3 w-3" />
                                     {batch.currentEnrollment || 0}{batch.maxCapacity ? `/${batch.maxCapacity}` : ''}
-                                  </span> */}
-                                </p>
+                                  </span>
+                                </p> */}
                               </div>
                               <div className="flex flex-col items-end gap-0.5 ml-2 flex-shrink-0">
                                 {hasDiscount && (

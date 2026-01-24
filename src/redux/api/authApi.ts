@@ -185,7 +185,7 @@ const authApi = baseApi.injectEndpoints({
     changePassword: build.mutation<MessageResponse, ChangePasswordRequest>({
       query: (data) => ({
         url: "/auth/change-password",
-        method: "POST",
+        method: "PUT",
         body: data,
       }),
     }),
@@ -207,7 +207,7 @@ const authApi = baseApi.injectEndpoints({
      */
     updateProfile: build.mutation<ProfileResponse, UpdateProfileRequest>({
       query: (data) => ({
-        url: "/auth/profile",
+        url: "/auth/update-profile",
         method: "PUT",
         body: data,
       }),
