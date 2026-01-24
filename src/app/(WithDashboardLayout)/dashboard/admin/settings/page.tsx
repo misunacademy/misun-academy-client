@@ -33,9 +33,10 @@ export default function AdminSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // TODO: wire up to backend settings endpoint when available
-      console.debug("Saving settings", { general, payment });
-      toast.success("Settings saved");
+      
+      // console.debug("Saving settings", { general, payment });
+      // toast.success("Settings saved");
+      toast.info("Comming soon ..., Not implemented yet");
     } catch (err) {
       toast.error("Failed to save settings");
     } finally {
