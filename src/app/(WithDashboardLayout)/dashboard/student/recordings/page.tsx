@@ -27,7 +27,7 @@ export default function StudentRecordingsPage() {
     // Group recordings by course
     const recordingsByCourse = (recordings || []).reduce((acc: Record<string, Recording[]>, recording: Recording) => {
         const courseTitle = typeof recording.courseId === "object" ? recording.courseId.title : "Unknown Course";
-        
+
         if (!acc[courseTitle]) {
             acc[courseTitle] = [];
         }

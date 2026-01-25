@@ -1,107 +1,137 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
-import React, { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Globe, Save, Edit, X } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Globe, Save, Edit, X, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useGetCoursesQuery } from "@/redux/features/course/courseApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import { useGetSettingsQuery, useUpdateSettingsMutation } from "@/redux/api/settingsApi";
 
+const EMPTY_VALUE = "none";
+
 export default function DynamicUpdates() {
     const { data: coursesData, isLoading: coursesLoading, error: coursesError } = useGetCoursesQuery({});
     const { data: batchesData, isLoading: batchesLoading, error: batchesError } = useGetAllBatchesQuery({});
     const { data: settingsData, isLoading: settingsLoading, error: settingsError, refetch: refetchSettings } = useGetSettingsQuery();
-    const courses = coursesData?.data || [];
+    
+    const [updateSettings, { isLoading: isSaving }] = useUpdateSettingsMutation();
+    
+    const [editMode, setEditMode] = useState(false);
+    const [selectedCourse, setSelectedCourse] = useState(EMPTY_VALUE);
+    const [selectedBatch, setSelectedBatch] = useState(EMPTY_VALUE);
+    const [originalValues, setOriginalValues] = useState({
+        course: EMPTY_VALUE,
+        batch: EMPTY_VALUE
+    });
+
+    const courses = useMemo(() => coursesData?.data || [], [coursesData?.data]);
     const batches = useMemo(() => batchesData?.data || [], [batchesData?.data]);
     const settings = useMemo(() => settingsData?.data || {}, [settingsData?.data]);
 
-    const [selectedCourse, setSelectedCourse] = useState<string>("none");
-    const [selectedBatch, setSelectedBatch] = useState<string>("none");
-    const [originalCourse, setOriginalCourse] = useState<string>("none");
-    const [originalBatch, setOriginalBatch] = useState<string>("none");
-    const [editMode, setEditMode] = useState<boolean>(false);
-    const [saving, setSaving] = useState(false);
-    const [updateSettings] = useUpdateSettingsMutation();
-
-    // Filter batches based on selected course, but always include the currently selected batch
-    const filteredBatches = selectedCourse && selectedCourse !== "none"
-        ? batches.filter((batch: any) => batch.courseId?._id === selectedCourse || batch._id === selectedBatch)
-        : selectedBatch && selectedBatch !== "none" ? batches.filter((batch: any) => batch._id === selectedBatch) : [];
-
-    // Set initial values when settings load
-    React.useEffect(() => {
-        if (settings && Object.keys(settings).length > 0) {
-            const course = (settings.featuredEnrollmentCourse as any)?._id || "none";
-            const batch = (settings.featuredEnrollmentBatch as any)?._id || "none";
-            setSelectedCourse(course);
-            setSelectedBatch(batch);
-            setOriginalCourse(course);
-            setOriginalBatch(batch);
-        }
-    }, [settings]);
-
-    // Reset batch selection when course changes
-    React.useEffect(() => {
-        if (selectedCourse === "none" || !selectedCourse) {
-            setSelectedBatch("none");
-        } else {
-            // Check if current batch belongs to the selected course
-            const currentBatch = batches.find((batch: any) => batch._id === selectedBatch);
-            if (currentBatch && currentBatch.courseId?._id !== selectedCourse) {
-                setSelectedBatch("none");
-            }
-        }
+    // Filter batches based on selected course
+    const filteredBatches = useMemo(() => {
+        if (!selectedCourse || selectedCourse === EMPTY_VALUE) return [];
+        
+        return batches.filter((batch) => {
+            const batchCourseId = batch.courseId?._id || batch.courseId;
+            return batchCourseId === selectedCourse || batch._id === selectedBatch;
+        });
     }, [selectedCourse, batches, selectedBatch]);
 
+    // Initialization moved to handleEdit to avoid calling setState synchronously inside an effect
+
+    // Update batch selection when course changes (handled in the change handler to avoid calling setState synchronously in an effect)
+    const handleCourseChange = (value: string) => {
+        setSelectedCourse(value);
+
+        if (value === EMPTY_VALUE) {
+            setSelectedBatch(EMPTY_VALUE);
+            return;
+        }
+
+        // If currently selected batch doesn't belong to the new course, reset it
+        const currentBatch = batches.find((batch) => batch._id === selectedBatch);
+        if (currentBatch) {
+            const batchCourseId = currentBatch.courseId?._id || currentBatch.courseId;
+            if (batchCourseId !== value) {
+                setSelectedBatch(EMPTY_VALUE);
+            }
+        }
+    };
+
     const handleEdit = () => {
+        const courseId = (settings.featuredEnrollmentCourse as any)?._id || EMPTY_VALUE;
+        const batchId = (settings.featuredEnrollmentBatch as any)?._id || EMPTY_VALUE;
+
+        setSelectedCourse(courseId);
+        setSelectedBatch(batchId);
+        setOriginalValues({ course: courseId, batch: batchId });
         setEditMode(true);
     };
 
     const handleCancel = () => {
-        setSelectedCourse(originalCourse);
-        setSelectedBatch(originalBatch);
+        setSelectedCourse(originalValues.course);
+        setSelectedBatch(originalValues.batch);
         setEditMode(false);
     };
 
     const handleSave = async () => {
-        setSaving(true);
         try {
             await updateSettings({
-                featuredEnrollmentCourse: selectedCourse === "none" ? undefined : selectedCourse,
-                featuredEnrollmentBatch: selectedBatch === "none" ? undefined : selectedBatch,
+                featuredEnrollmentCourse: selectedCourse === EMPTY_VALUE ? undefined : selectedCourse,
+                featuredEnrollmentBatch: selectedBatch === EMPTY_VALUE ? undefined : selectedBatch,
             }).unwrap();
-            setOriginalCourse(selectedCourse);
-            setOriginalBatch(selectedBatch);
+            
+            setOriginalValues({ course: selectedCourse, batch: selectedBatch });
             setEditMode(false);
             refetchSettings();
             toast.success("Settings updated successfully");
-        } catch {
-            toast.error("Failed to update settings");
-        } finally {
-            setSaving(false);
+        } catch (error:any) {
+            toast.error(error?.data?.message || "Failed to update settings");
         }
     };
 
-    if (coursesLoading || batchesLoading || settingsLoading) {
+    const isLoading = coursesLoading || batchesLoading || settingsLoading;
+    const hasError = coursesError || batchesError || settingsError;
+
+    if (isLoading) {
         return (
             <div className="container mx-auto p-6 space-y-6">
-                <div className="text-center">
-                    <p>Loading...</p>
+                <div className="space-y-2">
+                    <Skeleton className="h-9 w-64" />
+                    <Skeleton className="h-5 w-96" />
                 </div>
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-6 w-48" />
+                        <Skeleton className="h-4 w-full max-w-md" />
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <Skeleton className="h-20" />
+                            <Skeleton className="h-20" />
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
 
-    if (coursesError || batchesError || settingsError) {
+    if (hasError) {
         return (
-            <div className="container mx-auto p-6 space-y-6">
-                <div className="text-center">
-                    <p>Error loading data. Please try again.</p>
-                </div>
+            <div className="container mx-auto p-6">
+                <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                        Error loading data. Please refresh the page and try again.
+                    </AlertDescription>
+                </Alert>
             </div>
         );
     }
@@ -111,9 +141,11 @@ export default function DynamicUpdates() {
 
     return (
         <div className="container mx-auto p-6 space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold">Dynamic Updates</h1>
-                <p className="text-muted-foreground">Configure dynamic content and settings for the entire web app</p>
+            <div className="space-y-1">
+                <h1 className="text-3xl font-bold tracking-tight">Dynamic Updates</h1>
+                <p className="text-muted-foreground">
+                    Configure dynamic content and settings for the entire web app
+                </p>
             </div>
 
             <Card>
@@ -129,22 +161,29 @@ export default function DynamicUpdates() {
                 <CardContent className="space-y-6">
                     {!editMode ? (
                         <>
-                            <div className="grid gap-4 md:grid-cols-2">
+                            <div className="grid gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Featured Course</label>
-                                    <p className="text-sm text-muted-foreground">
-                                        {currentCourse ? currentCourse.title : "None"}
-                                    </p>
+                                    <Label>Featured Course</Label>
+                                    <div className="rounded-md border border-input bg-muted/50 px-3 py-2 min-h-10 flex items-center">
+                                        <p className="text-sm">
+                                            {currentCourse?.title || "None selected"}
+                                        </p>
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Featured Batch</label>
-                                    <p className="text-sm text-muted-foreground">
-                                        {currentBatch ? `${currentBatch.title} (Batch ${currentBatch.batchNumber})` : "None (Use current enrollment batch)"}
-                                    </p>
+                                    <Label>Featured Batch</Label>
+                                    <div className="rounded-md border border-input bg-muted/50 px-3 py-2 min-h-10 flex items-center">
+                                        <p className="text-sm">
+                                            {currentBatch 
+                                                ? `${currentBatch.title} (Batch #${currentBatch.batchNumber})`
+                                                : "None (Default to current enrollment batch)"
+                                            }
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex justify-end">
-                                <Button onClick={handleEdit} className="flex items-center gap-2">
+                            <div className="flex justify-end pt-2">
+                                <Button onClick={handleEdit} className="gap-2">
                                     <Edit className="h-4 w-4" />
                                     Edit Settings
                                 </Button>
@@ -152,16 +191,16 @@ export default function DynamicUpdates() {
                         </>
                     ) : (
                         <>
-                            <div className="grid gap-4 md:grid-cols-2">
+                            <div className="grid gap-6 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Featured Course</label>
-                                    <Select value={selectedCourse} onValueChange={setSelectedCourse}>
-                                        <SelectTrigger>
+                                    <Label htmlFor="course-select">Featured Course</Label>
+                                    <Select value={selectedCourse} onValueChange={handleCourseChange}>
+                                        <SelectTrigger id="course-select">
                                             <SelectValue placeholder="Select a course" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="none">None</SelectItem>
-                                            {courses.map((course: any) => (
+                                            <SelectItem value={EMPTY_VALUE}>None</SelectItem>
+                                            {courses.map((course:any) => (
                                                 <SelectItem key={course._id} value={course._id}>
                                                     {course.title}
                                                 </SelectItem>
@@ -171,44 +210,62 @@ export default function DynamicUpdates() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium">Featured Batch</label>
+                                    <Label htmlFor="batch-select">Featured Batch</Label>
                                     <Select
                                         value={selectedBatch}
                                         onValueChange={setSelectedBatch}
-                                        disabled={!selectedCourse || selectedCourse === "none"}
+                                        disabled={!selectedCourse || selectedCourse === EMPTY_VALUE}
                                     >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder={
-                                                !selectedCourse || selectedCourse === "none"
-                                                    ? "Select a course first"
-                                                    : "Select a batch"
-                                            } />
+                                        <SelectTrigger id="batch-select">
+                                            <SelectValue 
+                                                placeholder={
+                                                    !selectedCourse || selectedCourse === EMPTY_VALUE
+                                                        ? "Select a course first"
+                                                        : "Select a batch"
+                                                } 
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="none">None (Use current enrollment batch)</SelectItem>
-                                            {filteredBatches.map((batch: any) => (
+                                            <SelectItem value={EMPTY_VALUE}>
+                                                None (Default to current enrollment batch)
+                                            </SelectItem>
+                                            {filteredBatches.map((batch) => (
                                                 <SelectItem key={batch._id} value={batch._id}>
-                                                    {batch.title} (Batch {batch.batchNumber})
+                                                    {batch.title} (Batch #{batch.batchNumber})
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {(!selectedCourse || selectedCourse === "none") && (
+                                    {(!selectedCourse || selectedCourse === EMPTY_VALUE) && (
                                         <p className="text-xs text-muted-foreground">
-                                            Select a course above to see available batches
+                                            Select a course to see available batches
+                                        </p>
+                                    )}
+                                    {selectedCourse && selectedCourse !== EMPTY_VALUE && filteredBatches.length === 0 && (
+                                        <p className="text-xs text-muted-foreground">
+                                            No batches available for this course
                                         </p>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="flex justify-end gap-2">
-                                <Button variant="outline" onClick={handleCancel} className="flex items-center gap-2">
+                            <div className="flex justify-end gap-2 pt-2">
+                                <Button 
+                                    variant="outline" 
+                                    onClick={handleCancel} 
+                                    className="gap-2"
+                                    disabled={isSaving}
+                                >
                                     <X className="h-4 w-4" />
                                     Cancel
                                 </Button>
-                                <Button onClick={handleSave} disabled={saving} className="flex items-center gap-2">
+                                <Button 
+                                    onClick={handleSave} 
+                                    disabled={isSaving} 
+                                    className="gap-2"
+                                >
                                     <Save className="h-4 w-4" />
-                                    {saving ? "Saving..." : "Save Settings"}
+                                    {isSaving ? "Saving..." : "Save Settings"}
                                 </Button>
                             </div>
                         </>

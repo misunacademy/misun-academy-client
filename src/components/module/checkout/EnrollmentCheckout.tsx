@@ -29,6 +29,7 @@ import nine from "@/assets/images/payments/nine.png"
 import ten from "@/assets/images/payments/ten.png"
 import phonepay from "@/assets/images/payments/phonepay.png"
 import { useRouter } from "next/navigation";
+import { useGetSettingsQuery } from "@/redux/api/settingsApi";
 
 
 
@@ -68,63 +69,15 @@ const EnrollmentCheckout = () => {
             paymentMethod: undefined,
         },
     });
+    const { data: settingsData, isLoading: settingsLoading } = useGetSettingsQuery();
+    const featuredCourseId = (settingsData?.data?.featuredEnrollmentCourse as any);
+    const featuredBatchId = (settingsData?.data?.featuredEnrollmentBatch as any);
 
-    // Fetch available batches
-    const { data: batchesData, isLoading: batchesLoading } = useGetAllBatchesQuery({});
-    const allBatches = batchesData?.data || [];
-
-    // Filter for open/running batches only
-    const batches = allBatches.filter((batch: any) => {
-        const now = new Date();
-        const enrollmentStart = batch.enrollmentStartDate ? new Date(batch.enrollmentStartDate) : null;
-        const enrollmentEnd = batch.enrollmentEndDate ? new Date(batch.enrollmentEndDate) : null;
-
-        // Check if batch is currently open for enrollment OR will be open soon
-        const isEnrollmentOpen = enrollmentStart && enrollmentEnd &&
-            now <= enrollmentEnd; // Allow batches where enrollment hasn't ended yet
-
-
-        // Batch must have upcoming/running status and be within enrollment period
-        return isEnrollmentOpen &&
-            (batch.status === 'upcoming' || batch.status === 'running');
-    });
-
-    // Get selected batch based on form value
-    const selectedBatch = batches.find((batch: any) => String(batch._id) === form.watch('batchId')) || null;
-    const selectedCourse = selectedBatch?.courseId; // Course info is static for now
-
-    // Auto-select first batch if available and none selected
     useEffect(() => {
-        if (batches.length > 0 && !form.getValues('batchId')) {
-            form.setValue('batchId', String(batches[0]._id));
+        if (!form.getValues('batchId')) {
+            form.setValue('batchId', featuredBatchId?._id);
         }
-    }, [batches, form]);
-
-    // Get enrollment status for selected batch
-    // const getEnrollmentStatus = (batch: any) => {
-    //     if (!batch) return null;
-
-    //     const now = new Date();
-    //     const enrollmentStart = batch.enrollmentStartDate ? new Date(batch.enrollmentStartDate) : null;
-    //     const enrollmentEnd = batch.enrollmentEndDate ? new Date(batch.enrollmentEndDate) : null;
-
-    //     if (!enrollmentStart || !enrollmentEnd) return { canEnroll: false, message: 'Enrollment dates not set' };
-
-    //     if (now >= enrollmentStart && now <= enrollmentEnd) {
-    //         return { canEnroll: true, message: 'Enrollment is open' };
-    //     } else if (now < enrollmentStart) {
-    //         return {
-    //             canEnroll: false,
-    //             message: `Enrollment opens on ${enrollmentStart.toLocaleDateString()}`
-    //         };
-    //     } else {
-    //         return { canEnroll: false, message: 'Enrollment has closed' };
-    //     }
-    // };
-
-    // const enrollmentStatus = selectedBatch ? getEnrollmentStatus(selectedBatch) : null;
-
-    // console.log("enrollmentStatus", enrollmentStatus);
+    }, [form,featuredBatchId?._id]);
     const processSSLCommerzPayment = async (data: EnrollmentForm) => {
         setIsProcessing(true);
         try {
@@ -132,7 +85,7 @@ const EnrollmentCheckout = () => {
                 batchId: data.batchId,
             }).unwrap();
 
-       
+
 
             if (!res?.data?.paymentUrl) {
                 toast.error("Failed to get payment URL. Please try again.");
@@ -225,35 +178,31 @@ const EnrollmentCheckout = () => {
                     <div className="lg:col-span-1 space-y-6 sm:sticky top-24 self-start">
                         <Card className="glass-card form-animate">
                             <CardHeader>
-                                {batchesLoading ? (
+                                {settingsLoading ? (
                                     <div className="aspect-video rounded-lg mb-4 bg-muted animate-pulse" />
-                                ) : selectedCourse ? (
+                                ) : (
                                     <>
                                         <div className="aspect-video rounded-lg mb-4 relative overflow-hidden">
                                             <Image
-                                                src={selectedCourse.thumbnailImage || CourseThumbnail.src}
-                                                alt={selectedCourse.title || 'Course'}
+                                                src={featuredCourseId?.thumbnailImage}
+                                                alt={featuredCourseId?.title || 'Course'}
                                                 width={400}
                                                 height={280}
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
-                                        <h3 className="font-bold text-lg mb-2">{selectedCourse.title}</h3>
-                                        {/* <p className="text-sm text-muted-foreground mb-3">{selectedCourse.shortDescription}</p> */}
+                                        <h3 className="font-bold text-lg mb-2">{featuredCourseId.title}</h3>
+                                        {/* <p className="text-sm text-muted-foreground mb-3">{featuredCourseId.shortDescription}</p> */}
                                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                             <div className="flex items-center gap-1">
                                                 <Clock className="w-4 h-4" />
-                                                <span>{selectedCourse.durationEstimate || '0'} Months</span>
+                                                <span>{featuredCourseId.durationEstimate || '0'} Months</span>
                                             </div>
                                         </div>
                                     </>
-                                ) : (
-                                    <div className="text-center py-8 text-muted-foreground">
-                                        <p>Please select a batch to see course details</p>
-                                    </div>
                                 )}
                             </CardHeader>
-                            {selectedCourse && (
+                            {featuredCourseId && (
                                 <CardContent>
                                     <div className="space-y-4">
 
@@ -263,7 +212,7 @@ const EnrollmentCheckout = () => {
                                             <h4 className="font-semibold mb-3">What you&apos;ll learn:</h4>
                                             <div className="grid gap-2  grid-cols-1 sm:grid-cols-2">
                                                 {
-                                                    selectedCourse.highlights && selectedCourse.highlights.map((highlight: string, index: number) => (
+                                                    featuredCourseId.highlights && featuredCourseId.highlights.map((highlight: string, index: number) => (
                                                         <div key={index} className="flex-1 text-center items-start gap-2 bg-accent/30 rounded-md  bg-black text-white">
                                                             <span className="text-xs">{highlight}</span>
                                                         </div>
@@ -279,7 +228,7 @@ const EnrollmentCheckout = () => {
                                             <h4 className="font-semibold mb-2">Course includes:</h4>
                                             <ul className="space-y-1 text-sm">
                                                 {
-                                                    selectedCourse.features && selectedCourse.features.map((feature: string, index: number) => (
+                                                    featuredCourseId.features && featuredCourseId.features.map((feature: string, index: number) => (
                                                         <li key={index} className="flex items-center gap-2">
                                                             <CheckCircle className="w-4 h-4 text-success" />
                                                             <span>{feature}</span>
@@ -298,14 +247,14 @@ const EnrollmentCheckout = () => {
                         <Card className="glass-card">
                             <CardContent className="p-6">
                                 <div className="space-y-3">
-                                    {selectedBatch ? (
+                                    {featuredBatchId ? (
                                         <>
                                             <div className="flex justify-between items-center text-lg font-semibold">
                                                 <span>Course Price</span>
-                                                <span className="text-success">৳{(selectedBatch.price || 0).toLocaleString()}</span>
+                                                <span className="text-success">৳{(featuredBatchId.price || 0)}</span>
                                             </div>
-                                            {selectedBatch.currency && selectedBatch.currency !== 'BDT' && (
-                                                <p className="text-xs text-muted-foreground">Currency: {selectedBatch.currency}</p>
+                                            {featuredBatchId.currency && featuredBatchId.currency !== 'BDT' && (
+                                                <p className="text-xs text-muted-foreground">Currency: {featuredBatchId.currency}</p>
                                             )}
                                         </>
                                     ) : (
@@ -334,7 +283,7 @@ const EnrollmentCheckout = () => {
                                     <Form {...form}>
                                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                                             {/* Auto-Selected Batch Info */}
-                                            {selectedBatch ? (
+                                            {featuredBatchId ? (
                                                 <>
                                                     <div className="space-y-4">
                                                         <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -346,25 +295,25 @@ const EnrollmentCheckout = () => {
                                                         <div className="bg-accent/30 border-2 border-primary/20 rounded-lg p-4 space-y-3">
                                                             <div>
                                                                 <p className="text-sm text-muted-foreground">Batch</p>
-                                                                <p className="font-semibold text-lg">{selectedBatch.title}</p>
+                                                                <p className="font-semibold text-lg">{featuredBatchId.title}</p>
                                                             </div>
-                                                            {selectedCourse && (
+                                                            {featuredCourseId && (
                                                                 <div>
                                                                     <p className="text-sm text-muted-foreground">Course</p>
-                                                                    <p className="font-medium">{selectedCourse.title}</p>
+                                                                    <p className="font-medium">{featuredCourseId.title}</p>
                                                                 </div>
                                                             )}
                                                             <div className="grid grid-cols-2 gap-3 pt-2 border-t">
-                                                                {selectedBatch.startDate && (
+                                                                {featuredBatchId.startDate && (
                                                                     <div>
                                                                         <p className="text-xs text-muted-foreground">Enrollment Starts</p>
-                                                                        <p className="text-sm font-medium">{new Date(selectedBatch.enrollmentStartDate).toLocaleDateString()}</p>
+                                                                        <p className="text-sm font-medium">{new Date(featuredBatchId.enrollmentStartDate).toLocaleDateString()}</p>
                                                                     </div>
                                                                 )}
-                                                                {selectedBatch.enrollmentEndDate && (
+                                                                {featuredBatchId.enrollmentEndDate && (
                                                                     <div>
                                                                         <p className="text-xs text-muted-foreground">Enrollment Ends</p>
-                                                                        <p className="text-sm font-medium">{new Date(selectedBatch.enrollmentEndDate).toLocaleDateString()}</p>
+                                                                        <p className="text-sm font-medium">{new Date(featuredBatchId.enrollmentEndDate).toLocaleDateString()}</p>
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -529,7 +478,7 @@ const EnrollmentCheckout = () => {
                                                 <div className="bg-accent/50 rounded-lg p-4">
                                                     <div className="flex justify-between items-center font-semibold text-lg">
                                                         <span>Total Amount:</span>
-                                                        <span className="text-success">৳{(selectedBatch?.price || courseInfo.price).toLocaleString()}</span>
+                                                        <span className="text-success">৳{(featuredBatchId?.price)}</span>
                                                     </div>
                                                 </div>
                                                 <div className="space-y-4 mt-6">
@@ -551,7 +500,7 @@ const EnrollmentCheckout = () => {
                                                         type="submit"
                                                         className="w-full h-12 text-lg glow-effect"
                                                         // || !enrollmentStatus?.canEnroll
-                                                        disabled={!(form.formState.isValid && agreed) || isProcessing }
+                                                        disabled={!(form.formState.isValid && agreed) || isProcessing}
                                                     >
                                                         {isProcessing ? (
                                                             <>
@@ -559,12 +508,9 @@ const EnrollmentCheckout = () => {
                                                                 Processing...
                                                             </>
                                                         )
-                                                        //  : !enrollmentStatus?.canEnroll ? (
-                                                        //     'Enrollment Not Available'
-                                                        // ) 
-                                                        : (
-                                                            'Complete Enrollment'
-                                                        )}
+                                                            : (
+                                                                'Complete Enrollment'
+                                                            )}
                                                     </Button>
                                                 </div>
                                             </div>

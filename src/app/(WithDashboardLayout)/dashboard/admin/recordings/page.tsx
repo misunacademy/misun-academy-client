@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -153,15 +154,30 @@ export default function RecordingsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this recording?")) return;
+    // if (!confirm("Are you sure you want to delete this recording?")) return;
 
-    try {
-      await deleteRecording(id).unwrap();
-      toast.success("Recording deleted successfully");
-    } catch (error) {
-      const err = error as { data?: { message?: string } };
-      toast.error(err?.data?.message || "Failed to delete recording");
-    }
+    // try {
+    //   await deleteRecording(id).unwrap();
+    //   toast.success("Recording deleted successfully");
+    // } catch (error) {
+    //   const err = error as { data?: { message?: string } };
+    //   toast.error(err?.data?.message || "Failed to delete recording");
+    // }
+    toast('Are you sure you want to delete this batch? This action cannot be undone.', {
+      action: {
+        label:  <Button size={'sm'} className="bg-red-500 text-white hover:bg-red-600">Delete</Button>,
+        onClick: async () => {
+          try {
+            await deleteRecording(id).unwrap();
+            toast.success("Recording deleted successfully");
+          } catch (error) {
+            const err = error as { data?: { message?: string } };
+            toast.error(err?.data?.message || "Failed to delete recording");
+          }
+        },
+      },
+      cancel: 'Cancel',
+    });
   };
 
   const openEditDialog = (recording: Recording) => {
@@ -264,8 +280,8 @@ export default function RecordingsPage() {
               filters.isPublished === undefined
                 ? "all"
                 : filters.isPublished
-                ? "published"
-                : "unpublished"
+                  ? "published"
+                  : "unpublished"
             }
             onValueChange={(value) =>
               setFilters({
@@ -310,7 +326,7 @@ export default function RecordingsPage() {
                   <TableHead>Course/Batch</TableHead>
                   <TableHead>Session Date</TableHead>
                   <TableHead>Duration</TableHead>
-                  <TableHead>Views</TableHead>
+                  {/* <TableHead>Views</TableHead> */}
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -357,12 +373,12 @@ export default function RecordingsPage() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       <div className="flex items-center gap-1 text-sm">
                         <Eye className="h-4 w-4 text-muted-foreground" />
                         {recording.viewCount || 0}
                       </div>
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell>
                       <Badge variant={recording.isPublished ? "default" : "secondary"}>
                         {recording.isPublished ? "Published" : "Draft"}

@@ -78,7 +78,7 @@ const batchApi = baseApi.injectEndpoints({
     updateBatch: build.mutation<any, { id: string; data: Partial<BatchResponse> }>({
       query: ({ id, data }) => ({
         url: `/batches/${id}`,
-        method: "PATCH",
+        method: "PUT",
         body: data,
       }),
       invalidatesTags: ["Batches"],

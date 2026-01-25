@@ -12,6 +12,7 @@ import { useGetCoursesQuery } from "@/redux/features/course/courseApi";
 import { useGetAllBatchesQuery } from "@/redux/features/batch/batchApi";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useGetSettingsQuery } from "@/redux/api/settingsApi";
 
 
 interface Course {
@@ -69,6 +70,9 @@ export default function BrowseCoursesPage() {
 
   const courses: Course[] = coursesData?.data || [];
   const batches: Batch[] = batchesData?.data || [];
+  const { data: settingsData, isLoading: settingsLoading } = useGetSettingsQuery();
+  const featuredCourseId = (settingsData?.data?.featuredEnrollmentCourse as any)?._id;
+  const featuredBatch = (settingsData?.data?.featuredEnrollmentBatch as any);
 
   // Filter published courses
   const publishedCourses = courses.filter((course) =>
@@ -88,18 +92,6 @@ export default function BrowseCoursesPage() {
     );
   };
 
-  // Calculate cheapest batch price
-  const getCheapestPrice = (courseId: string) => {
-    const activeBatches = getActiveBatches(courseId);
-    if (activeBatches.length === 0) return null;
-    return Math.min(...activeBatches.map(b => b.price));
-  };
-
-  // Calculate discounted price
-  const getDiscountedPrice = (price: number, discountPercentage?: number) => {
-    if (!discountPercentage || discountPercentage === 0) return price;
-    return price - (price * discountPercentage / 100);
-  };
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -149,192 +141,272 @@ export default function BrowseCoursesPage() {
           filteredCourses.map((course) => {
             const activeBatches = getActiveBatches(course._id);
             const hasActiveBatches = activeBatches.length > 0;
-            const cheapestPrice = getCheapestPrice(course._id);
-            return (
-              <Card key={course._id} className="overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
-                {/* Thumbnail */}
-                {course.thumbnailImage ? (
-                  <div className="h-48 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 relative">
-                    <Image
-                      src={course.thumbnailImage}
-                      alt={course.title}
-                      fill
-                      className="object-cover hover:scale-105 transition-transform duration-300"
-                      priority={false}
-                    />
-                    {/* Price Badge Overlay */}
-                    {cheapestPrice && (
-                      <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1.5 rounded-full font-bold text-sm shadow-lg">
-                        BDT {cheapestPrice.toLocaleString('en-US')}
-                      </div>
-                    )}
-                    {/* Featured Badge */}
-                    {course.featured && (
-                      <div className="absolute top-3 left-3 bg-amber-500 text-white px-2.5 py-1 rounded-full font-medium text-xs shadow-lg flex items-center gap-1">
-                        <Award className="h-3 w-3" />
-                        Featured
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="h-48 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                    <BookOpen className="h-16 w-16 text-primary/30" />
-                  </div>
-                )}
+            if (featuredCourseId && course._id === featuredCourseId) {
+              return (
+                <Card key={course._id} className="overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
+                  {/* Thumbnail */}
+                  {course.thumbnailImage ? (
+                    <div className="h-48 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 relative">
+                      <Image
+                        src={course.thumbnailImage}
+                        alt={course.title}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-300"
+                        priority={false}
+                      />
+                      {/* Price Badge Overlay */}
 
-                <CardHeader className="space-y-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-lg leading-tight line-clamp-2">
-                      {course.title}
-                    </CardTitle>
-                    <Badge variant={hasActiveBatches ? "default" : "secondary"} className="flex-shrink-0">
-                      {hasActiveBatches ? "Open" : "Coming Soon"}
-                    </Badge>
-                  </div>
+                      {/* <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1.5 rounded-full font-bold text-sm shadow-lg">
+                        BDT {batch.price.toLocaleString('en-US')}
+                      </div> */}
 
-                  {/* Meta Info Row */}
-                  <div className="flex flex-wrap gap-2 text-xs">
-                    {course.level && (
-                      <Badge variant="outline" className="gap-1">
-                        <TrendingUp className="h-3 w-3" />
-                        {course.level === 'beginner' ? 'Beginner' :
-                          course.level === 'intermediate' ? 'Intermediate' : 'Advanced'}
-                      </Badge>
-                    )}
-                    {course.category && (
-                      <Badge variant="outline" className="gap-1">
-                        <BookOpen className="h-3 w-3" />
-                        {course.category}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <CardDescription className="line-clamp-2">
-                    {course.shortDescription || "Detailed description will be added soon"}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="space-y-4 flex-1 flex flex-col">
-                  {/* Course Stats */}
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Users className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">
-                        {activeBatches.length > 0
-                          ? `Batch ${activeBatches[0].batchNumber}${activeBatches.length > 1 ? ` +${activeBatches.length - 1}` : ''}`
-                          : 'No batches available'}
-                      </span>
-                    </div>
-                    {course.durationEstimate && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Clock className="h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">{course.durationEstimate} Months</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Tags */}
-                  {course.tags && course.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {course.tags.slice(0, 3).map((tag, idx) => (
-                        <Badge key={idx} variant="secondary" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                      {course.tags.length > 3 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{course.tags.length - 3}
-                        </Badge>
+                      {/* Featured Badge */}
+                      {course.featured && (
+                        <div className="absolute top-3 left-3 bg-amber-500 text-white px-2.5 py-1 rounded-full font-medium text-xs shadow-lg flex items-center gap-1">
+                          <Award className="h-3 w-3" />
+                          Featured
+                        </div>
                       )}
+                    </div>
+                  ) : (
+                    <div className="h-48 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                      <BookOpen className="h-16 w-16 text-primary/30" />
                     </div>
                   )}
 
-                  {/* Available Batches Preview */}
-                  {hasActiveBatches && (
-                    <div className="space-y-2 flex-1">
-                      <p className="text-xs font-medium text-muted-foreground">Available Batches:</p>
-                      {activeBatches?.slice(0, 1)?.map((batch) => {
-                        const discountedPrice = course.discountPercentage
-                          ? getDiscountedPrice(batch.price, course.discountPercentage)
-                          : batch.price;
-                        const hasDiscount = course.discountPercentage && course.discountPercentage > 0;
+                  <CardHeader className="space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-lg leading-tight line-clamp-2">
+                        {course.title}
+                      </CardTitle>
+                      <Badge variant={hasActiveBatches ? "default" : "secondary"} className="flex-shrink-0">
+                        {hasActiveBatches ? "Open" : "Coming Soon"}
+                      </Badge>
+                    </div>
 
-                        return (
-                          <div
-                            key={batch._id}
-                            className="flex flex-col gap-2 p-2.5 bg-muted/50 rounded-lg text-xs border border-border/50"
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium truncate">{batch.title}</p>
-                                {/* <p className="text-muted-foreground flex items-center gap-1 mt-0.5">
-                                  <span className="truncate">Batch {batch.batchNumber}</span>
-                                  <span>•</span>
-                                  <span className="flex items-center gap-0.5">
-                                    <Users className="h-3 w-3" />
-                                    {batch.currentEnrollment || 0}{batch.maxCapacity ? `/${batch.maxCapacity}` : ''}
-                                  </span>
-                                </p> */}
-                              </div>
-                              <div className="flex flex-col items-end gap-0.5 ml-2 flex-shrink-0">
-                                {hasDiscount && (
-                                  <span className="text-[10px] text-muted-foreground line-through">
-                                    BDT {batch.price.toLocaleString('en-US')}
-                                  </span>
-                                )}
-                                <div className="flex items-center gap-0.5 font-bold text-primary">
-                                  <DollarSign className="h-3.5 w-3.5" />
-                                    {discountedPrice.toLocaleString('en-US')}
+                    {/* Meta Info Row */}
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {course.level && (
+                        <Badge variant="outline" className="gap-1">
+                          <TrendingUp className="h-3 w-3" />
+                          {course.level === 'beginner' ? 'Beginner' :
+                            course.level === 'intermediate' ? 'Intermediate' : 'Advanced'}
+                        </Badge>
+                      )}
+                      {course.category && (
+                        <Badge variant="outline" className="gap-1">
+                          <BookOpen className="h-3 w-3" />
+                          {course.category}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <CardDescription className="line-clamp-2">
+                      {course.shortDescription || "Detailed description will be added soon"}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4 flex-1 flex flex-col">
+                    {/* Course Stats */}
+                    <div className="grid grid-cols-2 gap-3 text-sm ">
+                      <div className="flex items-center gap-2 text-muted-foreground ">
+                        <Users className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">
+                          {featuredBatch.title}
+                        </span>
+                      </div>
+                      {course.durationEstimate && (
+                        <div className="flex items-center gap-2 text-muted-foreground ">
+                          <Clock className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{course.durationEstimate} Months</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Tags */}
+                    {course.tags && course.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {course.tags.slice(0, 3).map((tag, idx) => (
+                          <Badge key={idx} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {course.tags.length > 3 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{course.tags.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Available Batches Preview */}
+                    
+                      <div className="space-y-2 flex-1">
+                        <p className="text-xs font-medium text-muted-foreground">Available Batches:</p>
+                      
+                            <div
+                              key={featuredBatch._id}
+                              className="flex flex-col gap-2 p-2.5 bg-muted/50 rounded-lg text-xs border border-border/50"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium truncate">{featuredBatch.title}</p>
                                 </div>
-                                {hasDiscount && (
-                                  <Badge variant="destructive" className="text-[10px] px-1 py-0">
-                                    -{course.discountPercentage}%
-                                  </Badge>
-                                )}
+                                <div className="flex flex-col items-end gap-0.5 ml-2 flex-shrink-0">
+                                  {/* { (
+                                  <span className="text-[10px] text-muted-foreground line-through">
+                                    BDT {featuredBatch.price}
+                                  </span>
+                                )} */}
+                                  <div className="flex items-center gap-0.5 font-bold ">
+                                    ৳ <span className="text-primary">{featuredBatch.price}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/30">
+                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                  <Calendar className="h-3 w-3" />
+                                  <span>Enroll Start: {formatDate(featuredBatch.enrollmentStartDate)}</span>
+                                </div>
+                                <div className="text-[10px] text-muted-foreground">
+                                  Enroll: until {formatDate(featuredBatch.enrollmentEndDate)}
+                                </div>
                               </div>
                             </div>
-                            <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/30">
-                              <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                                <Calendar className="h-3 w-3" />
-                                <span>Start: {formatDate(batch.startDate)}</span>
-                              </div>
-                              <div className="text-[10px] text-muted-foreground">
-                                Enroll: until {formatDate(batch.enrollmentEndDate)}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {activeBatches.length > 2 && (
-                        <p className="text-xs text-center text-muted-foreground py-1">
-                          {activeBatches.length - 2} more batches available
-                        </p>
+                      </div>
+                    {/* Action Button */}
+                    <Button
+                      asChild
+                      className="w-full"
+                      variant={hasActiveBatches ? "default" : "outline"}
+                      disabled={!hasActiveBatches}
+                    >
+                      {/* /${course.slug || course._id} */}
+                      <Link href={`/checkout`}>
+                        View Details & Enroll
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            } else {
+              return (<div key={course._id}>
+                <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
+                  {/* Thumbnail */}
+                  {course.thumbnailImage ? (
+                    <div className="h-48 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 relative">
+                      <Image
+                        src={course.thumbnailImage}
+                        alt={course.title}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-300"
+                        priority={false}
+                      />
+                      {/* Price Badge Overlay */}
+
+                      {/* <div className="absolute top-3 right-3 bg-primary text-primary-foreground px-3 py-1.5 rounded-full font-bold text-sm shadow-lg">
+                        BDT {batch.price.toLocaleString('en-US')}
+                      </div> */}
+
+                      {/* Featured Badge */}
+                      {course.featured && (
+                        <div className="absolute top-3 left-3 bg-amber-500 text-white px-2.5 py-1 rounded-full font-medium text-xs shadow-lg flex items-center gap-1">
+                          <Award className="h-3 w-3" />
+                          Featured
+                        </div>
                       )}
                     </div>
-                  )}
-
-                  {!hasActiveBatches && (
-                    <div className="flex-1 flex items-center justify-center py-4 text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      New batches coming soon
+                  ) : (
+                    <div className="h-48 bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                      <BookOpen className="h-16 w-16 text-primary/30" />
                     </div>
                   )}
 
-                  {/* Action Button */}
-                  <Button
-                    asChild
-                    className="w-full"
-                    variant={hasActiveBatches ? "default" : "outline"}
-                    disabled={!hasActiveBatches}
-                  >
-                    {/* /${course.slug || course._id} */}
-                    <Link href={hasActiveBatches ? `/courses` : '#'}>
-                      {hasActiveBatches ? 'View Details & Enroll' : 'Coming Soon'}
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            );
+                  <CardHeader className="space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-lg leading-tight line-clamp-2">
+                        {course.title}
+                      </CardTitle>
+                      <Badge variant={hasActiveBatches ? "default" : "secondary"} className="flex-shrink-0">
+                        {hasActiveBatches ? "Open" : "Coming Soon"}
+                      </Badge>
+                    </div>
+
+                    {/* Meta Info Row */}
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {course.level && (
+                        <Badge variant="outline" className="gap-1">
+                          <TrendingUp className="h-3 w-3" />
+                          {course.level === 'beginner' ? 'Beginner' :
+                            course.level === 'intermediate' ? 'Intermediate' : 'Advanced'}
+                        </Badge>
+                      )}
+                      {course.category && (
+                        <Badge variant="outline" className="gap-1">
+                          <BookOpen className="h-3 w-3" />
+                          {course.category}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <CardDescription className="line-clamp-2">
+                      {course.shortDescription || "Detailed description will be added soon"}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4 flex-1 flex flex-col">
+                    {/* Course Stats */}
+                    <div className="grid grid-cols-2 gap-3 text-sm ">
+                      <div className="flex items-center gap-2 text-muted-foreground ">
+                        <Users className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">
+                          {activeBatches.length > 0
+                            ? `Batch ${activeBatches[0].batchNumber}${activeBatches.length > 1 ? '' : ''}`
+                            : 'No batches available'}
+                        </span>
+                      </div>
+                      {course.durationEstimate && (
+                        <div className="flex items-center gap-2 text-muted-foreground ">
+                          <Clock className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{course.durationEstimate} Months</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Tags */}
+                    {course.tags && course.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {course.tags.slice(0, 3).map((tag, idx) => (
+                          <Badge key={idx} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {course.tags.length > 3 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{course.tags.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+
+
+                    {/* Action Button */}
+                    <Button
+                      asChild
+                      className="w-full"
+                      variant={hasActiveBatches ? "default" : "outline"}
+                      disabled={!hasActiveBatches}
+                    >
+                      {/* /${course.slug || course._id} */}
+                      <Link href={`/checkout`}>
+                        View Details & Enroll
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+              )
+            }
           })
         )}
       </div>
