@@ -4,21 +4,33 @@ import { baseApi } from "./baseApi";
 export interface CourseResponse {
   _id: string;
   title: string;
-  slug: string;
-  description: string;
-  thumbnail: string;
-  category: string;
-  level: 'beginner' | 'intermediate' | 'advanced';
-  status: 'draft' | 'published' | 'archived';
-  price: number;
-  duration: number;
-  totalModules: number;
-  totalLessons: number;
-  learningOutcomes: string[];
-  prerequisites: string[];
-  instructorId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  slug?: string;
+  description?: string;
+  shortDescription?: string;
+  fullDescription?: string;
+  thumbnail?: string;
+  thumbnailImage?: string;
+  category?: string;
+  level?: 'beginner' | 'intermediate' | 'advanced';
+  status?: 'draft' | 'published' | 'archived';
+  price?: number;
+  duration?: any; // could be number or an object with weeks/hours
+  durationEstimate?: any;
+  totalModules?: number;
+  totalLessons?: number;
+  learningOutcomes?: string[];
+  prerequisites?: string[];
+  instructor?: any; // string or populated instructor object
+  instructorId?: string;
+  features?: string[];
+  highlights?: string[];
+  curriculum?: any[]; // modules + lessons - flexible shape
+  targetAudience?: string;
+  tags?: string[];
+  featured?: boolean;
+  createdBy?: string;
+  createdAt?: Date;
+  updatedAt?: Date; 
 }
 
 export interface ModuleResponse {
@@ -55,10 +67,16 @@ const courseApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     // Get all courses (public)
     getAllCourses: build.query<{ data: CourseResponse[] }, { status?: string; category?: string; level?: string }>({
-      query: (params) => ({
-        url: "/courses",
-        params,
-      }),
+      query: (params) => {
+        let cleaned = params
+          ? Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== null))
+          : undefined;
+        if (cleaned && Object.keys(cleaned).length === 0) cleaned = undefined;
+        return {
+          url: "/courses",
+          params: cleaned,
+        };
+      },
       providesTags: ["Courses"],
     }),
 
@@ -72,10 +90,12 @@ const courseApi = baseApi.injectEndpoints({
     }),
 
     // Get course by ID (public)
-    getCourseById: build.query<{ data: CourseResponse }, string>({
+    // Returns the course object directly (transforms { data } -> data)
+    getCourseById: build.query<CourseResponse, string>({
       query: (id) => ({
         url: `/courses/${id}`,
       }),
+      transformResponse: (response: any) => response?.data,
       providesTags: ["Courses"],
     }),
 
@@ -85,6 +105,26 @@ const courseApi = baseApi.injectEndpoints({
         url: `/courses/${courseId}/curriculum`,
       }),
       providesTags: ["Courses"],
+    }),
+
+    // Get course progress for the current user
+    // Server route: GET /course-enrollment/:courseId/progress
+    getCourseProgress: build.query<{ data: any }, string>({
+      query: (courseId) => ({
+        url: `/course-enrollment/${courseId}/progress`,
+      }),
+      providesTags: ["CourseEnrollments", "Progress"],
+    }),
+
+    // Complete a lesson for the current user's enrollment
+    // Server route: POST /course-enrollment/:courseId/complete-lesson
+    completeLesson: build.mutation<any, { courseId: string; moduleId: string; lessonId: string }>({
+      query: ({ courseId, moduleId, lessonId }) => ({
+        url: `/course-enrollment/${courseId}/complete-lesson`,
+        method: "POST",
+        body: { moduleId, lessonId },
+      }),
+      invalidatesTags: ["CourseEnrollments", "Progress"],
     }),
 
     // Admin: Create course
@@ -195,9 +235,11 @@ const courseApi = baseApi.injectEndpoints({
 export const {
   useGetAllCoursesQuery,
   useGetCourseBySlugQuery,
-  useGetCourseByIdQuery,  // Added new hook
+  useGetCourseByIdQuery,
   useGetCourseCurriculumQuery,
+  useGetCourseProgressQuery,
   useCreateCourseMutation,
+  useCompleteLessonMutation,
   useUpdateCourseMutation,
   useDeleteCourseMutation,
   useGetModulesByCourseQuery,

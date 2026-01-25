@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { CourseStats } from "@/components/module/dashboard/admin/CourseStats";
 import { CoursesTable } from "@/components/module/dashboard/admin/CoursesTable";
 import { Course } from "@/types/common";
-import { useGetCoursesQuery, useDeleteCourseMutation } from "@/redux/features/course/courseApi";
+import { useGetAllCoursesQuery, useDeleteCourseMutation } from "@/redux/api/courseApi";
 import { toast } from "sonner";
 
 
@@ -14,7 +14,7 @@ import { toast } from "sonner";
 export default function AdminCourses() {
   const router = useRouter();
 
-  const { data: coursesData, refetch } = useGetCoursesQuery({});
+  const { data: coursesData, refetch } = useGetAllCoursesQuery({});
   const [deleteCourse] = useDeleteCourseMutation();
 
   const courses = (coursesData?.data || []) as Course[];

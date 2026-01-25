@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * ADMIN API - User Management
  * Requires ADMIN or SUPERADMIN role
@@ -153,6 +154,16 @@ const adminApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Users"],
     }),
+
+    // Admin login (separate route)
+    adminLogin: build.mutation<any, { email: string; password: string }>({
+      query: (data) => ({
+        url: "/admin/login",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Profile"],
+    }),
   }),
 });
 
@@ -164,6 +175,7 @@ export const {
   useUpdateUserMutation,
   useUpdateUserStatusMutation,
   useDeleteUserMutation,
+  useAdminLoginMutation,
 } = adminApi;
 
 export default adminApi;

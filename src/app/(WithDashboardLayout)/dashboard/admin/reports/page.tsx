@@ -9,7 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Download, TrendingUp, Users, DollarSign, BookOpen, Calendar, RefreshCw } from "lucide-react";
 
 import { useGetMetadataQuery } from "@/redux/features/student/studentApi";
-import { useGetCoursesQuery } from "@/redux/features/course/courseApi";
+import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { Loader2 } from "lucide-react";
 import { useState, useMemo } from "react";
 
@@ -20,7 +20,7 @@ export default function AdminReports() {
   const [isExporting, setIsExporting] = useState(false);
 
   const { data: metadata, isLoading: metadataLoading, error: metadataError, refetch: refetchMetadata } = useGetMetadataQuery(undefined);
-  const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery({});
+  const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({});
 
   const isLoading = metadataLoading || coursesLoading;
   const error = metadataError;

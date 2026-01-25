@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useMemo, useEffect } from "react";
 import {
@@ -28,38 +29,13 @@ import {
 } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useGetEnrolledStudentsQuery } from "@/redux/features/student/studentApi";
+import type { EnrollmentResponse } from "@/redux/api/enrollmentApi";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 
-// Define the shape of a student data object
-interface Student {
-    _id: string;
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-}
-
-interface Batch {
-    _id: string;
-    title: string;
-}
-
-interface Course {
-    _id: string;
-    title: string;
-    slug: string;
-}
-
-interface StudentData {
-    _id: string;
-    student: Student | null;
-    studentId: string;
-    batch: Batch | null;
-    course: Course | null;
-    status: string;
-    createdAt: string;
-}
+// Use canonical EnrollmentResponse shape from API
+// EnrollmentResponse contains batchId and other fields
+type StudentData = EnrollmentResponse;
 
 const EnrolledStudentTable = () => {
     const [page, setPage] = useState(1);
@@ -87,32 +63,32 @@ const EnrolledStudentTable = () => {
     const students = data?.data || [];
     const meta = data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
 
-    const columns = useMemo<ColumnDef<StudentData>[]>(
+    const columns = useMemo<ColumnDef<EnrollmentResponse>[]>(
         () => [
             {
                 accessorKey: "studentId",
                 header: "Student ID",
-                cell: ({ row }) => row.original.studentId || 'N/A',
+                cell: ({ row }) =>( row.original as any).studentId || row.original.userId || 'N/A',
             },
             {
                 accessorKey: "name",
                 header: "Name",
-                cell: ({ row }) => row.original.student?.name || 'N/A',
+                cell: ({ row }) => ( (row.original as any).student?.name ) || (row.original.userId as string) || 'N/A',
             },
             {
                 accessorKey: "email",
                 header: "Email",
-                cell: ({ row }) => row.original.student?.email || 'N/A',
+                cell: ({ row }) => ( (row.original as any).student?.email ) || 'N/A',
             },
             {
                 accessorKey: "phone",
                 header: "Phone",
-                cell: ({ row }) => row.original.student?.phone || 'N/A',
+                cell: ({ row }) => ( (row.original as any).student?.phone ) || 'N/A',
             },
             {
                 accessorKey: "address",
                 header: "Address",
-                cell: ({ row }) => row.original.student?.address || 'N/A',
+                cell: ({ row }) => ( (row.original as any).student?.address ) || 'N/A',
             },
             {
                 accessorKey: "course",
@@ -145,7 +121,7 @@ const EnrolledStudentTable = () => {
                 },
             },
             {
-                accessorKey: "createdAt",
+                id: "createdAt",
                 header: "Enrolled Date",
                 cell: ({ row }) =>
                     new Date(row.original.createdAt).toLocaleDateString(),

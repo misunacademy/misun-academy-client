@@ -9,15 +9,15 @@ import { Plus, Book, Video, FileText, ChevronDown, ChevronRight, Edit, Trash2, G
 import { Badge } from "@/components/ui/badge";
 import { 
   useGetCourseModulesQuery, 
-  useCreateModuleMutation, 
-  useUpdateModuleMutation,
-  useDeleteModuleMutation 
+  useCreateCourseModuleMutation, 
+  useUpdateCourseModuleMutation,
+  useDeleteCourseModuleMutation 
 } from "@/redux/features/module/moduleApi";
 import {
   useGetModuleLessonsQuery,
-  useCreateLessonMutation,
-  useUpdateLessonMutation,
-  useDeleteLessonMutation
+  useCreateModuleLessonMutation,
+  useUpdateModuleLessonMutation,
+  useDeleteModuleLessonMutation
 } from "@/redux/features/lesson/lessonApi";
 import {
   Dialog,
@@ -81,9 +81,9 @@ export default function CourseContentPage() {
   const [moduleToDelete, setModuleToDelete] = useState<string | null>(null);
 
   const { data: modulesData, isLoading, refetch } = useGetCourseModulesQuery(courseId);
-  const [createModule] = useCreateModuleMutation();
-  const [updateModule] = useUpdateModuleMutation();
-  const [deleteModule] = useDeleteModuleMutation();
+  const [createModule] = useCreateCourseModuleMutation();
+  const [updateModule] = useUpdateCourseModuleMutation();
+  const [deleteModule] = useDeleteCourseModuleMutation();
 
   const modules = (modulesData?.data || []) as Module[];
 
@@ -250,7 +250,7 @@ function ModuleCard({ module, index, expanded, onToggle, onEdit, onDelete, onAdd
   onEditLesson: (lesson: Lesson) => void;
 }) {
   const { data: lessonsData } = useGetModuleLessonsQuery(module._id, { skip: !expanded });
-  const [deleteLesson] = useDeleteLessonMutation();
+  const [deleteLesson] = useDeleteModuleLessonMutation();
   const lessons = (lessonsData?.data || []) as Lesson[];
   const [deleteLessonDialogOpen, setDeleteLessonDialogOpen] = useState(false);
   const [lessonToDelete, setLessonToDelete] = useState<string | null>(null);
@@ -385,8 +385,8 @@ function ModuleFormDialog({ open, mode, data, courseId, onClose, onSuccess }: {
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const [createModule, { isLoading: creating }] = useCreateModuleMutation();
-  const [updateModule, { isLoading: updating }] = useUpdateModuleMutation();
+  const [createModule, { isLoading: creating }] = useCreateCourseModuleMutation();
+  const [updateModule, { isLoading: updating }] = useUpdateCourseModuleMutation();
 
   const [formData, setFormData] = useState({
     title: data?.title || '',
@@ -502,8 +502,8 @@ function LessonFormDialog({ open, mode, moduleId, data, onClose, onSuccess }: {
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const [createLesson, { isLoading: creating }] = useCreateLessonMutation();
-  const [updateLesson, { isLoading: updating }] = useUpdateLessonMutation();
+  const [createLesson, { isLoading: creating }] = useCreateModuleLessonMutation();
+  const [updateLesson, { isLoading: updating }] = useUpdateModuleLessonMutation();
 
   const [formData, setFormData] = useState({
     title: data?.title || '',

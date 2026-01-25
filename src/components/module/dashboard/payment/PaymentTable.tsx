@@ -17,7 +17,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from '@/components/ui/table';import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";import { Input } from '@/components/ui/input';
+} from '@/components/ui/table'; import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"; import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
     Select,
@@ -38,7 +38,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useGetPaymentHistoryQuery, useUpdatePaymentStatusMutation, useVerifyManualPaymentMutation } from '@/redux/features/student/studentApi';
+import type { PaymentResponse } from '@/redux/api/paymentApi';
+import { useGetAllPaymentsQuery, useUpdatePaymentStatusMutation, useVerifyManualPaymentMutation } from '@/redux/api/paymentApi';
 import { toast } from 'sonner';
 
 // Define interfaces
@@ -61,19 +62,6 @@ interface Batch {
     batchNumber: string;
 }
 
-interface PaymentData {
-    _id: string;
-    transactionId: string;
-    amount: number;
-    status: string;
-    method: string;
-    createdAt: string;
-    student: Student | null;
-    course?: Course | null;
-    batch?: Batch | null;
-    gatewayResponse?: { transactionId?: string, senderNumber?: string, phonePeTransactionId?: string, bank_tran_id?: string, card_issuer?: string };
-}
-
 const PaymentTable = () => {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
@@ -83,24 +71,27 @@ const PaymentTable = () => {
     const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
     // RTK Query hooks
-    const { data, isLoading, isError, refetch } = useGetPaymentHistoryQuery({
-        page,
+    const paymentsQueryParams: any = {
         search: search || undefined,
         status: statusFilter !== 'all' ? statusFilter : undefined,
-    });
+    };
+    if (page > 1) paymentsQueryParams.page = page;
+    const paramsToSend = Object.keys(paymentsQueryParams).length ? paymentsQueryParams : undefined;
+
+    const { data, isLoading, isError, refetch } = useGetAllPaymentsQuery(paramsToSend);
     const [updatePaymentStatus] = useUpdatePaymentStatusMutation();
     const [verifyManualPayment] = useVerifyManualPaymentMutation();
 
     const payments = data?.data || [];
-    const meta = data?.meta || { total: 0, page: '1', limit: 10, totalPages: 1 };
+    const meta = data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
 
     const handleConfirmStatusChange = useCallback(async () => {
-  
+
         if (selectedTransactionId && selectedStatus) {
             try {
                 // Find the payment to determine the method
-                const payment = payments.find((p:any) => p.transactionId === selectedTransactionId);
-                
+                const payment = payments.find((p: any) => p.transactionId === selectedTransactionId);
+
                 if (payment?.method === 'PhonePay' && payment.status === 'review') {
                     // For manual payments in review/pending status, use verify endpoint
                     const approved = selectedStatus === 'success';
@@ -122,7 +113,7 @@ const PaymentTable = () => {
         setSelectedTransactionId(null);
     }, [selectedTransactionId, selectedStatus, updatePaymentStatus, verifyManualPayment, refetch, payments]);
 
-    const columns = useMemo<ColumnDef<PaymentData>[]>(
+    const columns = useMemo<ColumnDef<PaymentResponse>[]>(
         () => [
             {
                 accessorKey: 'transactionId',
@@ -141,7 +132,8 @@ const PaymentTable = () => {
                 cell: ({ row }) => row.original.method,
             },
             {
-                accessorKey: 'student.name',
+                accessorFn: (row) => row.student ?.name ,
+                id: 'student.name',
                 header: 'Student',
                 cell: ({ row }) => {
                     return <div>
@@ -151,7 +143,8 @@ const PaymentTable = () => {
                 }
             },
             {
-                accessorKey: 'course.title',
+                accessorFn: (row) => row.course?.title,
+                id: 'course.title',
                 header: 'Course',
                 cell: ({ row }) => {
                     return <div>
@@ -163,7 +156,8 @@ const PaymentTable = () => {
                 }
             },
             {
-                accessorKey: 'batch.title',
+                accessorFn: (row) => row.batch?.title,
+                id: 'batch.title',
                 header: 'Batch',
                 cell: ({ row }) => {
                     return <div>
@@ -175,7 +169,8 @@ const PaymentTable = () => {
                 }
             },
             {
-                accessorKey: 'gatewayResponse',
+                accessorFn: (row) => row.gatewayResponse,
+                id: 'gatewayResponse',
                 header: 'Payment Info',
                 cell: ({ row }) => {
                     return <div>
@@ -183,7 +178,7 @@ const PaymentTable = () => {
                             (row.original.method === 'PhonePay' && row.original.gatewayResponse) && (
                                 <div>
                                     <p className='text-[12px] font-bold'>{row.original?.gatewayResponse?.senderNumber}</p>
-                                    <p>{row.original?.gatewayResponse?.phonePeTransactionId }</p>
+                                    <p>{row.original?.gatewayResponse?.phonePeTransactionId}</p>
                                 </div>
                             )
                         }

@@ -11,12 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, Clock, ArrowLeft, Sparkles, Loader2, CreditCard, Smartphone, Play, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
-import { courseInfo } from "@/constants/enrollment";
 import Image from "next/image";
 import ManualPaymentForm from "./ManualPaymentForm";
-import { CourseThumbnail } from "@/assets/images";
 import { useEnrollStudentMutation, useEnrollStudentManualMutation } from "@/redux/features/student/studentApi";
-import { useGetAllBatchesQuery } from "@/redux/features/batch/batchApi";
 import one from "@/assets/images/payments/one.png"
 import two from "@/assets/images/payments/two.png"
 import three from "@/assets/images/payments/three.png"

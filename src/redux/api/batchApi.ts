@@ -14,6 +14,7 @@ export interface BatchResponse {
   currentEnrollment: number;
   status: 'draft' | 'upcoming' | 'running' | 'completed';
   price: number;
+  currency?: string;
   accessDurationAfterEnd?: number;
   instructors: Array<{
     instructorId: string;
@@ -31,10 +32,16 @@ const batchApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     // Get all batches (public - filtered)
     getAllBatches: build.query<{ data: BatchResponse[] }, { courseId?: string; status?: string; isPublished?: boolean }>({
-      query: (params) => ({
-        url: "/batches",
-        params,
-      }),
+      query: (params) => {
+        let cleaned = params
+          ? Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== null))
+          : undefined;
+        if (cleaned && Object.keys(cleaned).length === 0) cleaned = undefined;
+        return {
+          url: "/batches",
+          params: cleaned,
+        };
+      },
       providesTags: ["Batches"],
     }),
 

@@ -39,7 +39,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateBatchMutation, useGetAllBatchesQuery, useUpdateBatchMutation, useDeleteBatchMutation } from '@/redux/features/batch/batchApi';
-import { useGetCoursesQuery } from '@/redux/features/course/courseApi';
+import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { toast } from 'sonner';
 import { Loader2, Plus, X, Edit, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -70,8 +70,8 @@ export default function BatchDashboard() {
     const [batchToDelete, setBatchToDelete] = useState<any>(null);
     const [formData, setFormData] = useState(INITIAL_FORM_STATE);
 const router = useRouter();
-    const { data: batches, isLoading, error, refetch } = useGetAllBatchesQuery(undefined);
-    const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery({ status: "published" });
+    const { data: batches, isLoading, error, refetch } = useGetAllBatchesQuery({});
+    const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({ status: "published" });
     const [createBatch, { isLoading: isCreating }] = useCreateBatchMutation();
     const [updateBatch, { isLoading: isUpdating }] = useUpdateBatchMutation();
     const [deleteBatch] = useDeleteBatchMutation();
@@ -92,14 +92,14 @@ const router = useRouter();
         if (!batchId || batchId === 'undefined' || !newStatus) return;
 
         try {
-            await updateBatch({ id: batchId, status: newStatus }).unwrap();
+            await updateBatch({ id: batchId, data: { status: newStatus as 'draft' | 'upcoming' | 'running' | 'completed' } }).unwrap();
             toast.success(`Status updated to ${newStatus}`);
             // Force immediate refetch
             await refetch();
         } catch (error) {
             toast.error((error as any)?.data?.message || 'Failed to update status');
         }
-    };
+    }; 
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -112,18 +112,18 @@ const router = useRouter();
         const batchData = {
             title: formData.title,
             price: Number(formData.price),
-            status: formData.status,
+            status: formData.status as 'draft' | 'upcoming' | 'running' | 'completed',
             courseId: formData.selectedCourse,
-            startDate: formData.startDate,
-            endDate: formData.endDate,
-            enrollmentStartDate: formData.enrollmentStartDate,
-            enrollmentEndDate: formData.enrollmentEndDate,
+            startDate: formData.startDate ? new Date(formData.startDate) : undefined,
+            endDate: formData.endDate ? new Date(formData.endDate) : undefined,
+            enrollmentStartDate: formData.enrollmentStartDate ? new Date(formData.enrollmentStartDate) : undefined,
+            enrollmentEndDate: formData.enrollmentEndDate ? new Date(formData.enrollmentEndDate) : undefined,
             description: formData.description || undefined,
         };
 
         try {
             if (editingBatchId) {
-                await updateBatch({ id: editingBatchId, ...batchData }).unwrap();
+                await updateBatch({ id: editingBatchId, data: batchData }).unwrap();
                 toast.success("Batch updated successfully");
             } else {
                 await createBatch(batchData).unwrap();
@@ -371,7 +371,7 @@ const router = useRouter();
                         </div>
                     ) : error ? (
                         <p className="text-center text-destructive py-8">Error loading batches</p>
-                    ) : batches?.data?.length > 0 ? (
+                    ) : (batches?.data && batches.data.length > 0) ? (
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
@@ -388,7 +388,7 @@ const router = useRouter();
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {batches.data.map((batch: any) => (
+                                    {(batches?.data || []).map((batch: any) => (
                                         <TableRow key={batch._id}>
                                             <TableCell className="font-medium">#{batch.batchNumber}</TableCell>
                                             <TableCell className="font-medium">{batch.title}</TableCell>

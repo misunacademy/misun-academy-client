@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -31,7 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Video, Edit, Trash2, Eye, Calendar, Clock, Loader2 } from "lucide-react";
+import { Plus, Video, Edit, Trash2, Calendar, Clock, Loader2 } from "lucide-react"; 
 import { toast } from "sonner";
 import {
   useGetRecordingsQuery,
@@ -40,8 +39,14 @@ import {
   useDeleteRecordingMutation,
   Recording,
 } from "@/redux/features/recording/recordingApi";
-import { useGetCoursesQuery } from "@/redux/features/course/courseApi";
-import { useGetAllBatchesQuery } from "@/redux/features/batch/batchApi";
+import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
+import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
+import type { CourseResponse } from "@/redux/api/courseApi";
+import type { BatchResponse } from "@/redux/api/batchApi";
+
+// Use canonical API response shapes
+type Course = CourseResponse;
+type Batch = BatchResponse;
 import { format } from "date-fns";
 
 interface FormData {
@@ -56,17 +61,7 @@ interface FormData {
   isPublished: boolean;
 }
 
-interface Course {
-  _id: string;
-  title: string;
-  slug?: string;
-}
 
-interface Batch {
-  _id: string;
-  title: string;
-  batchNumber?: string;
-}
 
 export default function RecordingsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -79,7 +74,7 @@ export default function RecordingsPage() {
   }>({});
 
   const { data: recordingsData, isLoading } = useGetRecordingsQuery(filters);
-  const { data: coursesData } = useGetCoursesQuery({});
+  const { data: coursesData } = useGetAllCoursesQuery({});
   const { data: batchesData } = useGetAllBatchesQuery({});
 
   const [createRecording, { isLoading: isCreating }] = useCreateRecordingMutation();

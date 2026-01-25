@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,14 +9,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Globe, Save, Edit, X, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { useGetCoursesQuery } from "@/redux/features/course/courseApi";
+import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import { useGetSettingsQuery, useUpdateSettingsMutation } from "@/redux/api/settingsApi";
 
 const EMPTY_VALUE = "none";
 
 export default function DynamicUpdates() {
-    const { data: coursesData, isLoading: coursesLoading, error: coursesError } = useGetCoursesQuery({});
+    const { data: coursesData, isLoading: coursesLoading, error: coursesError } = useGetAllCoursesQuery({});
     const { data: batchesData, isLoading: batchesLoading, error: batchesError } = useGetAllBatchesQuery({});
     const { data: settingsData, isLoading: settingsLoading, error: settingsError, refetch: refetchSettings } = useGetSettingsQuery();
     

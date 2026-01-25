@@ -39,6 +39,13 @@ export interface PaymentResponse {
     title: string;
     slug: string;
   };
+  // Optional student info populated by some endpoints
+  student?: {
+    _id: string;
+    name: string;
+    email: string;
+    phone?: string;
+  };
 }
 
 const paymentApi = baseApi.injectEndpoints({
@@ -70,12 +77,18 @@ const paymentApi = baseApi.injectEndpoints({
       providesTags: ["Payments"],
     }),
 
-    // Admin: Get all payments
-    getAllPayments: build.query<{ data: PaymentResponse[] }, { status?: string; page?: number; limit?: number }>({
-      query: (params) => ({
-        url: "/payments",
-        params,
-      }),
+    // Admin: Get all payments (supports search, pagination, filtering)
+    getAllPayments: build.query<{ data: PaymentResponse[]; meta?: { total: number; page: number; limit: number; totalPages: number } }, { status?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string }>({
+      query: (params) => {
+        let cleaned = params
+          ? Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== null))
+          : undefined;
+        if (cleaned && Object.keys(cleaned).length === 0) cleaned = undefined;
+        return {
+          url: "payments/history",
+          params: cleaned,
+        };
+      },
       providesTags: ["Payments"],
     }),
 
@@ -86,6 +99,26 @@ const paymentApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Payments"],
     }),
+
+    // Update payment status (admin)
+    updatePaymentStatus: build.mutation<any, { transactionId: string; status: string }>({
+      query: ({ transactionId, status }) => ({
+        url: `/payments/${transactionId}/status`,
+        method: "PUT",
+        body: { status },
+      }),
+      invalidatesTags: ["Payments"],
+    }),
+
+    // Verify manual payment submission (admin)
+    verifyManualPayment: build.mutation<any, { transactionId: string; approved: boolean }>({
+      query: ({ transactionId, approved }) => ({
+        url: `/payments/${transactionId}/verify`,
+        method: "POST",
+        body: { approved },
+      }),
+      invalidatesTags: ["Payments"],
+    }),
   }),
 });
 
@@ -95,4 +128,6 @@ export const {
   useGetPaymentByTransactionIdQuery,
   useGetAllPaymentsQuery,
   useVerifyPaymentQuery,
+  useUpdatePaymentStatusMutation,
+  useVerifyManualPaymentMutation,
 } = paymentApi;

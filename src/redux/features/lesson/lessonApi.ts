@@ -16,7 +16,8 @@ const lessonApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Lessons"],
         }),
-        createLesson: builder.mutation({
+        // Admin: Create lesson 
+        createModuleLesson: builder.mutation({
             query: ({ moduleId, ...data }) => ({
                 url: `/admin/lessons/modules/${moduleId}/lessons`,
                 method: "POST",
@@ -24,7 +25,8 @@ const lessonApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Lessons", "Modules"],
         }),
-        updateLesson: builder.mutation({
+        // Admin: Update lesson
+        updateModuleLesson: builder.mutation({
             query: ({ lessonId, ...data }) => ({
                 url: `/admin/lessons/lessons/${lessonId}`,
                 method: "PUT",
@@ -32,7 +34,8 @@ const lessonApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Lessons"],
         }),
-        deleteLesson: builder.mutation({
+        // Admin: Delete lesson 
+        deleteModuleLesson: builder.mutation({
             query: (lessonId) => ({
                 url: `/admin/lessons/lessons/${lessonId}`,
                 method: "DELETE",
@@ -53,8 +56,8 @@ const lessonApi = baseApi.injectEndpoints({
 export const {
     useGetModuleLessonsQuery,
     useGetLessonByIdQuery,
-    useCreateLessonMutation,
-    useUpdateLessonMutation,
-    useDeleteLessonMutation,
+    useCreateModuleLessonMutation,
+    useUpdateModuleLessonMutation,
+    useDeleteModuleLessonMutation,
     useReorderLessonsMutation,
 } = lessonApi;

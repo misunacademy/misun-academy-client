@@ -1,17 +1,2 @@
-import { baseApi } from '../../api/baseApi';
-
-const authApi = baseApi.injectEndpoints({
-    endpoints: (builder) => ({
-        adminLogin: builder.mutation({
-            query: (userInfo) => ({
-                url: '/admin/login',
-                method: 'POST',
-                body: userInfo,
-            }),
-        }),
-    }),
-});
-
-export const {
-    useAdminLoginMutation,
-} = authApi;
+// Re-export admin login mutation from canonical `redux/api/adminApi` to avoid duplicate endpoints
+export { useAdminLoginMutation } from "@/redux/api/adminApi";

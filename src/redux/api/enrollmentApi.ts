@@ -84,12 +84,18 @@ const enrollmentApi = baseApi.injectEndpoints({
       providesTags: ["CourseEnrollments"],
     }),
 
-    // Admin: Get all enrollments
-    getAllEnrollments: build.query<{ data: EnrollmentResponse[] }, { status?: string; page?: number; limit?: number }>({
-      query: (params) => ({
-        url: "/enrollments",
-        params,
-      }),
+    // Admin: Get all enrollments (supports search, pagination, sorting)
+    getAllEnrollments: build.query<{ data: EnrollmentResponse[]; meta?: { total: number; page: number; limit: number; totalPages: number } }, { status?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string }>({
+      query: (params) => {
+        let cleaned = params
+          ? Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== null))
+          : undefined;
+        if (cleaned && Object.keys(cleaned).length === 0) cleaned = undefined;
+        return {
+          url: "/enrollments",
+          params: cleaned,
+        };
+      },
       providesTags: ["CourseEnrollments"],
     }),
 
@@ -103,6 +109,16 @@ const enrollmentApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["CourseEnrollments"],
     }),
+
+    // Manual enrollment (e.g., bank/phone transfer)
+    enrollStudentManual: build.mutation<any, { batchId: string; paymentData: any }>({
+      query: (data) => ({
+        url: "/enrollments/manual",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["CourseEnrollments"],
+    }),
   }),
 });
 
@@ -113,4 +129,5 @@ export const {
   useGetEnrollmentDetailsQuery,
   useGetAllEnrollmentsQuery,
   useUpdateEnrollmentStatusMutation,
+  useEnrollStudentManualMutation,
 } = enrollmentApi;

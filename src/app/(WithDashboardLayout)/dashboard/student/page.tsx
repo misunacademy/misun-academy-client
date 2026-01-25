@@ -19,7 +19,7 @@ export default async function StudentDashboard() {
 
         if (hasAppToken) {
             // Validate token with backend /auth/me
-            const baseUrl = process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:5000/api/v1';
+            const baseUrl = process.env.NEXT_PUBLIC_BASE_API_URL!;
             try {
                 const res = await fetch(`${baseUrl}/auth/me`, {
                     headers: {

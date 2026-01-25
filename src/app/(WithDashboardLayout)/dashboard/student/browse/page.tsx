@@ -5,72 +5,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, Users, Calendar, DollarSign, BookOpen, Clock, Award, TrendingUp } from "lucide-react";
+import { Search, Users, Calendar, BookOpen, Clock, Award, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
-import { useGetCoursesQuery } from "@/redux/features/course/courseApi";
+// import { useGetCoursesQuery } from "@/redux/features/course/courseApi";
 import { useGetAllBatchesQuery } from "@/redux/features/batch/batchApi";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
+import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
+import type { CourseResponse } from "@/redux/api/courseApi";
+import type { BatchResponse } from "@/redux/api/batchApi";
 
 
-interface Course {
-  _id: string;
-  title: string;
-  slug: string;
-  shortDescription: string;
-  fullDescription: string;
-  learningOutcomes: string[];
-  prerequisites?: string[];
-  targetAudience: string;
-  thumbnailImage: string;
-  coverImage?: string;
-  durationEstimate: string;
-  level: 'beginner' | 'intermediate' | 'advanced';
-  category: string;
-  tags: string[];
-  featured: boolean;
-  status: 'draft' | 'published' | 'archived';
-  price: number;
-  discountPercentage?: number;
-  createdBy: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-interface Batch {
-  _id: string;
-  courseId: string;
-  title: string;
-  batchNumber: number;
-  description?: string;
-  startDate: string;
-  endDate: string;
-  enrollmentStartDate: string;
-  enrollmentEndDate: string;
-  price: number;
-  currency: string;
-  maxCapacity?: number;
-  currentEnrollment: number;
-  status: 'draft' | 'upcoming' | 'running' | 'completed';
-  instructors: string[];
-  certificateTemplate?: string;
-  accessDurationAfterEnd?: number;
-  createdAt?: string;
-  updatedAt?: string;
-}
+// Using canonical API response types
+type Course = CourseResponse;
+type Batch = BatchResponse;
 
 export default function BrowseCoursesPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery({});
+  const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({});
   const { data: batchesData, isLoading: batchesLoading } = useGetAllBatchesQuery({});
 
   const isLoading = coursesLoading || batchesLoading;
 
   const courses: Course[] = coursesData?.data || [];
   const batches: Batch[] = batchesData?.data || [];
-  const { data: settingsData, isLoading: settingsLoading } = useGetSettingsQuery();
+  const { data: settingsData } = useGetSettingsQuery();
   const featuredCourseId = (settingsData?.data?.featuredEnrollmentCourse as any)?._id;
   const featuredBatch = (settingsData?.data?.featuredEnrollmentBatch as any);
 

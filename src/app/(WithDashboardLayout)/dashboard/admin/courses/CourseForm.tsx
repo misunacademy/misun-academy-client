@@ -270,7 +270,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
         await createCourse(payload).unwrap();
         toast.success("Course created");
       } else if (courseId) {
-        await updateCourse({ id: courseId, ...payload }).unwrap();
+        await updateCourse({ id: courseId, data: payload }).unwrap();
         toast.success("Course updated");
       }
       router.push("/dashboard/admin/courses");

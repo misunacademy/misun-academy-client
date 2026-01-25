@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 // import { useUpdateBatchMutation, useGetBatchByIdQuery } from '@/redux/features/batch/batchApi';
-import { useGetCoursesQuery } from '@/redux/features/course/courseApi';
+import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { toast } from 'sonner';
 import { ArrowBigLeft, Loader2, Plus, X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
@@ -64,7 +64,7 @@ export default function BatchEdit() {
     const router = useRouter();
     const { id: batchId } = useParams<{ id: string }>();
     const { data: batch, isLoading, error } = useGetBatchByIdQuery(batchId);
-    const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery({ status: "published" });
+    const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({ status: "published" });
     const [updateBatch, { isLoading: isUpdating }] = useUpdateBatchMutation();
     const [formData, setFormData] = useState<FormState>(INITIAL_FORM_STATE);
 

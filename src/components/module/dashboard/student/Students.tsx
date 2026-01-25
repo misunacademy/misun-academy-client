@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // 'use client'
 // import { useEffect, useMemo, useState } from "react";
 // import { Button } from "@/components/ui/button";
@@ -281,7 +282,7 @@ const Students = () => {
 
     const { data, isLoading } = useGetEnrolledStudentsQuery({
         search,
-        paymentStatus,
+        status: paymentStatus || undefined,
         page,
         limit,
         sortBy,
@@ -387,32 +388,30 @@ const Students = () => {
                                 </TableCell>
                             </TableRow>
                         ) : students.length > 0 ? (
-                            students.map((student: {
-                                _id: string,
-                                name: string,
-                                email: string,
-                                studentId: string,
-                                batch: {
-                                    name: string
-                                },
-                                paymentStatus: string
-                            }) => (
-                                <TableRow key={student._id}>
-                                    <TableCell className="font-medium">{student.name}</TableCell>
-                                    <TableCell>{student.email}</TableCell>
-                                    <TableCell>{student.studentId}</TableCell>
-                                    <TableCell>{student.batch?.name || "N/A"}</TableCell>
+                            students.map((enrollment) => {
+                                const studentName = (enrollment as any).user?.name || enrollment.userId || 'N/A';
+                                const studentEmail = (enrollment as any).user?.email || 'N/A';
+                                const studentId = enrollment.enrollmentId || enrollment.userId || enrollment._id;
+                                const batchName = enrollment.batchId?.title || 'N/A';
+                                const paymentStatus = enrollment.status || 'N/A';
+
+                                return (
+                                <TableRow key={enrollment._id}>
+                                    <TableCell className="font-medium">{studentName}</TableCell>
+                                    <TableCell>{studentEmail}</TableCell>
+                                    <TableCell>{studentId}</TableCell>
+                                    <TableCell>{batchName}</TableCell>
                                     <TableCell>
                                         <Badge
                                             variant={
-                                                student.paymentStatus === "success"
+                                                paymentStatus === "completed" || paymentStatus === 'active'
                                                     ? "default"
-                                                    : student.paymentStatus === "pending"
+                                                    : paymentStatus === "payment-pending" || paymentStatus === "pending"
                                                         ? "secondary"
                                                         : "destructive"
                                             }
                                         >
-                                            {student.paymentStatus}
+                                            {paymentStatus}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -425,7 +424,7 @@ const Students = () => {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem
                                                     onClick={() =>
-                                                        alert(`Edit student: ${student.name}`)
+                                                        alert(`Edit student: ${studentName}`)
                                                     }
                                                 >
                                                     Edit
@@ -433,7 +432,7 @@ const Students = () => {
                                                 <DropdownMenuItem
                                                     onClick={() =>
                                                         alert(
-                                                            `Update payment status for: ${student.name}`
+                                                            `Update payment status for: ${studentName}`
                                                         )
                                                     }
                                                 >
@@ -442,7 +441,7 @@ const Students = () => {
                                                 <DropdownMenuItem
                                                     className="text-red-600"
                                                     onClick={() =>
-                                                        alert(`Delete student: ${student.name}`)
+                                                        alert(`Delete student: ${studentName}`)
                                                     }
                                                 >
                                                     Delete
@@ -451,7 +450,7 @@ const Students = () => {
                                         </DropdownMenu>
                                     </TableCell>
                                 </TableRow>
-                            ))
+                            )})
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={6} className="text-center py-6">

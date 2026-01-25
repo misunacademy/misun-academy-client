@@ -1,116 +1,42 @@
+// Student API wrapper: re-export canonical hooks from `redux/api/*` and keep student-specific endpoints here.
 import { baseApi } from "../../api/baseApi";
 
+import {
+    useGetAllEnrollmentsQuery,
+    useInitiateEnrollmentMutation,
+    useEnrollStudentManualMutation as useEnrollStudentManualMutationFromEnrollment,
+} from "@/redux/api/enrollmentApi";
+
+import {
+    useGetMyPaymentsQuery,
+    useUpdatePaymentStatusMutation as useUpdatePaymentStatusMutationFromPayment,
+    useVerifyManualPaymentMutation as useVerifyManualPaymentMutationFromPayment,
+} from "@/redux/api/paymentApi";
+
+import { useGetDashboardMetadataQuery } from "@/redux/api/dashboardApi";
+
+// Back-compat: expose legacy hook name `useGetMetadataQuery` used across the app
+export const useGetMetadataQuery = useGetDashboardMetadataQuery;
+
 const studentsApi = baseApi.injectEndpoints({
+    overrideExisting: true,
     endpoints: (builder) => ({
-        getEnrolledStudents: builder.query({
-            query: (params) => ({
-                url: "/enrollments",
-                method: "GET",
-                params,
-            }),
-            providesTags: (result, error, arg) => [
-                { type: "Students", id: `LIST-${arg.search}-${arg.status}-${arg.page}` }
-            ],
-        }),
-        getPaymentHistory: builder.query({
-            query: (params) => ({
-                url: "/payments/history",
-                method: "GET",
-                params,
-            }),
-            providesTags: ["Students"],
-        }),
-        updatePaymentStatus: builder.mutation({
-            query: ({ transactionId, status }) => ({
-                url: `/payments/${transactionId}/status`,
-                method: "PUT",
-                body: { status },
-            }),
-            invalidatesTags: ["Students"],
-        }),
-        verifyManualPayment: builder.mutation({
-            query: ({ transactionId, approved }) => ({
-                url: `/payments/${transactionId}/verify`,
-                method: "POST",
-                body: { approved },
-            }),
-            invalidatesTags: ["Students"],
-        }),
-        getMetadata: builder.query({
-            query: () => ({
-                url: "/dashboard/metadata",
-                method: "GET",
-            }),
-            providesTags: ["Students"],
-        }),
+        // Keep only student-specific endpoints here
         getStudentDashboardData: builder.query({
             query: () => ({
                 url: "/dashboard/student",
-                method: "GET",
             }),
             providesTags: ["Students"],
-        }),
-        enrollStudent: builder.mutation({
-            query: (studentData) => ({
-                url: "/enrollments",
-                method: "POST",
-                body: studentData,
-            }),
-            invalidatesTags: ["Students"],
-        }),
-        enrollStudentManual: builder.mutation({
-            query: (studentData) => ({
-                url: "/enrollments/manual",
-                method: "POST",
-                body: studentData,
-            }),
-            invalidatesTags: ["Students"],
         }),
     }),
 });
 
-export const {
-    useGetEnrolledStudentsQuery,
-    useGetPaymentHistoryQuery,
-    useUpdatePaymentStatusMutation,
-    useVerifyManualPaymentMutation,
-    useGetMetadataQuery,
-    useGetStudentDashboardDataQuery,
-    useEnrollStudentMutation,
-    useEnrollStudentManualMutation,
-} = studentsApi;
+export const { useGetStudentDashboardDataQuery } = studentsApi;
 
-
-// getStudentById: builder.query({
-//             query: (id) => ({
-//                 url: `/student/${id}`,
-//                 method: "GET",
-//             }),
-//             providesTags: ["Students"],
-//         }),
-
-//         addStudent: builder.mutation({
-//             query: (studentData) => ({
-//                 url: "/student",
-//                 method: "POST",
-//                 body: studentData,
-//             }),
-//             invalidatesTags: ["Students"],
-//         }),
-
-//         updateStudent: builder.mutation({
-//             query: ({ id, ...updateData }) => ({
-//                 url: `/student/${id}`,
-//                 method: "PATCH",
-//                 body: updateData,
-//             }),
-//             invalidatesTags: ["Students"],
-//         }),
-
-//         deleteStudent: builder.mutation({
-//             query: (id) => ({
-//                 url: `/student/${id}`,
-//                 method: "DELETE",
-//             }),
-//             invalidatesTags: ["Students"],
-//         }),
+// Re-export canonical hooks under the original feature hook names to preserve usage
+export const useGetEnrolledStudentsQuery = useGetAllEnrollmentsQuery;
+export const useGetPaymentHistoryQuery = useGetMyPaymentsQuery;
+export const useUpdatePaymentStatusMutation = useUpdatePaymentStatusMutationFromPayment;
+export const useVerifyManualPaymentMutation = useVerifyManualPaymentMutationFromPayment;
+export const useEnrollStudentMutation = useInitiateEnrollmentMutation;
+export const useEnrollStudentManualMutation = useEnrollStudentManualMutationFromEnrollment;

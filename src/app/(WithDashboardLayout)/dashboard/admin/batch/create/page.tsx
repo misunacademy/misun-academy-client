@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateBatchMutation } from '@/redux/features/batch/batchApi';
-import { useGetCoursesQuery } from '@/redux/features/course/courseApi';
+import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { toast } from 'sonner';
 import { ArrowBigLeft, Loader2, Plus, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -46,11 +46,11 @@ const INITIAL_FORM_STATE = {
 
 export default function BatchCrate() {
     const [formData, setFormData] = useState(INITIAL_FORM_STATE);
-    const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery({ status: "published" });
+    const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({ status: "published" });
     const [createBatch, { isLoading: isCreating }] = useCreateBatchMutation();
     const router = useRouter();
     const courses = coursesData?.data || [];
-
+console.log(courses)
     const handleInputChange = (field: any, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
@@ -71,12 +71,12 @@ export default function BatchCrate() {
         const batchData = {
             title: formData.title,
             price: Number(formData.price),
-            status: formData.status,
+            status: formData.status as 'draft' | 'upcoming' | 'running' | 'completed',
             courseId: formData.selectedCourse,
-            startDate: formData.startDate,
-            endDate: formData.endDate,
-            enrollmentStartDate: formData.enrollmentStartDate,
-            enrollmentEndDate: formData.enrollmentEndDate,
+            startDate: formData.startDate ? new Date(formData.startDate) : undefined,
+            endDate: formData.endDate ? new Date(formData.endDate) : undefined,
+            enrollmentStartDate: formData.enrollmentStartDate ? new Date(formData.enrollmentStartDate) : undefined,
+            enrollmentEndDate: formData.enrollmentEndDate ? new Date(formData.enrollmentEndDate) : undefined,
             description: formData.description || undefined,
         };
 

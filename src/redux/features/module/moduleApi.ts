@@ -16,7 +16,8 @@ const moduleApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Modules"],
         }),
-        createModule: builder.mutation({
+        // Admin: Create module 
+        createCourseModule: builder.mutation({
             query: ({ courseId, ...data }) => ({
                 url: `/admin/modules/courses/${courseId}/modules`,
                 method: "POST",
@@ -24,7 +25,8 @@ const moduleApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Modules"],
         }),
-        updateModule: builder.mutation({
+        // Admin: Update module 
+        updateCourseModule: builder.mutation({
             query: ({ moduleId, ...data }) => ({
                 url: `/admin/modules/modules/${moduleId}`,
                 method: "PUT",
@@ -32,7 +34,8 @@ const moduleApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Modules"],
         }),
-        deleteModule: builder.mutation({
+        // Admin: Delete module 
+        deleteCourseModule: builder.mutation({
             query: (moduleId) => ({
                 url: `/admin/modules/modules/${moduleId}`,
                 method: "DELETE",
@@ -53,8 +56,8 @@ const moduleApi = baseApi.injectEndpoints({
 export const {
     useGetCourseModulesQuery,
     useGetModuleByIdQuery,
-    useCreateModuleMutation,
-    useUpdateModuleMutation,
-    useDeleteModuleMutation,
+    useCreateCourseModuleMutation,
+    useUpdateCourseModuleMutation,
+    useDeleteCourseModuleMutation,
     useReorderModulesMutation,
 } = moduleApi;

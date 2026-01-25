@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,6 @@ import {
   Loader2,
   Calendar,
   Users,
-  MessageSquare,
   BookOpen,
   X,
   Lock,
@@ -28,8 +27,7 @@ import {
 import { VideoPlayer } from "@/components/module/dashboard/student/VideoPlayer";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useGetCourseByIdQuery } from "@/redux/features/course/courseApi";
-import { useGetCourseProgressQuery, useCompleteLessonMutation } from "@/redux/features/course/courseApi";
+import { useGetCourseByIdQuery, useGetCourseProgressQuery, useCompleteLessonMutation } from "@/redux/features/course/courseApi";
 import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
 import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
 import { toast } from "sonner";
@@ -52,6 +50,21 @@ export default function CourseDetails() {
   const params = useParams<{ courseId: string }>();
   const courseId = params.courseId;
 
+  // Local types used by this component
+  type Lesson = {
+    lessonId: string;
+    title: string;
+    media?: { url?: string };
+    duration?: number;
+    resources?: Array<{ type?: string; title?: string; url?: string; textContent?: string }>;
+  };
+
+  type ModuleType = {
+    moduleId: string;
+    title: string;
+    lessons: Lesson[];
+  };
+
   const [currentModuleIndex, setCurrentModuleIndex] = useState(0);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [showCookingMessage, setShowCookingMessage] = useState(false);
@@ -62,8 +75,6 @@ export default function CourseDetails() {
   // Fetch course details
   const { data: course, isLoading: courseLoading } = useGetCourseByIdQuery(courseId);
 
-  // const course: Course | undefined = courseData?.data;
-
   // Fetch course progress
   const { data: progressData, isLoading: progressLoading, refetch: refetchProgress } = useGetCourseProgressQuery(courseId);
   const progress: CourseProgress | undefined = progressData?.data;
@@ -72,13 +83,16 @@ export default function CourseDetails() {
   const { data: enrollments } = useGetEnrollmentsQuery();
 
   // Complete lesson mutation
-  const [completeLesson, { isLoading: completingLesson }] = useCompleteLessonMutation();
+  const [completeLesson] = useCompleteLessonMutation();
+
+  // Create a typed curriculum array to avoid implicit anys
+  const curriculum: ModuleType[] = useMemo(() => (course?.curriculum as ModuleType[]) || [], [course?.curriculum]);
 
   // Set current lesson based on progress
   useEffect(() => {
-    if (progress?.currentLesson && course?.curriculum) {
-      const moduleIndex = course.curriculum.findIndex(m => m.moduleId === progress.currentLesson?.moduleId);
-      const lessonIndex = course.curriculum[moduleIndex]?.lessons.findIndex(l => l.lessonId === progress.currentLesson?.lessonId);
+    if (progress?.currentLesson && curriculum.length) {
+      const moduleIndex = curriculum.findIndex((m: ModuleType) => m.moduleId === progress.currentLesson?.moduleId);
+      const lessonIndex = curriculum[moduleIndex]?.lessons.findIndex((l: Lesson) => l.lessonId === progress.currentLesson?.lessonId);
 
       if (moduleIndex >= 0) {
         setCurrentModuleIndex(moduleIndex);
@@ -88,14 +102,14 @@ export default function CourseDetails() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [progress?.currentLesson?.moduleId, progress?.currentLesson?.lessonId, course?.curriculum]);
+  }, [progress?.currentLesson?.moduleId, progress?.currentLesson?.lessonId, curriculum]);
 
   // Expand all modules by default
   useEffect(() => {
-    if (course?.curriculum) {
-      setExpandedModules(new Set(course.curriculum.map(m => m.moduleId)));
+    if (curriculum.length) {
+      setExpandedModules(new Set(curriculum.map((m: ModuleType) => m.moduleId)));
     }
-  }, [course?.curriculum]);
+  }, [curriculum]);
 
   // Find enrollment for this course
   const enrollment = enrollments?.data?.find(e => e.batchId?.courseId?._id === courseId);
@@ -126,7 +140,7 @@ export default function CourseDetails() {
     );
   }
 
-  const currentModule = course.curriculum?.[currentModuleIndex];
+  const currentModule = curriculum?.[currentModuleIndex];
   const currentLesson = currentModule?.lessons[currentLessonIndex];
 
   const isLessonCompleted = (moduleId: string, lessonId: string) => {
@@ -138,14 +152,14 @@ export default function CourseDetails() {
   const isLessonUnlocked = (moduleIdx: number, lessonIdx: number) => {
     // Check if all previous lessons are completed
     for (let m = 0; m < moduleIdx; m++) {
-      const mod = course.curriculum?.[m];
+      const mod = curriculum?.[m];
       if (!mod) continue;
       for (const les of mod.lessons) {
         if (!isLessonCompleted(mod.moduleId, les.lessonId)) return false;
       }
     }
     // In current module, check lessons before this one
-    const mod = course.curriculum?.[moduleIdx];
+    const mod = curriculum?.[moduleIdx];
     if (!mod) return false;
     for (let l = 0; l < lessonIdx; l++) {
       if (!isLessonCompleted(mod.moduleId, mod.lessons[l].lessonId)) return false;
@@ -215,17 +229,17 @@ export default function CourseDetails() {
     toast.success("Course completed successfully! 🎉");
   };
 
-  const totalLessons = course.curriculum?.reduce((total, module) => total + module.lessons.length, 0) || 0;
+  const totalLessons = curriculum?.reduce((total: number, module: ModuleType) => total + (module.lessons?.length || 0), 0) || 0;
   const completedLessonsCount = progress?.completedLessons?.length || 0;
-  const totalModules = course.curriculum?.length || 0;
+  const totalModules = curriculum?.length || 0;
 
   // Calculate progress percentage based on completed lessons
   const calculatedPercentage = totalLessons > 0 ? Math.round((completedLessonsCount / totalLessons) * 100) : 0;
 
   // Collect all resources from lessons
-  const allResources = course.curriculum?.flatMap(module => 
-    module.lessons?.flatMap(lesson => 
-      lesson.resources?.map(resource => ({
+  const allResources = curriculum?.flatMap((module: ModuleType) => 
+    module.lessons?.flatMap((lesson: Lesson) => 
+      (lesson.resources || []).map((resource: any) => ({
         ...resource,
         lessonTitle: lesson.title,
         moduleTitle: module.title,
@@ -637,12 +651,12 @@ export default function CourseDetails() {
             </CardHeader>
             <CardContent className="pt-0 h-[70vh] overflow-y-auto *:scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               <div className="space-y-6">
-                {course.curriculum?.map((module, moduleIdx) => {
-                  const moduleCompletedLessons = module.lessons.filter(lesson => 
+                {curriculum.map((module: ModuleType, moduleIdx: number) => {
+                  const moduleCompletedLessons = module.lessons.filter((lesson: Lesson) => 
                     isLessonCompleted(module.moduleId, lesson.lessonId)
                   ).length;
                   const moduleTotalLessons = module.lessons.length;
-                  const moduleProgress = moduleTotalLessons > 0 ? Math.round((moduleCompletedLessons / moduleTotalLessons) * 100) : 0;
+                  
                   const isExpanded = expandedModules.has(module.moduleId);
 
                   return (
@@ -682,7 +696,7 @@ export default function CourseDetails() {
                       <Separator />
                       {isExpanded && (
                         <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
-                          {module.lessons.map((lesson, lessonIdx) => {
+                          {module.lessons.map((lesson: Lesson, lessonIdx: number) => {
                             const isCompleted = isLessonCompleted(module.moduleId, lesson.lessonId);
                             const isCurrent = moduleIdx === currentModuleIndex && lessonIdx === currentLessonIndex;
                             const isUnlocked = isLessonUnlocked(moduleIdx, lessonIdx) || isCurrent;

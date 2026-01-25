@@ -1,16 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, DollarSign, Loader2 } from "lucide-react";
-import { useGetCoursesQuery } from "@/redux/features/course/courseApi";
+import { useGetAllCoursesQuery, type CourseResponse } from "@/redux/api/courseApi";
 import { useGetMetadataQuery } from "@/redux/features/student/studentApi";
-import { Course } from "@/types/common";
 
 export function CourseStats() {
-  const { data: coursesData, isLoading: coursesLoading } = useGetCoursesQuery({});
+  const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({});
   const { data: dashboardData, isLoading: dashboardLoading } = useGetMetadataQuery(undefined);
 
-  const courses = coursesData?.data || [];
+  const courses: CourseResponse[] = coursesData?.data || [];
   const totalCourses = courses.length;
-  const activeCourses = courses.filter((course:Course) => course.status === 'published').length;
+  const activeCourses = courses.filter((course) => course.status === 'published').length;
   const totalStudents = dashboardData?.data?.totalEnrolled || 0;
   const totalRevenue = dashboardData?.data?.totalIncome || 0;
 
