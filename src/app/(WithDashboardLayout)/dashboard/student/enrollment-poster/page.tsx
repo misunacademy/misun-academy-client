@@ -2,14 +2,21 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
+  ArrowLeft,
+  ArrowUp,
+  ArrowDown,
+  ArrowRight,
   CheckCircle2,
   Download,
   LayoutTemplate,
   Share2,
   Sparkles,
   Upload,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -94,7 +101,8 @@ const drawRoundedRect = (
 /*                                   Page                                     */
 /* -------------------------------------------------------------------------- */
 
- function Congratulations() {
+ function CongratulationsPage() {
+  const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   /* ------------------------------- User Data -------------------------------- */
@@ -122,6 +130,75 @@ const drawRoundedRect = (
     () => user?.image ?? null
   );
 
+  // Image pan state: normalized offsets in range [-1, 1]
+  const [imageOffset, setImageOffset] = useState({ x: 0, y: 0 });
+  // Zoom state, 1 = fit, >1 = zoom in
+  const [imageZoom, setImageZoom] = useState<number>(1);
+  const dragStateRef = useRef<{
+    startX: number;
+    startY: number;
+    startOffsetX: number;
+    startOffsetY: number;
+    pointerId?: number;
+  } | null>(null);
+  const previewImgRef = useRef<HTMLDivElement | null>(null);
+
+  const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+
+  const moveImage = (dx: number, dy: number) => {
+    setImageOffset((prev) => ({
+      x: clamp(prev.x + dx, -1, 1),
+      y: clamp(prev.y + dy, -1, 1),
+    }));
+  };
+
+  // Zoom helpers - allow zoom-out (values < 1) so the image can be scaled down inside the circle
+  const MIN_ZOOM = 0.5; // 50%
+  const MAX_ZOOM = 3;
+  const ZOOM_STEP = 0.1;
+
+  const setZoom = (z: number) => setImageZoom((prev) => clamp(z, MIN_ZOOM, MAX_ZOOM));
+  const zoomIn = () => setImageZoom((prev) => clamp(Number((prev + ZOOM_STEP).toFixed(2)), MIN_ZOOM, MAX_ZOOM));
+  const zoomOut = () => setImageZoom((prev) => clamp(Number((prev - ZOOM_STEP).toFixed(2)), MIN_ZOOM, MAX_ZOOM));
+
+  const onPreviewPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
+    dragStateRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      startOffsetX: imageOffset.x,
+      startOffsetY: imageOffset.y,
+      pointerId: e.pointerId,
+    };
+  };
+
+  const onPreviewPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const state = dragStateRef.current;
+    if (!state) return;
+    const dx = e.clientX - state.startX;
+    const dy = e.clientY - state.startY;
+    const el = e.currentTarget as HTMLDivElement;
+    const dw = el.clientWidth || 1;
+    const dh = el.clientHeight || 1;
+    const deltaX = dx / dw;
+    const deltaY = dy / dh;
+    setImageOffset({
+      x: clamp(state.startOffsetX + deltaX, -1, 1),
+      y: clamp(state.startOffsetY + deltaY, -1, 1),
+    });
+  };
+
+  const onPreviewPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const state = dragStateRef.current;
+    if (state && state.pointerId === e.pointerId) {
+      (e.currentTarget as HTMLDivElement).releasePointerCapture(e.pointerId);
+      dragStateRef.current = null;
+    }
+  };
+
+  // Image offset reset is handled directly when a new image is uploaded (avoids synchronous setState in an effect)
+
+
   /* ------------------------------ Derived Data ------------------------------ */
 
   const batchNo =
@@ -138,6 +215,8 @@ const drawRoundedRect = (
     const reader = new FileReader();
     reader.onload = (event) => {
       setUserImage(event.target?.result as string);
+      // Reset pan/offset when a new image is uploaded so it starts centered
+      setImageOffset({ x: 0, y: 0 });
     };
     reader.readAsDataURL(file);
   };
@@ -154,20 +233,141 @@ const drawRoundedRect = (
     const template = TEMPLATES[selectedTemplateIndex];
     const { config } = template;
 
-    canvas.width = config.canvasWidth;
-    canvas.height = config.canvasHeight;
+    const cssWidth = config.canvasWidth;
+    const cssHeight = config.canvasHeight;
+    const ratio = (typeof window !== 'undefined' && window.devicePixelRatio) ? window.devicePixelRatio : 1;
+
+    // Use high-DPI canvas scaling so the poster is crisp on retina screens
+    canvas.width = Math.round(cssWidth * ratio);
+    canvas.height = Math.round(cssHeight * ratio);
+    // Make the canvas responsive so it fits inside the parent preview container
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    // Prevent upscaling beyond the designed size
+    canvas.style.maxWidth = `${cssWidth}px`;
+
+    // Reset and scale the drawing context so subsequent drawing uses CSS pixel coordinates
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(ratio, ratio);
+    ctx.clearRect(0, 0, cssWidth, cssHeight);
 
     /* Background */
     const bg = new window.Image();
     bg.src = template.src;
-    // bg.crossOrigin = 'anonymous'; // Not needed for local images
+    bg.crossOrigin = 'anonymous';
 
     await new Promise<void>((resolve) => {
       bg.onload = () => {
-        ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+        // Draw background using object-cover behavior (center-crop) so it doesn't stretch
+        const sw = (bg.naturalWidth as number) || (bg.width as number);
+        const sh = (bg.naturalHeight as number) || (bg.height as number);
+        const srcAspect = sw / sh;
+        const destAspect = cssWidth / cssHeight;
+
+        let sx = 0;
+        let sy = 0;
+        let sWidth = sw;
+        let sHeight = sh;
+
+        if (srcAspect > destAspect) {
+          // source is wider than destination; crop left/right
+          sHeight = sh;
+          sWidth = Math.round(sh * destAspect);
+          sx = Math.round((sw - sWidth) / 2);
+        } else {
+          // source is taller than destination; crop top/bottom
+          sWidth = sw;
+          sHeight = Math.round(sw / destAspect);
+          sy = Math.round((sh - sHeight) / 2);
+        }
+
+        ctx.drawImage(bg, sx, sy, sWidth, sHeight, 0, 0, cssWidth, cssHeight);
+        resolve();
+      };
+      bg.onerror = () => {
+        // If background fails to load, just fill with a neutral color so poster still renders
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(0, 0, cssWidth, cssHeight);
         resolve();
       };
     });
+
+    /* User Image */
+    if (userImage) {
+      const img = new window.Image();
+      img.src = userImage;
+      img.crossOrigin = 'anonymous';
+
+      await new Promise<void>((resolve) => {
+        img.onload = () => {
+          const { x, y, radius } = config.photo;
+
+          // Crop the source image to a square, but allow panning and zoom using imageOffset and imageZoom
+          const sw = (img.naturalWidth as number) || (img.width as number);
+          const sh = (img.naturalHeight as number) || (img.height as number);
+          const baseSize = Math.min(sw, sh);
+
+          const z = clamp(Number(imageZoom) || 1, MIN_ZOOM, MAX_ZOOM);
+
+          // Two modes:
+          // - z >= 1: zoom-in (crop a smaller area from the source and scale to fill the circle)
+          // - z < 1: zoom-out (use the base square crop and draw it scaled down into the circle so the subject appears smaller)
+          let sSize = baseSize;
+          if (z >= 1) {
+            sSize = Math.max(1, Math.round(baseSize / z));
+          }
+
+          // Max allowed shifts in source coordinates given the current crop size
+          const maxShiftX = Math.max(0, (sw - sSize) / 2);
+          const maxShiftY = Math.max(0, (sh - sSize) / 2);
+
+          // Compute center point in source using normalized offsets [-1..1]
+          const centerX = sw / 2 + imageOffset.x * maxShiftX;
+          const centerY = sh / 2 + imageOffset.y * maxShiftY;
+
+          let sx = Math.round(centerX - sSize / 2);
+          let sy = Math.round(centerY - sSize / 2);
+
+          // Clamp to valid source rect
+          sx = Math.max(0, Math.min(sx, sw - sSize));
+          sy = Math.max(0, Math.min(sy, sh - sSize));
+
+          const dx = Math.round(x - radius);
+          const dy = Math.round(y - radius);
+          const dSize = radius * 2;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.clip();
+
+          if (z >= 1) {
+            // Zoom-in: draw cropped area to fully fill the circle
+            ctx.drawImage(img, sx, sy, sSize, sSize, dx, dy, dSize, dSize);
+          } else {
+            // Zoom-out: draw the full/base crop but scaled down so the subject appears smaller
+            const destSize = Math.round(dSize * z);
+            const destX = Math.round(x - destSize / 2);
+            const destY = Math.round(y - destSize / 2);
+            ctx.drawImage(img, sx, sy, sSize, sSize, destX, destY, destSize, destSize);
+          }
+
+          ctx.restore();
+
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 8;
+          ctx.stroke();
+
+          resolve();
+        };
+        img.onerror = () => {
+          // If image fails to load for some reason, don't block poster generation
+          resolve();
+        };
+      });
+    }
 
     /* Name */
     if (userName) {
@@ -206,39 +406,7 @@ const drawRoundedRect = (
       ctx.fillStyle = color;
       ctx.fillText(text, x, y + 2);
     }
-
-    /* User Image */
-    if (userImage) {
-      const img = new window.Image();
-      img.src = userImage;
-      // img.crossOrigin = 'anonymous'; // Removed to avoid CORS issues for local images
-
-      img.onload = () => {
-        const { x, y, radius } = config.photo;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.clip();
-
-        ctx.drawImage(
-          img,
-          x - radius,
-          y - radius,
-          radius * 2,
-          radius * 2
-        );
-
-        ctx.restore();
-
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 8;
-        ctx.stroke();
-      };
-    }
-  }, [selectedTemplateIndex, userImage, userName, batchNo]);
+  }, [selectedTemplateIndex, userImage, userName, batchNo, imageOffset, imageZoom]);
 
   /* ---------------------------- Auto Regenerate ----------------------------- */
 
@@ -293,8 +461,9 @@ const drawRoundedRect = (
   /* ------------------------------- UI --------------------------------------- */
 
     return (
-        <div className="min-h-screen  ">
-   
+        <div className="min-h-screen bg-slate-50 ">
+
+
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-6xl mx-auto">
 
@@ -310,13 +479,6 @@ const drawRoundedRect = (
                                 You have successfully enrolled in the <strong>{latestEnrollment?.course?.title || 'Graphic Design with Freelancing'}</strong> course.
                                 Download your welcome poster below and share your new journey!
                             </p>
-
-                            {/* Added Email Instruction Section */}
-                            {/* <div className="mt-6 bg-white/60 border border-green-200 rounded-lg p-4 inline-block">
-                                <p className="text-green-800 font-medium">
-                                    📩 Please check your email—there are a few important things for you to do next.
-                                </p>
-                            </div> */}
 
                         </CardContent>
                     </Card>
@@ -388,7 +550,6 @@ const drawRoundedRect = (
 
                                     <div className="space-y-2">
                                         <Label>Profile Photo</Label>
-                                   
                                         <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 hover:bg-slate-50 transition-colors text-center">
                                             <input
                                                 type="file"
@@ -399,15 +560,58 @@ const drawRoundedRect = (
                                             />
                                             <label htmlFor="image-upload" className="cursor-pointer block w-full h-full">
                                                 {userImage ? (
-                                                    <div className="relative w-24 h-24 mx-auto">
-                                                        <Image
-                                                            src={userImage}
-                                                            alt="Preview"
-                                                            fill
-                                                            className="rounded-full object-cover border-4 border-white shadow-sm"
-                                                        />
-                                                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 hover:opacity-100 transition-opacity">
-                                                            <Upload className="w-6 h-6 text-white" />
+                                                    <div className="mx-auto">
+                                                        <div
+                                                            className="relative w-24 h-24 mx-auto rounded-full overflow-hidden touch-none cursor-grab"
+                                                            ref={previewImgRef}
+                                                            onPointerDown={onPreviewPointerDown}
+                                                            onPointerMove={onPreviewPointerMove}
+                                                            onPointerUp={onPreviewPointerUp}
+                                                            onPointerCancel={onPreviewPointerUp}
+                                                            style={{ touchAction: 'none' }}
+                                                        >
+                                                            <Image
+                                                                src={userImage}
+                                                                alt="Preview"
+                                                                fill
+                                                                className="object-cover"
+                                                            />
+                                                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 hover:opacity-100 transition-opacity">
+                                                                <Upload className="w-6 h-6 text-white" />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="mt-3 space-y-3">
+                                                            <div className="flex items-center justify-center gap-2">
+                                                                <div className="grid grid-cols-3 gap-2 items-center">
+                                                                    <div className="col-span-3 flex justify-center">
+                                                                        <Button size="sm" variant="outline" onClick={() => moveImage(0, -0.05)}><ArrowUp className="w-4 h-4" /></Button>
+                                                                    </div>
+                                                                    <Button size="sm" variant="outline" onClick={() => moveImage(-0.05, 0)}><ArrowLeft className="w-4 h-4" /></Button>
+                                                                    <div className="flex items-center justify-center space-x-2">
+                                                                        <Button size="sm" variant="ghost" onClick={() => { setImageOffset({ x: 0, y: 0 }); setImageZoom(1); }}>Reset</Button>
+                                                                        <span className="text-xs text-slate-500">X: {Math.round(imageOffset.x * 100)}% Y: {Math.round(imageOffset.y * 100)}% Zoom: {Math.round(imageZoom * 100)}%</span>
+                                                                    </div>
+                                                                    <Button size="sm" variant="outline" onClick={() => moveImage(0.05, 0)}><ArrowRight className="w-4 h-4" /></Button>
+                                                                    <div className="col-span-3 flex justify-center">
+                                                                        <Button size="sm" variant="outline" onClick={() => moveImage(0, 0.05)}><ArrowDown className="w-4 h-4" /></Button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex items-center justify-center gap-2">
+                                                                <Button size="sm" variant="outline" onClick={zoomOut}><ZoomOut className="w-4 h-4" /></Button>
+                                                                <input
+                                                                    type="range"
+                                                                    min={MIN_ZOOM}
+                                                                    max={MAX_ZOOM}
+                                                                    step={ZOOM_STEP}
+                                                                    value={imageZoom}
+                                                                    onChange={(e) => setImageZoom(Number(e.target.value))}
+                                                                    className="w-40"
+                                                                />
+                                                                <Button size="sm" variant="outline" onClick={zoomIn}><ZoomIn className="w-4 h-4" /></Button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 ) : (
@@ -426,8 +630,8 @@ const drawRoundedRect = (
                         </div>
 
                         {/* RIGHT COLUMN: Preview */}
-                        <div className="lg:col-span-7">
-                            <Card className="h-full border-0 shadow-lg bg-slate-900/5 backdrop-blur-sm sticky top-24">
+                        <div className="lg:col-span-7 ">
+                            <Card className="h-full border-0 shadow-lg bg-slate-900/5 backdrop-blur-sm sticky top-24 flex items-center justify-center">
                                 <CardContent className="p-6">
                                     <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-white shadow-inner mb-6">
                                         {/* This Canvas is where the magic happens */}
@@ -465,4 +669,4 @@ const drawRoundedRect = (
     );
 };
 
-export default Congratulations;
+export default CongratulationsPage;
