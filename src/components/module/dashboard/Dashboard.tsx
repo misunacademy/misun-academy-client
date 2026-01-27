@@ -2,18 +2,21 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Line, Legend } from 'recharts';
 import { Loader2, Users, DollarSign, Calendar } from 'lucide-react';
 import { useGetMetadataQuery } from '@/redux/api/studentApi';
 
 interface DashboardData {
     totalEnrolled: number;
+    totalCourses?: number;
+    totalBatches?: number;
+    totalUniqueStudents?: number;
     batchWiseEnrolled: { batchId: string; totalEnrolled: number }[];
     courseWiseStats: { courseId: string; courseTitle: string; courseSlug: string; totalIncome: number; totalEnrollments: number }[];
     batchWiseIncome: { batchId: string; batchTitle: string; batchNumber: string; totalIncome: number; totalEnrollments: number }[];
     totalIncome: number;
-    dayWiseStats: { date: string; totalIncome: number; totalEnrollment: number }[];
-}
+    dayWiseStats: { date: string; totalIncome: number; totalEnrollment: number; uniqueStudentsCount?: number }[];
+} 
 
 export default function Dashboard() {
     const { data, isLoading, error } = useGetMetadataQuery(undefined);
@@ -37,12 +40,15 @@ console.log("data",data)
     const raw = (data as any)?.data ?? {};
     const dashboardData: DashboardData = {
         totalEnrolled: raw.totalEnrolled ?? 0,
+        totalCourses: raw.totalCourses ?? 0,
+        totalBatches: raw.totalBatches ?? 0,
+        totalUniqueStudents: raw.totalUniqueStudents ?? 0,
         batchWiseEnrolled: raw.batchWiseEnrolled ?? [],
         courseWiseStats: raw.courseWiseStats ?? [],
         batchWiseIncome: raw.batchWiseIncome ?? [],
         totalIncome: raw.totalIncome ?? 0,
         dayWiseStats: raw.dayWiseStats ?? [],
-    };
+    }; 
 
     const hasCourseData = dashboardData.courseWiseStats.length > 0;
     const hasBatchData = dashboardData.batchWiseIncome.length > 0;
@@ -73,20 +79,20 @@ console.log("data",data)
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Active Courses</CardTitle>
+                        <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{dashboardData.courseWiseStats.length}</div>
+                        <div className="text-2xl font-bold">{dashboardData.totalCourses ?? dashboardData.courseWiseStats.length}</div>
                     </CardContent>
-                </Card>
+                </Card> 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Active Batches</CardTitle>
+                        <CardTitle className="text-sm font-medium">Total Batches</CardTitle>
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{dashboardData.batchWiseIncome.length}</div>
+                        <div className="text-2xl font-bold">{dashboardData.totalBatches ?? dashboardData.batchWiseIncome.length}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -205,6 +211,41 @@ console.log("data",data)
                         ) : (
                             <div className="flex items-center justify-center h-[300px] text-muted-foreground">
                                 No batch income data available
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Daily Income vs Enrollments */}
+            <div className="mt-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Daily Income & Enrollments (last 60 days)</CardTitle>
+                        <CardDescription>Income (BDT) vs enrollments per day</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {dashboardData.dayWiseStats.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={350}>
+                                <ComposedChart data={dashboardData.dayWiseStats}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="date" />
+                                    <YAxis yAxisId="left" tickFormatter={(value) => `BDT ${Number(value).toLocaleString()}`} />
+                                    <YAxis yAxisId="right" orientation="right" />
+                                    <Tooltip formatter={(value, name) => {
+                                        if (name === 'totalIncome') return [`BDT ${Number(value).toLocaleString()}`, 'Income'];
+                                        if (name === 'totalEnrollment') return [Number(value).toLocaleString(), 'Enrollments'];
+                                        return [Number(value).toLocaleString(), 'Unique Students'];
+                                    }} />
+                                    <Legend />
+                                    <Bar yAxisId="left" dataKey="totalIncome" barSize={20} fill="#8884d8" />
+                                    <Line yAxisId="right" type="monotone" dataKey="totalEnrollment" stroke="#FF7300" strokeWidth={2} dot={false} />
+                                    <Line yAxisId="right" type="monotone" dataKey="uniqueStudentsCount" stroke="#00C49F" strokeWidth={2} strokeDasharray="3 3" dot={false} />
+                                </ComposedChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="flex items-center justify-center h-[350px] text-muted-foreground">
+                                No daily data available
                             </div>
                         )}
                     </CardContent>

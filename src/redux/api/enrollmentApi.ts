@@ -85,7 +85,7 @@ const enrollmentApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Get all enrollments (supports search, pagination, sorting)
-    getAllEnrollments: build.query<{ data: EnrollmentResponse[]; meta?: { total: number; page: number; limit: number; totalPages: number } }, { status?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string }>({
+getAllEnrollments: build.query<{ data: EnrollmentResponse[]; meta?: { total: number; page: number; limit?: number; totalPages: number } }, { status?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string; hasEnrollmentId?: boolean | string }>({
       query: (params) => {
         let cleaned = params
           ? Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== null))

@@ -62,7 +62,8 @@ export interface UserResponse {
   status: 'active' | 'suspended' | 'deleted';
   createdAt: string;
   updatedAt: string;
-}
+  isEnrolled?: boolean;
+} 
 
 export interface AuthResponse {
   success: true;

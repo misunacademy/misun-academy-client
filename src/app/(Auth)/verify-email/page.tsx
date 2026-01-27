@@ -40,9 +40,7 @@ const VerifyEmailPage = () => {
                     // Store token in cookies and update Redux state
                     if (result.token) {
                         Cookies.set('token', result.token, { expires: 7, secure: false });
-                        if (result.refreshToken) {
-                            Cookies.set('refreshToken', result.refreshToken, { expires: 30, secure: false });
-                        }
+                        // Refresh token is set by server as httpOnly cookie
                         dispatch(setUser(result.user));
                     }
 

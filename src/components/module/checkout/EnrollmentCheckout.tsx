@@ -33,6 +33,7 @@ import { useGetSettingsQuery } from "@/redux/api/settingsApi";
 interface PaymentError {
     data?: {
         message?: string;
+        errorMessages?: Array<{ message?: string; path?: string }>;
     };
     message?: string;
 }
@@ -66,17 +67,29 @@ const EnrollmentCheckout = () => {
             paymentMethod: undefined,
         },
     });
+    const { getValues, setValue } = form;
     const { data: settingsData, isLoading: settingsLoading } = useGetSettingsQuery();
     const featuredCourseId = (settingsData?.data?.featuredEnrollmentCourse as any);
     const featuredBatchId = (settingsData?.data?.featuredEnrollmentBatch as any);
 
+
     useEffect(() => {
-        if (!form.getValues('batchId')) {
-            form.setValue('batchId', featuredBatchId?._id);
+        const current = getValues('batchId');
+        if (!current && featuredBatchId?._id) {
+            setValue('batchId', featuredBatchId._id, { shouldValidate: true, shouldDirty: true });
         }
-    }, [form,featuredBatchId?._id]);
+
+    }, [featuredBatchId?._id, getValues, setValue]);
+    
     const processSSLCommerzPayment = async (data: EnrollmentForm) => {
         setIsProcessing(true);
+        // Defensive: ensure batchId exists
+        if (!data.batchId) {
+            setIsProcessing(false);
+            toast.error('Batch ID is missing. Please select a batch.');
+            return;
+        }
+        console.log('Initiating payment for batchId:', data.batchId);
         try {
             const res = await enrollStudent({
                 batchId: data.batchId,
@@ -98,7 +111,8 @@ const EnrollmentCheckout = () => {
         } catch (error: unknown) {
             console.error('Payment error:', error);
             const paymentError = error as PaymentError;
-            toast.error(paymentError?.data?.message || "Payment initiation failed. Please try again.");
+            const serverMessage = paymentError?.data?.message || paymentError?.data?.errorMessages?.[0]?.message;
+            toast.error(serverMessage || "Payment initiation failed. Please try again.");
             setIsProcessing(false);
         }
     };
@@ -133,6 +147,17 @@ const EnrollmentCheckout = () => {
     };
 
     const onSubmit = (data: EnrollmentForm) => {
+        // Ensure batchId is set (fallback to featured batch)
+        if (!data.batchId && featuredBatchId?._id) {
+            data.batchId = featuredBatchId._id;
+            setValue('batchId', featuredBatchId._id, { shouldValidate: true, shouldDirty: true });
+        }
+
+        if (!data.batchId) {
+            toast.error('Please select a batch before proceeding.');
+            return;
+        }
+
         setEnrollmentData(data);
 
         if (data.paymentMethod === "SSLCommerz") {

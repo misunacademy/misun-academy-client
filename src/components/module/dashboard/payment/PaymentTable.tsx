@@ -132,7 +132,7 @@ const PaymentTable = () => {
                 cell: ({ row }) => row.original.method,
             },
             {
-                accessorFn: (row) => row.student ?.name ,
+                accessorFn: (row) => row.student?.name,
                 id: 'student.name',
                 header: 'Student',
                 cell: ({ row }) => {

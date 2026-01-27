@@ -105,11 +105,8 @@ const handleSocialLogin = async (userData: { email: string; name?: string; image
       const result = data.data;
 
       if (result.token) {
-        // Store token and refresh token in cookies
+        // Store access token; refresh token is set by server as httpOnly cookie
         Cookies.set('token', result.token, { expires: 7, secure: false }); // 7 days
-        if (result.refreshToken) {
-          Cookies.set('refreshToken', result.refreshToken, { expires: 30, secure: false }); // refresh token long-lived
-        }
         console.debug('[useAuth] social login tokens stored');
         return result.user;
       }
@@ -192,12 +189,10 @@ export function useAuth() {
       const result = await signInWithEmail(email, password);
 
       if (result.token) {
-        // Store token and refresh token in cookies
+        // Store access token in cookie (refresh token is set as httpOnly cookie by the server)
         Cookies.set('token', result.token, { expires: 7, secure: false }); // 7 days
-        if (result.refreshToken) {
-          Cookies.set('refreshToken', result.refreshToken, { expires: 30, secure: false }); // refresh token long-lived
-        }        // Debug: confirm cookies presence after login
-        console.debug('[useAuth] after signIn cookies token:', !!Cookies.get('token'), 'refreshToken:', !!Cookies.get('refreshToken'));
+        // Debug: confirm cookies presence after login
+        console.debug('[useAuth] after signIn cookies token:', !!Cookies.get('token'));
         dispatch(setUser(result.user));
         // Check enrollments and redirect
         const currentHasEnrollments = await checkHasEnrollments(result.token);
@@ -241,8 +236,16 @@ export function useAuth() {
     dispatch(setLoading(true));
     try {
       await authClient.signOut();
+      // Invalidate server-side refresh cookie
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/logout`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+      } catch (err) {
+        console.warn('Logout request failed:', err);
+      }
       Cookies.remove('token');
-      Cookies.remove('refreshToken');
       dispatch(logout());
       // Redirect to login page after logout
       if (typeof window !== 'undefined') {

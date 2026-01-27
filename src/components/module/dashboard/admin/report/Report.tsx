@@ -15,8 +15,6 @@ import { useState, useMemo } from "react";
 
 type TimePeriod = '7days' | '30days' | '90days' | '1year';
 
-
-
 export default function Reports() {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30days');
   const [isExporting, setIsExporting] = useState(false);
@@ -34,7 +32,6 @@ export default function Reports() {
     const data = metadata.data;
 
     // Filter data based on selected period
-    const now = new Date();
     const periodDays = {
       '7days': 7,
       '30days': 30,
@@ -42,31 +39,26 @@ export default function Reports() {
       '1year': 365
     };
 
-    const cutoffDate = new Date();
-    cutoffDate.setDate(now.getDate() - periodDays[selectedPeriod]);
+    const cutoffDate = new Date(Date.now() - periodDays[selectedPeriod] * 24 * 60 * 60 * 1000);
 
-    const filteredDayWiseStats = (data.dayWiseStats || []).filter((stat: any) => {
-      const statDate = new Date(stat.date);
-      return statDate >= cutoffDate;
-    });
+    const filteredDayWiseStats = (data.dayWiseStats || [])
+      .map((stat: any) => ({ ...stat, date: new Date(stat.date).toISOString() }))
+      .filter((stat: any) => new Date(stat.date) >= cutoffDate)
+      .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    // Calculate completion rate (placeholder - would need actual completion data)
-    const totalEnrolled = data.totalEnrolled;
-    const completionRate = totalEnrolled > 0 ? Math.min(85 + Math.random() * 10, 95) : 0; // Mock completion rate
-
-    // Get active courses count
-    const activeCourses = coursesData?.data?.filter((course: any) => course.isPublished) || [];
+    // Get active courses count (use `status` field)
+    const activeCourses = coursesData?.data?.filter((course: any) => course.status === 'published') || []; 
     const activeCoursesCount = activeCourses.length;
 
     // Format data for charts
     const enrollmentData = filteredDayWiseStats.map((stat: any) => ({
       month: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      enrollments: stat.totalEnrollment,
+      enrollments: Number(stat.totalEnrollment || 0),
     }));
 
     const revenueData = filteredDayWiseStats.map((stat: any) => ({
       month: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      revenue: stat.totalIncome,
+      revenue: Number(stat.totalIncome || 0),
     }));
 
     // For course popularity, use course-wise stats
@@ -80,13 +72,12 @@ export default function Reports() {
       totalIncome: data.totalIncome || 0,
       totalEnrolled: data.totalEnrolled || 0,
       activeCoursesCount,
-      completionRate: Math.round(completionRate),
       enrollmentData,
       revenueData,
       coursePopularityData,
       courseWiseStats: data.courseWiseStats || [],
       batchWiseIncome: data.batchWiseIncome || []
-    };
+    }; 
   }, [metadata, coursesData, selectedPeriod]);
 
   if (isLoading) {
@@ -117,8 +108,7 @@ export default function Reports() {
         summary: {
           totalRevenue: metadata?.data?.totalIncome || 0,
           totalEnrollments: metadata?.data?.totalEnrolled || 0,
-          activeCourses: processedData?.activeCoursesCount || 0,
-          completionRate: processedData?.completionRate || 0
+          activeCourses: processedData?.activeCoursesCount || 0
         },
         courseWiseStats: processedData?.courseWiseStats || [],
         batchWiseIncome: processedData?.batchWiseIncome || [],
@@ -155,16 +145,16 @@ export default function Reports() {
     // Summary
     csv += 'Summary\n';
     csv += 'Metric,Value\n';
-    csv += `Total Revenue,$${data.summary.totalRevenue}\n`;
+    const currencyLabel = 'BDT';
+    csv += `Total Revenue,${currencyLabel} ${(data.summary.totalRevenue ?? 0).toLocaleString()}\n`;
     csv += `Total Enrollments,${data.summary.totalEnrollments}\n`;
-    csv += `Active Courses,${data.summary.activeCourses}\n`;
-    csv += `Completion Rate,${data.summary.completionRate}%\n\n`;
+    csv += `Active Courses,${data.summary.activeCourses}\n\n`; 
 
     // Course-wise stats
     csv += 'Course-wise Statistics\n';
     csv += 'Course,Enrollments,Revenue\n';
     data.courseWiseStats.forEach((course: any) => {
-      csv += `"${course.courseTitle}",${course.totalEnrollments},"$${course.totalIncome}"\n`;
+      csv += `"${course.courseTitle}",${course.totalEnrollments},${currencyLabel} ${(course.totalIncome ?? 0).toLocaleString()}\n`;
     });
     csv += '\n';
 
@@ -172,7 +162,7 @@ export default function Reports() {
     csv += 'Daily Statistics\n';
     csv += 'Date,Enrollments,Revenue\n';
     data.dailyStats.forEach((day: any) => {
-      csv += `"${day.date}",${day.enrollments},"$${day.revenue}"\n`;
+      csv += `"${day.date}",${day.enrollments},${currencyLabel} ${(Number(day.revenue) || 0).toLocaleString()}\n`;
     });
 
     return csv;
@@ -216,7 +206,7 @@ export default function Reports() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${(metadata?.data?.totalIncome || 0).toLocaleString()}</div>
+            <div className="text-2xl font-bold">BDT {(metadata?.data?.totalIncome || 0).toLocaleString()}</div>
             <p className="text-xs text-muted-foreground flex items-center">
               <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
               Revenue from enrollments
@@ -251,19 +241,7 @@ export default function Reports() {
           </CardContent>
         </Card>
 
-        {/* <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{processedData?.completionRate}%</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              Course completion rate
-            </p>
-          </CardContent>
-        </Card> */}
+
       </div>
 
       {/* Charts */}
@@ -306,7 +284,7 @@ export default function Reports() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
-                  <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
+                  <Tooltip formatter={(value) => [`BDT ${(value as number)?.toLocaleString() || '0'}`, 'Revenue']} />
                   <Bar dataKey="revenue" fill="#82ca9d" />
                 </BarChart>
               </ResponsiveContainer>

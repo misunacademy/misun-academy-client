@@ -27,7 +27,7 @@ import {
 import { VideoPlayer } from "@/components/module/dashboard/student/VideoPlayer";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useGetCourseByIdQuery, useGetCourseProgressQuery, useCompleteLessonMutation } from "@/redux/features/course/courseApi";
+import { useGetCourseByIdQuery, useGetCourseProgressQuery, useCompleteLessonMutation } from "@/redux/api/courseApi";
 import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
 import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
 import { toast } from "sonner";

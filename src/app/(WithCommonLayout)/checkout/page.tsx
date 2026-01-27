@@ -18,7 +18,7 @@ import { AlertTriangle, Calendar, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import Cookies from 'js-cookie';
-import { toast } from 'sonner';
+
 
 const Page = () => {
     const [openModal, setOpenModal] = useState(false);
@@ -26,16 +26,16 @@ const Page = () => {
     const user = useAppSelector((state) => state.auth.user);
     const isLoading = useAppSelector((state) => state.auth.isLoading);
 
-    // Check authentication
-    useEffect(() => {
-        if (!isLoading) {
-            const token = Cookies.get('token');
-            if (!token || !user) {
-                toast.error('অনুগ্রহ করে প্রথমে লগইন করুন');
-                router.push('/auth');
-            }
-        }
-    }, [user, isLoading, router]);
+    // // Check authentication
+    // useEffect(() => {
+    //     if (!isLoading) {
+    //         const token = Cookies.get('token');
+    //         if (!token || !user) {
+    //             toast.error('অনুগ্রহ করে প্রথমে লগইন করুন');
+    //             router.push('/auth');
+    //         }
+    //     }
+    // }, [user, isLoading, router]);
 
     useEffect(() => {
         if (!isEnrollmentRunning) {

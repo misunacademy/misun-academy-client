@@ -35,13 +35,14 @@ import { Loader2 } from "lucide-react";
 
 // Use canonical EnrollmentResponse shape from API
 // EnrollmentResponse contains batchId and other fields
-type StudentData = EnrollmentResponse;
 
 const EnrolledStudentTable = () => {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("active");
+
+    const formatStatusLabel = (s: string) => s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
     // Debounce search to avoid too many API calls
     useEffect(() => {
@@ -58,9 +59,11 @@ const EnrolledStudentTable = () => {
         page,
         search: debouncedSearch || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined,
+        // Only show enrollments that have an assigned enrollmentId (exclude manual payments awaiting verification)
+        hasEnrollmentId: true,
     });
 
-    const students = data?.data || [];
+    const students: EnrollmentResponse[] = (data?.data as EnrollmentResponse[]) || [];
     const meta = data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
 
     const columns = useMemo<ColumnDef<EnrollmentResponse>[]>(
@@ -68,27 +71,27 @@ const EnrolledStudentTable = () => {
             {
                 accessorKey: "studentId",
                 header: "Student ID",
-                cell: ({ row }) =>( row.original as any).studentId || row.original.userId || 'N/A',
+                cell: ({ row }) => (row.original as any).studentId || row.original.userId || 'N/A',
             },
             {
                 accessorKey: "name",
                 header: "Name",
-                cell: ({ row }) => ( (row.original as any).student?.name ) || (row.original.userId as string) || 'N/A',
+                cell: ({ row }) => ((row.original as any).student?.name) || (row.original.userId as string) || 'N/A',
             },
             {
                 accessorKey: "email",
                 header: "Email",
-                cell: ({ row }) => ( (row.original as any).student?.email ) || 'N/A',
+                cell: ({ row }) => ((row.original as any).student?.email) || 'N/A',
             },
             {
                 accessorKey: "phone",
                 header: "Phone",
-                cell: ({ row }) => ( (row.original as any).student?.phone ) || 'N/A',
+                cell: ({ row }) => ((row.original as any).student?.phone) || 'N/A',
             },
             {
                 accessorKey: "address",
                 header: "Address",
-                cell: ({ row }) => ( (row.original as any).student?.address ) || 'N/A',
+                cell: ({ row }) => ((row.original as any).student?.address) || 'N/A',
             },
             {
                 accessorKey: "course",
@@ -108,11 +111,11 @@ const EnrolledStudentTable = () => {
                     const getVariant = (status: string) => {
                         switch (status) {
                             case 'active': return 'default';
-                            case 'payment-pending': return 'secondary';
-                            case 'pending': return 'outline';
+                            // case 'payment-pending': return 'secondary';
+                            // case 'pending': return 'outline';
                             case 'completed': return 'default';
                             case 'suspended': return 'destructive';
-                            case 'payment-failed': return 'destructive';
+                            // case 'payment-failed': return 'destructive';
                             case 'refunded': return 'outline';
                             default: return 'outline';
                         }
@@ -137,8 +140,9 @@ const EnrolledStudentTable = () => {
         getSortedRowModel: getSortedRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         state: {
-            pagination: { pageIndex: page - 1, pageSize: meta.limit },
+            pagination: { pageIndex: page - 1, pageSize: meta.limit ?? 10 },
         },
+
         manualPagination: true,
         manualFiltering: true,
         pageCount: meta.totalPages,
@@ -164,8 +168,8 @@ const EnrolledStudentTable = () => {
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>All Students</CardTitle>
-                    <CardDescription>View and manage all enrolled students</CardDescription>
+                    <CardTitle>{statusFilter === 'all' ? 'All Students' : `${formatStatusLabel(statusFilter)} Students`}</CardTitle>
+                    <CardDescription>{statusFilter === 'all' ? 'View and manage all enrolled students' : `View and manage ${formatStatusLabel(statusFilter).toLowerCase()} enrolled students`}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="flex justify-between mb-4">
@@ -188,11 +192,11 @@ const EnrolledStudentTable = () => {
                             <SelectContent>
                                 <SelectItem value="all">All Status</SelectItem>
                                 <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="payment-pending">Payment Pending</SelectItem>
-                                <SelectItem value="pending">Pending</SelectItem>
+                                {/* <SelectItem value="payment-pending">Payment Pending</SelectItem> */}
+                                {/* <SelectItem value="pending">Pending</SelectItem> */}
                                 <SelectItem value="completed">Completed</SelectItem>
                                 <SelectItem value="suspended">Suspended</SelectItem>
-                                <SelectItem value="payment-failed">Payment Failed</SelectItem>
+                                {/* <SelectItem value="payment-failed">Payment Failed</SelectItem> */}
                                 <SelectItem value="refunded">Refunded</SelectItem>
                             </SelectContent>
                         </Select>

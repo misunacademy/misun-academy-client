@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { Users, Plus, Search, Edit, Trash2, UserCheck, UserX, Mail } from "lucide-react";
+import { Users, Plus, Search, Edit, Trash2, UserCheck, UserX, Mail, ChevronRight, ChevronLeft } from "lucide-react";
 import { useState, useEffect, FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { useGetAllUsersQuery, useCreateAdminMutation, useUpdateUserMutation, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
@@ -24,11 +24,12 @@ interface User {
   role: string;
   createdAt: string;
   status: 'active' | 'suspended' | 'deleted';
+  isEnrolled?: boolean;
   phone?: string;
   address?: string;
   image?: string;
   avatar?: string;
-}
+} 
 
 export default function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -401,6 +402,7 @@ export default function AdminUsers() {
                 <TableHead>User</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Enrolled</TableHead>
                 <TableHead>Join Date</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -426,7 +428,12 @@ export default function AdminUsers() {
                   </TableCell>
                   <TableCell>
                     <Badge variant={user.status === 'active' ? 'default' : user.status === 'suspended' ? 'secondary' : 'destructive'}>
-                      {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                      {user.status?.charAt(0).toUpperCase() + user.status?.slice(1)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={user.isEnrolled ? 'default' : 'outline'}>
+                      {user.isEnrolled ? 'Yes' : 'No'}
                     </Badge>
                   </TableCell>
                   <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
@@ -474,9 +481,9 @@ export default function AdminUsers() {
               Showing {Math.min((page - 1) * limit + 1, total || 0)} - {Math.min(page * limit, total)} of {total} users
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>  <ChevronLeft className="h-4 w-4" /></Button>
               <div className="px-2">Page {page} of {totalPages}</div>
-              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</Button>
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}> <ChevronRight className="h-4 w-4" /></Button>
             </div>
           </div>
         </CardContent>

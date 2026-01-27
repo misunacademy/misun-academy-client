@@ -9,7 +9,7 @@ import { Search, Users, Calendar, BookOpen, Clock, Award, TrendingUp } from "luc
 import { useState } from "react";
 import Image from "next/image";
 // import { useGetCoursesQuery } from "@/redux/features/course/courseApi";
-import { useGetAllBatchesQuery } from "@/redux/features/batch/batchApi";
+import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
