@@ -4,7 +4,7 @@ export type User = {
     id: string
     name: string
     email: string
-    role: "ADMIN" | "SUPERADMIN" | "USER"
+    role: 'learner' | 'instructor' | 'admin' | 'superadmin';
     status: "active" | "blocked"
     lastLogin: string
     createdAt: string

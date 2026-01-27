@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Loader2, Users, DollarSign, Calendar } from 'lucide-react';
-import { useGetMetadataQuery } from '@/redux/features/student/studentApi';
+import { useGetMetadataQuery } from '@/redux/api/studentApi';
 
 interface DashboardData {
     totalEnrolled: number;

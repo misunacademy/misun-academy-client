@@ -3,11 +3,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
 import { useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
 import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
-import { useGetCourseByIdQuery } from "@/redux/features/course/courseApi";
+// import { useGetCourseByIdQuery } from "@/redux/features/course/courseApi";
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import duration from "dayjs/plugin/duration";
+import { useGetCourseByIdQuery } from '@/redux/api/courseApi';
 dayjs.extend(relativeTime);
 dayjs.extend(duration);
 

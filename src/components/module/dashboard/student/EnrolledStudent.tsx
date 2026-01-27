@@ -28,7 +28,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useGetEnrolledStudentsQuery } from "@/redux/features/student/studentApi";
+import { useGetEnrolledStudentsQuery } from "@/redux/api/studentApi";
 import type { EnrollmentResponse } from "@/redux/api/enrollmentApi";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
@@ -41,7 +41,7 @@ const EnrolledStudentTable = () => {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState("all");
+    const [statusFilter, setStatusFilter] = useState("active");
 
     // Debounce search to avoid too many API calls
     useEffect(() => {

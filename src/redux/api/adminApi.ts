@@ -23,12 +23,12 @@ export interface UpdateUserRequest {
   name?: string;
   email?: string;
   phoneNumber?: string;
-  role?: 'LEARNER' | 'INSTRUCTOR' | 'ADMIN' | 'SUPERADMIN';
+  role?: 'learner' | 'instructor' | 'admin' | 'superadmin';
   status?: 'active' | 'suspended' | 'deleted';
 }
 
 export interface GetAllUsersParams {
-  role?: 'LEARNER' | 'INSTRUCTOR' | 'ADMIN' | 'SUPERADMIN';
+  role?: 'learner' | 'instructor' | 'admin' | 'superadmin';
   status?: 'active' | 'suspended' | 'deleted';
   search?: string;
   page?: number;

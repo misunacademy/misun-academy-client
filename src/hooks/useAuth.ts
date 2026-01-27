@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { setSession, setLoading, logout, setUser } from '@/redux/features/auth/authSlice';
+import { setSession, setLoading, logout, setUser } from '@/redux/features/authSlice';
 import { signInWithEmail, signUpWithEmail } from '@/actions/auth';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';

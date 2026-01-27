@@ -7,7 +7,7 @@ import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import Cookies from 'js-cookie';
 import { useAppDispatch } from '@/redux/hooks';
-import { setUser } from '@/redux/features/auth/authSlice';
+import { setUser } from '@/redux/features/authSlice';
 import { getValidatedRedirectUrl } from '@/lib/authUtils';
 import { useEnrollment } from '@/hooks/useEnrollment';
 

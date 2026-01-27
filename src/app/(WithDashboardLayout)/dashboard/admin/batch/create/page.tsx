@@ -19,7 +19,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateBatchMutation } from '@/redux/features/batch/batchApi';
+import { useCreateBatchMutation } from '@/redux/api/batchApi';
 import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { toast } from 'sonner';
 import { ArrowBigLeft, Loader2, Plus, X } from 'lucide-react';

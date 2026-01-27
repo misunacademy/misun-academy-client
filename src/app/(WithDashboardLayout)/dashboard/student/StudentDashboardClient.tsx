@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Calendar, Trophy, Loader2 } from "lucide-react";
-import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studentApi";
+import { useGetStudentDashboardDataQuery } from "@/redux/api/studentApi";
 
 interface StudentDashboardData {
     enrolledCoursesCount: number;

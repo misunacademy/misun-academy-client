@@ -267,7 +267,7 @@ import {
 import { MoreHorizontal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 // import { Pagination } from "@/components/ui/pagination"; // Your pagination component
-import { useGetEnrolledStudentsQuery } from "@/redux/features/student/studentApi";
+import { useGetEnrolledStudentsQuery } from "@/redux/api/studentApi";
 
 const PAGE_SIZES = [10, 20, 30, 50];
 

@@ -27,10 +27,10 @@ export const auth = betterAuth({
         defaultValue: "learner",
         input: false,
       },
-      isActive: {
-        type: "boolean",
+      status: {
+        type: "string",
         required: false,
-        defaultValue: true,
+        defaultValue: "Active",
         input: false,
       },
       passwordChangedAt: {

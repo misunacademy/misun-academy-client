@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Play, BookOpen, Loader2, Video, Calendar, Clock } from "lucide-react";
-import { useGetStudentRecordingsQuery, useIncrementRecordingViewMutation, Recording } from "@/redux/features/recording/recordingApi";
+import { useGetStudentRecordingsQuery, useIncrementRecordingViewMutation, Recording } from "@/redux/api/recordingApi";
 import { format } from "date-fns";
 
 export default function StudentRecordingsPage() {

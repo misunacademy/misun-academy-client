@@ -38,7 +38,7 @@ import {
   useUpdateRecordingMutation,
   useDeleteRecordingMutation,
   Recording,
-} from "@/redux/features/recording/recordingApi";
+} from "@/redux/api/recordingApi";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import type { CourseResponse } from "@/redux/api/courseApi";

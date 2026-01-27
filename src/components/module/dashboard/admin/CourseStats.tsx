@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Users, DollarSign, Loader2 } from "lucide-react";
 import { useGetAllCoursesQuery, type CourseResponse } from "@/redux/api/courseApi";
-import { useGetMetadataQuery } from "@/redux/features/student/studentApi";
+import { useGetMetadataQuery } from "@/redux/api/studentApi";
 
 export function CourseStats() {
   const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({});
@@ -22,7 +22,7 @@ export function CourseStats() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-3">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
@@ -56,7 +56,7 @@ export function CourseStats() {
         </CardContent>
       </Card>
 
-      <Card>
+      {/* <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Revenue</CardTitle>
           <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -65,7 +65,7 @@ export function CourseStats() {
           <div className="text-2xl font-bold">BDT {totalRevenue.toLocaleString()}</div>
           <p className="text-xs text-muted-foreground">Total earnings</p>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }

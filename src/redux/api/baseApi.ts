@@ -8,7 +8,7 @@ import {
     createApi,
     fetchBaseQuery,
 } from "@reduxjs/toolkit/query/react";
-import { logout } from "../features/auth/authSlice";
+import { logout } from "../features/authSlice";
 import { toast } from "sonner";
 import Cookies from 'js-cookie';
 

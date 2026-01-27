@@ -1,5 +1,5 @@
 // Student API wrapper: re-export canonical hooks from `redux/api/*` and keep student-specific endpoints here.
-import { baseApi } from "../../api/baseApi";
+import { baseApi } from "./baseApi";
 
 import {
     useGetAllEnrollmentsQuery,

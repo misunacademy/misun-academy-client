@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Download, Calendar, Award } from "lucide-react";
-import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studentApi";
+import { useGetStudentDashboardDataQuery } from "@/redux/api/studentApi";
 import { Loader2 } from "lucide-react";
 
 export default function StudentCertificates() {

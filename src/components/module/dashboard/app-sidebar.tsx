@@ -63,7 +63,7 @@ const enrolledOnlyItems = [
         title: "Enrollment Poster",
         url: "/dashboard/student/enrollment-poster",
         icon: ImageDown,
-        requiresEnrollment: true,   
+        requiresEnrollment: true,
     },
     {
         title: "Certificates",
@@ -112,46 +112,46 @@ const adminItems = [
         title: "Student Management",
         url: "/dashboard/admin/student",
         icon: User2,
+    }, {
+        title: "Payment Management",
+        url: "/dashboard/admin/payment",
+        icon: DollarSign,
+    }, {
+        title: "User Management",
+        url: "/dashboard/admin/users",
+        icon: Users,
     },
     {
         title: "Live Class Recordings",
         url: "/dashboard/admin/recordings",
         icon: Video,
     },
-    {
-        title: "Certificate Approval",
-        url: "/dashboard/admin/certificates",
-        icon: ShieldCheck,
-    },
-    {
-        title: "Payment Management",
-        url: "/dashboard/admin/payment",
-        icon: DollarSign,
-    },
+
+
     {
         title: "Reports",
         url: "/dashboard/admin/reports",
         icon: FileText,
     },
-    {
-        title: "User Management",
-        url: "/dashboard/admin/users",
-        icon: Users,
-    },
+
     {
         title: "Dynamic Updates",
         url: "/dashboard/admin/dynamic-updates",
         icon: Globe,
     },
+    // {
+    //     title: "Settings",
+    //     url: "/dashboard/admin/settings",
+    //     icon: Settings,
+    // },
     {
-        title: "Settings",
-        url: "/dashboard/admin/settings",
-        icon: Settings,
-    },
-        {
         title: "Profile",
         url: "/dashboard/admin/profile",
         icon: User2,
+    }, {
+        title: "Certificate Approval",
+        url: "/dashboard/admin/certificates",
+        icon: ShieldCheck,
     },
 ];
 

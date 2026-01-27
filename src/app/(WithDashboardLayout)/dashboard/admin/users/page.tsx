@@ -11,9 +11,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Users, Plus, Search, Edit, Trash2, UserCheck, UserX, Mail } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Loader2 } from "lucide-react";
-import { getUsersAction, createUserAction, updateUserAction, deleteUserAction, toggleUserStatusAction } from '../../../../../actions/users';
+import { useGetAllUsersQuery, useCreateAdminMutation, useUpdateUserMutation, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
+import type { UsersListResponse, UpdateUserRequest } from "@/redux/api/adminApi";
 import { toast } from 'sonner';
 
 interface User {
@@ -30,51 +31,107 @@ interface User {
 }
 
 export default function AdminUsers() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
+  // RTK Query mutations
+  const [createAdmin] = useCreateAdminMutation();
+  const [updateUserMutation] = useUpdateUserMutation();
+  const [deleteUserMutation] = useDeleteUserMutation();
+  const [updateUserStatusMutation] = useUpdateUserStatusMutation();
+
+  // Debounce search input to avoid excessive requests
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    const handler = setTimeout(() => setDebouncedSearch(searchTerm), 400);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
-  const fetchUsers = async () => {
-    try {
-      const data = await getUsersAction();
-      setUsers(data);
-    } catch (error) {
-      console.error('Failed to fetch users', error);
-    } finally {
-      setLoading(false);
+  // Reset to first page when filters or search change
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, roleFilter, statusFilter]);
+
+  // Send role and status as lowercase strings to match server enum values
+  const roleParam = roleFilter === 'all' ? undefined : (roleFilter.toLowerCase() as 'learner' | 'instructor' | 'admin' | 'superadmin');
+  const statusParam = statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'suspended' | 'deleted');
+
+  const { data, isLoading, isFetching } = useGetAllUsersQuery(
+    {
+      page,
+      limit,
+      role: roleParam,
+      status: statusParam,
+      search: debouncedSearch || undefined,
+    },
+    { refetchOnMountOrArgChange: true }
+  );
+
+  const resp = data as UsersListResponse | undefined; 
+
+  // Update total & totalPages when server response changes (support both `pagination` and legacy `meta` shapes)
+  useEffect(() => {
+    const legacyMeta = (data as unknown as { meta?: { total?: number; totalPages?: number } })?.meta;
+    setTotal(resp?.pagination?.total ?? legacyMeta?.total ?? 0);
+    setTotalPages(resp?.pagination?.totalPages ?? legacyMeta?.totalPages ?? 1);
+  }, [resp, data]);
+
+  // If current page becomes empty (e.g., after delete), go back one page
+  useEffect(() => {
+    const items = resp?.data?.length ?? 0;
+    if (items === 0 && page > 1) {
+      setPage((p) => Math.max(1, p - 1));
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resp]);
 
 
-  const handleCreateUser = async (formData: FormData) => {
+  const handleCreateUser = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const payload = {
+      name: fd.get('name') as string,
+      email: fd.get('email') as string,
+      password: fd.get('password') as string,
+      role: fd.get('role') as string,
+    };
     try {
-      await createUserAction(formData);
+      await createAdmin(payload).unwrap();
       toast.success('User created successfully');
       setCreateDialogOpen(false);
-      fetchUsers();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to create user');
     }
   };
 
-  const handleUpdateUser = async (formData: FormData) => {
+  const handleUpdateUser = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const id = fd.get('id') as string;
+    const updateData: Partial<UpdateUserRequest> = {};
+    const name = fd.get('name') as string;
+    const email = fd.get('email') as string;
+    const role = fd.get('role') as string;
+    const status = fd.get('status') as string;
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (role) updateData.role = role.toLowerCase() as 'learner' | 'instructor' | 'admin' | 'superadmin';
+    if (status) updateData.status = status as 'active' | 'suspended' | 'deleted';
     try {
-      await updateUserAction(formData);
+      await updateUserMutation({ id, data: updateData }).unwrap();
       toast.success('User updated successfully');
       setEditDialogOpen(false);
       setEditUser(null);
-      fetchUsers();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to update user');
     }
@@ -83,11 +140,10 @@ export default function AdminUsers() {
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
     try {
-      await deleteUserAction(userToDelete);
+      await deleteUserMutation(userToDelete).unwrap();
       toast.success('User deleted successfully');
       setDeleteDialogOpen(false);
       setUserToDelete(null);
-      fetchUsers();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to delete user');
       setDeleteDialogOpen(false);
@@ -97,24 +153,20 @@ export default function AdminUsers() {
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     try {
-      await toggleUserStatusAction(id, currentStatus);
+      const status = !currentStatus ? 'active' : 'suspended';
+      await updateUserStatusMutation({ id, status }).unwrap();
       toast.success('User status updated');
-      fetchUsers();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to update status');
     }
   };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter;
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+  // Typed server response and current page rows
+  const filteredUsers: User[] = (resp?.data as User[] | undefined) || []; 
 
   const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
+    const lr = role?.toLowerCase?.() ?? '';
+    switch (lr) {
       case 'superadmin': return 'destructive';
       case 'admin': return 'default';
       case 'instructor': return 'secondary';
@@ -123,7 +175,7 @@ export default function AdminUsers() {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="w-8 h-8 animate-spin" />
@@ -154,7 +206,7 @@ export default function AdminUsers() {
                 Create a new user account with appropriate role and permissions.
               </DialogDescription>
             </DialogHeader>
-            <form action={handleCreateUser}>
+            <form onSubmit={handleCreateUser}>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="name" className="text-right">Name</Label>
@@ -201,7 +253,7 @@ export default function AdminUsers() {
               Update user information and permissions.
             </DialogDescription>
           </DialogHeader>
-          <form action={handleUpdateUser}>
+          <form onSubmit={handleUpdateUser}>
             <input type="hidden" name="id" value={editUser?._id || ''} />
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
@@ -256,8 +308,8 @@ export default function AdminUsers() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
-            <p className="text-xs text-muted-foreground">Registered users</p>
+            <div className="text-2xl font-bold">{total}</div>
+            <p className="text-xs text-muted-foreground">Registered users</p> 
           </CardContent>
         </Card>
 
@@ -267,7 +319,7 @@ export default function AdminUsers() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.filter(u => u.status === 'active').length}</div>
+            <div className="text-2xl font-bold">{filteredUsers.filter(u => u.status === 'active').length}</div>
             <p className="text-xs text-muted-foreground">Active accounts</p>
           </CardContent>
         </Card>
@@ -278,7 +330,7 @@ export default function AdminUsers() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.filter(u => u.role === 'instructor').length}</div>
+            <div className="text-2xl font-bold">{filteredUsers.filter(u => u.role?.toLowerCase() === 'instructor').length}</div>
             <p className="text-xs text-muted-foreground">Teaching staff</p>
           </CardContent>
         </Card>
@@ -289,7 +341,10 @@ export default function AdminUsers() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.filter(u => u.role === 'admin' || u.role === 'superadmin').length}</div>
+            <div className="text-2xl font-bold">{filteredUsers.filter(u => {
+              const r = u.role?.toLowerCase?.() ?? '';
+              return r === 'admin' || r === 'superadmin';
+            }).length}</div>
             <p className="text-xs text-muted-foreground">System administrators</p>
           </CardContent>
         </Card>
@@ -298,7 +353,10 @@ export default function AdminUsers() {
       {/* Users Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
+          <CardTitle className="flex items-center">
+            All Users
+            {isFetching && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
+          </CardTitle>
           <CardDescription>View and manage all users in the system</CardDescription>
         </CardHeader>
         <CardContent>
@@ -410,6 +468,17 @@ export default function AdminUsers() {
               ))}
             </TableBody>
           </Table>
+
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-sm text-muted-foreground">
+              Showing {Math.min((page - 1) * limit + 1, total || 0)} - {Math.min(page * limit, total)} of {total} users
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
+              <div className="px-2">Page {page} of {totalPages}</div>
+              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

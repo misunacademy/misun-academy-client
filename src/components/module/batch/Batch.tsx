@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateBatchMutation, useGetAllBatchesQuery, useUpdateBatchMutation, useDeleteBatchMutation } from '@/redux/features/batch/batchApi';
+import { useCreateBatchMutation, useGetAllBatchesQuery, useUpdateBatchMutation, useDeleteBatchMutation } from '@/redux/api/batchApi';
 import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { toast } from 'sonner';
 import { Loader2, Plus, X, Edit, Trash2 } from 'lucide-react';

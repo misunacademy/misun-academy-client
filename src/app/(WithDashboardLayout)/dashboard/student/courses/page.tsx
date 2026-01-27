@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BookOpen, Clock, Loader2, AlertCircle, Award, TrendingUp, Calendar } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studentApi";
+import { useGetStudentDashboardDataQuery } from "@/redux/api/studentApi";
 import { toast } from "sonner";
 import thumbnail from "../../../../../assets/images/batch-6-web-cover.png";
 

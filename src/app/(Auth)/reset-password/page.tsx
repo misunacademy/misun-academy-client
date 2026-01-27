@@ -8,7 +8,7 @@ import { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useResetPasswordMutation } from "@/redux/api/authApi";
 import { useAppDispatch } from "@/redux/hooks";
-import { setError } from "@/redux/features/auth/authSlice";
+import { setError } from "@/redux/features/authSlice";
 
 // shadcn/ui components
 import { Button } from "@/components/ui/button";

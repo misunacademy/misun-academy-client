@@ -13,7 +13,7 @@ import { CheckCircle, Clock, ArrowLeft, Sparkles, Loader2, CreditCard, Smartphon
 import { toast } from "sonner";
 import Image from "next/image";
 import ManualPaymentForm from "./ManualPaymentForm";
-import { useEnrollStudentMutation, useEnrollStudentManualMutation } from "@/redux/features/student/studentApi";
+import { useEnrollStudentMutation, useEnrollStudentManualMutation } from "@/redux/api/studentApi";
 import one from "@/assets/images/payments/one.png"
 import two from "@/assets/images/payments/two.png"
 import three from "@/assets/images/payments/three.png"
