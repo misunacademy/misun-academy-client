@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/redux/hooks';
 import EnrollmentCheckout from '@/components/module/checkout/EnrollmentCheckout';
@@ -18,14 +18,14 @@ import { AlertTriangle, Calendar, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import Cookies from 'js-cookie';
-
+import { v4 as uuid } from "uuid";
 
 const Page = () => {
     const [openModal, setOpenModal] = useState(false);
     const router = useRouter();
     const user = useAppSelector((state) => state.auth.user);
     const isLoading = useAppSelector((state) => state.auth.isLoading);
-
+    const hasTracked = useRef(false);
     // // Check authentication
     // useEffect(() => {
     //     if (!isLoading) {
@@ -42,6 +42,36 @@ const Page = () => {
             // setOpenModal(true);
         }
     }, []);
+    useEffect(() => {
+        if (!user?.email) return; // wait until email exists
+        if (hasTracked.current) return; // prevent double fire
+
+        hasTracked.current = true;
+        const eventId = uuid(); // same ID for Pixel + CAPI
+
+        // 🔹 Meta Pixel (browser)
+        // Use helper to queue the event if the pixel hasn't loaded yet
+        import('@/lib/metaPixel').then(({ track }) => track('Purchase', {
+            value: 4000,
+            currency: 'BDT',
+            content_name: 'Misun Academy Course Enrollment',
+            content_type: 'course',
+        }, { eventID: eventId }));
+
+
+        // 🔹 Conversions API (server)
+        fetch("/api/meta-conversion", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                eventName: "Purchase",
+                email: user?.email,
+                value: 4000,
+                currency: "BDT",
+                eventId,
+            }),
+        });
+    }, [user?.email]);
 
     const handleModalChange = (open: boolean) => {
         setOpenModal(open);

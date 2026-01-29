@@ -29,7 +29,7 @@ interface User {
   address?: string;
   image?: string;
   avatar?: string;
-} 
+}
 
 export default function AdminUsers() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -78,7 +78,7 @@ export default function AdminUsers() {
     { refetchOnMountOrArgChange: true }
   );
 
-  const resp = data as UsersListResponse | undefined; 
+  const resp = data as UsersListResponse | undefined;
 
   // Update total & totalPages when server response changes (support both `pagination` and legacy `meta` shapes)
   useEffect(() => {
@@ -163,7 +163,7 @@ export default function AdminUsers() {
   };
 
   // Typed server response and current page rows
-  const filteredUsers: User[] = (resp?.data as User[] | undefined) || []; 
+  const filteredUsers: User[] = (resp?.data as User[] | undefined) || [];
 
   const getRoleBadgeVariant = (role: string) => {
     const lr = role?.toLowerCase?.() ?? '';
@@ -192,7 +192,7 @@ export default function AdminUsers() {
           <h1 className="text-3xl font-bold">User Management</h1>
           <p className="text-muted-foreground">Manage all users, roles, and permissions</p>
         </div>
-        
+
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-2">
@@ -223,15 +223,15 @@ export default function AdminUsers() {
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="role" className="text-right">Role</Label>
-                <Select name="role" defaultValue="learner">
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="learner">Learner</SelectItem>
-                    <SelectItem value="instructor">Instructor</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="superadmin">Super Admin</SelectItem>
+                  <Select name="role" defaultValue="learner">
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="learner">Learner</SelectItem>
+                      <SelectItem value="instructor">Instructor</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="superadmin">Super Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -310,7 +310,7 @@ export default function AdminUsers() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{total}</div>
-            <p className="text-xs text-muted-foreground">Registered users</p> 
+            <p className="text-xs text-muted-foreground">Registered users</p>
           </CardContent>
         </Card>
 
@@ -377,10 +377,10 @@ export default function AdminUsers() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
-              <SelectItem value="superadmin">Super Admin</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="instructor">Instructor</SelectItem>
-              <SelectItem value="learner">Learner</SelectItem>
+                <SelectItem value="superadmin">Super Admin</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="instructor">Instructor</SelectItem>
+                <SelectItem value="learner">Learner</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -449,9 +449,9 @@ export default function AdminUsers() {
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      {/* <Button variant="ghost" size="sm">
                         <Mail className="h-4 w-4" />
-                      </Button>
+                      </Button> */}
                       <Button
                         variant="ghost"
                         size="sm"

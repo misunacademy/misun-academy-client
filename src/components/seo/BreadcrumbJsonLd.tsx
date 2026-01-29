@@ -2,6 +2,8 @@
 
 import { usePathname } from 'next/navigation';
 import Script from 'next/script';
+import { useEffect } from 'react';
+import { trackCustom } from '@/lib/metaPixel';
 
 const BreadcrumbJsonLd = () => {
     const pathname = usePathname();
@@ -24,11 +26,15 @@ const BreadcrumbJsonLd = () => {
             name: 'এনরোল করুন',
             item: 'https://www.misun-academy.com/checkout',
         },
-        '/auth':{
+        '/auth': {
             name: 'লগইন / রেজিস্ট্রেশন',
             item: 'https://www.misun-academy.com/auth',
         }
     };
+    // Track page view for homepage
+    useEffect(() => {
+        trackCustom("HomepageView");
+    }, []);
 
     // Generate breadcrumb trail
     const breadcrumbs = Object.entries(breadcrumbMap)

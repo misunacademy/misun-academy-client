@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client";
 import { ArrowLeft, BookOpen, Sparkles, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -103,17 +101,18 @@ const AuthPage = () => {
     });
 
     const handleGoogleLogin = async () => {
-        // toast.info("Google OAuth-এ রিডাইরেক্ট করা হচ্ছে...");
         const result = await signInWithGoogle();
         if (!result.success) {
             toast.error(result.error || "Google লগইন ব্যর্থ হয়েছে");
         }
-        // Note: Success toast will be shown after OAuth callback in useAuth hook
     };
 
     const handleLogin = async (data: LoginFormData) => {
         const result = await signIn(data.email, data.password);
         if (result.success) {
+            //  Track Lead immediately
+            import('@/lib/metaPixel').then(({ track }) => track('Lead'));
+
             router.push(getValidatedRedirectUrl(redirectTo, result.user.role, hasEnrollments));
         } else {
             toast.error(result.error || "লগইন ব্যর্থ হয়েছে");
@@ -123,6 +122,8 @@ const AuthPage = () => {
     const handleRegister = async (data: RegisterFormData) => {
         const result = await signUp(data.name, data.email, data.password);
         if (result.success) {
+            //  Track Lead immediately
+            import('@/lib/metaPixel').then(({ track }) => track('Lead'));
             setRegisteredEmail(result.email || data.email);
             setShowVerificationModal(true);
             toast.success('অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে! অনুগ্রহ করে আপনার ইমেইল যাচাই করুন।');
@@ -250,7 +251,7 @@ const AuthPage = () => {
                                         />
 
                                         <div className="flex items-center justify-end text-sm">
-                                          
+
                                             <button
                                                 type="button"
                                                 className="text-emerald-600 hover:text-emerald-700 font-medium"
@@ -478,7 +479,7 @@ const AuthPage = () => {
                                                 body: JSON.stringify({ email: registeredEmail }),
                                             });
                                             toast.success('যাচাই ইমেইল আবার পাঠানো হয়েছে!');
-                                        } catch (error) {
+                                        } catch {
                                             toast.error('ইমেইল পাঠাতে ব্যর্থ হয়েছে');
                                         }
                                     }}

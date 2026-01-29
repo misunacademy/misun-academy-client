@@ -1,8 +1,5 @@
-import BannerSection from '@/components/module/course/BannerSection';
-import CourseCurriculum from '@/components/module/course/CourseCurriculum';
-import CourseWorkflow from '@/components/module/course/CourseWorkflow';
-import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import { generateMetadata } from '@/lib/generateMetadata';
+import CourseDetails from './CourseDetails';
 
 export const metadata = generateMetadata({
   title: 'কোর্স সম্পর্কে | MISUN Academy',
@@ -29,12 +26,7 @@ export const metadata = generateMetadata({
 export default function CoursesPage() {
   return (
     <div>
-      <BreadcrumbJsonLd />
-      <BannerSection />
-      <CourseWorkflow />
-      <CourseCurriculum />
-      {/* <CareerPath />
-      <FaqSection /> */}
+     <CourseDetails />
     </div>
   );
 }

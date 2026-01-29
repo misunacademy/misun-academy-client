@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { User, LogOut, Settings, UserCircle, LayoutDashboard, HelpCircleIcon } from 'lucide-react';
+import { User, LogOut, Settings, UserCircle, LayoutDashboard } from 'lucide-react';
 import { useAppSelector } from '@/redux/hooks';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
@@ -130,7 +130,15 @@ export default function Navbar() {
               ) : null}
               <div className='flex items-end justify-end space-x-4'>
                 <Link href={"/checkout"}>
-                  <Button className='w-28'>এনরোল করুন</Button>
+                  <Button className='w-28' onClick={() => {
+                    // Use helper to ensure event is queued even if pixel isn't loaded yet
+                    import('@/lib/metaPixel').then(({ track }) => track('InitiateCheckout', {
+                      content_name: 'Graphic Design Course',
+                      content_type: 'course',
+                      value: 4000,
+                      currency: 'BDT',
+                    }));
+                  }}>এনরোল করুন</Button>
                 </Link>
               </div>
               {/* User Menu */}
@@ -139,15 +147,15 @@ export default function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full border border-emerald-600">
                       {
-                        safeUser.image ?  <Image
-                        src={safeUser.image || '/default-avatar.png'}
-                        alt="User Avatar"
-                        width={40}
-                        height={40}
-                        className="absolute top-0 left-0 h-10 w-10 rounded-full object-cover"
-                      />:<User className="h-8 w-8 text-emerald-600" />
+                        safeUser.image ? <Image
+                          src={safeUser.image || '/default-avatar.png'}
+                          alt="User Avatar"
+                          width={40}
+                          height={40}
+                          className="absolute top-0 left-0 h-10 w-10 rounded-full object-cover"
+                        /> : <User className="h-8 w-8 text-emerald-600" />
                       }
-                     
+
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56" align="end" forceMount>
