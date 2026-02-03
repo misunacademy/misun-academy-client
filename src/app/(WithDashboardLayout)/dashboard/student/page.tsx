@@ -1,45 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+'use client';
+
+import { useSession } from '@/lib/auth-client';
 import StudentDashboardClient from "./StudentDashboardClient";
 
-export default async function StudentDashboard() {
-    const session = await auth.api.getSession({
-        headers: await headers()
-    });
+export default function StudentDashboard() {
+    const { data: session, isPending } = useSession();
 
-    // Normalise BetterAuth session payload (accept multiple shapes returned by the lib)
-    const betterPayload = (session as any)?.data ?? (session as any)?.user ?? (session as any)?.session;
+    if (isPending) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
 
-    // If BetterAuth session is missing, fall back to server token validation using cookies
-    if (!betterPayload?.user && !betterPayload?.id) {
-        const cookieHeader = (await headers()).get('cookie') || '';
-        const hasAppToken = /(^|;\s*)token=/.test(cookieHeader);
-
-        if (hasAppToken) {
-            // Validate token with backend /auth/me
-            const baseUrl = process.env.NEXT_PUBLIC_BASE_API_URL!;
-            try {
-                const res = await fetch(`${baseUrl}/auth/me`, {
-                    headers: {
-                        cookie: cookieHeader,
-                    },
-                    cache: 'no-store',
-                });
-                if (res.ok) {
-                    const payload = await res.json();
-                    if (payload?.data) {
-                        return <StudentDashboardClient />;
-                    }
-                }
-            } catch (err) {
-                console.error('[StudentDashboard] server token validation failed', err);
-            }
-        }
-
-        // No valid BetterAuth session or server token
-        redirect('/auth');
+    if (!session?.user) {
+        // Middleware will handle redirect to /auth
+        return null;
     }
 
     return <StudentDashboardClient />;

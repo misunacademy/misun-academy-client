@@ -35,16 +35,15 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
         const checkSession = async () => {
             try {
                 const session = await authClient.getSession();
-                const user = store.getState().auth.user;
-
-                if (session.data || user) {
+                
+                if (session.data) {
                     clearInterval(intervalId);
                 }
             } catch {
-                console.error('[Auth Debug] Error fetching session:');
+                console.error('[Auth Debug] Error fetching session');
             }
         };
-        const intervalId = setInterval(checkSession, 30000); // Increased to 30 seconds to prevent rate limiting
+        const intervalId = setInterval(checkSession, 30000); // Check session every 30 seconds
 
         return () => {
             mounted = false;

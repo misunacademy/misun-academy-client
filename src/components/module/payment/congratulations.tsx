@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-import { useAppSelector } from '@/redux/hooks';
+import { useAuth } from '@/hooks/useAuth';
 import { useGetEnrollmentsQuery } from '@/redux/api/enrollmentApi';
 import { useGetBatchByIdQuery } from '@/redux/api/batchApi';
 
@@ -107,7 +107,7 @@ const drawRoundedRect = (
 
   /* ------------------------------- User Data -------------------------------- */
 
-  const user = useAppSelector((state) => state.auth.user);
+  const { user } = useAuth();
 
   const { data: enrollmentsData, isLoading } = useGetEnrollmentsQuery(undefined, {
     skip: !user?.id,

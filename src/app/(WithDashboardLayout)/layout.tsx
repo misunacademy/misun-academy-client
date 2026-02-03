@@ -23,7 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     // Function to get page title from pathname
     const getPageTitle = (path: string) => {
         const pathMap: Record<string, string> = {
-            '/dashboard': 'Overview',
+            // '/dashboard': 'Overview',
             '/dashboard/admin': 'Admin Dashboard',
             '/dashboard/admin/courses': 'Courses Management',
             '/dashboard/admin/recordings': 'Live Class Recordings',

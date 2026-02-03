@@ -4,18 +4,12 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import Cookies from 'js-cookie';
-import { useAppDispatch } from '@/redux/hooks';
-import { setUser } from '@/redux/features/auth/authSlice';
-import { getValidatedRedirectUrl } from '@/lib/authUtils';
-import { useEnrollment } from '@/hooks/useEnrollment';
+import { useAuth } from '@/hooks/useAuth';
 
 const VerifyEmailPage = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const dispatch = useAppDispatch();
-    const { hasEnrollments } = useEnrollment();
+    const { verifyEmail } = useAuth();
     const token = searchParams.get('token');
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>(token ? 'loading' : 'error');
     const [message, setMessage] = useState(token ? '' : 'Invalid verification link');
@@ -23,54 +17,21 @@ const VerifyEmailPage = () => {
     useEffect(() => {
         if (!token) return;
 
-        const verifyEmail = async () => {
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/verify-email`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ token }),
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    const result = data.data;
-
-                    // Store token in cookies and update Redux state
-                    if (result.token) {
-                        Cookies.set('token', result.token, { expires: 7, secure: false });
-                        if (result.refreshToken) {
-                            Cookies.set('refreshToken', result.refreshToken, { expires: 30, secure: false });
-                        }
-                        dispatch(setUser(result.user));
-                    }
-
-                    setStatus('success');
-                    setMessage('Email verified successfully! You are now logged in.');
-                    toast.success('Email verified successfully!');
-
-                    // Redirect to intended page after a short delay
-                    setTimeout(() => {
-                        const redirectTo = searchParams.get('redirectTo');
-                        const redirectUrl = getValidatedRedirectUrl(redirectTo, result.user.role, hasEnrollments);
-                        router.push(redirectUrl);
-                    }, 2000);
-                } else {
-                    const error = await response.json();
-                    setStatus('error');
-                    setMessage(error.message || 'Verification failed');
-                    toast.error(error.message || 'Verification failed');
-                }
-            } catch (error) {
+        const verify = async () => {
+            const result = await verifyEmail(token);
+            
+            if (result.success) {
+                setStatus('success');
+                setMessage('Email verified successfully! You can now log in.');
+                // Toast and redirect are handled by verifyEmail method
+            } else {
                 setStatus('error');
-                setMessage('Network error occurred');
-                toast.error('Network error occurred');
+                setMessage(result.error || 'Verification failed');
             }
         };
 
-        verifyEmail();
-    }, [token, dispatch, router, searchParams, hasEnrollments]);
+        verify();
+    }, [token, verifyEmail]);
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -114,9 +75,12 @@ const VerifyEmailPage = () => {
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-center">
                                         <CheckCircle className="w-6 h-6 text-green-600 mr-2" />
-                                        <span className="text-green-600 font-medium">Redirecting to dashboard...</span>
+                                        <span className="text-green-600 font-medium">Email verified!</span>
                                     </div>
-                                    <p className="text-sm text-gray-500">You will be automatically redirected in a few seconds.</p>
+                                    <p className="text-sm text-gray-500">You can now log in to your account.</p>
+                                    <Button onClick={() => router.push('/auth')} className="w-full">
+                                        Go to Login
+                                    </Button>
                                 </div>
                             )}
                             {status === 'error' && (

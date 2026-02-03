@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, Phone, MapPin, Target, Briefcase, BookOpen, Trophy, Loader2 } from "lucide-react";
-import { useGetMeQuery, useUpdateProfileMutation } from "@/redux/api/authApi";
+import { useSession } from "@/lib/auth-client";
 import { useGetUserProfileQuery, useUpdateUserProfileMutation, useAddInterestMutation, useRemoveInterestMutation } from "@/redux/features/profile/profileApi";
 import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studentApi";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
@@ -43,17 +43,17 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function StudentProfile() {
-  const { data: userData, isLoading: userLoading, error: userError } = useGetMeQuery(undefined);
+  const { data: session, isPending: sessionLoading } = useSession();
+  const user = session?.user as any;
   const { data: profileData, isLoading: profileLoading } = useGetUserProfileQuery(undefined);
   const { data: dashboardData } = useGetStudentDashboardDataQuery(undefined);
-  const [updateUserProfile, { isLoading: isUpdatingUser }] = useUpdateProfileMutation();
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateUserProfileMutation();
   const [addInterest] = useAddInterestMutation();
   const [removeInterest] = useRemoveInterestMutation();
   const [uploadImage, { isLoading: uploadLoading }] = useUploadSingleImageMutation();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const isUpdating = isUpdatingUser || isUpdatingProfile;
+  const isUpdating = isUpdatingProfile;
 
   // React Hook Form setup
   const form = useForm<ProfileFormData>({
@@ -113,8 +113,8 @@ export default function StudentProfile() {
 
       const uploadResult = await uploadImage(formData).unwrap();
       
-      await updateUserProfile({
-        profilePicture: uploadResult.data.url,
+      await updateProfile({
+        avatar: uploadResult.data.url,
       }).unwrap();
 
       toast.success("Profile photo updated successfully.");
@@ -144,8 +144,7 @@ export default function StudentProfile() {
 
   // Update form data when user and profile data loads
   React.useEffect(() => {
-    if (userData?.data) {
-      const user = userData.data;
+    if (user) {
       const profile = profileData?.data;
 
       setValue('name', user.name || '');
@@ -163,7 +162,7 @@ export default function StudentProfile() {
       setValue('availability', profile?.availability || undefined);
       setValue('areasOfInterest', profile?.areasOfInterest || []);
     }
-  }, [userData, profileData, setValue]);
+  }, [user, profileData, setValue]);
 
   const handleAddInterest = async () => {
     const currentInterests = watch('areasOfInterest') || [];
@@ -192,14 +191,10 @@ export default function StudentProfile() {
 
   const onSubmit: SubmitHandler<ProfileFormData> = async (data) => {
     try {
-      // Save user basic info (name, phoneNumber, profilePicture)
-      await updateUserProfile({
-        name: data.name,
-        phoneNumber: data.phone
-      }).unwrap();
-
       // Filter out empty strings and undefined values for enum fields
-      const profileUpdateData: any = {};
+      const profileUpdateData: any = {
+        name: data.name,
+      };
 
       if (data.phone?.trim()) profileUpdateData.phone = data.phone.trim();
       if (data.bio?.trim()) profileUpdateData.bio = data.bio.trim();
@@ -223,7 +218,7 @@ export default function StudentProfile() {
     }
   };
 
-  if (userLoading || profileLoading) {
+  if (sessionLoading || profileLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="w-8 h-8 animate-spin" />
@@ -231,15 +226,13 @@ export default function StudentProfile() {
     );
   }
 
-  if (userError || !userData?.data) {
+  if (!user) {
     return (
       <div className="flex items-center justify-center h-screen">
         <p className="text-red-500">Error loading profile data</p>
       </div>
     );
   }
-
-  const user = userData.data;
 
   return (
     <div className="space-y-6">

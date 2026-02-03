@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useAppSelector } from '@/redux/hooks';
+import { useAuth } from '@/hooks/useAuth';
 import { useGetEnrollmentsQuery } from '@/redux/api/enrollmentApi';
 
 interface EnrollmentStatus {
@@ -14,7 +14,7 @@ interface EnrollmentStatus {
  * Used for conditional access to enrolled-only content
  */
 export function useEnrollment(): EnrollmentStatus {
-  const user = useAppSelector((state) => state.auth.user);
+  const { user } = useAuth();
 
   const { data, isLoading, error } = useGetEnrollmentsQuery(undefined, {
     skip: !user?.id,

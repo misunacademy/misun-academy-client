@@ -1,6 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { baseApi } from "./api/baseApi";
-import authReducer from "./features/auth/authSlice";
 import usersReducer from "./features/user/userSlice";
 import {
     persistReducer,
@@ -17,7 +16,6 @@ import { combineReducers, type Reducer } from "redux";
 export const store = configureStore({
     reducer: {
         [baseApi.reducerPath]: baseApi.reducer,
-        auth: authReducer,
         users: usersReducer,
     },
 
@@ -25,8 +23,7 @@ export const store = configureStore({
         getDefaultMiddlewares({
             serializableCheck: {
                 ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-                ignoredPaths: ['auth.session', 'auth.user', 'auth'],
-                ignoredActionPaths: ['payload.session', 'payload.user', 'meta.arg', 'meta.baseQueryMeta.request', 'meta.baseQueryMeta.response'],
+                ignoredActionPaths: ['meta.arg', 'meta.baseQueryMeta.request', 'meta.baseQueryMeta.response'],
             },
         }).concat(baseApi.middleware),
 });
@@ -42,25 +39,17 @@ export async function initStorePersistence() {
     const storageModule = await import('redux-persist/lib/storage');
     const storage = storageModule.default;
 
-    // Create persist config for auth
-    const authPersistConfig = {
-        key: 'auth',
-        storage,
-        whitelist: ['user', 'session'],
-    };
-
+    // Create persist config for users
     const usersPersistConfig = {
         key: 'users',
         storage,
         whitelist: ['user'],
     };
 
-    const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
     const persistedUsersReducer = persistReducer(usersPersistConfig, usersReducer);
 
     const rootReducer = combineReducers({
         [baseApi.reducerPath]: baseApi.reducer,
-        auth: persistedAuthReducer,
         users: persistedUsersReducer,
     });
     store.replaceReducer(rootReducer as unknown as Reducer);

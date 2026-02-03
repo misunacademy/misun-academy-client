@@ -157,12 +157,13 @@ const adminItems = [
 
 export function AppSidebar() {
     const pathname = usePathname();
-    const user = useAppSelector((state) => state?.auth?.user);
+    const { user } = useAuth();
     const { hasEnrollments } = useEnrollment();
 
     // Determine if we're in admin or student dashboard based on user role
     // Handle both uppercase (API) and lowercase (enum) role values
-    const userRole = user?.role?.toLowerCase() || '';
+    const userRole = (user as any)?.role?.toLowerCase() || '';
+    console.log("user",user);
     const isAdmin = [
         Role.SUPERADMIN.toLowerCase(),
         Role.ADMIN.toLowerCase(),

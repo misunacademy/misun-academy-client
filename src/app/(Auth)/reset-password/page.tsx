@@ -6,9 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useResetPasswordMutation } from "@/redux/api/authApi";
-import { useAppDispatch } from "@/redux/hooks";
-import { setError } from "@/redux/features/auth/authSlice";
+import { useAuth } from "@/hooks/useAuth";
 
 // shadcn/ui components
 import { Button } from "@/components/ui/button";
@@ -33,8 +31,7 @@ const ResetPasswordForm = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
-    const dispatch = useAppDispatch();
-    const [resetPassword, { isLoading }] = useResetPasswordMutation();
+    const { resetPassword } = useAuth();
 
     const token = searchParams?.get('token');
 
@@ -55,21 +52,8 @@ const ResetPasswordForm = () => {
     const handleResetPassword = async (data: ResetPasswordFormData) => {
         if (!token) return;
 
-        try {
-            await resetPassword({
-                token,
-                newPassword: data.newPassword,
-            }).unwrap();
-
-            // Show success message and redirect to login
-            toast.success("পাসওয়ার্ড সফলভাবে রিসেট হয়েছে! এখন লগইন করুন।");
-            router.push('/auth');
-        } catch (error: any) {
-            console.error("Reset password failed:", error);
-            const errorMessage = error?.data?.message || "Reset password failed";
-            toast.error(errorMessage);
-            dispatch(setError(errorMessage));
-        }
+        await resetPassword(data.newPassword, token);
+        // Toast and redirect are handled by resetPassword method
     };
 
     if (!token) {
@@ -170,8 +154,8 @@ const ResetPasswordForm = () => {
                                     )}
                                 />
 
-                                <Button type="submit" className="w-full" disabled={resetPasswordForm.formState.isSubmitting || isLoading}>
-                                    {resetPasswordForm.formState.isSubmitting || isLoading ? "রিসেট হচ্ছে..." : "পাসওয়ার্ড রিসেট করুন"}
+                                <Button type="submit" className="w-full" disabled={resetPasswordForm.formState.isSubmitting}>
+                                    {resetPasswordForm.formState.isSubmitting ? "রিসেট হচ্ছে..." : "পাসওয়ার্ড রিসেট করুন"}
                                 </Button>
                             </form>
                         </Form>

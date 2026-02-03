@@ -8,24 +8,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Shield, Loader2, User } from "lucide-react";
-import {  useUpdateProfileMutation, useChangePasswordMutation, useGetMeQuery } from "@/redux/api/authApi";
+import { useSession, authClient } from "@/lib/auth-client";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
+import { useUpdateUserProfileMutation } from "@/redux/features/profile/profileApi";
 import { toast } from "sonner";
 
 export default function StudentSettings() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // API hooks
-  const { data: userData, isLoading: userLoading } = useGetMeQuery(undefined);
-  const [updateProfile, { isLoading: updateLoading }] = useUpdateProfileMutation();
+  const { data: session, isPending: userLoading } = useSession();
+  const user = session?.user as any;
+  const [updateProfile, { isLoading: updateLoading }] = useUpdateUserProfileMutation();
   const [uploadImage, { isLoading: uploadLoading }] = useUploadSingleImageMutation();
-  const [changePassword, { isLoading: passwordLoading }] = useChangePasswordMutation();
-
-  const user = userData?.data;
-  // Form state - initialize from user data
+  
+  // Form state
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   const userInitials = user?.name
     ?.split(" ")
@@ -64,7 +65,7 @@ export default function StudentSettings() {
 
       // Update profile with new image URL
       await updateProfile({
-        profilePicture: uploadResult.data.url,
+        avatar: uploadResult.data.url,
       }).unwrap();
 
       toast.success("Profile photo updated successfully.");
@@ -114,12 +115,15 @@ export default function StudentSettings() {
     }
 
     try {
-      await changePassword({
+      setPasswordLoading(true);
+      
+      await authClient.changePassword({
         currentPassword,
         newPassword,
-      }).unwrap();
+        revokeOtherSessions: false,
+      });
 
-      toast.success("Password changed successfully. Please log in again with your new password.");
+      toast.success("Password changed successfully.");
 
       // Clear form
       setCurrentPassword("");
@@ -140,6 +144,8 @@ export default function StudentSettings() {
       }
 
       toast.error(errorMessage);
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -147,6 +153,14 @@ export default function StudentSettings() {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <p className="text-red-500">Error loading user data</p>
       </div>
     );
   }

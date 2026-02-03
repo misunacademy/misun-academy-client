@@ -17,7 +17,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { User, LogOut, Settings, UserCircle, LayoutDashboard, HelpCircleIcon } from 'lucide-react';
-import { useAppSelector } from '@/redux/hooks';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 
@@ -25,8 +24,7 @@ export default function Navbar() {
   const [isDark, setIsDark] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false); // ensure SSR/CSR markup match
   const navbarRef = useRef<HTMLDivElement>(null);
-  const user = useAppSelector((state) => state.auth.user);
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const router = useRouter();
 
   // Normalize role to the dashboard segment used in routes
@@ -87,6 +85,7 @@ export default function Navbar() {
 
   // Use a safe user value that matches the server render until hydration completes
   const safeUser = isHydrated ? user : null;
+  const userRole = (safeUser as any)?.role;
 
   return (
     <div className="sticky top-0 z-[999] w-full">
@@ -147,7 +146,7 @@ export default function Navbar() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full border border-emerald-600">
                       {
-                        safeUser.image ?  <Image
+                        safeUser?.image ?  <Image
                         src={safeUser.image || '/default-avatar.png'}
                         alt="User Avatar"
                         width={40}
@@ -161,25 +160,25 @@ export default function Navbar() {
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user.name || 'User'}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                        <p className="text-sm font-medium leading-none">{safeUser?.name || 'User'}</p>
+                        <p className="text-xs leading-none text-muted-foreground">{safeUser?.email}</p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href={`/dashboard/${getDashboardSegment(user?.role)}/profile`} className="flex items-center">
+                      <Link href={`/dashboard/${getDashboardSegment(userRole)}/profile`} className="flex items-center">
                         <UserCircle className="mr-2 h-4 w-4" />
                         Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href={`/dashboard/${getDashboardSegment(user?.role)}`} className="flex items-center">
+                      <Link href={`/dashboard/${getDashboardSegment(userRole)}`} className="flex items-center">
                         <LayoutDashboard className="mr-2 h-4 w-4" />
                         Dashboard
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href={`/dashboard/${getDashboardSegment(user?.role)}/settings`} className="flex items-center">
+                      <Link href={`/dashboard/${getDashboardSegment(userRole)}/settings`} className="flex items-center">
                         <Settings className="mr-2 h-4 w-4" />
                         Settings
                       </Link>

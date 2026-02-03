@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import  { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAppSelector } from '@/redux/hooks';
+import { useAuth } from '@/hooks/useAuth';
 import EnrollmentCheckout from '@/components/module/checkout/EnrollmentCheckout';
 import {
     Dialog,
@@ -17,25 +17,13 @@ import { enrollmentPeriod, isEnrollmentRunning } from '@/constants/enrollment';
 import { AlertTriangle, Calendar, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
-import Cookies from 'js-cookie';
 import { v4 as uuid } from "uuid";
 
 const Page = () => {
     const [openModal, setOpenModal] = useState(false);
     const router = useRouter();
-    const user = useAppSelector((state) => state.auth.user);
-    const isLoading = useAppSelector((state) => state.auth.isLoading);
+    const { user, isLoading } = useAuth();
     const hasTracked = useRef(false);
-    // // Check authentication
-    // useEffect(() => {
-    //     if (!isLoading) {
-    //         const token = Cookies.get('token');
-    //         if (!token || !user) {
-    //             toast.error('অনুগ্রহ করে প্রথমে লগইন করুন');
-    //             router.push('/auth');
-    //         }
-    //     }
-    // }, [user, isLoading, router]);
 
     useEffect(() => {
         if (!isEnrollmentRunning) {
@@ -93,7 +81,7 @@ const Page = () => {
     }
 
     // Don't render checkout if not authenticated
-    if (!user || !Cookies.get('token')) {
+    if (!user) {
         return null;
     }
 
@@ -103,7 +91,7 @@ const Page = () => {
             //     <DialogContent>
             //         <DialogHeader>
             //             <DialogTitle className='text-primary'>এনরোলমেন্ট এখনো শুরু হয়নি</DialogTitle>
-            //         </DialogHeader>
+            //
             //         <div className="space-y-2 text-muted-foreground text-sm">
             //             <p>
             //                 <strong>এনরোলমেন্ট শুরু হবে:</strong> {enrollmentPeriod.startDate}

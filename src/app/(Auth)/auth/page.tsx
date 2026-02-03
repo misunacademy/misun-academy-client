@@ -17,9 +17,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { useAppSelector } from "@/redux/hooks";
-import { useEnrollment } from "@/hooks/useEnrollment";
-import { getValidatedRedirectUrl } from "@/lib/authUtils";
 
 
 // Validation schemas
@@ -55,25 +52,28 @@ const AuthPage = () => {
     const [showVerificationModal, setShowVerificationModal] = useState(false);
     const [registeredEmail, setRegisteredEmail] = useState('');
     const router = useRouter();
-    const { signIn, signUp, signInWithGoogle } = useAuth();
-    const { hasEnrollments } = useEnrollment();
+    const { signIn, signUp, signInWithGoogle, forgotPassword, user, isAuthenticated, isLoading } = useAuth();
     const searchParams = useSearchParams();
     const redirectTo = searchParams.get('redirectTo');
 
-    // Validate redirect URL to prevent open-redirect attacks
-
-    // Check if user is already authenticated
-    const user = useAppSelector((state) => state.auth.user);
-    const isAuthenticated = !!user;
-
-    const validatedRedirectUrl = getValidatedRedirectUrl(redirectTo, user?.role, hasEnrollments);
-
     useEffect(() => {
-        if (isAuthenticated) {
-            // User is already logged in, redirect to intended page
-            router.push(validatedRedirectUrl);
+        if (isLoading) return;
+        
+        if (isAuthenticated && user) {
+            // User is already logged in, redirect to requested page or dashboard
+            if (redirectTo && redirectTo !== '/auth') {
+                router.replace(redirectTo);
+            } else {
+                const userRole = (user as any).role;
+                const dashboardRoute = userRole === 'admin' || userRole === 'superadmin' 
+                    ? '/dashboard/admin' 
+                    : userRole === 'instructor'
+                    ? '/dashboard/instructor'
+                    : '/dashboard/student';
+                router.replace(dashboardRoute);
+            }
         }
-    }, [isAuthenticated, validatedRedirectUrl, router]);
+    }, [isAuthenticated, user, redirectTo, router, isLoading]);
 
 
 
@@ -112,34 +112,34 @@ const AuthPage = () => {
     };
 
     const handleLogin = async (data: LoginFormData) => {
-        const result = await signIn(data.email, data.password);
+        const result = await signIn(data.email, data.password, redirectTo || undefined);
         if (result.success) {
-                  //  Track Lead immediately
+            //  Track Lead immediately
             import('@/lib/metaPixel').then(({ track }) => track('Lead'));
-
-            router.push(getValidatedRedirectUrl(redirectTo, result.user.role, hasEnrollments));
-        } else {
-            toast.error(result.error || "লগইন ব্যর্থ হয়েছে");
+            // Redirect is handled by the signIn method
         }
+        // Error toast is handled by the signIn method
     };
 
     const handleRegister = async (data: RegisterFormData) => {
         const result = await signUp(data.name, data.email, data.password);
         if (result.success) {
-                 //  Track Lead immediately
+            //  Track Lead immediately
             import('@/lib/metaPixel').then(({ track }) => track('Lead'));
-            setRegisteredEmail(result.email || data.email);
+            setRegisteredEmail(data.email);
             setShowVerificationModal(true);
-            toast.success('অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে! অনুগ্রহ করে আপনার ইমেইল যাচাই করুন।');
-        } else {
-            toast.error(result.error || "রেজিস্ট্রেশন ব্যর্থ হয়েছে");
+            // Success toast is handled by the signUp method
         }
+        // Error toast is handled by the signUp method
     };
 
-    const handleForgetPassword = async () => {
-        toast.info("পাসওয়ার্ড রিসেট লিঙ্ক আপনার ইমেইলে পাঠানো হয়েছে। অনুগ্রহ করে আপনার ইমেইল চেক করুন।");
-        setShowForgotPassword(false);
-        forgetPasswordForm.reset();
+    const handleForgetPassword = async (data: ForgetPasswordFormData) => {
+        const result = await forgotPassword(data.email);
+        if (result.success) {
+            setShowForgotPassword(false);
+            forgetPasswordForm.reset();
+        }
+        // Toast messages are handled by the forgotPassword method
     };
 
     return (
@@ -475,16 +475,10 @@ const AuthPage = () => {
                                     variant="outline"
                                     onClick={async () => {
                                         try {
-                                            await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/resend-verification`, {
-                                                method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                },
-                                                body: JSON.stringify({ email: registeredEmail }),
-                                            });
-                                            toast.success('যাচাই ইমেইল আবার পাঠানো হয়েছে!');
+                                            // Better Auth handles resend internally, just trigger a new signup attempt
+                                            toast.info('A new verification email will be sent when you try to log in.');
                                         } catch (error) {
-                                            toast.error('ইমেইল পাঠাতে ব্যর্থ হয়েছে');
+                                            toast.error('Failed to resend email');
                                         }
                                     }}
                                 >

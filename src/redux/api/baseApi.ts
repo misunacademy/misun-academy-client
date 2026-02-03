@@ -8,19 +8,13 @@ import {
     createApi,
     fetchBaseQuery,
 } from "@reduxjs/toolkit/query/react";
-import { logout } from "../features/auth/authSlice";
 import { toast } from "sonner";
-import Cookies from 'js-cookie';
+import { authClient } from '@/lib/auth-client';
 
 const baseQuery = fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_BASE_API_URL,
     credentials: "include",
     prepareHeaders: (headers) => {
-        const token = Cookies.get("token"); // token must be set without httpOnly: true
-
-        if (token) {
-            headers.set("Authorization", `Bearer ${token}`);
-        }
 
         return headers;
     },
@@ -42,66 +36,18 @@ const baseQueryWithRefreshToken: BaseQueryFn<
         toast.error(result.error.data.message);
     }
     if (result?.error?.status === 401) {
-        console.warn('[baseApi] 401 from request:', args);
-        //* Send Refresh
-        // console.log('Sending refresh token');
-
-        const isSocialLogin = !!Cookies.get('better-auth.session_token');
-        if (isSocialLogin) {
-            console.warn('[baseApi] social login detected, dispatching logout without refresh');
-            api.dispatch(logout());
-            if (typeof window !== 'undefined') {
-                toast.error('Your session has expired. Please login again.');
-                // window.location.href = '/auth';
-            }
-            return result;
+        console.warn('[baseApi] 401 Unauthorized - session expired or invalid');
+        
+        // Better Auth handles sessions via HTTP-only cookies
+        // Sign out and redirect to login
+        await authClient.signOut();
+        
+        if (typeof window !== 'undefined') {
+            toast.error('Your session has expired. Please login again.');
+            window.location.href = '/auth';
         }
-
-        const refreshToken = Cookies.get("refreshToken");
-
-        if (!refreshToken) {
-            console.warn('[baseApi] no refreshToken available, dispatching logout');
-            api.dispatch(logout());
-            // if (typeof window !== 'undefined') {
-            //     toast.error('Your session has expired. Please login again.');
-            //     // window.location.href = '/auth';
-            // }
-            return result;
-        }
-
-        const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/refresh-token`,
-            {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ refreshToken }),
-            }
-        );
-
-        const data = await res.json();
-
-        if (data?.data?.token) {
-            // const user = (api.getState() as RootState).auth.user;
-            Cookies.set("token", data?.data?.token, {
-                secure: false,
-                sameSite: "Lax",
-            });
-            if (data?.data?.refreshToken) {
-                Cookies.set("refreshToken", data?.data?.refreshToken, { secure: false, sameSite: 'Lax' });
-            }
-            console.warn('[baseApi] refresh succeeded, retrying original request');
-            result = await baseQuery(args, api, extraOptions);
-        } else {
-            console.warn('[baseApi] refresh failed, dispatching logout');
-            api.dispatch(logout());
-            // if (typeof window !== 'undefined') {
-            //     toast.error('Your session has expired. Please login again.');
-            //     // window.location.href = '/auth';
-            // }
-        }
+        
+        return result;
     }
 
     return result;
