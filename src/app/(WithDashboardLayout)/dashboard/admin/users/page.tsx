@@ -86,7 +86,7 @@ export default function AdminUsers() {
     },
     { refetchOnMountOrArgChange: true }
   );
-
+console.log("data",data)
   const resp = data as UsersListResponse | undefined;
 
   // fetch batches for batch filter

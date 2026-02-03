@@ -48,12 +48,9 @@ export default function AdminReports() {
       return statDate >= cutoffDate;
     });
 
-    // Calculate completion rate (placeholder - would need actual completion data)
-    const totalEnrolled = data.totalEnrolled;
-    const completionRate = totalEnrolled > 0 ? Math.min(85 + Math.random() * 10, 95) : 0; // Mock completion rate
 
-    // Get active courses count
-    const activeCourses = coursesData?.data?.filter((course: any) => course.isPublished) || [];
+    // Get active courses count (check `status` field returned by API)
+    const activeCourses = coursesData?.data?.filter((course: any) => (course.status || '').toLowerCase() === 'published') || [];
     const activeCoursesCount = activeCourses.length;
 
     // Format data for charts
@@ -78,7 +75,6 @@ export default function AdminReports() {
       totalIncome: data.totalIncome || 0,
       totalEnrolled: data.totalEnrolled || 0,
       activeCoursesCount,
-      completionRate: Math.round(completionRate),
       enrollmentData,
       revenueData,
       coursePopularityData,
@@ -115,8 +111,7 @@ export default function AdminReports() {
         summary: {
           totalRevenue: metadata?.data?.totalIncome || 0,
           totalEnrollments: metadata?.data?.totalEnrolled || 0,
-          activeCourses: processedData?.activeCoursesCount || 0,
-          completionRate: processedData?.completionRate || 0
+          activeCourses: processedData?.activeCoursesCount || 0
         },
         courseWiseStats: processedData?.courseWiseStats || [],
         batchWiseIncome: processedData?.batchWiseIncome || [],
@@ -155,8 +150,7 @@ export default function AdminReports() {
     csv += 'Metric,Value\n';
     csv += `Total Revenue,$${data.summary.totalRevenue}\n`;
     csv += `Total Enrollments,${data.summary.totalEnrollments}\n`;
-    csv += `Active Courses,${data.summary.activeCourses}\n`;
-    csv += `Completion Rate,${data.summary.completionRate}%\n\n`;
+    csv += `Active Courses,${data.summary.activeCourses}\n\n`;
 
     // Course-wise stats
     csv += 'Course-wise Statistics\n';
@@ -207,7 +201,7 @@ export default function AdminReports() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -245,20 +239,6 @@ export default function AdminReports() {
             <div className="text-2xl font-bold">{processedData?.activeCoursesCount}</div>
             <p className="text-xs text-muted-foreground">
               {coursesLoading ? 'Loading...' : 'Published courses'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{processedData?.completionRate}%</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              Course completion rate
             </p>
           </CardContent>
         </Card>

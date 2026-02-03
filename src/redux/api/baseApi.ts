@@ -25,7 +25,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
     BaseQueryApi,
     DefinitionType
 > = async (args, api, extraOptions): Promise<any> => {
-    let result = await baseQuery(args, api, extraOptions);
+    const result = await baseQuery(args, api, extraOptions);
 
     if (result?.error?.status === 404) {
         //@ts-ignore

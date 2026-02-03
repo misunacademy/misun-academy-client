@@ -13,6 +13,7 @@ export const {
   signIn,
   signUp,
   useSession,
+  updateUser
 } = authClient;
 
 

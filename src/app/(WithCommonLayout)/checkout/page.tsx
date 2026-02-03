@@ -18,6 +18,7 @@ import { AlertTriangle, Calendar, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import { v4 as uuid } from "uuid";
+import { track } from '@/lib/metaPixel';
 
 const Page = () => {
     const [openModal, setOpenModal] = useState(false);
@@ -39,13 +40,12 @@ const Page = () => {
 
         //  Meta Pixel (browser)
         // Use helper to queue the event if the pixel hasn't loaded yet
-        import('@/lib/metaPixel').then(({ track }) => track('Purchase', {
+        track('Purchase', {
             value: 4000,
             currency: 'BDT',
             content_name: 'Misun Academy Course Enrollment',
             content_type: 'course',
-        }, { eventID: eventId }));
-
+        }, { eventID: eventId });
 
         // Conversions API (server)
         fetch("/api/meta-conversion", {

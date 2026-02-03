@@ -62,7 +62,7 @@ const EnrolledStudentTable = () => {
 
     const students = data?.data || [];
     const meta = data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
-
+console.log(data)
     const columns = useMemo<ColumnDef<EnrollmentResponse>[]>(
         () => [
             {

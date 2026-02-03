@@ -50,7 +50,7 @@ export default function BatchCrate() {
     const [createBatch, { isLoading: isCreating }] = useCreateBatchMutation();
     const router = useRouter();
     const courses = coursesData?.data || [];
-console.log(courses)
+
     const handleInputChange = (field: any, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };

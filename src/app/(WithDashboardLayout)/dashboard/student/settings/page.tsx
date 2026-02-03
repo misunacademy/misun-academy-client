@@ -17,11 +17,11 @@ export default function StudentSettings() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // API hooks
-  const { data: session, isPending: userLoading } = useSession();
+  const { data: session, isPending: userLoading, refetch } = useSession();
   const user = session?.user as any;
   const [updateProfile, { isLoading: updateLoading }] = useUpdateUserProfileMutation();
   const [uploadImage, { isLoading: uploadLoading }] = useUploadSingleImageMutation();
-  
+
   // Form state
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -30,7 +30,7 @@ export default function StudentSettings() {
 
   const userInitials = user?.name
     ?.split(" ")
-    .map((n:any) => n[0])
+    .map((n: any) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2) || "U";
@@ -67,6 +67,8 @@ export default function StudentSettings() {
       await updateProfile({
         avatar: uploadResult.data.url,
       }).unwrap();
+
+      await refetch();
 
       toast.success("Profile photo updated successfully.");
 
@@ -116,7 +118,7 @@ export default function StudentSettings() {
 
     try {
       setPasswordLoading(true);
-      
+
       await authClient.changePassword({
         currentPassword,
         newPassword,

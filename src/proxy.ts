@@ -6,8 +6,8 @@ export function proxy(request: NextRequest) {
 
     // Check for Better Auth session cookie
     const betterAuthSession = 
-        request.cookies.get('better-auth.session_token')?.value || 
-        request.cookies.get('__Secure-better-auth.session_token')?.value;
+        request.cookies.get('better-auth.session_token')?.value 
+        // request.cookies.get('__Secure-better-auth.session_token')?.value;
 
     if (process.env.NODE_ENV === 'development') {
         console.debug(`[Proxy] Path: ${pathname} | Better Auth Session: ${!!betterAuthSession}`);

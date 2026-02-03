@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { BookOpen, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video, Search, CreditCard, ShieldCheck, ImageDown, TrendingUp, Globe } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
@@ -143,11 +144,11 @@ const adminItems = [
         url: "/dashboard/admin/dynamic-updates",
         icon: Globe,
     },
-    {
-        title: "Settings",
-        url: "/dashboard/admin/settings",
-        icon: Settings,
-    },
+    // {
+    //     title: "Settings",
+    //     url: "/dashboard/admin/settings",
+    //     icon: Settings,
+    // },
         {
         title: "Profile",
         url: "/dashboard/admin/profile",

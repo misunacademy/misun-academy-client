@@ -10,7 +10,7 @@ export default function PaymentHistoryPage() {
   const { data, isLoading, error } = useGetMyPaymentsQuery();
 
   const payments = data?.data || [];
-
+console.log(payments)
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">

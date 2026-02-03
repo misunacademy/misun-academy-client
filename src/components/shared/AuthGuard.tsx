@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
 
@@ -13,7 +13,6 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
     const router = useRouter();
     const pathname = usePathname();
     const { data: session, isPending } = useSession();
-    const [hasChecked, setHasChecked] = useState(false);
 
     const user = session?.user as any;
     const isAuthenticated = !!user;
@@ -28,23 +27,19 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
             router.replace(redirectUrl);
             return;
         }
-
-        setHasChecked(true);
     }, [isPending, isAuthenticated, router, pathname]);
 
     // Role-based access control
     useEffect(() => {
-        if (!hasChecked || !isAuthenticated || !userRole) return;
+        if (!isAuthenticated || isPending) return;
 
         // Check if user is accessing admin routes
         const isAdminRoute = pathname.startsWith('/dashboard/admin') || pathname.startsWith('/admin');
         const isInstructorRoute = pathname.startsWith('/dashboard/instructor') || pathname.startsWith('/instructor');
-        const isStudentRoute = pathname.startsWith('/dashboard/student') || pathname.startsWith('/dashboard');
 
         const role = userRole.toLowerCase();
         const hasAdminAccess = ['superadmin', 'admin'].includes(role);
         const hasInstructorAccess = role === 'instructor';
-        const hasStudentAccess = role === 'learner';
 
         // Redirect if user doesn't have access to the route
         if (isAdminRoute && !hasAdminAccess) {
@@ -82,18 +77,14 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
                 return;
             }
         }
-    }, [hasChecked, isAuthenticated, userRole, pathname, router, requiredRoles]);
+    }, [isAuthenticated, userRole, pathname, router, requiredRoles, isPending]);
 
-    if (isPending || !hasChecked) {
+    if (isPending || !isAuthenticated) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
             </div>
         );
-    }
-
-    if (!isAuthenticated) {
-        return null; // Will redirect in useEffect
     }
 
     return <>{children}</>;
