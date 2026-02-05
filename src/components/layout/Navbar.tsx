@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { User, LogOut, Settings, UserCircle, LayoutDashboard, HelpCircleIcon } from 'lucide-react';
+import { User, LogOut, Settings, UserCircle, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 

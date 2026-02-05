@@ -107,12 +107,12 @@ const drawRoundedRect = (
 
   /* ------------------------------- User Data -------------------------------- */
 
-  const { user } = useAuth();
-
-  const { data: enrollmentsData, isLoading } = useGetEnrollmentsQuery(undefined, {
-    skip: !user?.id,
-  });
-
+   const { user, isLoading: isAuthLoading } = useAuth();
+  
+    const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useGetEnrollmentsQuery(undefined, {
+      skip: !user?.id,
+    });
+  
   const latestEnrollment =
     enrollmentsData?.data?.find((e) => e.status === 'active') ??
     enrollmentsData?.data?.[0];
@@ -125,10 +125,29 @@ const drawRoundedRect = (
   /* ------------------------------- State ------------------------------------ */
 
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
-  const [userName, setUserName] = useState(() => user?.name ?? '');
-  const [userImage, setUserImage] = useState<string | null>(
-    () => user?.image ?? null
-  );
+// Use user data as initial values, but allow editing
+  // Track if user has manually edited to prevent overwriting their changes
+  const [userNameState, setUserNameState] = useState<{ value: string; edited: boolean }>({
+    value: '',
+    edited: false,
+  });
+  const [userImageState, setUserImageState] = useState<{ value: string | null; edited: boolean }>({
+    value: null,
+    edited: false,
+  });
+
+  // Update from user data only if not manually edited
+  const userName = userNameState.edited ? userNameState.value : (user?.name || userNameState.value);
+  const userImage = userImageState.edited ? userImageState.value : (user?.image || userImageState.value);
+
+  const setUserName = (value: string) => {
+    setUserNameState({ value, edited: true });
+  };
+
+  const setUserImage = (value: string | null) => {
+    setUserImageState({ value, edited: true });
+  };
+
 
   // Image pan state: normalized offsets in range [-1, 1]
   const [imageOffset, setImageOffset] = useState({ x: 0, y: 0 });
@@ -450,10 +469,18 @@ const drawRoundedRect = (
 
   /* ------------------------------- Loading ---------------------------------- */
 
-  if (isLoading || !user) {
+  if (isAuthLoading || isEnrollmentsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Sparkles className="animate-spin text-green-600" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500">Please log in to view this page</p>
       </div>
     );
   }

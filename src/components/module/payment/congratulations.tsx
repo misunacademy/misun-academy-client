@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useRef, useState, useCallback, use } from 'react';
 import Image from 'next/image';
 import {
   ArrowLeft,
@@ -24,7 +23,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
 import { useAuth } from '@/hooks/useAuth';
 import { useGetEnrollmentsQuery } from '@/redux/api/enrollmentApi';
 import { useGetBatchByIdQuery } from '@/redux/api/batchApi';
@@ -101,15 +99,14 @@ const drawRoundedRect = (
 /*                                   Page                                     */
 /* -------------------------------------------------------------------------- */
 
- function CongratulationsPage() {
-  const router = useRouter();
+function CongratulationsPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   /* ------------------------------- User Data -------------------------------- */
 
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
 
-  const { data: enrollmentsData, isLoading } = useGetEnrollmentsQuery(undefined, {
+  const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useGetEnrollmentsQuery(undefined, {
     skip: !user?.id,
   });
 
@@ -123,12 +120,32 @@ const drawRoundedRect = (
   );
 
   /* ------------------------------- State ------------------------------------ */
-
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
-  const [userName, setUserName] = useState(() => user?.name ?? '');
-  const [userImage, setUserImage] = useState<string | null>(
-    () => user?.image ?? null
-  );
+  
+  // Use user data as initial values, but allow editing
+  // Track if user has manually edited to prevent overwriting their changes
+  const [userNameState, setUserNameState] = useState<{ value: string; edited: boolean }>({
+    value: '',
+    edited: false,
+  });
+  const [userImageState, setUserImageState] = useState<{ value: string | null; edited: boolean }>({
+    value: null,
+    edited: false,
+  });
+
+  // Update from user data only if not manually edited
+  const userName = userNameState.edited ? userNameState.value : (user?.name || userNameState.value);
+  const userImage = userImageState.edited ? userImageState.value : (user?.image || userImageState.value);
+
+  const setUserName = (value: string) => {
+    setUserNameState({ value, edited: true });
+  };
+
+  const setUserImage = (value: string | null) => {
+    setUserImageState({ value, edited: true });
+  };
+
+
 
   // Image pan state: normalized offsets in range [-1, 1]
   const [imageOffset, setImageOffset] = useState({ x: 0, y: 0 });
@@ -157,7 +174,6 @@ const drawRoundedRect = (
   const MAX_ZOOM = 3;
   const ZOOM_STEP = 0.1;
 
-  const setZoom = (z: number) => setImageZoom((prev) => clamp(z, MIN_ZOOM, MAX_ZOOM));
   const zoomIn = () => setImageZoom((prev) => clamp(Number((prev + ZOOM_STEP).toFixed(2)), MIN_ZOOM, MAX_ZOOM));
   const zoomOut = () => setImageZoom((prev) => clamp(Number((prev - ZOOM_STEP).toFixed(2)), MIN_ZOOM, MAX_ZOOM));
 
@@ -448,9 +464,10 @@ const drawRoundedRect = (
     });
   };
 
+
   /* ------------------------------- Loading ---------------------------------- */
 
-  if (isLoading || !user) {
+  if (isAuthLoading || isEnrollmentsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Sparkles className="animate-spin text-green-600" />
@@ -458,222 +475,228 @@ const drawRoundedRect = (
     );
   }
 
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500">Please log in to view this page</p>
+      </div>
+    );
+  }
+
   /* ------------------------------- UI --------------------------------------- */
 
-    return (
-        <div className="min-h-screen  ">
+  return (
+    <div className="min-h-screen  ">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
 
+          {/* Welcome Card */}
+          <Card className="mb-8 border-green-100 bg-gradient-to-r from-green-50 to-emerald-50">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">Congratulations, {userName.split(' ')[0]}!</h1>
 
-            <div className="container mx-auto px-4 py-8">
-                <div className="max-w-6xl mx-auto">
+              <p className="text-slate-600 max-w-2xl mx-auto">
+                You have successfully enrolled in the <strong>{latestEnrollment?.course?.title || 'Graphic Design with Freelancing'}</strong> course.
+                Download your welcome poster below and share your new journey!
+              </p>
 
-                    {/* Welcome Card */}
-                    <Card className="mb-8 border-green-100 bg-gradient-to-r from-green-50 to-emerald-50">
-                        <CardContent className="p-8 text-center">
-                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <CheckCircle2 className="w-8 h-8 text-green-600" />
-                            </div>
-                            <h1 className="text-3xl font-bold text-slate-900 mb-2">Congratulations, {userName.split(' ')[0]}!</h1>
+              {/* Added Email Instruction Section */}
+              <div className="mt-6 bg-white/60 border border-green-200 rounded-lg p-4 inline-block">
+                <p className="text-green-800 font-medium">
+                  📩 Please check your email—there are a few important things for you to do next.
+                </p>
+              </div>
 
-                            <p className="text-slate-600 max-w-2xl mx-auto">
-                                You have successfully enrolled in the <strong>{latestEnrollment?.course?.title || 'Graphic Design with Freelancing'}</strong> course.
-                                Download your welcome poster below and share your new journey!
-                            </p>
+            </CardContent>
+          </Card>
 
-                            {/* Added Email Instruction Section */}
-                            <div className="mt-6 bg-white/60 border border-green-200 rounded-lg p-4 inline-block">
-                                <p className="text-green-800 font-medium">
-                                    📩 Please check your email—there are a few important things for you to do next.
-                                </p>
-                            </div>
+          <div className="grid lg:grid-cols-12 gap-8">
 
-                        </CardContent>
-                    </Card>
+            {/* LEFT COLUMN: Controls */}
+            <div className="lg:col-span-5 space-y-6">
 
-                    <div className="grid lg:grid-cols-12 gap-8">
-
-                        {/* LEFT COLUMN: Controls */}
-                        <div className="lg:col-span-5 space-y-6">
-
-                            {/* 1. Template Selection */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <LayoutTemplate className="w-4 h-4" />
-                                        Choose Template
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="grid grid-cols-2 gap-4">
-                                    {TEMPLATES.map((template, index) => (
-                                        <div
-                                            key={template.id}
-                                            onClick={() => setSelectedTemplateIndex(index)}
-                                            className={`
+              {/* 1. Template Selection */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <LayoutTemplate className="w-4 h-4" />
+                    Choose Template
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-4">
+                  {TEMPLATES.map((template, index) => (
+                    <div
+                      key={template.id}
+                      onClick={() => setSelectedTemplateIndex(index)}
+                      className={`
                                                 cursor-pointer rounded-lg border-2 overflow-hidden relative aspect-square transition-all
                                                 ${selectedTemplateIndex === index ? 'border-green-600 ring-2 ring-green-100' : 'border-slate-100 hover:border-slate-300'}
                                             `}
-                                        >
-                                            <Image
-                                                src={template.src}
-                                                alt={template.name}
-                                                width={100}
-                                                height={100}
-                                                className="w-full h-full object-cover"
-                                            />
-                                            {selectedTemplateIndex === index && (
-                                                <div className="absolute top-2 right-2 bg-green-600 text-white p-1 rounded-full">
-                                                    <CheckCircle2 className="w-3 h-3" />
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </CardContent>
-                            </Card>
-
-                            {/* 2. Customization */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">Customize Details</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label>Student Name</Label>
-                                        <Input
-                                            value={userName}
-                                            onChange={(e) => setUserName(e.target.value)}
-                                            placeholder="Enter your full name"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2 hidden">
-                                        <Label>Batch ID</Label>
-                                        <Input
-                                            value={batchNo}
-                                            // onChange={(e) => setBatchNo(e.target.value)}
-                                            readOnly
-                                            placeholder="e.g. BATCH-06"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label>Profile Photo</Label>
-                                        <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 hover:bg-slate-50 transition-colors text-center">
-                                            <input
-                                                type="file"
-                                                id="image-upload"
-                                                accept="image/*"
-                                                onChange={handleImageUpload}
-                                                className="hidden"
-                                            />
-                                            <label htmlFor="image-upload" className="cursor-pointer block w-full h-full">
-                                                {userImage ? (
-                                                    <div className="mx-auto">
-                                                        <div
-                                                            className="relative w-24 h-24 mx-auto rounded-full overflow-hidden touch-none cursor-grab"
-                                                            ref={previewImgRef}
-                                                            onPointerDown={onPreviewPointerDown}
-                                                            onPointerMove={onPreviewPointerMove}
-                                                            onPointerUp={onPreviewPointerUp}
-                                                            onPointerCancel={onPreviewPointerUp}
-                                                            style={{ touchAction: 'none' }}
-                                                        >
-                                                            <Image
-                                                                src={userImage}
-                                                                alt="Preview"
-                                                                fill
-                                                                className="object-cover"
-                                                            />
-                                                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 hover:opacity-100 transition-opacity">
-                                                                <Upload className="w-6 h-6 text-white" />
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="mt-3 space-y-3">
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <div className="grid grid-cols-3 gap-2 items-center">
-                                                                    <div className="col-span-3 flex justify-center">
-                                                                        <Button size="sm" variant="outline" onClick={() => moveImage(0, -0.05)}><ArrowUp className="w-4 h-4" /></Button>
-                                                                    </div>
-                                                                    <Button size="sm" variant="outline" onClick={() => moveImage(-0.05, 0)}><ArrowLeft className="w-4 h-4" /></Button>
-                                                                    <div className="flex items-center justify-center space-x-2">
-                                                                        <Button size="sm" variant="ghost" onClick={() => { setImageOffset({ x: 0, y: 0 }); setImageZoom(1); }}>Reset</Button>
-                                                                        <span className="text-xs text-slate-500">X: {Math.round(imageOffset.x * 100)}% Y: {Math.round(imageOffset.y * 100)}% Zoom: {Math.round(imageZoom * 100)}%</span>
-                                                                    </div>
-                                                                    <Button size="sm" variant="outline" onClick={() => moveImage(0.05, 0)}><ArrowRight className="w-4 h-4" /></Button>
-                                                                    <div className="col-span-3 flex justify-center">
-                                                                        <Button size="sm" variant="outline" onClick={() => moveImage(0, 0.05)}><ArrowDown className="w-4 h-4" /></Button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <Button size="sm" variant="outline" onClick={zoomOut}><ZoomOut className="w-4 h-4" /></Button>
-                                                                <input
-                                                                    type="range"
-                                                                    min={MIN_ZOOM}
-                                                                    max={MAX_ZOOM}
-                                                                    step={ZOOM_STEP}
-                                                                    value={imageZoom}
-                                                                    onChange={(e) => setImageZoom(Number(e.target.value))}
-                                                                    className="w-40"
-                                                                />
-                                                                <Button size="sm" variant="outline" onClick={zoomIn}><ZoomIn className="w-4 h-4" /></Button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    <div>
-                                                        <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-2 text-green-600">
-                                                            <Upload className="w-6 h-6" />
-                                                        </div>
-                                                        <span className="text-sm font-medium text-slate-600">Click to upload photo</span>
-                                                    </div>
-                                                )}
-                                            </label>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                    >
+                      <Image
+                        src={template.src}
+                        alt={template.name}
+                        width={100}
+                        height={100}
+                        className="w-full h-full object-cover"
+                      />
+                      {selectedTemplateIndex === index && (
+                        <div className="absolute top-2 right-2 bg-green-600 text-white p-1 rounded-full">
+                          <CheckCircle2 className="w-3 h-3" />
                         </div>
-
-                        {/* RIGHT COLUMN: Preview */}
-                        <div className="lg:col-span-7 ">
-                            <Card className="h-full border-0 shadow-lg bg-slate-900/5 backdrop-blur-sm sticky top-24 flex items-center justify-center">
-                                <CardContent className="p-6">
-                                    <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-white shadow-inner mb-6">
-                                        {/* This Canvas is where the magic happens */}
-                                        <canvas
-                                            ref={canvasRef}
-                                            className="w-full h-full object-contain"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <Button
-                                            onClick={downloadPoster}
-                                            className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg"
-                                        >
-                                            <Download className="w-5 h-5 mr-2" />
-                                            Download Poster
-                                        </Button>
-                                        <Button
-                                            onClick={sharePoster}
-                                            variant="outline"
-                                            className="w-full h-12 text-lg"
-                                        >
-                                            <Share2 className="w-5 h-5 mr-2" />
-                                            Share
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-
+                      )}
                     </div>
-                </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* 2. Customization */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Customize Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Student Name</Label>
+                    <Input
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+
+                  <div className="space-y-2 hidden">
+                    <Label>Batch ID</Label>
+                    <Input
+                      value={batchNo}
+                      // onChange={(e) => setBatchNo(e.target.value)}
+                      readOnly
+                      placeholder="e.g. BATCH-06"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Profile Photo</Label>
+                    <div className="border-2 border-dashed border-slate-200 rounded-lg p-6 hover:bg-slate-50 transition-colors text-center">
+                      <input
+                        type="file"
+                        id="image-upload"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                      <label htmlFor="image-upload" className="cursor-pointer block w-full h-full">
+                        {userImage ? (
+                          <div className="mx-auto">
+                            <div
+                              className="relative w-24 h-24 mx-auto rounded-full overflow-hidden touch-none cursor-grab"
+                              ref={previewImgRef}
+                              onPointerDown={onPreviewPointerDown}
+                              onPointerMove={onPreviewPointerMove}
+                              onPointerUp={onPreviewPointerUp}
+                              onPointerCancel={onPreviewPointerUp}
+                              style={{ touchAction: 'none' }}
+                            >
+                              <Image
+                                src={userImage}
+                                alt="Preview"
+                                fill
+                                className="object-cover"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 hover:opacity-100 transition-opacity">
+                                <Upload className="w-6 h-6 text-white" />
+                              </div>
+                            </div>
+
+                            <div className="mt-3 space-y-3">
+                              <div className="flex items-center justify-center gap-2">
+                                <div className="grid grid-cols-3 gap-2 items-center">
+                                  <div className="col-span-3 flex justify-center">
+                                    <Button size="sm" variant="outline" onClick={() => moveImage(0, -0.05)}><ArrowUp className="w-4 h-4" /></Button>
+                                  </div>
+                                  <Button size="sm" variant="outline" onClick={() => moveImage(-0.05, 0)}><ArrowLeft className="w-4 h-4" /></Button>
+                                  <div className="flex items-center justify-center space-x-2">
+                                    <Button size="sm" variant="ghost" onClick={() => { setImageOffset({ x: 0, y: 0 }); setImageZoom(1); }}>Reset</Button>
+                                    <span className="text-xs text-slate-500">X: {Math.round(imageOffset.x * 100)}% Y: {Math.round(imageOffset.y * 100)}% Zoom: {Math.round(imageZoom * 100)}%</span>
+                                  </div>
+                                  <Button size="sm" variant="outline" onClick={() => moveImage(0.05, 0)}><ArrowRight className="w-4 h-4" /></Button>
+                                  <div className="col-span-3 flex justify-center">
+                                    <Button size="sm" variant="outline" onClick={() => moveImage(0, 0.05)}><ArrowDown className="w-4 h-4" /></Button>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-center gap-2">
+                                <Button size="sm" variant="outline" onClick={zoomOut}><ZoomOut className="w-4 h-4" /></Button>
+                                <input
+                                  type="range"
+                                  min={MIN_ZOOM}
+                                  max={MAX_ZOOM}
+                                  step={ZOOM_STEP}
+                                  value={imageZoom}
+                                  onChange={(e) => setImageZoom(Number(e.target.value))}
+                                  className="w-40"
+                                />
+                                <Button size="sm" variant="outline" onClick={zoomIn}><ZoomIn className="w-4 h-4" /></Button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-2 text-green-600">
+                              <Upload className="w-6 h-6" />
+                            </div>
+                            <span className="text-sm font-medium text-slate-600">Click to upload photo</span>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+
+            {/* RIGHT COLUMN: Preview */}
+            <div className="lg:col-span-7 ">
+              <Card className="h-full border-0 shadow-lg bg-slate-900/5 backdrop-blur-sm sticky top-24 flex items-center justify-center">
+                <CardContent className="p-6">
+                  <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-white shadow-inner mb-6">
+                    {/* This Canvas is where the magic happens */}
+                    <canvas
+                      ref={canvasRef}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button
+                      onClick={downloadPoster}
+                      className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg"
+                    >
+                      <Download className="w-5 h-5 mr-2" />
+                      Download Poster
+                    </Button>
+                    <Button
+                      onClick={sharePoster}
+                      variant="outline"
+                      className="w-full h-12 text-lg"
+                    >
+                      <Share2 className="w-5 h-5 mr-2" />
+                      Share
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default CongratulationsPage;
