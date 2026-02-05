@@ -2,6 +2,8 @@
 import { authClient, useSession } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import type { AuthUser } from '@/types/auth';
+import { getAuthErrorMessage } from '@/lib/auth-errors';
 
 /**
  * Simplified auth hook using Better Auth
@@ -9,9 +11,9 @@ import { toast } from 'sonner';
  */
 export function useAuth() {
   const router = useRouter();
-  const { data: session, isPending, error } = useSession();
+  const { data: session, isPending, error, refetch } = useSession();
 
-  const user = session?.user;
+  const user = session?.user as AuthUser | undefined;
   const isAuthenticated = !!user;
   const isLoading = isPending;
 
@@ -26,8 +28,9 @@ export function useAuth() {
       });
 
       if (result.error) {
-        toast.error(result.error.message || 'Login failed');
-        return { success: false, error: result.error.message };
+        const errorMsg = getAuthErrorMessage(result.error.code, result.error.message);
+        toast.error(errorMsg);
+        return { success: false, error: errorMsg };
       }
 
       if (result.data) {
@@ -59,8 +62,9 @@ export function useAuth() {
       });
 
       if (result.error) {
-        toast.error(result.error.message || 'Registration failed');
-        return { success: false, error: result.error.message };
+        const errorMsg = getAuthErrorMessage(result.error.code, result.error.message);
+        toast.error(errorMsg);
+        return { success: false, error: errorMsg };
       }
 
       if (result.data) {
@@ -95,13 +99,12 @@ export function useAuth() {
    */
   const signInWithGoogle = async (redirectTo?: string) => {
     try {
-      // Use absolute frontend URL for OAuth callback
-      const frontendUrl = process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000';
-      const callbackURL = redirectTo || `${frontendUrl}/auth/callback`;
+      // Use relative path - Better Auth will handle the full URL
+      const callbackURL = redirectTo || '/auth/callback';
       
       await authClient.signIn.social({
         provider: 'google',
-        callbackURL,
+        callbackURL, // Relative path
       });
       return { success: true };
     } catch (error: any) {
@@ -115,30 +118,28 @@ export function useAuth() {
    */
   const forgotPassword = async (email: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/forgot-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          redirectTo: '/reset-password',
-        }),
-        credentials: 'include',
+      
+      // Use Better Auth client's requestPasswordReset method (not forgetPassword)
+      const result = await authClient.requestPasswordReset({
+        email,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/reset-password`,
       });
 
-      const data = await response.json();
+      console.log('[forgotPassword] Result:', result);
 
-      if (!response.ok) {
-        toast.error(data.message || 'Failed to send reset email');
-        return { success: false, error: data.message };
+      if (result.error) {
+        const errorMsg = result.error.message || 'Failed to send reset email';
+        toast.error(errorMsg);
+        return { success: false, error: errorMsg };
       }
 
       toast.success('Password reset email sent! Check your inbox.');
       return { success: true, error: null };
     } catch (error: any) {
-      toast.error('Failed to send reset email');
-      return { success: false, error: error.message };
+      console.error('[forgotPassword] Error:', error);
+      const errorMsg = error.message || 'Failed to send reset email';
+      toast.error(errorMsg);
+      return { success: false, error: errorMsg };
     }
   };
 
@@ -153,8 +154,9 @@ export function useAuth() {
       });
 
       if (result.error) {
-        toast.error(result.error.message || 'Failed to reset password');
-        return { success: false, error: result.error.message };
+        const errorMsg = getAuthErrorMessage(result.error.code, result.error.message);
+        toast.error(errorMsg);
+        return { success: false, error: errorMsg };
       }
 
       toast.success('Password reset successful! You can now log in.');
@@ -178,8 +180,9 @@ export function useAuth() {
       });
 
       if (result.error) {
-        toast.error(result.error.message || 'Email verification failed');
-        return { success: false, error: result.error.message };
+        const errorMsg = getAuthErrorMessage(result.error.code, result.error.message);
+        toast.error(errorMsg);
+        return { success: false, error: errorMsg };
       }
 
       toast.success('Email verified successfully! You can now log in.');
@@ -207,6 +210,27 @@ export function useAuth() {
     forgotPassword,
     resetPassword,
     verifyEmail: verifyEmailToken,
+    
+    // Manual session refresh
+    refetchSession: refetch,
+    
+    // User update with automatic session refresh
+    updateUserProfile: async (data: Partial<AuthUser>) => {
+      try {
+        const result = await authClient.updateUser(data);
+        
+        if (result.error) {
+          return { success: false, error: result.error.message };
+        }
+        
+        // Automatically refresh session to get updated user data
+        await refetch();
+        
+        return { success: true, data: result.data };
+      } catch (error: any) {
+        return { success: false, error: error.message };
+      }
+    },
   };
 }
 
@@ -221,7 +245,7 @@ function getDashboardRoute(user: any): string {
     case 'admin':
       return '/dashboard/admin';
     case 'instructor':
-      return '/instructor/dashboard';
+      return '/dashboard/instructor';
     case 'learner':
     default:
       return '/dashboard/student';

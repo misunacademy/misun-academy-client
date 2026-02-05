@@ -8,17 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Shield, Loader2, User } from "lucide-react";
-import { useSession, authClient } from "@/lib/auth-client";
+import { useAuth } from "@/hooks/useAuth";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { useUpdateUserProfileMutation } from "@/redux/features/profile/profileApi";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
 
 export default function StudentSettings() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // API hooks
-  const { data: session, isPending: userLoading, refetch } = useSession();
-  const user = session?.user as any;
+  const { user, isLoading: userLoading, updateUserProfile } = useAuth();
   const [updateProfile, { isLoading: updateLoading }] = useUpdateUserProfileMutation();
   const [uploadImage, { isLoading: uploadLoading }] = useUploadSingleImageMutation();
 
@@ -68,7 +68,10 @@ export default function StudentSettings() {
         avatar: uploadResult.data.url,
       }).unwrap();
 
-      await refetch();
+      // Update Better Auth session (automatically refreshes)
+      await updateUserProfile({
+        image: uploadResult.data.url,
+      });
 
       toast.success("Profile photo updated successfully.");
 
@@ -119,11 +122,16 @@ export default function StudentSettings() {
     try {
       setPasswordLoading(true);
 
-      await authClient.changePassword({
+      const result = await authClient.changePassword({
         currentPassword,
         newPassword,
         revokeOtherSessions: false,
       });
+
+      if (result.error) {
+        toast.error(result.error.message || "Failed to change password.");
+        return;
+      }
 
       toast.success("Password changed successfully.");
 
@@ -187,7 +195,7 @@ export default function StudentSettings() {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={user?.image} alt={user?.name} />
+                <AvatarImage src={user?.image ?? undefined} alt={user?.name ?? undefined} />
                 <AvatarFallback>{userInitials}</AvatarFallback>
               </Avatar>
               <div className="flex-1">

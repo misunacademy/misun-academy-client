@@ -32,22 +32,11 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
             if (mounted && p) setPersistor(p);
         });
 
-        const checkSession = async () => {
-            try {
-                const session = await authClient.getSession();
-                
-                if (session.data) {
-                    clearInterval(intervalId);
-                }
-            } catch {
-                console.error('[Auth Debug] Error fetching session');
-            }
-        };
-        const intervalId = setInterval(checkSession, 30000); // Check session every 30 seconds
+        // Note: Session polling removed - Better Auth handles session updates automatically
+        // via useSession hook and cookie cache. No need for manual polling.
 
         return () => {
             mounted = false;
-            clearInterval(intervalId);
         };
     }, []);
 

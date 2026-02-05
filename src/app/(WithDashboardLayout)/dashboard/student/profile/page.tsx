@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, Phone, MapPin, Briefcase, Loader2 } from "lucide-react";
-import { updateUser, useSession } from "@/lib/auth-client";
+import { useAuth } from "@/hooks/useAuth";
 import { useGetUserProfileQuery, useUpdateUserProfileMutation } from "@/redux/features/profile/profileApi";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { useRef } from "react";
@@ -41,8 +41,7 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 export default function StudentProfile() {
-  const { data: session, isPending: sessionLoading, refetch } = useSession();
-  const user = session?.user as any;
+  const { user, isLoading: sessionLoading, updateUserProfile } = useAuth();
   const { data: profileData, isLoading: profileLoading } = useGetUserProfileQuery(undefined);
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateUserProfileMutation();
   const [uploadImage, { isLoading: uploadLoading }] = useUploadSingleImageMutation();
@@ -106,14 +105,16 @@ export default function StudentProfile() {
 
       const uploadResult = await uploadImage(formData).unwrap();
 
+      // Update profile in database
       await updateProfile({
         avatar: uploadResult.data.url,
       }).unwrap();
-      await updateUser({
-        ...user,
+      
+      // Update Better Auth user session (automatically refreshes session)
+      await updateUserProfile({
         image: uploadResult.data.url,
       });
-      await refetch();
+      
       toast.success("Profile photo updated successfully.");
 
       if (fileInputRef.current) {
@@ -180,13 +181,14 @@ export default function StudentProfile() {
       if (data.preferredLearningStyle) profileUpdateData.preferredLearningStyle = data.preferredLearningStyle;
       if (data.timeZone?.trim()) profileUpdateData.timeZone = data.timeZone.trim();
       if (data.availability) profileUpdateData.availability = data.availability;
-      if (data.areasOfInterest?.length > 0) profileUpdateData.areasOfInterest = data.areasOfInterest;
-
+      // Update profile in database
       await updateProfile(profileUpdateData).unwrap();
-      await updateUser(
-        { ...user, name: data.name }
-      );
-      await refetch();
+      
+      // Update Better Auth user session (automatically refreshes session)
+      await updateUserProfile({
+        name: data.name,
+      });
+      
       toast.success('Profile updated successfully!');
     } catch (error: any) {
       console.error('Profile update error:', error);

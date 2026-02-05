@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
+import type { AuthUser } from '@/types/auth';
 
 interface AuthGuardProps {
     children: React.ReactNode;
@@ -14,7 +15,7 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
     const pathname = usePathname();
     const { data: session, isPending } = useSession();
 
-    const user = session?.user as any;
+    const user = session?.user as AuthUser | undefined;
     const isAuthenticated = !!user;
     const userRole = user?.role || null;
 
@@ -37,7 +38,7 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
         const isAdminRoute = pathname.startsWith('/dashboard/admin') || pathname.startsWith('/admin');
         const isInstructorRoute = pathname.startsWith('/dashboard/instructor') || pathname.startsWith('/instructor');
 
-        const role = userRole.toLowerCase();
+        const role = userRole?.toLowerCase() || 'learner'; // ✅ Safe null check
         const hasAdminAccess = ['superadmin', 'admin'].includes(role);
         const hasInstructorAccess = role === 'instructor';
 

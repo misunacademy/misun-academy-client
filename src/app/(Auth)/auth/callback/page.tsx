@@ -3,7 +3,8 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from '@/lib/auth-client';
+import { useAuth } from '@/hooks/useAuth';
+import type { AuthUser } from '@/types/auth';
 
 /**
  * OAuth callback page
@@ -12,19 +13,19 @@ import { useSession } from '@/lib/auth-client';
  */
 export default function AuthCallbackPage() {
   const router = useRouter();
-  const { data: session, isPending } = useSession();
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
-    if (isPending) return;
+    if (isLoading) return;
 
-    if (!session?.user) {
+    if (!user) {
       // No session found, redirect to login
       router.push('/auth');
       return;
     }
 
     // Determine dashboard route based on user role
-    const role = (session.user as any).role || 'learner';
+    const role = user.role || 'learner';
     let destination = '/dashboard/student';
 
     switch (role.toLowerCase()) {
@@ -42,7 +43,7 @@ export default function AuthCallbackPage() {
     }
 
     router.push(destination);
-  }, [session, isPending, router]);
+  }, [user, isLoading, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">
