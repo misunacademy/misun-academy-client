@@ -100,8 +100,8 @@ export function useAuth() {
   const signInWithGoogle = async (redirectTo?: string) => {
     try {
       // Use relative path - Better Auth will handle the full URL
-      const callbackURL = redirectTo || '/auth/callback';
-      
+      const callbackURL = redirectTo || `${process.env.AUTH_URL!}/auth/callback`;
+
       await authClient.signIn.social({
         provider: 'google',
         callbackURL, // Relative path
