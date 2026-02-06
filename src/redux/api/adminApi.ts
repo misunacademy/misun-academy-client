@@ -6,11 +6,27 @@
  */
 
 import { baseApi } from "./baseApi";
-import { UserResponse } from "./authApi";
 
 // ============================================================================
 // REQUEST INTERFACES
 // ============================================================================
+
+export interface UserResponse {
+  _id: string;
+  name: string;
+  email: string;
+  role: 'learner' | 'instructor' | 'admin' | 'superadmin';
+  status: 'active' | 'suspended' | 'deleted';
+  image?: string;
+  avatar?: string;
+  phone?: string;
+  address?: string;
+  emailVerified?: Date | null;
+  createdAt: string;
+  updatedAt: string;
+  enrolledBatches?: string[];
+  isEnrolled?: boolean;
+}
 
 export interface CreateAdminRequest {
   name: string;
@@ -64,6 +80,19 @@ export interface MessageResponse {
   success: true;
   message: string;
   data: null;
+}
+
+export interface EmailCountResponse {
+  success: true;
+  message: string;
+  data: {
+    count: number;
+  };
+}
+
+export interface SendNewsUpdateRequest {
+  subject: string;
+  message: string;
 }
 
 // ============================================================================
@@ -167,6 +196,31 @@ const adminApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Profile"],
     }),
+
+    /**
+     * Send enrollment reminder to non-enrolled users
+     * POST /api/v1/admin/send-enrollment-reminder
+     * Requires: ADMIN or SUPERADMIN
+     */
+    sendEnrollmentReminder: build.mutation<EmailCountResponse, void>({
+      query: () => ({
+        url: "/admin/send-enrollment-reminder",
+        method: "POST",
+      }),
+    }),
+
+    /**
+     * Send news and updates to all enrolled students
+     * POST /api/v1/admin/send-news-update
+     * Requires: ADMIN or SUPERADMIN
+     */
+    sendNewsUpdate: build.mutation<EmailCountResponse, SendNewsUpdateRequest>({
+      query: (data) => ({
+        url: "/admin/send-news-update",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -179,6 +233,8 @@ export const {
   useUpdateUserStatusMutation,
   useDeleteUserMutation,
   useAdminLoginMutation,
+  useSendEnrollmentReminderMutation,
+  useSendNewsUpdateMutation,
 } = adminApi;
 
 export default adminApi;

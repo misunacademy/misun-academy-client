@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { BookOpen, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video, Search, CreditCard, ShieldCheck, ImageDown, TrendingUp, Globe } from "lucide-react";
+import { BookOpen, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video, Search, CreditCard, ShieldCheck, ImageDown, TrendingUp, Globe, Mail } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from 'next/link';
 import {
@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import Image from "next/image";
-import { useAppSelector } from "@/redux/hooks";
 import { useAuth } from "@/hooks/useAuth";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { Role } from "@/types/common";
@@ -130,6 +129,11 @@ const adminItems = [
         icon: DollarSign,
     },
     {
+        title: "Email Management",
+        url: "/dashboard/admin/emails",
+        icon: Mail,
+    },
+    {
         title: "Reports",
         url: "/dashboard/admin/reports",
         icon: FileText,
@@ -164,7 +168,7 @@ export function AppSidebar() {
     // Determine if we're in admin or student dashboard based on user role
     // Handle both uppercase (API) and lowercase (enum) role values
     const userRole = (user as any)?.role?.toLowerCase() || '';
-    console.log("user",user);
+
     const isAdmin = [
         Role.SUPERADMIN.toLowerCase(),
         Role.ADMIN.toLowerCase(),
