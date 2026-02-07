@@ -42,25 +42,6 @@ import type { PaymentResponse } from '@/redux/api/paymentApi';
 import { useGetAllPaymentsQuery, useUpdatePaymentStatusMutation, useVerifyManualPaymentMutation } from '@/redux/api/paymentApi';
 import { toast } from 'sonner';
 
-// Define interfaces
-interface Student {
-    _id: string;
-    name: string;
-    email: string;
-    phone: string;
-}
-
-interface Course {
-    _id: string;
-    title: string;
-    slug: string;
-}
-
-interface Batch {
-    _id: string;
-    title: string;
-    batchNumber: string;
-}
 
 const PaymentTable = () => {
     const [page, setPage] = useState(1);

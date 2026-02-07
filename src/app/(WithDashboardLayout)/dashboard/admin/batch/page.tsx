@@ -1,4 +1,4 @@
-import BatchDashboard from '@/components/module/batch/Batch';
+import BatchDashboard from '@/components/module/dashboard/batch/Batch';
 
 
 const page = () => {

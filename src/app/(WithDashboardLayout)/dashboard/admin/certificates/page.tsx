@@ -242,7 +242,7 @@ export default function CertificateManagementPage() {
 
         <TabsContent value="pending">
           <Card>
-            <CardContent className="p-0">
+            <CardContent className="p-4">
               <CertificateTable certificates={pendingCertificates} onViewDetails={openReviewDialog} />
             </CardContent>
           </Card>
@@ -250,7 +250,7 @@ export default function CertificateManagementPage() {
 
         <TabsContent value="approved">
           <Card>
-            <CardContent className="p-0">
+            <CardContent className="p-4">
               <CertificateTable certificates={approvedCertificates} onViewDetails={openReviewDialog} />
             </CardContent>
           </Card>
@@ -258,7 +258,7 @@ export default function CertificateManagementPage() {
 
         <TabsContent value="rejected">
           <Card>
-            <CardContent className="p-0">
+            <CardContent className="p-4">
               <CertificateTable certificates={rejectedCertificates} onViewDetails={openReviewDialog} />
             </CardContent>
           </Card>

@@ -1,5 +1,4 @@
 import EnrolledStudentTable from '@/components/module/dashboard/student/EnrolledStudent';
-import React from 'react';
 
 const page = () => {
     return (

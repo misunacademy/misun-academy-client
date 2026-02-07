@@ -107,7 +107,8 @@ const paymentApi = baseApi.injectEndpoints({
         method: "PUT",
         body: { status },
       }),
-      invalidatesTags: ["Payments"],
+      // Invalidate enrollments as well so student lists refresh when a payment causes enrollment activation
+      invalidatesTags: ["Payments", "CourseEnrollments"],
     }),
 
     // Verify manual payment submission (admin)
@@ -117,7 +118,8 @@ const paymentApi = baseApi.injectEndpoints({
         method: "POST",
         body: { approved },
       }),
-      invalidatesTags: ["Payments"],
+      // When an admin verifies a manual payment, it may create/activate an enrollment — invalidate enrollments
+      invalidatesTags: ["Payments", "CourseEnrollments"],
     }),
   }),
 });
