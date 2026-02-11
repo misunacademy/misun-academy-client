@@ -1,12 +1,16 @@
 
 import type { NextConfig } from 'next';
+import withBundleAnalyzer from '@next/bundle-analyzer';
 
 const nextConfig: NextConfig = {
-  // reactStrictMode: false, // Disable strict mode to prevent double rendering in development
+  reactStrictMode: true, // Enable strict mode for better development warnings
+
   experimental: {
     optimizePackageImports: ['@/lib/metaPixel', 'lucide-react'],
   },
+
   images: {
+    formats: ['image/avif', 'image/webp'], // Better compression formats
     remotePatterns: [
       {
         protocol: 'https',
@@ -32,4 +36,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})(nextConfig);

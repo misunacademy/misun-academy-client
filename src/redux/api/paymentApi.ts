@@ -51,28 +51,10 @@ export interface PaymentResponse {
 const paymentApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
-    // Initiate payment
-    initiatePayment: build.mutation<{ data: { paymentUrl: string } }, PaymentInitiateRequest>({
-      query: (data) => ({
-        url: "/payments/initiate",
-        method: "POST",
-        body: data,
-      }),
-      invalidatesTags: ["Payments"],
-    }),
-
     // Get my payments
     getMyPayments: build.query<{ data: PaymentResponse[] }, void>({
       query: () => ({
         url: "/payments/me",
-      }),
-      providesTags: ["Payments"],
-    }),
-
-    // Get payment by transaction ID
-    getPaymentByTransactionId: build.query<{ data: PaymentResponse }, string>({
-      query: (transactionId) => ({
-        url: `/payments/transaction/${transactionId}`,
       }),
       providesTags: ["Payments"],
     }),
@@ -89,14 +71,6 @@ const paymentApi = baseApi.injectEndpoints({
           params: cleaned,
         };
       },
-      providesTags: ["Payments"],
-    }),
-
-    // Verify payment status
-    verifyPayment: build.query<{ data: PaymentResponse }, string>({
-      query: (transactionId) => ({
-        url: `/payments/verify/${transactionId}`,
-      }),
       providesTags: ["Payments"],
     }),
 
@@ -125,11 +99,8 @@ const paymentApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useInitiatePaymentMutation,
   useGetMyPaymentsQuery,
-  useGetPaymentByTransactionIdQuery,
   useGetAllPaymentsQuery,
-  useVerifyPaymentQuery,
   useUpdatePaymentStatusMutation,
   useVerifyManualPaymentMutation,
 } = paymentApi;

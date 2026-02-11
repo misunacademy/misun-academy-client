@@ -17,7 +17,7 @@ export interface ApiErrorResponse {
 /**
  * Standard API success response from server
  */
-export interface ApiSuccessResponse<T = any> {
+export interface ApiSuccessResponse<T = unknown> {
   success: true;
   message: string;
   data: T;
@@ -41,7 +41,7 @@ export const getErrorMessage = (error: unknown): string => {
     // Check if error has data with our API error format
     if (fetchError.data && typeof fetchError.data === 'object') {
       const errorData = fetchError.data as ApiErrorResponse;
-      
+
       if (errorData.message) {
         return errorData.message;
       }
@@ -173,7 +173,7 @@ export const isValidationError = (error: unknown): boolean => {
 export const formatPaginationParams = (params: {
   page?: number;
   limit?: number;
-  [key: string]: any;
+  [key: string]: string | number | boolean | undefined;
 }) => {
   const { page = 1, limit = 10, ...rest } = params;
   return {
@@ -186,9 +186,9 @@ export const formatPaginationParams = (params: {
 /**
  * Build query string from params object
  */
-export const buildQueryString = (params: Record<string, any>): string => {
+export const buildQueryString = (params: Record<string, string | number | boolean | null | undefined>): string => {
   const searchParams = new URLSearchParams();
-  
+
   Object.keys(params).forEach(key => {
     const value = params[key];
     if (value !== undefined && value !== null && value !== '') {
@@ -206,13 +206,13 @@ export const buildQueryString = (params: Record<string, any>): string => {
 export const retryCondition = (error: FetchBaseQueryError): boolean => {
   // Retry on network errors
   if (error.status === 'FETCH_ERROR') return true;
-  
+
   // Retry on timeout
   if (error.status === 'TIMEOUT_ERROR') return true;
-  
+
   // Retry on 5xx server errors
   if (typeof error.status === 'number' && error.status >= 500) return true;
-  
+
   // Don't retry on 4xx client errors
   return false;
 };

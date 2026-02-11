@@ -1,21 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import duration from "dayjs/plugin/duration";
 import { CalendarCheck, CalendarX } from "lucide-react";
 import { useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
 import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
 import Countdown from "../course/Countdown";
-
-dayjs.extend(relativeTime);
-dayjs.extend(duration);
-
+import { format } from "date-fns";
 
 const formatDate = (date: Date | string) => {
-    return dayjs(date).format('DD MMMM, YYYY');
+    return format(new Date(date), 'dd MMMM, yyyy');
 };
 
 export const EnrollmentSection = () => {
@@ -83,7 +77,7 @@ export const EnrollmentSection = () => {
                     <p>তাই আর দেরি না করে এখনই প্রস্তুতি নিন, কারণ সময় শেষ হয়ে গেলে আবার অপেক্ষা...!</p>
 
                     {/* Countdown Timer */}
-                    <Countdown/>
+                    <Countdown />
                 </div>
 
                 {/* Information Cards Grid */}

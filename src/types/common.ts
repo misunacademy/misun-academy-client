@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Enums and Types from server (matching server-side enums)
 export enum Role {
@@ -154,7 +153,7 @@ export interface IPayment {
     amount: number;
     status: Status;
     method: "SSLCommerz" | "phonePay";
-    gatewayResponse: any;
+    gatewayResponse: Record<string, unknown>;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -228,7 +227,7 @@ export interface ILesson {
     type: 'video' | 'reading' | 'quiz' | 'project';
     duration?: number;
     isPreview?: boolean;
-    content?: any;
+    content?: Record<string, unknown> | string;
     media?: {
         type: 'youtube' | 'gdrive' | 'video';
         url: string;
@@ -291,7 +290,7 @@ export interface ICourse {
         discountPrice?: number | null;
         discountExpiry?: Date | null;
     };
-    enrollment?: any;
+    enrollment?: Record<string, unknown>;
     curriculum?: IModule[];
     resources?: IResource[];
     tags?: string[];

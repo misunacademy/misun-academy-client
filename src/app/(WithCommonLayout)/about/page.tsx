@@ -1,13 +1,10 @@
-'use client';
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Target, Eye, Users, ArrowRight, Sparkles, ChevronDown } from "lucide-react";
-import { useState } from "react";
 import Image from "next/image";
 import { Debbroto, Mithun, Nurnobi } from "@/assets/images";
 
 const AboutUs = () => {
-  const [isVisible, setIsVisible] = useState(true);
 
   const teamMembers = [
     {
@@ -58,7 +55,7 @@ const AboutUs = () => {
         <div className="absolute top-60 right-20 w-32 h-32 bg-primary/10 rounded-full animate-float blur-2xl" style={{ animationDelay: '1s' }}></div>
         <div className="absolute bottom-40 left-1/4 w-16 h-16 bg-primary/30 rounded-full animate-float blur-lg" style={{ animationDelay: '2s' }}></div>
 
-        <div className={`relative container mx-auto text-center px-4 transition-all duration-1000 ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
+        <div className="relative container mx-auto text-center px-4 transition-all duration-1000 animate-fade-in">
           <div className="max-w-4xl mx-auto">
             {/* <div className="flex items-center justify-center mb-8">
               <Sparkles className="h-8 w-8 text-primary mr-4 animate-pulse" />

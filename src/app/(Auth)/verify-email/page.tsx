@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
@@ -14,24 +14,46 @@ const VerifyEmailPage = () => {
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>(token ? 'loading' : 'error');
     const [message, setMessage] = useState(token ? '' : 'Invalid verification link');
 
+    const verifyingRef = useState(false); // Using state to trigger re-render if needed, but ref is better for guard
+    const hasVerified = useState(false); // Track if verification attempted
+
+    // Use a ref to track if verification has already started/completed
+    // This persists across re-renders and prevents double-invocation in Strict Mode
+    const isVerifying = useRef(false);
+
     useEffect(() => {
-        if (!token) return;
+        if (!token || isVerifying.current) return;
+
+        isVerifying.current = true;
 
         const verify = async () => {
-            const result = await verifyEmail(token);
-            
-            if (result.success) {
-                setStatus('success');
-                setMessage('Email verified successfully! You can now log in.');
-                // Toast and redirect are handled by verifyEmail method
-            } else {
+            try {
+                const result = await verifyEmail(token);
+
+                if (result.success) {
+                    setStatus('success');
+                    setMessage('Email verified successfully! You can now log in.');
+                    // Toast and redirect are handled by verifyEmail method
+                } else {
+                    // Check if error suggests already verified
+                    if (result.error?.toLowerCase().includes('already verified') ||
+                        result.error?.toLowerCase().includes('invalid token')) {
+                        // If we get invalid token but we just tried to verify, it might be a race condition
+                        // or user clicked link again. 
+                        // For now, respect the error but maybe show a friendlier message if needed
+                    }
+
+                    setStatus('error');
+                    setMessage(result.error || 'Verification failed');
+                }
+            } catch (error) {
                 setStatus('error');
-                setMessage(result.error || 'Verification failed');
+                setMessage('An unexpected error occurred');
             }
         };
 
         verify();
-    }, [token, verifyEmail]);
+    }, [token]); // Remove verifyEmail from deps to avoid re-running if hook recreates it
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">

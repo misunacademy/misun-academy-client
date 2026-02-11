@@ -5,23 +5,20 @@ import { useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
 import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
 import { useGetCourseByIdQuery } from "@/redux/features/course/courseApi";
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import duration from "dayjs/plugin/duration";
-dayjs.extend(relativeTime);
-dayjs.extend(duration);
+import { intervalToDuration, isBefore, isAfter } from "date-fns";
 
-const formatCountdown = (diffInMillis: number) => {
-  const dur = dayjs.duration(diffInMillis);
+const formatCountdown = (start: Date, end: Date) => {
+  const duration = intervalToDuration({ start, end });
+  const { months, days, hours, minutes, seconds } = duration;
   let countdownStr = "";
-  if (dur.months()) countdownStr += `${dur.months()} মাস `;
-  countdownStr += `${dur.days()} দিন ${dur.hours()} ঘণ্টা ${dur.minutes()} মিনিট ${dur.seconds()} সেকেন্ড`;
+  if (months) countdownStr += `${months} মাস `;
+  countdownStr += `${days ?? 0} দিন ${hours ?? 0} ঘণ্টা ${minutes ?? 0} মিনিট ${seconds ?? 0} সেকেন্ড`;
   return countdownStr;
 };
 
 
 const Countdown = () => {
-  const [now, setNow] = useState(dayjs());
+  const [now, setNow] = useState(new Date());
   const [countdown, setCountdown] = useState("");
   const [status, setStatus] = useState<'upcoming' | 'ongoing' | 'ended'>('ended');
 
@@ -47,8 +44,8 @@ const Countdown = () => {
 
   const batch = featuredBatchData?.data || batchData?.data;
 
-  const start = batch ? dayjs(batch.enrollmentStartDate) : null;
-  const end = batch ? dayjs(batch.enrollmentEndDate) : null;
+  const start = batch ? new Date(batch.enrollmentStartDate) : null;
+  const end = batch ? new Date(batch.enrollmentEndDate) : null;
 
   useEffect(() => {
     if (!batch || !start || !end) {
@@ -56,18 +53,18 @@ const Countdown = () => {
     }
 
     const interval = setInterval(() => {
-      const current = dayjs();
+      const current = new Date();
       setNow(current);
 
-      const isUpcomingNow = current.isBefore(start);
-      const isOngoingNow = current.isAfter(start) && current.isBefore(end);
+      const isUpcomingNow = isBefore(current, start);
+      const isOngoingNow = isAfter(current, start) && isBefore(current, end);
 
       if (isUpcomingNow) {
         setStatus('upcoming');
-        setCountdown(formatCountdown(start.diff(current)));
+        setCountdown(formatCountdown(current, start));
       } else if (isOngoingNow) {
         setStatus('ongoing');
-        setCountdown(formatCountdown(end.diff(current)));
+        setCountdown(formatCountdown(current, end));
       } else {
         setStatus('ended');
         setCountdown("");
