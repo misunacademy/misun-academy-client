@@ -16,6 +16,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -72,6 +82,10 @@ export default function RecordingsPage() {
     batchId?: string;
     isPublished?: boolean;
   }>({});
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [recordingToDelete, setRecordingToDelete] = useState<Recording | null>(null);
 
   const { data: recordingsData, isLoading } = useGetRecordingsQuery(filters);
   const { data: coursesData } = useGetAllCoursesQuery({});
@@ -148,31 +162,22 @@ export default function RecordingsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    // if (!confirm("Are you sure you want to delete this recording?")) return;
+  const handleDelete = (recording: Recording) => {
+    setRecordingToDelete(recording);
+    setDeleteDialogOpen(true);
+  };
 
-    // try {
-    //   await deleteRecording(id).unwrap();
-    //   toast.success("Recording deleted successfully");
-    // } catch (error) {
-    //   const err = error as { data?: { message?: string } };
-    //   toast.error(err?.data?.message || "Failed to delete recording");
-    // }
-    toast('Are you sure you want to delete this batch? This action cannot be undone.', {
-      action: {
-        label:  <Button size={'sm'} className="bg-red-500 text-white hover:bg-red-600">Delete</Button>,
-        onClick: async () => {
-          try {
-            await deleteRecording(id).unwrap();
-            toast.success("Recording deleted successfully");
-          } catch (error) {
-            const err = error as { data?: { message?: string } };
-            toast.error(err?.data?.message || "Failed to delete recording");
-          }
-        },
-      },
-      cancel: 'Cancel',
-    });
+  const confirmDelete = async () => {
+    if (!recordingToDelete) return;
+    try {
+      await deleteRecording(recordingToDelete._id).unwrap();
+      toast.success("Recording deleted successfully");
+      setDeleteDialogOpen(false);
+      setRecordingToDelete(null);
+    } catch (error) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || "Failed to delete recording");
+    }
   };
 
   const openEditDialog = (recording: Recording) => {
@@ -391,11 +396,11 @@ export default function RecordingsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(recording._id)}
+                          onClick={() => handleDelete(recording)}
                           disabled={isDeleting}
                         >
                           <Trash2 className="h-4 w-4" />
-                        </Button>
+                        </Button> 
                       </div>
                     </TableCell>
                   </TableRow>
@@ -405,6 +410,27 @@ export default function RecordingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the recording &quot;{recordingToDelete?.title}&quot;. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>

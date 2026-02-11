@@ -56,7 +56,7 @@ export default function AdminCourses() {
 
       <CoursesTable courses={courses} onEditCourse={handleEditCourse} onDeleteCourse={(id) => handleDeleteCourse(id)} />
 
-      {/* Removed EditCourseDialog - now using page-based forms */}
+    
     </div>
   );
 }

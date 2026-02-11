@@ -192,9 +192,9 @@ export default function BatchEdit() {
                                 Update batch information
                             </CardDescription>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={resetForm}>
+                        {/* <Button variant="ghost" size="icon" onClick={resetForm}>
                             <X className="w-4 h-4" />
-                        </Button>
+                        </Button> */}
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -330,13 +330,13 @@ export default function BatchEdit() {
                             </div>
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 justify-end">
+                            <Button type="button" variant="outline" onClick={resetForm}>
+                                Cancel
+                            </Button>
                             <Button type="submit" disabled={isUpdating}>
                                 {isUpdating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                                 Update Batch
-                            </Button>
-                            <Button type="button" variant="outline" onClick={resetForm}>
-                                Cancel
                             </Button>
                         </div>
                     </form>

@@ -6,6 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Search, Edit, Trash2 } from "lucide-react";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { Course } from "@/types/common";
 
 interface CoursesTableProps {
@@ -15,6 +26,25 @@ interface CoursesTableProps {
 }
 
 export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesTableProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+
+  const openDeleteDialog = (course: Course) => {
+    setSelectedCourse(course);
+    setIsDialogOpen(true);
+  };
+
+  const closeDeleteDialog = () => {
+    setSelectedCourse(null);
+    setIsDialogOpen(false);
+  };
+
+  const confirmDelete = () => {
+    if (onDeleteCourse && selectedCourse) {
+      onDeleteCourse(selectedCourse._id);
+    }
+    closeDeleteDialog();
+  };
 
   return (
     <Card>
@@ -96,9 +126,9 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
                       <Button variant="ghost" size="sm" onClick={() => onEditCourse(course)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => onDeleteCourse && onDeleteCourse(course?._id)}>
+                      <Button variant="ghost" size="sm" onClick={() => openDeleteDialog(course)}>
                         <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </Button> 
                     </div>
                   </TableCell>
                 </TableRow>
@@ -106,6 +136,24 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
             )}
           </TableBody>
         </Table>
+
+        <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete course</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete <strong>{selectedCourse?.title}</strong>? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
       </CardContent>
     </Card>
   );
