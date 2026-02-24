@@ -5,21 +5,21 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-300 ease-in-out focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
         default:
-          'bg-primary text-primary-foreground shadow hover:bg-primary/90 font-semibold',
+          'bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 hover:shadow-[0_4px_14px_0_hsl(var(--primary)/0.39)] hover:-translate-y-0.5 font-semibold',
         destructive:
-          'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
+          'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 hover:shadow-[0_4px_14px_0_hsl(var(--destructive)/0.39)]',
         outline:
           'border font-semibold text-primary border-primary bg-background shadow-sm hover:bg-primary/10',
         secondary:
-          'bg-secondary text-primary font-semibold shadow-sm hover:bg-secondary/80',
+          'bg-secondary text-secondary-foreground font-semibold shadow-sm hover:bg-secondary/90',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
-        creative: "bg-gradient-creative text-primary hover:shadow-[0_0_30px_hsl(var(--primary)/0.5)] transition-all duration-550 font-semibold px-8 py-6 text-base rounded-xl",
+        creative: "relative overflow-hidden bg-gradient-to-r from-primary to-primary-glow text-white shadow-[0_4px_24px_hsl(var(--primary)/0.45)] hover:shadow-[0_8px_32px_hsl(var(--primary)/0.65)] hover:-translate-y-1 hover:scale-[1.03] active:scale-95 active:translate-y-0 transition-all duration-300 font-semibold px-8 py-6 text-base rounded-xl",
       },
       size: {
         default: 'h-9 px-4 py-5',

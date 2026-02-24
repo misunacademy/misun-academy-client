@@ -23,6 +23,7 @@ import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
   const [isDark, setIsDark] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false); // ensure SSR/CSR markup match
   const navbarRef = useRef<HTMLDivElement>(null);
   const { user, signOut } = useAuth();
@@ -72,10 +73,11 @@ export default function Navbar() {
       });
 
       setIsDark(isOverDarkSection);
+      setIsScrolled(window.scrollY > 50);
     };
 
     // Throttle the scroll event for better performance
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     // Initial check on mount
     handleScroll();
@@ -89,11 +91,23 @@ export default function Navbar() {
   const userRole = (safeUser as any)?.role;
 
   return (
-    <div className="sticky top-0 z-[999] w-full">
-      <div className="nav-mask-bg absolute z-10 h-full w-full bg-white/20 "></div>
-      <div className="nav-mask-sm  absolute z-20 h-full w-full backdrop-blur-sm"></div>
-      <div className="nav-mask-md absolute z-30 h-full w-full backdrop-blur-md"></div>
-      <div className="nav-mask-lg absolute z-40 h-full w-full backdrop-blur-lg"></div>
+    <div className={cn(
+      "fixed top-0 z-[999] w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+      isScrolled
+        ? "bg-[#060f0a]/95 backdrop-blur-xl border-b border-primary/20 shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
+        : "bg-transparent border-b border-transparent"
+    )}>
+      {!isScrolled && (
+        <>
+          <div className="nav-mask-bg absolute z-10 h-full w-full bg-black/10 transition-opacity duration-500 delay-100"></div>
+          <div className="nav-mask-sm absolute z-20 h-full w-full backdrop-blur-sm transition-opacity duration-500 delay-150"></div>
+          <div className="nav-mask-md absolute z-30 h-full w-full backdrop-blur-md transition-opacity duration-500 delay-200"></div>
+        </>
+      )}
+      {/* Scrolled state: subtle primary glow along bottom edge */}
+      {isScrolled && (
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+      )}
       <Container className="relative z-50 max-w-7xl mx-auto">
         <nav ref={navbarRef} className="h-16 flex items-center justify-between">
           <Link href="/">
@@ -110,27 +124,44 @@ export default function Navbar() {
           <div className="flex items-center space-x-8">
             <div
               className={cn(
-                'transition-all duration-300 hidden md:flex items-center space-x-10 ',
+                'transition-all duration-500 hidden md:flex items-center space-x-10 font-bold tracking-wide',
                 {
-                  'text-white': isDark,
+                  'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]': !isScrolled,
+                  'text-white/85': isScrolled,
                 }
               )}
             >
-              <Link href="/" className='hover:text-primary'>হোম</Link>
-              <Link href="/courses" className='hover:text-primary'>কোর্স সম্পর্কে</Link>
-              <Link href="/feedback" className='hover:text-primary'>শিক্ষার্থীদের মতামত</Link>
-              <Link href="/about" className='hover:text-primary'>আমাদের সম্পর্কে</Link>
-              {/* <Link href="/blogs">Blogs</Link> */}
-              {!safeUser ? (
-                <Link href={"/auth"}
-                  className='text-emerald-600'
+              {[
+                { name: 'হোম', path: '/' },
+                { name: 'কোর্স সম্পর্কে', path: '/courses' },
+                { name: 'শিক্ষার্থীদের মতামত', path: '/feedback' },
+                { name: 'আমাদের সম্পর্কে', path: '/about' },
+              ].map((link) => (
+                <Link
+                  key={link.path}
+                  href={link.path}
+                  className="relative group py-2"
                 >
-                  লগইন
+                  <span className="group-hover:text-primary transition-colors duration-300">
+                    {link.name}
+                  </span>
+                  {/* Hover Underline effect */}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-glow group-hover:w-full transition-all duration-300 ease-out" />
+                </Link>
+              ))}
+
+              {!safeUser ? (
+                <Link
+                  href={"/auth"}
+                  className={cn("relative group py-2 font-bold text-primary-glow drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]")}
+                >
+                  <span className="transition-colors duration-300 group-hover:text-white">লগইন</span>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-glow group-hover:w-full transition-all duration-300 ease-out" />
                 </Link>
               ) : null}
-              <div className='flex items-end justify-end space-x-4'>
+              {/* <div className='flex items-end justify-end space-x-4'>
                 <Link href={"/checkout"}>
-                  <Button className='w-28' onClick={() => {
+                  <Button variant="creative" className='w-full sm:w-auto px-6 py-2 h-auto text-sm' onClick={() => {
                     // Use helper to ensure event is queued even if pixel isn't loaded yet
                     import('@/lib/metaPixel').then(({ track }) => track('InitiateCheckout', {
                       content_name: 'Graphic Design Course',
@@ -140,25 +171,67 @@ export default function Navbar() {
                     }));
                   }}>এনরোল করুন</Button>
                 </Link>
+              </div> */}
+              <div className="flex items-center justify-end">
+                <Link href="/checkout" className="w-full sm:w-auto block">
+                  <div
+                    className="relative p-[2px] rounded-full overflow-hidden cursor-pointer
+                      shadow-[0_4px_20px_rgba(32,180,134,0.4)] hover:shadow-[0_4px_30px_rgba(32,180,134,0.65)]
+                      transition-shadow duration-300 group"
+                    onClick={() => {
+                      import('@/lib/metaPixel').then(({ track }) =>
+                        track('InitiateCheckout', {
+                          content_name: 'Graphic Design Course',
+                          content_type: 'course',
+                          value: 4000,
+                          currency: 'BDT',
+                        })
+                      );
+                    }}
+                  >
+                    {/* Spinning conic border */}
+                    <span
+                      className="absolute inset-[-100%] animate-[spin_3s_linear_infinite]"
+                      style={{
+                        background:
+                          'conic-gradient(from 90deg, transparent 20%, hsl(156 70% 42%) 45%, hsl(156 85% 70%) 55%, hsl(156 70% 42%) 70%, transparent 80%)',
+                      }}
+                    />
+                    {/* Inner button */}
+                    <div className="relative bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white px-7 py-2.5 rounded-full flex items-center justify-center gap-2
+                      group-hover:from-[#0f6e41] group-hover:via-[#18a06a] group-hover:to-[#0f6e41]
+                      transition-colors duration-300 w-full h-full overflow-hidden">
+                      {/* Shine sweep */}
+                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                      <span className="relative font-bold text-sm tracking-wide">এনরোল করুন</span>
+                      <svg className="relative w-4 h-4 text-white group-hover:translate-x-1 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                    </div>
+                  </div>
+                </Link>
               </div>
+              
               {/* User Menu */}
               {safeUser ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full border border-emerald-600">
+                    <Button variant="ghost" className={cn(
+                    "relative h-10 w-10 rounded-full border transition-all duration-300 p-0 overflow-hidden",
+                    isScrolled
+                      ? "border-primary/40 hover:border-primary hover:shadow-[0_0_15px_hsl(156_70%_42%/0.4)]"
+                      : "border-white/40 hover:border-primary hover:shadow-[0_0_15px_hsl(156_70%_42%/0.4)]"
+                  )}>
                       {
-                        safeUser?.image ?  <Image
-                        src={safeUser.image || '/default-avatar.png'}
-                        alt="User Avatar"
-                        width={40}
-                        height={40}
-                        className="absolute top-0 left-0 h-10 w-10 rounded-full object-cover"
-                      />:<User className="h-8 w-8 text-emerald-600" />
+                        safeUser?.image ? <Image
+                          src={safeUser.image || '/default-avatar.png'}
+                          alt="User Avatar"
+                          width={40}
+                          height={40}
+                          className="h-full w-full object-cover"
+                        /> : <User className={cn("h-6 w-6", isDark && !isScrolled ? "text-white" : "text-primary")} />
                       }
-                     
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuContent className="w-56 mt-2 z-[9999]" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium leading-none">{safeUser?.name || 'User'}</p>
@@ -203,7 +276,7 @@ export default function Navbar() {
             </div>
             <div className="md:hidden px-3">
               {/* <PhoneNavbar /> */}
-              <MobileNavbar />
+              <MobileNavbar isScrolled={isScrolled} />
             </div>
           </div>
         </nav>
