@@ -43,6 +43,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             '/dashboard/student/profile': 'Profile',
             '/dashboard/student/payments': 'Payments History',
             '/dashboard/student/settings': 'Settings',
+            // employee pages
+            '/dashboard/employee': 'Employee Dashboard',
+            '/dashboard/employee/salaries': 'Salaries',
+            '/dashboard/employee/leave': 'Leave Management',
+            '/dashboard/employee/profile': 'Profile',
+            '/dashboard/employee/settings': 'Settings',
         }
 
         return pathMap[path] || 'Overview'
@@ -54,6 +60,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             return 'Admin Dashboard'
         } else if (path.startsWith('/dashboard/student')) {
             return 'Student Dashboard'
+        } else if (path.startsWith('/dashboard/employee')) {
+            return 'Employee Dashboard'
         }
         return 'Dashboard'
     }

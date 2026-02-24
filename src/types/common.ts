@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Enums and Types from server (matching server-side enums)
 export enum Role {
@@ -5,6 +6,7 @@ export enum Role {
     INSTRUCTOR = 'instructor',
     ADMIN = 'admin',
     SUPERADMIN = 'superadmin',
+    EMPLOYEE = 'employee',
 }
 
 export enum UserStatus {

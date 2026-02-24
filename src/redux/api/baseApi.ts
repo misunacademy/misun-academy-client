@@ -73,7 +73,8 @@ export const baseApi = createApi({
         'Uploads',
         'Modules',
         'Lessons',
-        'Settings'
+        'Settings',
+        'Employees'
     ],
     endpoints: () => ({}),
 });

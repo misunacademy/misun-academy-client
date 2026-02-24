@@ -25,6 +25,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEnrollment } from "@/hooks/useEnrollment";
 import { Role } from "@/types/common";
 
+
 // Base menu items for all students (enrolled or not)
 const baseStudentItems = [
     {
@@ -63,7 +64,7 @@ const enrolledOnlyItems = [
         title: "Enrollment Poster",
         url: "/dashboard/student/enrollment-poster",
         icon: ImageDown,
-        requiresEnrollment: true,   
+        requiresEnrollment: true,
     },
     {
         title: "Certificates",
@@ -91,6 +92,32 @@ const bottomStudentItems = [
         icon: Settings,
     },
 ];
+const employeeItems = [
+    {
+        title: "Dashboard",
+        url: "/dashboard/employee",
+        icon: Home,
+
+    }, {
+        title: "Salaries",
+        url: "/dashboard/employee/salaries",
+        icon: CreditCard,
+    }, {
+        title: "Leave Management",
+        url: "/dashboard/employee/leave",
+        icon: Users,
+    },
+    {
+        title: "Profile",
+        url: "/dashboard/employee/profile",
+        icon: User2,
+    },
+    {
+        title: "Settings",
+        url: "/dashboard/employee/settings",
+        icon: Settings,
+    },
+]
 
 const adminItems = [
     {
@@ -153,7 +180,7 @@ const adminItems = [
     //     url: "/dashboard/admin/settings",
     //     icon: Settings,
     // },
-        {
+    {
         title: "Profile",
         url: "/dashboard/admin/profile",
         icon: User2,
@@ -174,7 +201,7 @@ export function AppSidebar() {
         Role.ADMIN.toLowerCase(),
         Role.INSTRUCTOR.toLowerCase()
     ].includes(userRole);
-
+    const isEmployee = userRole === Role.EMPLOYEE.toLowerCase();
     // Build student menu based on enrollment status
     const studentItems = isAdmin ? [] : [
         ...baseStudentItems,
@@ -182,9 +209,9 @@ export function AppSidebar() {
         ...bottomStudentItems,
     ];
 
-    const items = isAdmin ? adminItems : studentItems;
+    const items = isAdmin ? adminItems : isEmployee ? employeeItems : studentItems;
 
-    const panelText = isAdmin ? 'Admin Panel' : 'Student Panel';
+    const panelText = isAdmin ? 'Admin Panel' : isEmployee ? 'Employee Panel' : 'Student Panel';
 
     const router = useRouter();
     const { signOut } = useAuth();
