@@ -5,8 +5,11 @@ import { useEffect } from "react";
 import BannerSection from "@/components/module/course/BannerSection";
 import CourseCurriculum from "@/components/module/course/CourseCurriculum";
 import CourseWorkflow from "@/components/module/course/CourseWorkflow";
+import InstructorSection from "@/components/module/course/InstructorSection";
 import BreadcrumbJsonLd from "@/components/seo/BreadcrumbJsonLd";
 import { track } from '@/lib/metaPixel';
+import FaqSection from "@/components/module/course/FaqSection";
+import EnrollCtaSection from "@/components/module/course/EnrollCtaSection";
 
 const CourseDetails = () => {
     // Track ViewContent event
@@ -21,10 +24,11 @@ const CourseDetails = () => {
         <div>
             <BreadcrumbJsonLd />
             <BannerSection />
+            <InstructorSection />
             <CourseWorkflow />
             <CourseCurriculum />
-            {/* <CareerPath />
-                <FaqSection /> */}
+            <FaqSection />
+            <EnrollCtaSection />
         </div>
     );
 };

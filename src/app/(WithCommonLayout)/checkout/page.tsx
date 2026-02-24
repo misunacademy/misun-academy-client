@@ -12,10 +12,8 @@ import {
     DialogFooter,
     DialogDescription,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { enrollmentPeriod, isEnrollmentRunning } from '@/constants/enrollment';
 import { AlertTriangle, Calendar, Clock } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import { v4 as uuid } from "uuid";
 import { track } from '@/lib/metaPixel';
@@ -71,10 +69,15 @@ const Page = () => {
     // Show loading state while checking authentication
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-center space-y-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                    <p className="text-muted-foreground">লোড হচ্ছে...</p>
+            <div className="flex items-center justify-center min-h-screen bg-[#060f0a]">
+                <div className="text-center space-y-5">
+                    <div className="relative p-[1.5px] rounded-full overflow-hidden w-16 h-16 mx-auto">
+                        <span className="absolute inset-[-100%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
+                        <div className="relative w-full h-full rounded-full bg-[#060f0a] flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                        </div>
+                    </div>
+                    <p className="text-white/50 text-sm tracking-wide">লোড হচ্ছে...</p>
                 </div>
             </div>
         );
@@ -87,80 +90,65 @@ const Page = () => {
 
     if (!isEnrollmentRunning) {
         return (
-            // <Dialog open={openModal} onOpenChange={handleModalChange}>
-            //     <DialogContent>
-            //         <DialogHeader>
-            //             <DialogTitle className='text-primary'>এনরোলমেন্ট এখনো শুরু হয়নি</DialogTitle>
-            //
-            //         <div className="space-y-2 text-muted-foreground text-sm">
-            //             <p>
-            //                 <strong>এনরোলমেন্ট শুরু হবে:</strong> {enrollmentPeriod.startDate}
-            //             </p>
-            //             <p>
-            //                 <strong>এনরোলমেন্টের শেষ তারিখ:</strong> {enrollmentPeriod.endDate}
-            //             </p>
-            //         </div>
-            //         <DialogFooter className="pt-4">
-            //             <Button onClick={() => handleModalChange(false)}>বন্ধ করুন</Button>
-            //         </DialogFooter>
-            //     </DialogContent>
-            // </Dialog>
             <Dialog open={openModal} onOpenChange={handleModalChange}>
-                <DialogContent className="sm:max-w-lg shadow-elegant font-bangla">
+                <DialogContent className="sm:max-w-lg font-bangla bg-[#060f0a] border border-primary/20 text-white">
                     <DialogHeader className="space-y-4">
                         <div className="flex items-center justify-center">
-                            <div className="w-16 h-16 bg-yellow-600/10 rounded-full flex items-center justify-center">
-                                <AlertTriangle className="h-8 w-8 text-yellow-600" />
+                            <div className="relative p-[1.5px] rounded-full overflow-hidden">
+                                <span className="absolute inset-[-100%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(40_90%_55%)_100%)]" />
+                                <div className="relative w-16 h-16 rounded-full bg-[#0f1a10] flex items-center justify-center">
+                                    <AlertTriangle className="h-7 w-7 text-yellow-400" />
+                                </div>
                             </div>
                         </div>
-                        <DialogTitle className="text-center text-xl font-bold text-primary">
+                        <DialogTitle className="text-center text-xl font-bold text-white">
                             এনরোলমেন্ট এখনো শুরু হয়নি
                         </DialogTitle>
-                        <DialogDescription className="text-center text-muted-foreground">
+                        <DialogDescription className="text-center text-white/50">
                             এনরোলমেন্ট এখনো শুরু হয়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন!
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="space-y-4 py-4">
-                        <Card className="border-l-4 border-l-primary bg-primary/5">
-                            <CardContent className="p-4">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Calendar className="h-5 w-5 text-primary" />
-                                    <span className="font-semibold text-primary">এনরোলমেন্ট শুরু হবে</span>
+                    <div className="space-y-3 py-4">
+                        {/* Start date card */}
+                        <div className="relative overflow-hidden rounded-xl bg-[#060f0a] border border-primary/25 p-4">
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+                            <div className="flex items-center gap-3 mb-1">
+                                <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/25 flex items-center justify-center">
+                                    <Calendar className="h-4 w-4 text-primary" />
                                 </div>
-                                <p className="text-lg font-bold text-foreground">
-                                    {enrollmentPeriod.startDate}
-                                </p>
-                            </CardContent>
-                        </Card>
+                                <span className="font-semibold text-primary text-sm">এনরোলমেন্ট শুরু হবে</span>
+                            </div>
+                            <p className="text-base font-bold text-white/90 ml-11">{enrollmentPeriod.startDate}</p>
+                        </div>
 
-                        <Card className="border-l-4 border-l-destructive bg-destructive/5">
-                            <CardContent className="p-4">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Clock className="h-5 w-5 text-destructive" />
-                                    <span className="font-semibold text-destructive">এনরোলমেন্টের শেষ তারিখ</span>
+                        {/* End date card */}
+                        <div className="relative overflow-hidden rounded-xl bg-[#060f0a] border border-red-500/25 p-4">
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
+                            <div className="flex items-center gap-3 mb-1">
+                                <div className="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/25 flex items-center justify-center">
+                                    <Clock className="h-4 w-4 text-red-400" />
                                 </div>
-                                <p className="text-lg font-bold text-foreground">
-                                    {enrollmentPeriod.endDate}
-                                </p>
-                            </CardContent>
-                        </Card>
+                                <span className="font-semibold text-red-400 text-sm">এনরোলমেন্টের শেষ তারিখ</span>
+                            </div>
+                            <p className="text-base font-bold text-white/90 ml-11">{enrollmentPeriod.endDate}</p>
+                        </div>
 
-                        <div className="bg-info/5 border border-info/20 rounded-lg p-4">
-                            <p className="text-sm text-info-foreground text-center">
-                                📌 এই পেজটি বুকমার্ক করে রাখুন!
-                            </p>
+                        <div className="rounded-xl bg-primary/8 border border-primary/20 p-3 text-center">
+                            <p className="text-sm text-white/60">📌 এই পেজটি বুকমার্ক করে রাখুন!</p>
                         </div>
                     </div>
 
-                    <DialogFooter className="pt-4">
-                        <Button
-                            onClick={() => handleModalChange(false)}
-                            className="w-full transition-all duration-300"
-                            size="lg"
-                        >
-                            বুঝেছি
-                        </Button>
+                    <DialogFooter className="pt-2">
+                        <div className="relative p-[1.5px] rounded-xl overflow-hidden w-full">
+                            <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
+                            <button
+                                onClick={() => handleModalChange(false)}
+                                className="relative w-full bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41] transition-all duration-300 text-white font-bold py-3 rounded-xl cursor-pointer"
+                            >
+                                বুঝেছি
+                            </button>
+                        </div>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

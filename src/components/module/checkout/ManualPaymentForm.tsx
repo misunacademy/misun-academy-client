@@ -3,11 +3,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { CheckCircle, ArrowLeft, User, Phone, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -48,104 +45,97 @@ const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-5">
             {/* QR Code Section */}
-            <Card className="glass-card">
-                <CardHeader>
-                    <CardTitle className="text-center">Pay with PhonePe</CardTitle>
-                    <p className="text-muted-foreground text-center">Send payment to complete your enrollment</p>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    {/* phone number */}
+            <div className="relative overflow-hidden rounded-2xl bg-[#060f0a] border border-primary/15">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+                <div className="absolute top-0 left-0 w-5 h-5 border-t border-l border-primary/40 rounded-tl-2xl" />
+                <div className="absolute top-0 right-0 w-5 h-5 border-t border-r border-primary/40 rounded-tr-2xl" />
 
-                    <div className="flex justify-center items-center">
-                        <div className=" p-6 w-full max-w-md transform transition-all hover:scale-[1.02]">
-                            <div className="space-y-6">
-                                {/* Logo Section */}
-                                <div className="flex justify-center">
-                                    <Image
-                                        src={phonePe}
-                                        alt="PhonePe"
-                                        width={200}
-                                        height={150}
-                                        className="object-contain"
-                                    />
+                <div className="p-5 border-b border-primary/10">
+                    <h3 className="text-lg font-bold text-white/90 text-center">Pay with PhonePe</h3>
+                    <p className="text-sm text-white/45 text-center mt-1">Send payment to complete your enrollment</p>
+                </div>
+
+                <div className="p-6 space-y-5">
+                    {/* Logo */}
+                    <div className="flex justify-center">
+                        <div className="relative overflow-hidden rounded-xl bg-white/5 border border-primary/15 p-4">
+                            <Image src={phonePe} alt="PhonePe" width={180} height={120} className="object-contain" />
+                        </div>
+                    </div>
+
+                    {/* Recipient Info */}
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between rounded-xl bg-primary/6 border border-primary/15 p-4 transition-colors hover:bg-primary/10">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
+                                    <User className="w-4 h-4 text-primary" />
                                 </div>
+                                <span className="text-white/55 font-medium text-sm">Recipient</span>
+                            </div>
+                            <span className="font-semibold text-white/85 text-sm">{paymentInfo.recipientName}</span>
+                        </div>
 
-                                {/* Recipient Info */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg p-4 transition-colors hover:bg-gray-100">
-                                        <div className="flex items-center gap-3">
-                                            <User className="w-6 h-6 text-indigo-600" />
-                                            <span className="text-gray-600 font-medium">Recipient</span>
-                                        </div>
-                                        <span className="font-semibold text-gray-900">{paymentInfo.recipientName}</span>
-                                    </div>
-
-                                    {/* Phone Number */}
-                                    <div className="flex items-center justify-between bg-gray-50 rounded-lg p-4 transition-colors hover:bg-gray-100">
-                                        <div className="flex items-center gap-3">
-                                            <Phone className="w-6 h-6 text-indigo-600" />
-                                            <span className="text-gray-600 font-medium">Phone</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-mono text-lg font-semibold text-gray-900">
-                                                {paymentInfo.phoneNumber}
-                                            </span>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => copyToClipboard(paymentInfo.phoneNumber)}
-                                                className="h-8 w-8 p-0 relative group"
-                                                title="Copy phone number"
-                                            >
-                                                <Copy className="w-4 h-4 text-indigo-600 group-hover:text-indigo-800 transition-colors" />
-                                                {copied && (
-                                                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1">
-                                                        Copied!
-                                                    </span>
-                                                )}
-                                            </Button>
-                                        </div>
-                                    </div>
+                        <div className="flex items-center justify-between rounded-xl bg-primary/6 border border-primary/15 p-4 transition-colors hover:bg-primary/10">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
+                                    <Phone className="w-4 h-4 text-primary" />
                                 </div>
-
-                                {/* Amount Badge */}
-                                <div className="flex justify-center">
-                                    <Badge
-                                        variant="destructive"
-                                        className="text-lg px-6 py-2 font-semibold bg-gradient-to-r from-rose-500 to-red-500 text-white rounded-full shadow-md"
-                                    >
-                                        Amount: INR {paymentInfo.amount.toLocaleString('en-IN')}
-                                    </Badge>
-                                </div>
+                                <span className="text-white/55 font-medium text-sm">Phone</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="font-mono font-semibold text-white/85">{paymentInfo.phoneNumber}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => copyToClipboard(paymentInfo.phoneNumber)}
+                                    className="relative w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center hover:bg-primary/20 transition-colors"
+                                    title="Copy phone number"
+                                >
+                                    {copied ? <CheckCircle className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5 text-primary/70" />}
+                                    {copied && (
+                                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#060f0a] border border-primary/25 text-primary text-[10px] rounded px-2 py-0.5 whitespace-nowrap">
+                                            Copied!
+                                        </span>
+                                    )}
+                                </button>
                             </div>
                         </div>
                     </div>
 
+                    {/* Amount */}
+                    <div className="flex justify-center">
+                        <div className="relative overflow-hidden rounded-xl bg-red-500/8 border border-red-500/25 px-6 py-2.5">
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
+                            <span className="font-bold text-red-400 text-lg">Amount: INR {paymentInfo.amount.toLocaleString('en-IN')}</span>
+                        </div>
+                    </div>
+
                     {/* Instructions */}
-                    <div className="bg-accent/50 rounded-lg p-4">
-                        <h4 className="font-semibold mb-3">Payment Instructions:</h4>
-                        <ol className="space-y-2 text-sm">
+                    <div className="relative overflow-hidden rounded-xl bg-primary/6 border border-primary/15 p-4">
+                        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+                        <h4 className="font-semibold text-white/75 text-sm mb-3">Payment Instructions:</h4>
+                        <ol className="space-y-2.5">
                             {paymentInfo.instructions.map((instruction, index) => (
-                                <li key={index} className="flex items-start gap-2">
-                                    <span className="w-5 h-5 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5">
+                                <li key={index} className="flex items-start gap-3">
+                                    <div className="w-5 h-5 bg-primary/15 border border-primary/30 text-primary rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">
                                         {index + 1}
-                                    </span>
-                                    <span>{instruction}</span>
+                                    </div>
+                                    <span className="text-sm text-white/55 leading-relaxed">{instruction}</span>
                                 </li>
                             ))}
                         </ol>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
 
             {/* Payment Details Form */}
-            <Card className="glass-card">
-                <CardHeader>
-                    <CardTitle>Confirm Your Payment</CardTitle>
-                </CardHeader>
-                <CardContent>
+            <div className="relative overflow-hidden rounded-2xl bg-[#060f0a] border border-primary/15">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+                <div className="p-5 border-b border-primary/10">
+                    <h3 className="text-lg font-bold text-white/90">Confirm Your Payment</h3>
+                </div>
+                <div className="p-5">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                             <FormField
@@ -153,17 +143,17 @@ const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps
                                 name="senderNumber"
                                 render={({ field, fieldState }) => (
                                     <FormItem>
-                                        <FormLabel>Your Phone Pay Number *</FormLabel>
+                                        <FormLabel className="text-white/65 text-sm">Your Phone Pay Number *</FormLabel>
                                         <FormControl>
                                             <Input
                                                 placeholder="Enter your phone pay number"
                                                 {...field}
                                                 className={cn(
-                                                    "h-12",
+                                                    "h-12 bg-primary/6 border-primary/20 text-white placeholder:text-white/30 focus:border-primary/50",
                                                     fieldState.invalid
-                                                        ? "border-red-500 focus-visible:ring-red-500"
+                                                        ? "border-red-500/60 focus-visible:ring-red-500/30"
                                                         : fieldState.isTouched && field.value
-                                                            ? "border-green-500 focus-visible:ring-green-500"
+                                                            ? "border-primary/50"
                                                             : ""
                                                 )}
                                             />
@@ -178,17 +168,17 @@ const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps
                                 name="transactionId"
                                 render={({ field, fieldState }) => (
                                     <FormItem>
-                                        <FormLabel>Transaction ID *</FormLabel>
+                                        <FormLabel className="text-white/65 text-sm">Transaction ID *</FormLabel>
                                         <FormControl>
                                             <Input
                                                 placeholder="Enter transaction ID from phone pay"
                                                 {...field}
                                                 className={cn(
-                                                    "h-12 font-mono",
+                                                    "h-12 font-mono bg-primary/6 border-primary/20 text-white placeholder:text-white/30 focus:border-primary/50",
                                                     fieldState.invalid
-                                                        ? "border-red-500 focus-visible:ring-red-500"
+                                                        ? "border-red-500/60 focus-visible:ring-red-500/30"
                                                         : fieldState.isTouched && field.value
-                                                            ? "border-green-500 focus-visible:ring-green-500"
+                                                            ? "border-primary/50"
                                                             : ""
                                                 )}
                                             />
@@ -225,23 +215,29 @@ const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps
                                 )}
                             /> */}
 
-                            <div className="flex gap-3 pt-4">
-                                <Button type="button" variant="outline" onClick={onBack} className="flex-1">
-                                    <ArrowLeft className="w-4 h-4 mr-2" />
+                            <div className="flex gap-3 pt-2">
+                                <button type="button" onClick={onBack}
+                                    className="flex-1 flex items-center justify-center gap-2 border border-primary/25 text-white/60 hover:border-primary/50 hover:text-white/90 transition-all duration-200 rounded-xl py-2.5 text-sm font-medium cursor-pointer">
+                                    <ArrowLeft className="w-4 h-4" />
                                     Back
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    className="flex-1 glow-effect"
-                                    disabled={!form.formState.isValid}
-                                >
-                                    Submit Payment Info
-                                </Button>
+                                </button>
+                                <div className={`flex-1 relative p-[1.5px] rounded-xl overflow-hidden ${
+                                    !form.formState.isValid ? 'opacity-50' : ''
+                                }`}>
+                                    <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
+                                    <button
+                                        type="submit"
+                                        disabled={!form.formState.isValid}
+                                        className="relative w-full bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41] disabled:cursor-not-allowed transition-all duration-300 text-white font-bold py-2.5 rounded-xl text-sm"
+                                    >
+                                        Submit Payment Info
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </Form>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     );
 };
