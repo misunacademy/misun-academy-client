@@ -1,36 +1,66 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Card, CardContent } from '@/components/ui/card';
-import { useEffect, useState } from 'react';
-import { useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
-import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
+import { useEffect, useMemo, useState } from 'react';
+import { useGetCurrentEnrollmentBatchQuery, useGetBatchByIdQuery } from "@/redux/api/batchApi";
 import { useGetCourseByIdQuery } from "@/redux/features/course/courseApi";
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
 import { intervalToDuration, isBefore, isAfter } from "date-fns";
+import { FadeIn } from '@/components/ui/FadeIn';
 
-const formatCountdown = (start: Date, end: Date) => {
-  const duration = intervalToDuration({ start, end });
-  const { months, days, hours, minutes, seconds } = duration;
-  let countdownStr = "";
-  if (months) countdownStr += `${months} মাস `;
-  countdownStr += `${days ?? 0} দিন ${hours ?? 0} ঘণ্টা ${minutes ?? 0} মিনিট ${seconds ?? 0} সেকেন্ড`;
-  return countdownStr;
+type TimeLeft = {
+  months: number;
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
 };
 
+// ── Sub-components declared outside to avoid "created during render" error ───
+
+function TimeBlock({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="relative overflow-hidden flex flex-col items-center justify-center
+      bg-[#060f0a] border border-primary/20 rounded-2xl
+      w-20 h-24 sm:w-24 sm:h-28
+      shadow-[0_8px_32px_hsl(156_70%_42%/0.15)]
+      transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 group"
+    >
+      {/* Corner accents */}
+      <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-primary/40 rounded-tl-2xl" />
+      <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-primary/40 rounded-tr-2xl" />
+      {/* Top shimmer line */}
+      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-primary/80 to-transparent opacity-50 group-hover:opacity-100 transition-opacity" />
+      {/* Hover glow */}
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/8 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <div className="relative z-10 text-4xl sm:text-5xl font-bold font-mona tabular-nums bg-gradient-to-b from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-md">
+        {String(value).padStart(2, '0')}
+      </div>
+      <div className="relative z-10 text-[10px] sm:text-xs text-white/70 font-bangla mt-2 tracking-[0.2em] uppercase">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function Colon() {
+  return (
+    <div className="hidden sm:flex flex-col gap-2 animate-pulse pb-6">
+      <div className="w-1.5 h-1.5 rounded-full bg-primary/70 shadow-[0_0_8px_hsl(156_70%_42%)]" />
+      <div className="w-1.5 h-1.5 rounded-full bg-primary/70 shadow-[0_0_8px_hsl(156_70%_42%)]" />
+    </div>
+  );
+}
 
 const Countdown = () => {
-  const [now, setNow] = useState(new Date());
-  const [countdown, setCountdown] = useState("");
-  const [status, setStatus] = useState<'upcoming' | 'ongoing' | 'ended'>('ended');
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+  const [status, setStatus] = useState<'upcoming' | 'running' | 'completed'>('completed');
 
-  const { data: settingsData, isLoading: settingsLoading } = useGetSettingsQuery();
+  const { data: settingsData } = useGetSettingsQuery();
   const featuredCourseId = (settingsData?.data?.featuredEnrollmentCourse as any)?._id;
   const featuredBatchId = (settingsData?.data?.featuredEnrollmentBatch as any)?._id;
 
-  const { data: courseData, isLoading: courseLoading } = useGetCourseByIdQuery(featuredCourseId || "", {
+  const { isLoading: courseLoading } = useGetCourseByIdQuery(featuredCourseId || "", {
     skip: !featuredCourseId,
   });
-
-  const course = courseData;
 
   const { data: batchData, isLoading: batchLoading } = useGetCurrentEnrollmentBatchQuery(
     { courseId: featuredCourseId },
@@ -43,81 +73,78 @@ const Countdown = () => {
   );
 
   const batch = featuredBatchData?.data || batchData?.data;
-
-  const start = batch ? new Date(batch.enrollmentStartDate) : null;
-  const end = batch ? new Date(batch.enrollmentEndDate) : null;
+  const start = useMemo(() => batch ? new Date(batch.enrollmentStartDate) : null, [batch]);
+  const end = useMemo(() => batch ? new Date(batch.enrollmentEndDate) : null, [batch]);
 
   useEffect(() => {
-    if (!batch || !start || !end) {
-      return;
-    }
+    if (!batch || !start || !end) return;
 
     const interval = setInterval(() => {
       const current = new Date();
-      setNow(current);
-
       const isUpcomingNow = isBefore(current, start);
       const isOngoingNow = isAfter(current, start) && isBefore(current, end);
 
+      let targetDate: Date | null = null;
+
       if (isUpcomingNow) {
         setStatus('upcoming');
-        setCountdown(formatCountdown(current, start));
+        targetDate = start;
       } else if (isOngoingNow) {
-        setStatus('ongoing');
-        setCountdown(formatCountdown(current, end));
+        setStatus('running');
+        targetDate = end;
       } else {
-        setStatus('ended');
-        setCountdown("");
+        setStatus('completed');
+        setTimeLeft(null);
+      }
+
+      if (targetDate) {
+        const duration = intervalToDuration({ start: current, end: targetDate });
+        setTimeLeft({
+          months: duration.months || 0,
+          days: duration.days || 0,
+          hours: duration.hours || 0,
+          minutes: duration.minutes || 0,
+          seconds: duration.seconds || 0,
+        });
       }
     }, 1000);
 
     return () => clearInterval(interval);
   }, [batch, start, end]);
 
-  if (settingsLoading || courseLoading || batchLoading || featuredBatchLoading) {
-    return (
-      <section className="py-16 px-4 bg-primary/15 font-bangla">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <div className="text-center">
-            <p>Loading enrollment information...</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (!featuredCourseId || !batch) {
-    return (
-      <section className="py-16 px-4  font-bangla">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <div className="text-center">
-            <p>Countdown data is not available.</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
+  if (courseLoading || batchLoading || featuredBatchLoading) return null;
+  if (!featuredCourseId || !batch || status === 'completed' || !timeLeft) return null;
 
   return (
-    <div className="text-center space-y-4 animate-fade-in mt-5">
+    <FadeIn delay={0.1} className="mt-8 mb-4">
+      <div className="text-center space-y-6">
+        {/* Status badge — matches premium pulsing-dot badge across all sections */}
+        <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full
+          bg-primary/10 border border-primary/25 backdrop-blur-sm
+          shadow-[0_0_20px_hsl(156_70%_42%/0.12)]">
+          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90 font-bangla">
+            {status === 'upcoming' ? "এনরোলমেন্ট শুরু হতে বাকি" : "এনরোলমেন্ট শেষ হতে বাকি"}
+          </p>
+        </div>
 
-      {/* Countdown Timer */}
-      {status !== 'ended' && (
-        <Card className="mx-auto max-w-2xl bg-gradient-to-tr from-primary to-primary/90 shadow-elegant border-0">
-          <CardContent className="p-8">
-            <div className="text-center space-y-2">
-              <p className="text-white/90 text-lg font-bangla">
-                {status === 'upcoming' ? "এনরোলমেন্ট শুরু হতে বাকি:" : "এনরোলমেন্ট শেষ হতে বাকি:"}
-              </p>
-              <div className="text-3xl md:text-4xl font-bold text-white font-bangla animate-countdown-pulse">
-                {countdown}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+          {timeLeft.months > 0 && (
+            <>
+              <TimeBlock value={timeLeft.months} label="মাস" />
+              <Colon />
+            </>
+          )}
+          <TimeBlock value={timeLeft.days} label="দিন" />
+          <Colon />
+          <TimeBlock value={timeLeft.hours} label="ঘণ্টা" />
+          <Colon />
+          <TimeBlock value={timeLeft.minutes} label="মিনিট" />
+          <Colon />
+          <TimeBlock value={timeLeft.seconds} label="সেকেন্ড" />
+        </div>
+      </div>
+    </FadeIn>
   );
 };
 
