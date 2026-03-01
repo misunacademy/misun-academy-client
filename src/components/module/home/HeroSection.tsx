@@ -52,9 +52,11 @@ export default function HeroSection() {
             <div className="space-y-4">
               <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white drop-shadow-lg">
                 <span className="block bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent py-3">
-                  গ্রাফিক্স ডিজাইন
+                  {/* গ্রাফিক্স ডিজাইন */}
+                  সঠিক সিদ্ধান্তে সফল 
                 </span>
-                কোর্স
+                {/* কোর্স */}
+                ক্য্যারিয়ার
               </h1>
               <h2 className="text-2xl sm:text-3xl font-semibold text-white/90 leading-snug">
                 আপনার ক্রিয়েটিভ <span className="text-primary-glow">ক্যারিয়ার</span> শুরু করুন আজই!
