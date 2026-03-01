@@ -230,6 +230,24 @@ body {
   }
 }
 
+/* ── Design tool floating animations (BannerSection 3D decorations) ── */
+@keyframes designToolFloat {
+  0%, 100% { transform: perspective(500px) rotateY(-18deg) rotateX(12deg) translateY(0px); }
+  50%       { transform: perspective(500px) rotateY(-10deg) rotateX(6deg)  translateY(-14px); }
+}
+@keyframes designToolFloat2 {
+  0%, 100% { transform: perspective(500px) rotateY(18deg) rotateX(12deg) translateY(-8px); }
+  50%       { transform: perspective(500px) rotateY(10deg) rotateX(6deg)  translateY(8px); }
+}
+@keyframes designFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+@keyframes designFloat2 {
+  0%, 100% { transform: translateY(-6px); }
+  50%       { transform: translateY(8px); }
+}
+
 /* Horizontal Glow Effect */
 .glow-border-horizontal::after {
   content: "";
