@@ -1,195 +1,406 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import { useState } from "react";
-import { CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import {
-    Image as ImageIcon,
-    Palette,
-    Target,
-    ChevronDown,
-    ChevronRight,
-    Trophy,
-    BookOpen
-} from "lucide-react";
-// Import your specific data structure
+import { useState, useMemo } from "react";
+import { Trophy, Clock, Layers, Zap, Users } from "lucide-react";
 import { courseCurriculum } from "@/data/courseCurriculum";
 
+// ── per-course accent config ────────────────────────────────────────────────
+const COURSE_CONFIG = [
+    {
+        abbr: 'Ps',
+        color: '#31a8ff',
+        glow: 'rgba(49,168,255,0.22)',
+        glowStrong: 'rgba(49,168,255,0.45)',
+        bg: '#001d26',
+        bgMid: '#002a3a',
+        border: 'rgba(49,168,255,0.30)',
+        borderHover: 'rgba(49,168,255,0.65)',
+        tagBg: 'rgba(49,168,255,0.12)',
+        num: '01',
+    },
+    {
+        abbr: 'Ai',
+        color: '#ff9a00',
+        glow: 'rgba(255,154,0,0.20)',
+        glowStrong: 'rgba(255,154,0,0.45)',
+        bg: '#1a0e00',
+        bgMid: '#2a1600',
+        border: 'rgba(255,154,0,0.28)',
+        borderHover: 'rgba(255,154,0,0.60)',
+        tagBg: 'rgba(255,154,0,0.10)',
+        num: '02',
+    },
+    {
+        abbr: '✦',
+        color: '#20b486',
+        glow: 'rgba(32,180,134,0.20)',
+        glowStrong: 'rgba(32,180,134,0.45)',
+        bg: '#041510',
+        bgMid: '#082318',
+        border: 'rgba(32,180,134,0.28)',
+        borderHover: 'rgba(32,180,134,0.60)',
+        tagBg: 'rgba(32,180,134,0.10)',
+        num: '03',
+    },
+] as const;
+
+const TYPE_STYLES: Record<string, { label: string; color: string; bg: string }> = {
+    theory:    { label: 'Theory',    color: '#a78bfa', bg: 'rgba(167,139,250,0.12)' },
+    practical: { label: 'Practical', color: '#34d399', bg: 'rgba(52,211,153,0.10)' },
+    strategy:  { label: 'Strategy',  color: '#fbbf24', bg: 'rgba(251,191,36,0.10)' },
+};
+
+// ── component ───────────────────────────────────────────────────────────────
 const CourseCurriculum = () => {
-    // State to track which sections are open by index
-    // Initialize with index 0 (Photoshop) open by default
-    const [openStates, setOpenStates] = useState<{ [key: number]: boolean }>({ 0: true });
+    const [active, setActive] = useState(0);
 
-    const toggleSection = (index: number) => {
-        setOpenStates(prev => ({ ...prev, [index]: !prev[index] }));
-    };
+    const courses   = courseCurriculum.courses;
+    const cfg    = COURSE_CONFIG[active];
+    const course = courses[active];
 
-    // Helper to dynamically get the icon based on the course title
-    const getIcon = (title: string) => {
-        if (title.includes("Photoshop")) return <ImageIcon className="h-6 w-6 text-emerald-600" />;
-        if (title.includes("Illustrator")) return <Palette className="h-6 w-6 text-emerald-600" />;
-        if (title.includes("Client")) return <Target className="h-6 w-6 text-emerald-600" />;
-        return <BookOpen className="h-6 w-6 text-emerald-600" />;
-    };
+    const { modules, projects, totalHours } = useMemo(() => {
+        const mods  = course.modules ?? [];
+        const projs = (course as any).projects ?? [];
+        const parse = (s: string) => parseFloat(s) || 0;
+        const hours = [...mods, ...projs].reduce((acc, m) => acc + parse((m as any).duration), 0);
+        return { modules: mods, projects: projs, totalHours: hours };
+    }, [course]);
 
     return (
-        <div className="relative bg-[#060f0a] overflow-hidden font-sans">
-            {/* Dot-grid */}
-            <div
-                className="absolute inset-0 opacity-[0.04] pointer-events-none"
-                style={{
-                    backgroundImage: 'radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)',
-                    backgroundSize: '32px 32px',
-                }}
+        <section className="relative bg-[#060f0a] overflow-hidden font-sans">
+
+            {/* Dot-grid texture */}
+            <div className="absolute inset-0 opacity-[0.035] pointer-events-none"
+                style={{ backgroundImage:'radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)', backgroundSize:'32px 32px' }}
             />
-            {/* Ambient glow */}
-            <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/6 rounded-full blur-3xl pointer-events-none" />
+            {/* Dynamic ambient glow tied to active course */}
+            <div className="absolute inset-0 pointer-events-none transition-all duration-700"
+                style={{ background:`radial-gradient(ellipse 55% 40% at 70% 50%, ${cfg.glow}, transparent)` }}
+            />
             {/* Edge separators */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
-            <section className="relative z-10 py-16">
-                <div className="container mx-auto px-4">
+            <div className="relative z-10 py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                    {/* Header */}
-                    <div className="text-center mb-12">
-                        {/* Badge */}
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-6">
-                            <span className="relative flex h-1.5 w-1.5">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
-                            </span>
-                            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">পাঠ্যক্রম</span>
-                        </div>
-                        <h2 className="text-4xl md:text-5xl font-bold mb-4 font-bangla bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">
-                            কোর্স <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_16px_hsl(156_70%_42%/0.4)]">কারিকুলাম</span>
-                        </h2>
-                        <p className="text-sm md:text-base font-bangla text-white/55 max-w-2xl mx-auto">
-                            একেবারে শুরু থেকে প্রফেশনাল ডিজাইনার হওয়ার একটি পূর্ণাঙ্গ ভ্রমণ, হাতে-কলমে প্রকল্প এবং ক্লায়েন্ট হান্টিং কৌশলসহ।
-                        </p>
+                {/* ── Section header ── */}
+                <div className="text-center mb-16">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-5">
+                        <span className="relative flex h-1.5 w-1.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+                        </span>
+                        <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">পাঠ্যক্রম</span>
                     </div>
+                    <h2 className="text-4xl md:text-5xl font-bold mb-4 font-bangla bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">
+                        কোর্স{' '}
+                        <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_18px_hsl(156_70%_42%/0.4)]">
+                            কারিকুলাম
+                        </span>
+                    </h2>
+                    <p className="text-sm md:text-base font-bangla text-white/50 max-w-2xl mx-auto">
+                        একেবারে শুরু থেকে প্রফেশনাল ডিজাইনার হওয়ার একটি পূর্ণাঙ্গ পথ—হাতে-কলমে প্রজেক্ট ও ক্লায়েন্ট হান্টিং কৌশলসহ।
+                    </p>
+                </div>
 
-                    <div className="grid gap-6 max-w-6xl mx-auto">
+                {/* ── Main layout: selector + timeline ── */}
+                <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
 
-                        {/* Dynamic Mapping over the courses array */}
-                        {courseCurriculum.courses.map((course, index) => {
-                            const isOpen = openStates[index] || false;
-
-                            // Calculate total items for the badge
-                            const moduleCount = course.modules?.length || 0;
-                            const projectCount = course.projects?.length || 0;
-                            const totalItems = moduleCount + projectCount;
-
+                    {/* ── LEFT — course selector tabs ── */}
+                    <div className="w-full lg:w-[260px] shrink-0 flex flex-row lg:flex-col gap-3">
+                        {courses.map((c, i) => {
+                            const cf = COURSE_CONFIG[i];
+                            const isActive = active === i;
                             return (
-                                <div key={index} className="relative overflow-hidden rounded-2xl bg-[#060f0a] border border-primary/15 transition-all duration-300 hover:border-primary/35 hover:shadow-[0_4px_24px_hsl(156_70%_42%/0.12)]">
-                                    {/* Corner accents */}
-                                    <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-primary/40 rounded-tl-2xl pointer-events-none" />
-                                    <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-primary/40 rounded-tr-2xl pointer-events-none" />
-                                    <Collapsible
-                                        open={isOpen}
-                                        onOpenChange={() => toggleSection(index)}
-                                    >
-                                        <CollapsibleTrigger asChild>
-                                            <div className="p-6 flex items-center justify-between cursor-pointer hover:bg-primary/5 transition-colors select-none">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#0d5c36] via-primary to-[#0a5f38] shadow-[0_0_14px_hsl(156_70%_42%/0.3)]">
-                                                        <span className="[&_svg]:w-5 [&_svg]:h-5 [&_svg]:text-white">{getIcon(course.title)}</span>
-                                                    </div>
-                                                    <div className="text-left">
-                                                        <h3 className="text-lg font-bold bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">{course.title}</h3>
-                                                        <p className="text-xs text-white/45">{course.description}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-4">
-                                                    <span className="text-xs font-medium text-primary/70 hidden md:block border border-primary/20 px-2 py-0.5 rounded-full bg-primary/8">
-                                                        {totalItems} Modules
-                                                    </span>
-                                                    {isOpen ? <ChevronDown className="h-4 w-4 text-primary/70" /> : <ChevronRight className="h-4 w-4 text-white/40" />}
-                                                </div>
-                                            </div>
-                                        </CollapsibleTrigger>
-
-                                        <CollapsibleContent>
-                                            <CardContent className="pt-0 px-6 pb-6">
-                                                <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent mb-6" />
-                                                <div className="grid gap-8">
-
-                                                    {/* Modules Section */}
-                                                    {course.modules && course.modules.length > 0 && (
-                                                        <div>
-                                                            <h4 className="font-medium text-xs text-primary/70 mb-4 tracking-widest uppercase">
-                                                                {course.level || "Modules"}
-                                                            </h4>
-                                                            <div className="grid gap-3">
-                                                                {course.modules.map((module) => (
-                                                                    <ModuleItem key={module.id} data={module} />
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {/* Projects Section (Only renders if projects exist) */}
-                                                    {course.projects && course.projects.length > 0 && (
-                                                        <div>
-                                                            <h4 className="font-semibold text-xs text-primary/70 mb-4 tracking-widest uppercase">Project Based Classes</h4>
-                                                            <div className="grid gap-3">
-                                                                {course.projects.map((project, pIndex) => (
-                                                                    <ProjectItem key={pIndex} data={project} />
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </CardContent>
-                                        </CollapsibleContent>
-                                    </Collapsible>
-                                </div>
+                                <button
+                                    key={i}
+                                    onClick={() => setActive(i)}
+                                    className="relative overflow-hidden text-left rounded-2xl p-4 w-full transition-all duration-300 cursor-pointer"
+                                    style={{
+                                        background: isActive
+                                            ? `linear-gradient(135deg, ${cf.bg} 0%, ${cf.bgMid} 100%)`
+                                            : '#0a0f0d',
+                                        border: `1.5px solid ${isActive ? cf.borderHover : 'rgba(255,255,255,0.07)'}`,
+                                        boxShadow: isActive ? `0 0 28px ${cf.glow}, inset 0 1px 0 ${cf.glowStrong}` : 'none',
+                                    }}
+                                >
+                                    {/* Top shimmer */}
+                                    {isActive && (
+                                        <div className="absolute inset-x-0 top-0 h-px"
+                                            style={{ background:`linear-gradient(90deg, transparent, ${cf.color}, transparent)` }}
+                                        />
+                                    )}
+                                    <div className="flex items-center gap-3">
+                                        {/* App-icon chip */}
+                                        <div className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+                                            style={{
+                                                background:`linear-gradient(145deg, ${cf.bg}, ${cf.bgMid})`,
+                                                border:`1.5px solid ${cf.border}`,
+                                                boxShadow: isActive ? `0 0 14px ${cf.glow}` : 'none',
+                                            }}
+                                        >
+                                            <span style={{
+                                                fontFamily:"Georgia,'Times New Roman',serif",
+                                                fontSize: cf.abbr === '✦' ? 18 : 15,
+                                                fontStyle:'italic', fontWeight:700,
+                                                color: cf.color,
+                                                textShadow: isActive ? `0 0 12px ${cf.color}` : 'none',
+                                            }}>
+                                                {cf.abbr}
+                                            </span>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-bold truncate"
+                                                style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.55)' }}>
+                                                {c.title}
+                                            </p>
+                                            <p className="text-[10px] mt-0.5 truncate"
+                                                style={{ color: isActive ? cf.color : 'rgba(255,255,255,0.30)' }}>
+                                                {(c.modules?.length ?? 0) + ((c as any).projects?.length ?? 0)} items
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {/* Active indicator bar */}
+                                    {isActive && (
+                                        <div className="absolute left-0 top-4 bottom-4 w-[3px] rounded-full"
+                                            style={{ background:`linear-gradient(180deg, transparent, ${cf.color}, transparent)` }}
+                                        />
+                                    )}
+                                </button>
                             );
                         })}
+
+                        {/* Stats card */}
+                        <div className="hidden lg:block mt-2 rounded-2xl p-4 border"
+                            style={{
+                                background:`linear-gradient(135deg, ${cfg.bg}, ${cfg.bgMid})`,
+                                borderColor: cfg.border,
+                                boxShadow:`0 0 20px ${cfg.glow}`,
+                            }}
+                        >
+                            <div className="absolute inset-x-0 top-0 h-px" />
+                            <p className="text-[10px] tracking-widest uppercase mb-3 font-semibold" style={{ color: cfg.color }}>
+                                Module Stats
+                            </p>
+                            {[
+                                { icon: Layers,  label: 'Modules',  val: modules.length },
+                                { icon: Trophy,  label: 'Projects', val: projects.length },
+                                { icon: Clock,   label: 'Hours',    val: `${totalHours}+` },
+                            ].map(({ icon: Icon, label, val }) => (
+                                <div key={label} className="flex items-center justify-between py-1.5 border-b last:border-b-0"
+                                    style={{ borderColor:'rgba(255,255,255,0.06)' }}>
+                                    <div className="flex items-center gap-2">
+                                        <Icon size={11} style={{ color: cfg.color }} />
+                                        <span className="text-[11px] text-white/45">{label}</span>
+                                    </div>
+                                    <span className="text-[12px] font-bold" style={{ color: cfg.color }}>{val}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* ── RIGHT — content panel ── */}
+                    <div className="flex-1 min-w-0 relative overflow-hidden rounded-2xl"
+                        style={{
+                            background:`linear-gradient(160deg, #07100c 0%, #060f0a 60%, ${cfg.bg}55 100%)`,
+                            border:`1.5px solid ${cfg.border}`,
+                            boxShadow:`0 0 40px ${cfg.glow}, inset 0 1px 0 ${cfg.glowStrong}`,
+                        }}
+                    >
+                        {/* Ghost watermark number */}
+                        <div className="absolute -right-4 -top-4 select-none pointer-events-none"
+                            style={{
+                                fontSize: 200,
+                                fontWeight: 900,
+                                lineHeight: 1,
+                                color: cfg.color,
+                                opacity: 0.035,
+                                fontFamily: 'Georgia, serif',
+                                fontStyle: 'italic',
+                            }}
+                        >
+                            {cfg.num}
+                        </div>
+
+                        {/* Top shimmer */}
+                        <div className="absolute inset-x-0 top-0 h-px"
+                            style={{ background:`linear-gradient(90deg, transparent, ${cfg.color}88, transparent)` }}
+                        />
+
+                        <div className="relative z-10 p-6 sm:p-8">
+
+                            {/* Panel header */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="w-5 h-5 rounded flex items-center justify-center"
+                                            style={{ background:`linear-gradient(135deg,${cfg.bg},${cfg.bgMid})`, border:`1px solid ${cfg.border}` }}>
+                                            <span style={{ fontFamily:"Georgia,serif", fontSize:9, fontStyle:'italic', fontWeight:700, color:cfg.color }}>
+                                                {cfg.abbr}
+                                            </span>
+                                        </div>
+                                        <span className="text-[10px] tracking-widest uppercase font-semibold" style={{ color:cfg.color }}>
+                                            {course.level ?? 'Curriculum'}
+                                        </span>
+                                    </div>
+                                    <h3 className="text-2xl sm:text-3xl font-bold text-white">{course.title}</h3>
+                                    <p className="text-sm text-white/45 mt-0.5">{course.description}</p>
+                                </div>
+                                <div className="flex gap-2 shrink-0">
+                                    {[
+                                        { label:`${modules.length}`, sub:'Modules',  icon: Layers },
+                                        { label:`${projects.length}`, sub:'Projects', icon: Zap },
+                                    ].map(({ label, sub, icon: Icon }) => (
+                                        <div key={sub} className="flex flex-col items-center px-4 py-2.5 rounded-xl border"
+                                            style={{ background:`${cfg.bg}`, borderColor:cfg.border }}>
+                                            <Icon size={12} style={{ color:cfg.color }} className="mb-0.5" />
+                                            <span className="text-lg font-black" style={{ color:cfg.color }}>{label}</span>
+                                            <span className="text-[9px] text-white/30 tracking-wider uppercase">{sub}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* ── Modules timeline ── */}
+                            {modules.length > 0 && (
+                                <div className="mb-8">
+                                    <div className="flex items-center gap-2 mb-5">
+                                        <Layers size={12} style={{ color:cfg.color }} />
+                                        <span className="text-[10px] tracking-widest uppercase font-semibold" style={{ color:cfg.color }}>
+                                            Tool-Based Modules
+                                        </span>
+                                        <div className="flex-1 h-px" style={{ background:`linear-gradient(90deg, ${cfg.color}33, transparent)` }} />
+                                    </div>
+
+                                    <div className="relative pl-8">
+                                        {/* Vertical spine */}
+                                        <div className="absolute left-[11px] top-0 bottom-0 w-px"
+                                            style={{ background:`linear-gradient(180deg, ${cfg.color}55 0%, ${cfg.color}15 100%)` }}
+                                        />
+
+                                        <div className="flex flex-col gap-2">
+                                            {modules.map((mod: any, mi: number) => {
+                                                const typeStyle = TYPE_STYLES[mod.type] ?? TYPE_STYLES.practical;
+                                                return (
+                                                    <div key={mod.id} className="relative flex items-start gap-4 group">
+                                                        {/* Node */}
+                                                        <div className="absolute -left-8 top-[10px] w-[22px] h-[22px] rounded-full flex items-center justify-center shrink-0 z-10 transition-transform duration-200 group-hover:scale-110"
+                                                            style={{
+                                                                background:`linear-gradient(135deg,${cfg.bg},${cfg.bgMid})`,
+                                                                border:`1.5px solid ${cfg.color}`,
+                                                                boxShadow:`0 0 8px ${cfg.glow}`,
+                                                            }}
+                                                        >
+                                                            <span style={{ fontSize:8, fontWeight:700, color:cfg.color }}>{String(mi + 1).padStart(2,'0')}</span>
+                                                        </div>
+
+                                                        {/* Row */}
+                                                        <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2.5 px-4 rounded-xl border transition-all duration-200 group-hover:scale-[1.01]"
+                                                            style={{
+                                                                background:`rgba(0,0,0,0.25)`,
+                                                                borderColor:'rgba(255,255,255,0.07)',
+                                                            }}
+                                                            onMouseEnter={e => {
+                                                                (e.currentTarget as HTMLDivElement).style.borderColor = `${cfg.color}44`;
+                                                                (e.currentTarget as HTMLDivElement).style.boxShadow = `0 2px 16px ${cfg.glow}`;
+                                                            }}
+                                                            onMouseLeave={e => {
+                                                                (e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(255,255,255,0.07)';
+                                                                (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
+                                                            }}
+                                                        >
+                                                            <span className="text-sm text-white/80 leading-snug flex-1 pr-2">{mod.title}</span>
+                                                            <div className="flex items-center gap-2 shrink-0">
+                                                                <span className="text-[9px] px-2 py-0.5 rounded-full font-semibold tracking-wide uppercase"
+                                                                    style={{ color:typeStyle.color, background:typeStyle.bg }}>
+                                                                    {typeStyle.label}
+                                                                </span>
+                                                                <span className="text-[10px] text-white/30 whitespace-nowrap flex items-center gap-1">
+                                                                    <Clock size={9} /> {mod.duration}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ── Projects ── */}
+                            {projects.length > 0 && (
+                                <div>
+                                    <div className="flex items-center gap-2 mb-5">
+                                        <Trophy size={12} style={{ color:cfg.color }} />
+                                        <span className="text-[10px] tracking-widest uppercase font-semibold" style={{ color:cfg.color }}>
+                                            Project-Based Classes
+                                        </span>
+                                        <div className="flex-1 h-px" style={{ background:`linear-gradient(90deg, ${cfg.color}33, transparent)` }} />
+                                    </div>
+
+                                    <div className="grid sm:grid-cols-2 gap-2">
+                                        {projects.map((proj: any, pi: number) => (
+                                            <div key={pi} className="relative overflow-hidden flex items-start gap-3 p-3.5 rounded-xl border group transition-all duration-200"
+                                                style={{
+                                                    background:`linear-gradient(135deg,${cfg.bg}88, rgba(0,0,0,0.3))`,
+                                                    borderColor: cfg.border,
+                                                }}
+                                                onMouseEnter={e => {
+                                                    (e.currentTarget as HTMLDivElement).style.borderColor = cfg.borderHover;
+                                                    (e.currentTarget as HTMLDivElement).style.boxShadow = `0 4px 20px ${cfg.glow}`;
+                                                }}
+                                                onMouseLeave={e => {
+                                                    (e.currentTarget as HTMLDivElement).style.borderColor = cfg.border;
+                                                    (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
+                                                }}
+                                            >
+                                                {/* Shimmer top */}
+                                                <div className="absolute inset-x-0 top-0 h-px opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    style={{ background:`linear-gradient(90deg, transparent, ${cfg.color}66, transparent)` }}
+                                                />
+                                                <div className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center mt-0.5"
+                                                    style={{ background:cfg.tagBg, border:`1px solid ${cfg.border}` }}>
+                                                    <Trophy size={12} style={{ color:cfg.color }} />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-[12px] text-white/75 leading-snug">{proj.title}</p>
+                                                    <span className="text-[9px] mt-1 flex items-center gap-1" style={{ color:cfg.color }}>
+                                                        <Clock size={8} /> {proj.duration}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
-            </section>
-        </div>
+
+                {/* ── Bottom summary bar ── */}
+                <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                        { icon: Layers, label: 'মোট মডিউল',    value: `${courseCurriculum.courses.reduce((a,c) => a+(c.modules?.length??0),0)}+` },
+                        { icon: Trophy, label: 'প্রজেক্ট ক্লাস', value: `${courseCurriculum.courses.reduce((a,c) => a+((c as any).projects?.length??0),0)}+` },
+                        { icon: Clock,  label: 'ঘণ্টার কন্টেন্ট', value: '100+' },
+                        { icon: Users,  label: 'স্টুডেন্ট সাপোর্ট', value: '২৪/৭' },
+                    ].map(({ icon: Icon, label, value }) => (
+                        <div key={label} className="relative overflow-hidden flex items-center gap-3 px-5 py-4 rounded-2xl border border-primary/12 bg-primary/5 group hover:border-primary/30 hover:bg-primary/8 transition-all duration-300">
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                                <Icon size={14} className="text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-xl font-black bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">{value}</p>
+                                <p className="text-[10px] text-white/40 font-bangla tracking-wide">{label}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
     );
 };
-
-// --- Sub Components ---
-
-const ModuleItem = ({ data }: { data: any }) => (
-    <div className="flex flex-col md:flex-row md:items-center justify-between p-3 rounded-xl bg-primary/8 border border-primary/15 hover:bg-primary/15 hover:border-primary/30 transition-colors">
-        <div className="flex items-center gap-3 flex-1">
-            <div className="min-w-[24px] h-6 flex items-center justify-center text-sm font-semibold text-primary/60">
-                {data.id}
-            </div>
-            <span className="text-sm font-medium leading-tight text-white/80">{data.title}</span>
-            {data.type && (
-                <Badge className="bg-primary/15 text-primary/90 hover:bg-primary/25 border border-primary/25 text-[10px] px-2 py-0.5 h-5 rounded-md uppercase">
-                    {data.type}
-                </Badge>
-            )}
-        </div>
-        <div className="flex items-center gap-3 mt-2 md:mt-0 md:pl-4 justify-between md:justify-end min-w-[140px]">
-            <span className="text-xs text-white/40 whitespace-nowrap">{data.duration}</span>
-        </div>
-    </div>
-);
-
-const ProjectItem = ({ data }: { data: any }) => (
-    <div className="flex flex-col md:flex-row md:items-center justify-between p-3 rounded-xl bg-[#0d5c36]/20 border border-primary/20 hover:bg-[#0d5c36]/30 hover:border-primary/40 transition-colors">
-        <div className="flex items-center gap-3 flex-1">
-            <div className="min-w-[24px] h-6 flex items-center justify-center opacity-70">
-                <Trophy className="h-4 w-4 text-primary" />
-            </div>
-            <span className="text-sm font-medium leading-tight text-white/80">{data.title}</span>
-            <Badge className="bg-primary/15 text-primary/80 hover:bg-primary/25 border border-primary/20 text-[10px] px-2 py-0.5 h-5 rounded-md">
-                PROJECT
-            </Badge>
-        </div>
-        <div className="flex items-center gap-3 mt-2 md:mt-0 md:pl-4 justify-between md:justify-end min-w-[140px]">
-            <span className="text-xs text-white/40 whitespace-nowrap">{data.duration}</span>
-        </div>
-    </div>
-);
 
 export default CourseCurriculum;

@@ -23,7 +23,8 @@ import ten from "@/assets/images/payments/ten.png"
 import phonepay from "@/assets/images/payments/phonepay.png"
 import { useRouter } from "next/navigation";
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
-
+import { useGetCourseBySlugQuery } from "@/redux/api/courseApi";
+import { useGetCurrentEnrollmentBatchQuery, useGetUpcomingBatchesQuery } from "@/redux/api/batchApi";
 
 
 interface PaymentError {
@@ -44,7 +45,7 @@ const enrollmentSchema = z.object({
 
 type EnrollmentForm = z.infer<typeof enrollmentSchema>;
 
-const EnrollmentCheckout = () => {
+const EnrollmentCheckout = ({ courseSlug }: { courseSlug?: string } = {}) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [agreed, setAgreed] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -63,14 +64,54 @@ const EnrollmentCheckout = () => {
         },
     });
     const { data: settingsData, isLoading: settingsLoading } = useGetSettingsQuery();
-    const featuredCourseId = (settingsData?.data?.featuredEnrollmentCourse as any);
-    const featuredBatchId = (settingsData?.data?.featuredEnrollmentBatch as any);
+
+    // Course-specific queries (used when courseSlug is provided)
+    const { data: courseBySlug, isLoading: courseLoading } = useGetCourseBySlugQuery(
+        courseSlug!, { skip: !courseSlug }
+    );
+    const courseData = (courseBySlug?.data as any);
+
+    // Primary: batch with an open enrollment window
+    const { data: currentBatchRes, isLoading: currentBatchLoading } = useGetCurrentEnrollmentBatchQuery(
+        { courseId: courseData?._id }, { skip: !courseData?._id }
+    );
+
+    // Fallback: upcoming batch (enrollment window not open yet)
+    const { data: upcomingBatchRes, isLoading: upcomingBatchLoading } = useGetUpcomingBatchesQuery(
+        { courseId: courseData?._id },
+        { skip: !courseData?._id || !!currentBatchRes?.data }
+    );
+
+    const batchLoading = currentBatchLoading || upcomingBatchLoading;
+
+    // Resolve course + batch: prefer slug-based data when courseSlug is provided.
+    // For slug path: use current-enrollment batch first, then first upcoming batch as fallback.
+    const resolvedCourse = courseSlug ? courseData : (settingsData?.data?.featuredEnrollmentCourse as any);
+    const resolvedBatch  = courseSlug
+        ? ((currentBatchRes?.data as any) ?? (upcomingBatchRes?.data as any)?.[0])
+        : (settingsData?.data?.featuredEnrollmentBatch as any);
+
+    // Whether the enrollment window is currently open for this batch
+    const isEnrollmentOpen = resolvedBatch
+        ? (() => {
+            const now = Date.now();
+            const start = new Date(resolvedBatch.enrollmentStartDate).getTime();
+            const end   = new Date(resolvedBatch.enrollmentEndDate).getTime();
+            return now >= start && now <= end;
+        })()
+        : false;
+
+    // Keep legacy aliases for backwards compat with rest of JSX
+    const featuredCourseId = resolvedCourse;
+    const featuredBatchId  = resolvedBatch;
+
+    const isDataLoading = settingsLoading || (!!courseSlug && (courseLoading || (!!courseData && batchLoading)));
 
     useEffect(() => {
-        if (!form.getValues('batchId')) {
-            form.setValue('batchId', featuredBatchId?._id);
+        if (!form.getValues('batchId') && resolvedBatch?._id) {
+            form.setValue('batchId', resolvedBatch._id);
         }
-    }, [form, featuredBatchId?._id]);
+    }, [form, resolvedBatch?._id]);
     const processSSLCommerzPayment = async (data: EnrollmentForm) => {
         setIsProcessing(true);
         try {
@@ -175,7 +216,7 @@ const EnrollmentCheckout = () => {
                         <div className="relative overflow-hidden rounded-2xl bg-[#060f0a] border border-primary/15">
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
                             <div className="p-5">
-                                {settingsLoading ? (
+                                {isDataLoading ? (
                                     <div className="aspect-video rounded-lg mb-4 bg-primary/8 animate-pulse" />
                                 ) : (
                                     <>
@@ -188,11 +229,11 @@ const EnrollmentCheckout = () => {
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
-                                        <h3 className="font-bold text-lg mb-2 text-white/90">{featuredCourseId.title}</h3>
+                                        <h3 className="font-bold text-lg mb-2 text-white/90">{featuredCourseId?.title}</h3>
                                         <div className="flex items-center gap-4 text-sm text-white/50">
                                             <div className="flex items-center gap-1">
                                                 <Clock className="w-4 h-4 text-primary/70" />
-                                                <span>{featuredCourseId.durationEstimate || '0'} Months</span>
+                                                <span>{featuredCourseId?.durationEstimate || '0'} Months</span>
                                             </div>
                                         </div>
                                     </>
@@ -294,7 +335,7 @@ const EnrollmentCheckout = () => {
                                                         <div className="bg-primary/6 border border-primary/20 rounded-xl p-4 space-y-3">
                                                             <div>
                                                                 <p className="text-xs text-white/40 mb-0.5">Batch</p>
-                                                                <p className="font-semibold text-white/85">{featuredBatchId.title}</p>
+                                                                <p className="font-semibold text-white/85">{featuredBatchId?.title}</p>
                                                             </div>
                                                             {featuredCourseId && (
                                                                 <div>
@@ -321,8 +362,8 @@ const EnrollmentCheckout = () => {
                                                     <div className="h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
                                                 </>
                                             ) : (
-                                                <div className="bg-red-500/8 border border-red-500/20 rounded-xl p-4 text-center">
-                                                    <p className="text-red-400 font-medium">No open batches available at the moment</p>
+                                                <div className="bg-yellow-500/8 border border-yellow-500/20 rounded-xl p-4 text-center">
+                                                    <p className="text-yellow-400 font-medium">No upcoming batches available at the moment</p>
                                                     <p className="text-sm text-white/40 mt-1">Please check back later or contact support</p>
                                                 </div>
                                             )}
@@ -479,6 +520,16 @@ const EnrollmentCheckout = () => {
                                                         <span className="text-primary font-bold">৳{(featuredBatchId?.price)}</span>
                                                     </div>
                                                 </div>
+                                                {!isEnrollmentOpen && featuredBatchId && (
+                                                    <div className="rounded-xl bg-yellow-500/8 border border-yellow-500/20 p-3 text-center">
+                                                        <p className="text-sm text-yellow-400 font-medium">এনরোলমেন্ট উইন্ডো এখনো খোলা হয়নি</p>
+                                                        {featuredBatchId.enrollmentStartDate && (
+                                                            <p className="text-xs text-white/40 mt-1">
+                                                                শুরু: {new Date(featuredBatchId.enrollmentStartDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
                                                 <div className="space-y-4">
                                                     <label className="flex items-start gap-2.5 text-sm cursor-pointer">
                                                         <input
@@ -494,11 +545,11 @@ const EnrollmentCheckout = () => {
                                                             <a href="/refund-policy" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">Return, Refund & Cancellation Policy</a>.
                                                         </span>
                                                     </label>
-                                                    <div className={`relative p-[1.5px] rounded-xl overflow-hidden transition-opacity ${!(form.formState.isValid && agreed) || isProcessing ? 'opacity-50' : ''}`}>
+                                                    <div className={`relative p-[1.5px] rounded-xl overflow-hidden transition-opacity ${!(form.formState.isValid && agreed && isEnrollmentOpen) || isProcessing ? 'opacity-50' : ''}`}>
                                                         <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
                                                         <button
                                                             type="submit"
-                                                            disabled={!(form.formState.isValid && agreed) || isProcessing}
+                                                            disabled={!(form.formState.isValid && agreed && isEnrollmentOpen) || isProcessing}
                                                             className="relative w-full bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41] disabled:cursor-not-allowed transition-all duration-300 text-white font-bold py-3.5 rounded-xl text-base"
                                                         >
                                                             {isProcessing ? (
@@ -506,6 +557,8 @@ const EnrollmentCheckout = () => {
                                                                     <Loader2 className="w-4 h-4 animate-spin" />
                                                                     Processing...
                                                                 </span>
+                                                            ) : !isEnrollmentOpen && featuredBatchId ? (
+                                                                'এনরোলমেন্ট শুরু হয়নি'
                                                             ) : (
                                                                 'Complete Enrollment'
                                                             )}

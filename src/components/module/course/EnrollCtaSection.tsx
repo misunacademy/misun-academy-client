@@ -1,6 +1,10 @@
 import Link from "next/link";
 import Container from "@/components/ui/container";
 
+interface EnrollCtaSectionProps {
+    courseSlug?: string;
+}
+
 const stats = [
     { value: "১২০০+", label: "সফল প্রজেক্ট" },
     { value: "৫০+", label: "সাইড প্রজেক্ট" },
@@ -8,7 +12,7 @@ const stats = [
     { value: "৯৫%", label: "সাফল্য হার" },
 ];
 
-export default function EnrollCtaSection() {
+export default function EnrollCtaSection({ courseSlug }: EnrollCtaSectionProps = {}) {
     return (
         <section className="relative bg-[#060f0a] overflow-hidden">
 
@@ -105,7 +109,7 @@ export default function EnrollCtaSection() {
 
                             {/* CTA button */}
                             <div>
-                                <Link href="/checkout">
+                                <Link href={courseSlug ? `/checkout?course=${courseSlug}` : '/checkout'}>
                                     <div className="inline-block relative p-[1.5px] rounded-xl overflow-hidden">
                                         <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
                                         <button className="relative bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38]

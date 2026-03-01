@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useGetCurrentEnrollmentBatchQuery, useGetBatchByIdQuery } from "@/redux/api/batchApi";
 import { useGetCourseByIdQuery } from "@/redux/features/course/courseApi";
+import { useGetCourseBySlugQuery } from "@/redux/api/courseApi";
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
 import { intervalToDuration, isBefore, isAfter } from "date-fns";
 import { FadeIn } from '@/components/ui/FadeIn';
@@ -50,29 +51,48 @@ function Colon() {
   );
 }
 
-const Countdown = () => {
+const Countdown = ({ courseSlug }: { courseSlug?: string } = {}) => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
   const [status, setStatus] = useState<'upcoming' | 'running' | 'completed'>('completed');
 
   const { data: settingsData } = useGetSettingsQuery();
-  const featuredCourseId = (settingsData?.data?.featuredEnrollmentCourse as any)?._id;
-  const featuredBatchId = (settingsData?.data?.featuredEnrollmentBatch as any)?._id;
 
-  const { isLoading: courseLoading } = useGetCourseByIdQuery(featuredCourseId || "", {
-    skip: !featuredCourseId,
+  // ── Course-slug path (course detail pages) ──────────────────────────────
+  // When a courseSlug is passed, we resolve the batch directly for that course,
+  // bypassing the global admin setting.
+  const { data: courseBySlug, isLoading: courseBySlugLoading } = useGetCourseBySlugQuery(
+    courseSlug!, { skip: !courseSlug }
+  );
+  const slugCourseId = courseSlug ? (courseBySlug?.data as any)?._id : undefined;
+
+  const { data: slugBatchRes, isLoading: slugBatchLoading } = useGetCurrentEnrollmentBatchQuery(
+    { courseId: slugCourseId },
+    { skip: !slugCourseId }
+  );
+
+  // ── Settings path (home page EnrollmentSection — admin picks featured course) ──
+  const settingsCourseId = !courseSlug ? (settingsData?.data?.featuredEnrollmentCourse as any)?._id : undefined;
+  const settingsBatchId  = !courseSlug ? (settingsData?.data?.featuredEnrollmentBatch  as any)?._id : undefined;
+
+  const { isLoading: courseLoading } = useGetCourseByIdQuery(settingsCourseId || "", {
+    skip: !settingsCourseId,
   });
 
   const { data: batchData, isLoading: batchLoading } = useGetCurrentEnrollmentBatchQuery(
-    { courseId: featuredCourseId },
-    { skip: !featuredCourseId || !!featuredBatchId }
+    { courseId: settingsCourseId },
+    { skip: !settingsCourseId || !!settingsBatchId }
   );
 
   const { data: featuredBatchData, isLoading: featuredBatchLoading } = useGetBatchByIdQuery(
-    featuredBatchId || "",
-    { skip: !featuredBatchId }
+    settingsBatchId || "",
+    { skip: !settingsBatchId }
   );
 
-  const batch = featuredBatchData?.data || batchData?.data;
+  // Resolve the batch from whichever path was used
+  const batch = courseSlug
+    ? slugBatchRes?.data
+    : (featuredBatchData?.data || batchData?.data);
+
   const start = useMemo(() => batch ? new Date(batch.enrollmentStartDate) : null, [batch]);
   const end = useMemo(() => batch ? new Date(batch.enrollmentEndDate) : null, [batch]);
 
@@ -112,8 +132,14 @@ const Countdown = () => {
     return () => clearInterval(interval);
   }, [batch, start, end]);
 
-  if (courseLoading || batchLoading || featuredBatchLoading) return null;
-  if (!featuredCourseId || !batch || status === 'completed' || !timeLeft) return null;
+  const isCountdownLoading = courseSlug
+    ? (courseBySlugLoading || (!!slugCourseId && slugBatchLoading))
+    : (courseLoading || batchLoading || featuredBatchLoading);
+
+  const activeCourseId = courseSlug ? slugCourseId : settingsCourseId;
+
+  if (isCountdownLoading) return null;
+  if (!activeCourseId || !batch || status === 'completed' || !timeLeft) return null;
 
   return (
     <FadeIn delay={0.1} className="mt-8 mb-4">

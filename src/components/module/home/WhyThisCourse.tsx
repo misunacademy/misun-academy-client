@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useRef, useState } from 'react';
 import Container from '@/components/ui/container';
 import WhyThisCourseModal from './WhyThisCourseModal';
-import { VideoThumb } from '@/assets/images';
+import { VideoThumb, Bg1 } from '@/assets/images';
 import { FolderArchive, NotebookPen, Projector } from 'lucide-react';
 import PlayButton from '@/components/shared/PlayButton';
 import { FadeIn } from '@/components/ui/FadeIn';
@@ -120,11 +120,17 @@ export default function WhyThisCourse() {
     if (sectionRef.current) observer.observe(sectionRef.current);
     return () => observer.disconnect();
   }, []);
-
+// bg-[#060f0a]
   return (
     <section
       data-dark-section
-      className="relative bg-[#060f0a] overflow-hidden"
+      className="relative overflow-hidden"
+      style={{
+        backgroundImage: `url(${Bg1.src})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
     >
       {/* ── Top edge separator ── */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
@@ -162,10 +168,10 @@ export default function WhyThisCourse() {
         {/* ── Heading ── */}
         <FadeIn>
           <div className="text-center mb-2">
-            <h1 className="text-5xl md:text-6xl font-bangla font-bold uppercase tracking-wide
-              bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">
+            <h1 className="text-5xl md:text-6xl font-bangla font-bold uppercase tracking-wide pt-2
+              bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent !text-black">
               এই{' '}
-              <span className="relative inline-block
+              <span className="relative inline-block pt-3
                 bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
                 কোর্সটি
                 {/* Underline glow */}
@@ -248,13 +254,13 @@ export default function WhyThisCourse() {
 
         {/* ── Decorative divider before stat cards ── */}
         <div className="mt-16 flex items-center gap-4">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent to-primary/20" />
+          <div className="flex-1 h-[2px] bg-gradient-to-r from-transparent to-primary/40" />
           <div className="flex gap-1.5">
-            <div className="w-1 h-1 rounded-full bg-primary/40" />
-            <div className="w-1 h-1 rounded-full bg-primary/70" />
-            <div className="w-1 h-1 rounded-full bg-primary/40" />
+            <div className="w-2 h-2 rounded-full bg-primary/40" />
+            <div className="w-2 h-2 rounded-full bg-primary/70" />
+            <div className="w-2 h-2 rounded-full bg-primary/40" />
           </div>
-          <div className="flex-1 h-px bg-gradient-to-l from-transparent to-primary/20" />
+          <div className="flex-1 h-[2px] bg-gradient-to-l from-transparent to-primary/40" />
         </div>
 
         {/* ── Stat cards ── */}
