@@ -91,23 +91,28 @@ export default function Navbar() {
   const userRole = (safeUser as any)?.role;
 
   return (
+    // <div className={cn(
+    //   "fixed top-0 z-[999] w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+    //   isScrolled
+    //     ? "bg-[#060f0a]/95 backdrop-blur-xl border-b border-primary/20 shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
+    //     : "bg-transparent border-b border-transparent"
+    // )}>
     <div className={cn(
-      "fixed top-0 z-[999] w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
-      isScrolled
-        ? "bg-[#060f0a]/95 backdrop-blur-xl border-b border-primary/20 shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
-        : "bg-transparent border-b border-transparent"
+      "sticky text-black top-0 z-[999] w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+      "bg-white  backdrop-blur-xl border-b border-primary/20 shadow-[0_4px_24px_rgba(0,0,0,0.6)]",
+
     )}>
-      {!isScrolled && (
+      {/* {!isScrolled && (
         <>
           <div className="nav-mask-bg absolute z-10 h-full w-full bg-black/10 transition-opacity duration-500 delay-100"></div>
           <div className="nav-mask-sm absolute z-20 h-full w-full backdrop-blur-sm transition-opacity duration-500 delay-150"></div>
           <div className="nav-mask-md absolute z-30 h-full w-full backdrop-blur-md transition-opacity duration-500 delay-200"></div>
         </>
-      )}
+      )} */}
       {/* Scrolled state: subtle primary glow along bottom edge */}
-      {isScrolled && (
+      {/* {isScrolled && (
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-      )}
+      )} */}
       <Container className="relative z-50 max-w-7xl mx-auto">
         <nav ref={navbarRef} className="h-16 flex items-center justify-between">
           <Link href="/">
@@ -124,11 +129,8 @@ export default function Navbar() {
           <div className="flex items-center space-x-8">
             <div
               className={cn(
-                'transition-all duration-500 hidden md:flex items-center space-x-10 font-bold tracking-wide',
-                {
-                  'text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]': !isScrolled,
-                  'text-white/85': isScrolled,
-                }
+                'transition-all duration-500 hidden md:flex items-center space-x-10 font-bold tracking-wide text-black ',
+
               )}
             >
               {[
@@ -190,36 +192,49 @@ export default function Navbar() {
                     }}
                   >
                     {/* Spinning conic border */}
-                    <span
+                    {/* <span
                       className="absolute inset-[-100%] animate-[spin_3s_linear_infinite]"
                       style={{
                         background:
                           'conic-gradient(from 90deg, transparent 20%, hsl(156 70% 42%) 45%, hsl(156 85% 70%) 55%, hsl(156 70% 42%) 70%, transparent 80%)',
                       }}
-                    />
+                    /> */}
                     {/* Inner button */}
-                    <div className="relative bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white px-7 py-2.5 rounded-full flex items-center justify-center gap-2
+                    {/* <div className="relative bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white px-7 py-2.5 rounded-full flex items-center justify-center gap-2
                       group-hover:from-[#0f6e41] group-hover:via-[#18a06a] group-hover:to-[#0f6e41]
-                      transition-colors duration-300 w-full h-full overflow-hidden">
-                      {/* Shine sweep */}
-                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                      transition-colors duration-300 w-full h-full overflow-hidden"> */}
+                    {/* Shine sweep */}
+                    {/* <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
                       <span className="relative font-bold text-sm tracking-wide">এনরোল করুন</span>
                       <svg className="relative w-4 h-4 text-white group-hover:translate-x-1 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                    </div> */}
+                    <div className="relative z-10 flex justify-center w-full">
+                      <div className="relative group overflow-hidden rounded-full p-[2px] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_8px_30px_hsl(156_70%_42%/0.3)] bg-[#060f0a]">
+                        {/* Spinning Gradient Border */}
+                        <div className="absolute inset-[-100%] animate-[spin_4s_linear_infinite]"
+                          style={{ background: 'conic-gradient(from 0deg, transparent 0%, transparent 25%, hsl(156 70% 42% / 0.6) 38%, hsl(156 80% 58%) 48%, hsl(156 90% 80%) 53%, hsl(0 0% 100% / 0.9) 56%, hsl(156 90% 80%) 59%, hsl(156 80% 58%) 64%, hsl(156 70% 42% / 0.4) 72%, transparent 82%)' }} />
+                        <div className="relative flex items-center gap-3 bg-[#060f0a] px-4 py-3 rounded-full z-10 h-full w-full">
+                          <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent text-sm font-bold drop-shadow-sm font-mona tabular-nums">
+                            এনরোল করুন
+                          </span>
+                          <svg className="relative w-4 h-4 text-white group-hover:translate-x-1 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </Link>
               </div>
-              
+
               {/* User Menu */}
               {safeUser ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className={cn(
-                    "relative h-10 w-10 rounded-full border transition-all duration-300 p-0 overflow-hidden",
-                    isScrolled
-                      ? "border-primary/40 hover:border-primary hover:shadow-[0_0_15px_hsl(156_70%_42%/0.4)]"
-                      : "border-white/40 hover:border-primary hover:shadow-[0_0_15px_hsl(156_70%_42%/0.4)]"
-                  )}>
+                      "relative h-10 w-10 rounded-full border transition-all duration-300 p-0 overflow-hidden",
+                      isScrolled
+                        ? "border-primary/40 hover:border-primary hover:shadow-[0_0_15px_hsl(156_70%_42%/0.4)]"
+                        : "border-white/40 hover:border-primary hover:shadow-[0_0_15px_hsl(156_70%_42%/0.4)]"
+                    )}>
                       {
                         safeUser?.image ? <Image
                           src={safeUser.image || '/default-avatar.png'}

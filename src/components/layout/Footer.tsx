@@ -4,6 +4,7 @@ import Container from '../ui/container';
 import { Globe2Icon, Locate, MailCheck, PhoneCall } from 'lucide-react';
 import Image from 'next/image';
 import MisunLogo from '@/assets/svg/misun-logo-svg.svg';
+import FooterBg from '@/assets/images/footer.png';
 
 /***
 misunacademybd@gmail.com
@@ -11,7 +12,17 @@ phone number : 01778371211
  */
 export default function Footer() {
   return (
-    <footer className="relative bg-[#060f0a] overflow-hidden">
+    <footer
+      className="relative overflow-hidden"
+      style={{
+        backgroundImage: `url(${FooterBg.src})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center bottom',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      {/* Dark overlay so text stays readable over the image */}
+      <div className="absolute inset-0 bg-[#060f0a]/82 pointer-events-none z-0" />
 
       {/* ── Top separator ── */}
       <div className="absolute inset-x-0 top-0 z-20 pointer-events-none">
@@ -55,37 +66,10 @@ export default function Footer() {
         }
       `}</style>
 
-      {/* 3-D perspective grid */}
-      <div
-        className="absolute inset-0 pointer-events-none overflow-hidden"
-        style={{ perspective: '600px' }}
-      >
-        <div
-          className="absolute inset-0"
-          style={{
-            transform: 'rotateX(40deg)',
-            transformOrigin: '50% 0%',
-            backgroundImage: `
-              linear-gradient(hsl(156 70% 42% / 0.09) 1px, transparent 1px),
-              linear-gradient(90deg, hsl(156 70% 42% / 0.09) 1px, transparent 1px),
-              radial-gradient(circle, hsl(156 70% 42% / 0.18) 1.5px, transparent 1.5px)
-            `,
-            backgroundSize: '48px 48px, 48px 48px, 48px 48px',
-          }}
-        />
-        {/* Fade-out mask so the grid dissolves toward the top */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: 'linear-gradient(to bottom, #060f0a 0%, transparent 45%, transparent 100%)',
-          }}
-        />
-      </div>
-
       {/* Ambient glow blobs */}
-      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-primary/8 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-0 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-0 w-64 h-64 bg-primary/6 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-primary/8 rounded-full blur-3xl pointer-events-none z-[1]" />
+      <div className="absolute top-0 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none z-[1]" />
+      <div className="absolute bottom-10 right-0 w-64 h-64 bg-primary/6 rounded-full blur-3xl pointer-events-none z-[1]" />
 
       {/* Main grid */}
       <Container className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-10 py-16 px-6 md:px-0 max-w-7xl mx-auto">
@@ -143,7 +127,7 @@ export default function Footer() {
           <div className="h-0.5 w-12 bg-gradient-to-r from-primary/60 to-transparent rounded-full -mt-2 mb-2" />
           {[
             { href: '/', label: 'হোম' },
-            { href: '/courses', label: 'কোর্স সম্পর্কে' },
+            { href: '/courses', label: 'কোর্সসমূহ' },
             { href: '/about', label: 'আমাদের সম্পর্কে' },
             { href: '/terms-and-conditions', label: 'শর্তাবলী' },
             { href: '/privacy-policy', label: 'গোপনীয়তা নীতি' },
