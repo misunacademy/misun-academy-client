@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Play, BookOpen, Loader2, Video, Calendar, Clock } from "lucide-react";
 import { useGetStudentRecordingsQuery, useIncrementRecordingViewMutation, Recording } from "@/redux/features/recording/recordingApi";
 import { format } from "date-fns";
+import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
 
 export default function StudentRecordingsPage() {
     const [playingRecording, setPlayingRecording] = useState<Recording | null>(null);
@@ -94,7 +95,7 @@ export default function StudentRecordingsPage() {
                                             <TableHead>Batch</TableHead>
                                             <TableHead>Session Date</TableHead>
                                             <TableHead>Duration</TableHead>
-                                            <TableHead>Source</TableHead>
+                                            {/* <TableHead>Source</TableHead> */}
                                             <TableHead>Action</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -131,11 +132,11 @@ export default function StudentRecordingsPage() {
                                                         </div>
                                                     )}
                                                 </TableCell>
-                                                <TableCell>
+                                                {/* <TableCell>
                                                     <Badge variant={recording.videoSource === "youtube" ? "default" : "secondary"}>
                                                         {recording.videoSource === "youtube" ? "YouTube" : "Google Drive"}
                                                     </Badge>
-                                                </TableCell>
+                                                </TableCell> */}
                                                 <TableCell>
                                                     <Button
                                                         variant="outline"
@@ -165,13 +166,19 @@ export default function StudentRecordingsPage() {
                     </DialogHeader>
                     {playingRecording && (
                         <div className="aspect-video w-full">
-                            <iframe
+                            {/* <iframe
                                 src={playingRecording.videoUrl}
                                 className="w-full h-full rounded-lg"
                                 allowFullScreen
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 title={playingRecording.title}
-                            />
+                            /> */}
+                            {/* <div className="relative aspect-video w-full rounded-3xl overflow-hidden border border-white/10"> */}
+                                <YoutubePrivatePlayer
+                                    url={playingRecording.videoUrl ?? ''}
+                                    className="absolute inset-0 w-full h-full"
+                                />
+                            {/* </div> */}
                         </div>
                     )}
                 </DialogContent>

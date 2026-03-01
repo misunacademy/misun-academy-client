@@ -32,6 +32,7 @@ import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
 import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
+import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
 
 interface CourseProgress {
   percentage: number;
@@ -305,12 +306,18 @@ export default function CourseDetails() {
                   {currentModule?.title} • Lesson {currentLessonIndex + 1} of {currentModule?.lessons.length}
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="">
                 {currentLesson.media?.url ? (
-                  <VideoPlayer
-                    videoUrl={currentLesson.media.url}
-                    title={currentLesson.title}
-                  />
+                  // <VideoPlayer
+                  //   videoUrl={currentLesson.media.url}
+                  //   title={currentLesson.title}
+                  // />
+                 <div className="relative aspect-video w-full rounded-3xl overflow-hidden border border-white/10">
+                     <YoutubePrivatePlayer
+                        url={currentLesson.media.url}
+                        className="absolute inset-0 w-full h-full"
+                     />
+                  </div>
                 ) : (
                   <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
                     <div className="text-center">
