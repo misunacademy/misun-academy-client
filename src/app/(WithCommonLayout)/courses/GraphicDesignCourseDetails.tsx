@@ -23,12 +23,12 @@ const CourseDetails = () => {
     return (
         <div>
             <BreadcrumbJsonLd />
-            <BannerSection />
+            <BannerSection courseSlug="graphic-design" />
             <InstructorSection />
             <CourseWorkflow />
             <CourseCurriculum />
             <FaqSection />
-            <EnrollCtaSection />
+            <EnrollCtaSection courseSlug="graphic-design" />
         </div>
     );
 };

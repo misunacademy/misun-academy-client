@@ -1,32 +1,24 @@
 import { generateMetadata } from '@/lib/generateMetadata';
-import CourseDetails from './CourseDetails';
+import CoursesListClient from './CoursesListClient';
 
 export const metadata = generateMetadata({
-  title: 'কোর্স সম্পর্কে | MISUN Academy',
+  title: 'কোর্সসমূহ | MISUN Academy',
   description:
-    'ঘরে বসেই ডিজাইন শেখা এবং সফল ক্যারিয়ার গড়ার সেরা সুযোগ। MISUN Academy-এর সাথে শুরু হোক আপনার গ্রাফিক্স ডিজাইন জার্নি। | Learn from home, build your creative career with MISUN Academy.',
+    'MISUN Academy-এর সকল কোর্স দেখুন। গ্রাফিক্স ডিজাইন থেকে ইংরেজি শেখা — আপনার পছন্দের কোর্সে এনরোল করুন এবং ক্যারিয়ার গড়ুন।',
   keywords: [
     'Graphic Design Course',
+    'Spoken English Course',
     'Freelancing',
-    'course details',
-    'misun academy course',
-    'misun academy course details',
-    'Graphic Design Bangladesh',
     'MISUN Academy',
+    'অনলাইন কোর্স',
+    'গ্রাফিক্স ডিজাইন',
+    'ইংরেজি শেখা',
     'Design Career',
-    'কমপ্লিট গ্রাফিক্স ডিজাইন',
-    'ফ্রিল্যান্সিং শেখা',
-    'অনলাইন ডিজাইন কোর্স',
+    'Bangladesh',
   ],
   slug: 'courses',
-  image: '/course-og-image.png'
 });
 
-
 export default function CoursesPage() {
-  return (
-    <div>
-     <CourseDetails />
-    </div>
-  );
+  return <CoursesListClient />;
 }
