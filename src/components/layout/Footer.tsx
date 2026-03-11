@@ -13,12 +13,9 @@ phone number : 01778371211
 export default function Footer() {
   return (
     <footer
-      className="relative overflow-hidden"
+      className="relative overflow-hidden pb-12 md:pb-24 bg-[#060f0a] bg-contain lg:bg-cover bg-bottom bg-no-repeat"
       style={{
         backgroundImage: `url(${FooterBg.src})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center bottom',
-        backgroundRepeat: 'no-repeat',
       }}
     >
       {/* Dark overlay so text stays readable over the image */}
@@ -198,21 +195,14 @@ export default function Footer() {
         <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
       </div>
 
-      {/* SSLCommerz badge */}
-      <div className="relative z-10 hidden mt-6 mb-4 sm:flex justify-center max-w-7xl mx-auto px-6 opacity-70 hover:opacity-100 transition-opacity">
+      {/* SSLCommerz badge — single responsive image, scales across all screen sizes */}
+      <div className="relative z-10 mt-6 mb-4 flex justify-center px-4 opacity-70 hover:opacity-100 transition-opacity">
         <Image
           src="https://securepay.sslcommerz.com/public/image/SSLCommerz-Pay-With-logo-All-Size-03.png"
-          alt="SSLCommerz"
-          width={1400}
-          height={600}
-        />
-      </div>
-      <div className="relative z-10 flex mb-4 sm:hidden justify-center px-6 opacity-70 hover:opacity-100 transition-opacity">
-        <Image
-          src="https://securepay.sslcommerz.com/public/image/SSLCommerz-Pay-With-logo-All-Size-04.png"
-          alt="SSLCommerz"
-          width={1400}
-          height={600}
+          alt="Pay with SSLCommerz"
+          width={900}
+          height={390}
+          className="w-full max-w-[350px] sm:max-w-[560px] lg:max-w-[980px] h-auto"
         />
       </div>
 

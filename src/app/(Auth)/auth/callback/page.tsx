@@ -4,18 +4,17 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { useGetMyEnrollmentsQuery } from '@/redux/api/enrollmentApi';
 
-/**
- * OAuth callback page
- * Handles redirect after successful OAuth authentication (Google, etc.)
- * Redirects users to appropriate dashboard based on their role
- */
+
 export default function AuthCallbackPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
+  const { data: EnrollmentsData, isLoading: isEnrollmentsLoading } = useGetMyEnrollmentsQuery({ status: "active" }, { skip: !user }); // prime the cache with user's enrollments if logged in
+  const isEnrolled = (EnrollmentsData?.data?.length ?? 0) > 0
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || isEnrollmentsLoading) return;
 
     if (!user) {
       // No session found, redirect to login
@@ -25,7 +24,7 @@ export default function AuthCallbackPage() {
 
     // Determine dashboard route based on user role
     const role = user.role || 'learner';
-    let destination = '/dashboard/student';
+    let destination = '/';
 
     switch (role.toLowerCase()) {
       case 'superadmin':
@@ -36,13 +35,15 @@ export default function AuthCallbackPage() {
         destination = '/dashboard/instructor';
         break;
       case 'learner':
+        destination = isEnrolled ? '/my-classes' : '/';
+        break;
       default:
-        destination = '/dashboard/student';
+        destination = '/';
         break;
     }
 
     router.push(destination);
-  }, [user, isLoading, router]);
+  }, [user, isLoading, router, isEnrollmentsLoading, isEnrolled]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">

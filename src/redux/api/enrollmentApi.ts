@@ -104,7 +104,7 @@ const enrollmentApi = baseApi.injectEndpoints({
     updateEnrollmentStatus: build.mutation<any, { id: string; status: string }>({
       query: ({ id, status }) => ({
         url: `/enrollments/${id}/status`,
-        method: "PUT",  // Fixed: was PATCH, server expects PUT
+        method: "PUT",  
         body: { status },
       }),
       invalidatesTags: ["CourseEnrollments"],

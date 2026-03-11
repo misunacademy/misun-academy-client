@@ -63,7 +63,6 @@ const EnrollmentCheckout = ({ courseSlug }: { courseSlug?: string } = {}) => {
             paymentMethod: undefined,
         },
     });
-    const { data: settingsData, isLoading: settingsLoading } = useGetSettingsQuery();
 
     // Course-specific queries (used when courseSlug is provided)
     const { data: courseBySlug, isLoading: courseLoading } = useGetCourseBySlugQuery(
@@ -86,10 +85,10 @@ const EnrollmentCheckout = ({ courseSlug }: { courseSlug?: string } = {}) => {
 
     // Resolve course + batch: prefer slug-based data when courseSlug is provided.
     // For slug path: use current-enrollment batch first, then first upcoming batch as fallback.
-    const resolvedCourse = courseSlug ? courseData : (settingsData?.data?.featuredEnrollmentCourse as any);
+    const resolvedCourse = courseSlug ? courseData : {};
     const resolvedBatch  = courseSlug
         ? ((currentBatchRes?.data as any) ?? (upcomingBatchRes?.data as any)?.[0])
-        : (settingsData?.data?.featuredEnrollmentBatch as any);
+        : {};
 
     // Whether the enrollment window is currently open for this batch
     const isEnrollmentOpen = resolvedBatch
@@ -105,7 +104,7 @@ const EnrollmentCheckout = ({ courseSlug }: { courseSlug?: string } = {}) => {
     const featuredCourseId = resolvedCourse;
     const featuredBatchId  = resolvedBatch;
 
-    const isDataLoading = settingsLoading || (!!courseSlug && (courseLoading || (!!courseData && batchLoading)));
+    const isDataLoading = (!!courseSlug && (courseLoading || (!!courseData && batchLoading)));
 
     useEffect(() => {
         if (!form.getValues('batchId') && resolvedBatch?._id) {

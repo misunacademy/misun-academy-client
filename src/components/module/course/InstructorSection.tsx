@@ -45,67 +45,70 @@ export default function InstructorSection() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
                     {/* — Left: image — */}
-                    <div className="flex justify-center lg:justify-end">
+                    <div className="flex justify-center lg:justify-start lg:pl-8 xl:pl-16">
                         {/* Double-layer square + circular photo stack */}
-                        <div className="relative w-72 h-72 sm:w-80 sm:h-80 lg:w-[360px] lg:h-[360px]">
+                        <div className="relative w-80 h-80 sm:w-96 sm:h-96 lg:w-[420px] lg:h-[420px]">
 
-                            {/* Layer 1 — outermost square, most rotated, faintest */}
-                            <div className="absolute inset-0 rounded-2xl rotate-[10deg] scale-90
-                                bg-gradient-to-br from-primary/8 to-transparent
+                            {/* Enhanced Background Glows */}
+                            <div className="absolute -inset-4 bg-primary/10 blur-3xl rounded-full opacity-50 animate-pulse" />
+
+                            {/* Layer 1 — outermost square, subtle rotation, centered */}
+                            <div className="absolute inset-0 rounded-[3rem] rotate-[8deg] scale-[0.88]
+                                bg-gradient-to-br from-primary/10 via-transparent to-transparent
                                 border border-primary/20
-                                shadow-[0_0_40px_hsl(156_70%_42%/0.12)]">
-                                {/* Corner accents */}
-                                <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-primary/50 rounded-tl-2xl" />
-                                <div className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-primary/50 rounded-tr-2xl" />
-                                <div className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-primary/50 rounded-bl-2xl" />
-                                <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-primary/50 rounded-br-2xl" />
+                                shadow-[0_0_40px_hsl(156_70%_42%/0.15)] ">
+                                {/* Corner accents — all 4 corners */}
+                                <div className="absolute top-0 left-0 w-14 h-14 border-t-2 border-l-2 border-primary/40 rounded-tl-[3rem]" />
+                                <div className="absolute top-0 right-0 w-14 h-14 border-t-2 border-r-2 border-primary/40 rounded-tr-[3rem]" />
+                                <div className="absolute bottom-0 left-0 w-14 h-14 border-b-2 border-l-2 border-primary/40 rounded-bl-[3rem]" />
+                                <div className="absolute bottom-0 right-0 w-14 h-14 border-b-2 border-r-2 border-primary/40 rounded-br-[3rem]" />
                             </div>
 
-                            {/* Layer 2 — inner square, slightly rotated, stronger glow */}
-                            <div className="absolute inset-0 rounded-2xl rotate-[4deg] scale-95
-                                bg-gradient-to-br from-primary/12 via-[#060f0a] to-primary/6
-                                border border-primary/35
-                                shadow-[0_0_50px_hsl(156_70%_42%/0.2),inset_0_1px_0_hsl(156_70%_42%/0.15)]">
-                                {/* Corner accents */}
-                                <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/70 rounded-tl-2xl" />
-                                <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/70 rounded-tr-2xl" />
-                                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/70 rounded-bl-2xl" />
-                                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/70 rounded-br-2xl" />
+                            {/* Layer 2 — inner square, counter-rotated for balance */}
+                            <div className="absolute inset-0 rounded-[3rem] rotate-[-4deg] scale-[0.94]
+                                bg-gradient-to-br from-primary/15 via-[#060f0a]/80 to-primary/5
+                                border border-primary/30 backdrop-blur-sm
+                                shadow-[0_0_50px_hsl(156_70%_42%/0.25),inset_0_1px_0_hsl(156_70%_42%/0.2)] ">
+                                {/* Corner accents — all 4 corners */}
+                                <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-primary/60 rounded-tl-[3rem]" />
+                                <div className="absolute top-0 right-0 w-16 h-16 border-t-2 border-r-2 border-primary/60 rounded-tr-[3rem]" />
+                                <div className="absolute bottom-0 left-0 w-16 h-16 border-b-2 border-l-2 border-primary/60 rounded-bl-[3rem]" />
+                                <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-primary/60 rounded-br-[3rem]" />
                                 {/* Top shimmer line */}
-                                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent rounded-t-2xl" />
+                                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent rounded-t-[3rem]" />
                             </div>
 
                             {/* Circular photo — conic-spin border on top */}
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="relative p-[2.5px] rounded-full overflow-hidden w-[82%] h-[82%]
-                                    shadow-[0_0_60px_hsl(156_70%_42%/0.3)]">
-                                    <span className="absolute inset-[-100%] animate-[spin_6s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_50%,hsl(156_70%_42%/0.9)_70%,transparent_100%)]" />
-                                    <span className="absolute inset-[-100%] animate-[spin_10s_linear_infinite_reverse] bg-[conic-gradient(from_180deg,transparent_70%,hsl(156_85%_70%/0.5)_90%,transparent_100%)]" />
-                                    <div className="relative rounded-full overflow-hidden w-full h-full bg-[#060f0a] p-[3px]">
-                                        <div className="relative rounded-full overflow-hidden w-full h-full">
+                                <div className="relative p-[3px] rounded-full overflow-hidden w-[85%] h-[85%]
+                                    shadow-[0_0_70px_hsl(156_70%_42%/0.4)] ring-1 ring-primary/20">
+                                    <span className="absolute inset-[-100%] animate-[spin_6s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_50%,hsl(156_70%_42%/1)_70%,transparent_100%)]" />
+                                    <span className="absolute inset-[-100%] animate-[spin_10s_linear_infinite_reverse] bg-[conic-gradient(from_180deg,transparent_70%,hsl(156_85%_70%/0.6)_90%,transparent_100%)]" />
+                                    <div className="relative rounded-full overflow-hidden w-full h-full bg-[#060f0a] p-[4px]">
+                                        <div className="relative rounded-full overflow-hidden w-full h-full ring-1 ring-white/10">
                                             <Image
                                                 src={MithunSarkar}
                                                 alt="Mithun Sarkar — Lead Instructor"
                                                 fill
-                                                className="object-cover object-top"
-                                                sizes="(max-width: 640px) 256px, (max-width: 1024px) 288px, 320px"
+                                                className="object-cover object-top hover:scale-105 transition-transform duration-700"
+                                                sizes="(max-width: 640px) 320px, (max-width: 1024px) 384px, 450px"
                                                 priority
                                             />
-                                            <div className="absolute inset-0 rounded-full bg-gradient-to-t from-primary/20 via-transparent to-transparent" />
+                                            <div className="absolute inset-0 rounded-full bg-gradient-to-t from-primary/30 via-transparent to-transparent" />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Floating accent dots */}
-                            <div className="absolute -right-4 top-1/3 flex flex-col gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" />
-                                <div className="w-1 h-1 rounded-full bg-primary/30" />
-                                <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+                            {/* Floating accent particles */}
+                            <div className="absolute top-1/4 -right-12 space-y-4">
+                                <div className="w-2 h-2 rounded-full bg-primary/60 blur-[1px] animate-pulse" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary/30 ml-4 animate-bounce" />
+                                <div className="w-2 h-2 rounded-full bg-primary/40 -ml-2" />
                             </div>
-                            <div className="absolute -left-3 bottom-1/3 flex flex-col gap-2">
-                                <div className="w-1 h-1 rounded-full bg-primary/40" />
-                                <div className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-pulse" style={{ animationDelay: '0.5s' }} />
+                            <div className="absolute bottom-1/4 -left-12 space-y-4">
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary/40 blur-[1px]" />
+                                <div className="w-2 h-2 rounded-full bg-primary/60 animate-pulse ml-4" style={{ animationDelay: '0.5s' }} />
                             </div>
                         </div>
                     </div>
@@ -115,7 +118,7 @@ export default function InstructorSection() {
 
                         {/* Heading */}
                         <h2 className="text-3xl lg:text-5xl font-bold leading-[140%]">
-                            <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">
+                            <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent pt-2">
                                 অভিজ্ঞতা দিয়ে গাইড করা,{" "}
                             </span>
                             <br />
@@ -138,7 +141,7 @@ export default function InstructorSection() {
                                 <span className="absolute inset-[-100%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
                                 <div className="relative bg-[#060f0a] rounded-xl px-4 py-2.5">
                                     <p className="font-bold text-white text-base">Mithun Sarkar</p>
-                                    <p className="text-primary text-sm font-medium">Founder & Lead Instructor @ MISUN</p>
+                                    <p className="text-primary text-sm font-medium">Founder & Lead Instructor of MISUN ACADEMY</p>
                                 </div>
                             </div>
                         </div>

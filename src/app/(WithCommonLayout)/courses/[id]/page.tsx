@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import { generateMetadata as genMeta } from '@/lib/generateMetadata';
 import type { Metadata } from 'next';
 import CourseDetails from '../GraphicDesignCourseDetails';
-import EnglishCourseDetails from '../EnglishCourseDetails';
 
 
 // ─── Static course config ────────────────────────────────────────────────────
@@ -79,8 +78,8 @@ export default async function CourseDetailPage({
 
   if (!courseConfig[id as CourseSlug]) notFound();
 
-  if (id === 'graphic-design') return <CourseDetails />;
-  if (id === 'english-for-professional-communication') return <EnglishCourseDetails />;
+  return <CourseDetails />;
+
 
   notFound();
 }

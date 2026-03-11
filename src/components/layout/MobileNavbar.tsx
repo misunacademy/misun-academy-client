@@ -6,14 +6,14 @@ import { Button } from '../ui/button';
 import { AlignLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export default function MobileNavbar({ isScrolled }: { isScrolled?: boolean }) {
+export default function MobileNavbar() {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
         <div className="relative">
             {/* Mobile Menu Button */}
-            <button onClick={() => setIsOpen(!isOpen)} className={cn("transition-colors", !isScrolled && !isOpen ? "text-white" : "text-[#0a0f18]")}>
-                {isOpen ? <AlignLeft className='text-primary' size={28} /> : <AlignLeft size={28} />}
+            <button onClick={() => setIsOpen(!isOpen)} className="transition-colors text-primary">
+                {isOpen ? <AlignLeft className='text-primary' size={28} /> : <AlignLeft className='text-primary' size={28} />}
             </button>
 
             {/* Mobile Menu */}

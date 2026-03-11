@@ -5,6 +5,9 @@ import Container from "@/components/ui/container";
 import WorkflowCard from "./WorkFlowCard";
 import { Duration, Scic, SearchOnline, Session, SubmitAssignment, SupportSession, WeekCourse } from "@/assets/icons";
 import Link from "next/link";
+interface BannerSectionProps {
+    courseSlug?: string;
+}
 
 const workflowSteps = [
     {
@@ -66,7 +69,7 @@ const workflowSteps = [
     }
 ]
 
-export default function CourseWorkflow() {
+export default function CourseWorkflow({ courseSlug }: BannerSectionProps = {}) {
     return (
         <section className="relative bg-[#060f0a] overflow-hidden">
 
@@ -110,15 +113,27 @@ export default function CourseWorkflow() {
 
                         {/* Enroll CTA */}
                         <div className="mt-8 mb-10">
-                            <Link href="/checkout">
+                            <Link href={`/checkout?course=${courseSlug}`}>
                                 <div className="inline-block relative p-[1.5px] rounded-xl overflow-hidden">
                                     <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
-                                    <button className="relative bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41] transition-all duration-300 text-white font-semibold font-bangla text-base px-10 py-3 rounded-xl shadow-[0_0_20px_hsl(156_70%_42%/0.35)] cursor-pointer">
-                                        এনরোল করুন
-                                    </button>
+                                  <button className="relative bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41] transition-all duration-300 text-white font-semibold font-bangla text-lg px-10 py-4 rounded-xl shadow-[0_0_20px_hsl(156_70%_42%/0.35)] cursor-pointer flex items-center gap-2">
+                <span className=''>
+
+                  এনরোল করুন
+                </span>
+                {/* Arrow */}
+                <svg
+                  className="relative w-4 h-4 group-hover:translate-x-1 transition-transform duration-300 shrink-0"
+                  style={{ color: 'hsla(0, 0%, 100%, 1.00)' }}
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                >
+                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                </svg>
+              </button>
                                 </div>
                             </Link>
                         </div>
+                 
                     </div>
                 </div>
 
@@ -149,3 +164,5 @@ export default function CourseWorkflow() {
         </section>
     );
 }
+
+/** */

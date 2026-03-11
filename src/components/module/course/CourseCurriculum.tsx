@@ -3,6 +3,8 @@
 import { useState, useMemo } from "react";
 import { Trophy, Clock, Layers, Zap, Users } from "lucide-react";
 import { courseCurriculum } from "@/data/courseCurriculum";
+import Image from "next/image";
+import element3DBottomLeft from "@/assets/3d-elements/47581666_4-[Converted].png";
 
 // ── per-course accent config ────────────────────────────────────────────────
 const COURSE_CONFIG = [
@@ -80,6 +82,24 @@ const CourseCurriculum = () => {
             {/* Edge separators */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+
+            {/* 3D Decorative Element - Bottom Left */}
+            {/* <div 
+                className="absolute bottom-[15%] left-[-15%] md:left-[-5%] lg:left-[0%] xl:left-[0%] pointer-events-none z-0 hidden md:block"
+                style={{ animation: 'designFloat 18s ease-in-out infinite' }}
+            >
+                <div className="relative w-[220px] h-[220px] lg:w-[350px] lg:h-[350px] xl:w-[480px] xl:h-[480px]">
+                     Ambient glow behind the iMac
+                     <div className="absolute inset-x-12 inset-y-12 bg-primary/20 blur-[80px] rounded-full" />
+                     <Image
+                         src={element3DBottomLeft}
+                         alt="3D Decorative iMac Design"
+                         fill
+                         className="object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] opacity-40 md:opacity-60 lg:opacity-80 xl:opacity-100"
+                         sizes="(max-width: 1024px) 220px, (max-width: 1280px) 350px, 480px"
+                     />
+                </div>
+            </div> */}
 
             <div className="relative z-10 py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -386,14 +406,14 @@ const CourseCurriculum = () => {
                         { icon: Clock,  label: 'ঘণ্টার কন্টেন্ট', value: '100+' },
                         { icon: Users,  label: 'স্টুডেন্ট সাপোর্ট', value: '২৪/৭' },
                     ].map(({ icon: Icon, label, value }) => (
-                        <div key={label} className="relative overflow-hidden flex items-center gap-3 px-5 py-4 rounded-2xl border border-primary/12 bg-primary/5 group hover:border-primary/30 hover:bg-primary/8 transition-all duration-300">
+                        <div key={label} className="relative overflow-hidden flex items-center gap-3 px-5 py-4 rounded-2xl border border-primary/5 bg-primary/5 group hover:border-primary/30 hover:bg-primary/8 transition-all duration-300">
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                                <Icon size={14} className="text-primary" />
+                            <div className="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                                <Icon size={24} className="text-primary" />
                             </div>
                             <div>
-                                <p className="text-xl font-black bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">{value}</p>
-                                <p className="text-[10px] text-white/40 font-bangla tracking-wide">{label}</p>
+                                <p className="text-3xl font-black bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">{value}</p>
+                                <p className="text-lg text-white/40 font-bangla tracking-wide">{label}</p>
                             </div>
                         </div>
                     ))}

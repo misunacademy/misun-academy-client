@@ -39,7 +39,7 @@ export default function DynamicUpdates() {
         if (!selectedCourse || selectedCourse === EMPTY_VALUE) return [];
         
         return batches.filter((batch) => {
-            const batchCourseId = batch.courseId?._id || batch.courseId;
+            const batchCourseId = (batch.courseId as any)?._id || batch.courseId;
             return batchCourseId === selectedCourse || batch._id === selectedBatch;
         });
     }, [selectedCourse, batches, selectedBatch]);
@@ -58,7 +58,7 @@ export default function DynamicUpdates() {
         // If currently selected batch doesn't belong to the new course, reset it
         const currentBatch = batches.find((batch) => batch._id === selectedBatch);
         if (currentBatch) {
-            const batchCourseId = currentBatch.courseId?._id || currentBatch.courseId;
+            const batchCourseId = (currentBatch.courseId as any)?._id || currentBatch.courseId;
             if (batchCourseId !== value) {
                 setSelectedBatch(EMPTY_VALUE);
             }

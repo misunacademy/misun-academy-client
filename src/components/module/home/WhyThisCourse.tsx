@@ -1,9 +1,12 @@
 ﻿'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import Container from '@/components/ui/container';
 import WhyThisCourseModal from './WhyThisCourseModal';
 import { VideoThumb, Bg1 } from '@/assets/images';
+import AbstractLiquid from '@/assets/3d-elements/3d-abstract-colorful-twisted-liquid-shapes-creative-design-elements-vector-modern-gradient-shapes-elements-bannerbackgroundposter.png';
+import FluidShape from '@/assets/3d-elements/3d-abstract-fluid-shape-icon.png';
 import { FolderArchive, NotebookPen, Projector } from 'lucide-react';
 import PlayButton from '@/components/shared/PlayButton';
 import { FadeIn } from '@/components/ui/FadeIn';
@@ -120,13 +123,13 @@ export default function WhyThisCourse() {
     if (sectionRef.current) observer.observe(sectionRef.current);
     return () => observer.disconnect();
   }, []);
-// bg-[#060f0a]
+  // section background now matches other modules (used to be #060f0a)
   return (
     <section
       data-dark-section
-      className="relative overflow-hidden"
+      className="relative overflow-hidden bg-[#040a07]"
       style={{
-        backgroundImage: `url(${Bg1.src})`,
+        // backgroundImage: `url(${Bg1.src})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -150,6 +153,51 @@ export default function WhyThisCourse() {
       <div className="absolute bottom-0 left-[10%] w-[300px] h-[200px] bg-primary/8 rounded-full blur-[80px] pointer-events-none" />
       <div className="absolute bottom-0 right-[10%] w-[260px] h-[180px] bg-primary/6 rounded-full blur-[70px] pointer-events-none" />
 
+      {/* ── 3D Element: twisted liquid shapes — top-left decorative ── */}
+      <div
+        className="absolute -top-6 -left-10 w-[260px] md:w-[340px] pointer-events-none select-none z-0 opacity-55"
+        style={{ animation: 'floatLeft 7s ease-in-out infinite' }}
+      >
+        {/* Green glow behind it */}
+        <div className="absolute inset-0 scale-75 rounded-full blur-2xl opacity-30" style={{ background: 'radial-gradient(ellipse, hsl(156 70% 42% / 0.6) 0%, transparent 70%)' }} />
+        <Image
+          src={AbstractLiquid}
+          alt=""
+          className="w-full h-auto drop-shadow-[0_8px_32px_hsl(156_70%_42%/0.35)] mix-blend-luminosity"
+          priority={false}
+        />
+      </div>
+
+      {/* ── 3D Element: fluid shape icon — bottom-right decorative ── */}
+      <div
+        className="absolute bottom-10 -right-8 w-[140px] md:w-[190px] pointer-events-none select-none z-0 opacity-60"
+        style={{ animation: 'floatRight 5.5s ease-in-out infinite' }}
+      >
+        <div className="absolute inset-0 scale-90 rounded-full blur-xl opacity-40" style={{ background: 'radial-gradient(ellipse, hsl(156 75% 50% / 0.55) 0%, transparent 70%)' }} />
+        <Image
+          src={FluidShape}
+          alt=""
+          className="w-full h-auto drop-shadow-[0_6px_24px_hsl(156_75%_48%/0.4)]"
+          priority={false}
+        />
+      </div>
+
+      {/* Keyframes injected inline */}
+      <style>{`
+        @keyframes floatLeft {
+          0%   { transform: translateY(0px) rotate(-4deg) scale(1); }
+          35%  { transform: translateY(-18px) rotate(2deg) scale(1.03); }
+          70%  { transform: translateY(-8px) rotate(-6deg) scale(0.98); }
+          100% { transform: translateY(0px) rotate(-4deg) scale(1); }
+        }
+        @keyframes floatRight {
+          0%   { transform: translateY(0px) rotate(8deg) scale(1); }
+          40%  { transform: translateY(-14px) rotate(-4deg) scale(1.05); }
+          75%  { transform: translateY(-5px) rotate(12deg) scale(0.97); }
+          100% { transform: translateY(0px) rotate(8deg) scale(1); }
+        }
+      `}</style>
+
       <Container className="relative z-10 py-24 max-w-7xl mx-auto">
 
         {/* ── Premium badge ── */}
@@ -158,7 +206,7 @@ export default function WhyThisCourse() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full
               bg-primary/10 border border-primary/25 backdrop-blur-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">
+              <span className="text-xs font-semibold  uppercase text-primary/90">
                 কোর্স সম্পর্কে
               </span>
             </div>
@@ -169,7 +217,7 @@ export default function WhyThisCourse() {
         <FadeIn>
           <div className="text-center mb-2">
             <h1 className="text-5xl md:text-6xl font-bangla font-bold uppercase tracking-wide pt-2
-              bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent !text-black">
+              bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">
               এই{' '}
               <span className="relative inline-block pt-3
                 bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">

@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState } from 'react';
-import { useGetCurrentEnrollmentBatchQuery, useGetBatchByIdQuery } from "@/redux/api/batchApi";
-import { useGetCourseByIdQuery } from "@/redux/features/course/courseApi";
+import { useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
 import { useGetCourseBySlugQuery } from "@/redux/api/courseApi";
-import { useGetSettingsQuery } from "@/redux/api/settingsApi";
 import { intervalToDuration, isBefore, isAfter } from "date-fns";
 import { FadeIn } from '@/components/ui/FadeIn';
+import { BatchResponse } from '@/redux/api/batchApi';
 
 type TimeLeft = {
   months: number;
@@ -51,15 +50,30 @@ function Colon() {
   );
 }
 
-const Countdown = ({ courseSlug }: { courseSlug?: string } = {}) => {
+interface CountdownProps {
+  /** Pass a pre-fetched batch object directly (e.g. from EnrollmentSection) */
+  batch?: BatchResponse | null;
+  /** OR pass a course slug to auto-resolve the current enrollment batch */
+  courseSlug?: string;
+}
+
+// map of course slug → primary colors (HSL) used by CSS vars
+const themeMap: Record<string, { primary: string; glow: string }> = {
+  'english-for-professional-communication': {
+    primary: '217 91% 60%',
+    glow: '217 91% 60%',
+  },
+  'graphic-design': {
+    primary: '156 70% 42%',
+    glow: '156 85% 70%',
+  },
+};
+
+const Countdown = ({ batch: batchProp, courseSlug }: CountdownProps = {}) => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
-  const [status, setStatus] = useState<'upcoming' | 'running' | 'completed'>('completed');
+  const [label, setLabel] = useState<string>('');
 
-  const { data: settingsData } = useGetSettingsQuery();
-
-  // ── Course-slug path (course detail pages) ──────────────────────────────
-  // When a courseSlug is passed, we resolve the batch directly for that course,
-  // bypassing the global admin setting.
+  // ── Course-slug path (course detail pages & BannerSection) ───────────────
   const { data: courseBySlug, isLoading: courseBySlugLoading } = useGetCourseBySlugQuery(
     courseSlug!, { skip: !courseSlug }
   );
@@ -70,55 +84,67 @@ const Countdown = ({ courseSlug }: { courseSlug?: string } = {}) => {
     { skip: !slugCourseId }
   );
 
-  // ── Settings path (home page EnrollmentSection — admin picks featured course) ──
-  const settingsCourseId = !courseSlug ? (settingsData?.data?.featuredEnrollmentCourse as any)?._id : undefined;
-  const settingsBatchId  = !courseSlug ? (settingsData?.data?.featuredEnrollmentBatch  as any)?._id : undefined;
+  // Resolve batch: if a batch is passed directly, use it; otherwise use slug-resolved batch
+  const batch = batchProp ?? (courseSlug ? (slugBatchRes?.data as any) : null);
 
-  const { isLoading: courseLoading } = useGetCourseByIdQuery(settingsCourseId || "", {
-    skip: !settingsCourseId,
-  });
+  // derive effective slug from either prop or batch info
+  const effectiveSlug = useMemo(() => {
+    if (courseSlug) return courseSlug;
+    // batch.courseId may be object with slug
+    if (batch && typeof batch.courseId === 'object' && (batch.courseId as any).slug) {
+      return (batch.courseId as any).slug as string;
+    }
+    return undefined;
+  }, [courseSlug, batch]);
 
-  const { data: batchData, isLoading: batchLoading } = useGetCurrentEnrollmentBatchQuery(
-    { courseId: settingsCourseId },
-    { skip: !settingsCourseId || !!settingsBatchId }
-  );
+  // compute CSS variable overrides based on slug
+  const themeVars = useMemo(() => {
+    if (!effectiveSlug) return {};
+    const t = themeMap[effectiveSlug];
+    if (!t) return {};
+    return {
+      '--primary': t.primary,
+      '--primary-glow': t.glow,
+    } as React.CSSProperties;
+  }, [effectiveSlug]);
 
-  const { data: featuredBatchData, isLoading: featuredBatchLoading } = useGetBatchByIdQuery(
-    settingsBatchId || "",
-    { skip: !settingsBatchId }
-  );
-
-  // Resolve the batch from whichever path was used
-  const batch = courseSlug
-    ? slugBatchRes?.data
-    : (featuredBatchData?.data || batchData?.data);
-
-  const start = useMemo(() => batch ? new Date(batch.enrollmentStartDate) : null, [batch]);
-  const end = useMemo(() => batch ? new Date(batch.enrollmentEndDate) : null, [batch]);
+  const enrollmentStart = useMemo(() => batch?.enrollmentStartDate ? new Date(batch.enrollmentStartDate) : null, [batch]);
+  const enrollmentEnd = useMemo(() => batch?.enrollmentEndDate ? new Date(batch.enrollmentEndDate) : null, [batch]);
 
   useEffect(() => {
-    if (!batch || !start || !end) return;
+    if (!batch || !enrollmentStart || !enrollmentEnd) return;
 
-    const interval = setInterval(() => {
-      const current = new Date();
-      const isUpcomingNow = isBefore(current, start);
-      const isOngoingNow = isAfter(current, start) && isBefore(current, end);
+    const tick = () => {
+      const now = new Date();
+      const batchStatus = batch.status as string;
 
       let targetDate: Date | null = null;
+      let nextLabel = '';
 
-      if (isUpcomingNow) {
-        setStatus('upcoming');
-        targetDate = start;
-      } else if (isOngoingNow) {
-        setStatus('running');
-        targetDate = end;
-      } else {
-        setStatus('completed');
-        setTimeLeft(null);
+      if (batchStatus === 'upcoming') {
+        const enrollmentOpen = isAfter(now, enrollmentStart) && isBefore(now, enrollmentEnd);
+        const enrollmentNotYetOpen = isBefore(now, enrollmentStart);
+
+        if (enrollmentOpen) {
+          // Enrollment window is currently open → count down to its end
+          targetDate = enrollmentEnd;
+          nextLabel = 'এনরোলমেন্ট শেষ হতে বাকি';
+        } else if (enrollmentNotYetOpen) {
+          // Enrollment hasn't started yet → count down to its start
+          targetDate = enrollmentStart;
+          nextLabel = 'এনরোলমেন্ট শুরু হতে বাকি';
+        }
+        // If past enrollmentEnd and still "upcoming", nothing to show
+      } else if (batchStatus === 'running') {
+        // The batch is running — show enrollment end countdown only if still within window
+        if (isBefore(now, enrollmentEnd)) {
+          targetDate = enrollmentEnd;
+          nextLabel = 'এনরোলমেন্ট শেষ হতে বাকি';
+        }
       }
 
       if (targetDate) {
-        const duration = intervalToDuration({ start: current, end: targetDate });
+        const duration = intervalToDuration({ start: now, end: targetDate });
         setTimeLeft({
           months: duration.months || 0,
           days: duration.days || 0,
@@ -126,31 +152,35 @@ const Countdown = ({ courseSlug }: { courseSlug?: string } = {}) => {
           minutes: duration.minutes || 0,
           seconds: duration.seconds || 0,
         });
+        setLabel(nextLabel);
+      } else {
+        setTimeLeft(null);
+        setLabel('');
       }
-    }, 1000);
+    };
 
+    tick(); // run immediately
+    const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [batch, start, end]);
+  }, [batch, enrollmentStart, enrollmentEnd]);
 
   const isCountdownLoading = courseSlug
     ? (courseBySlugLoading || (!!slugCourseId && slugBatchLoading))
-    : (courseLoading || batchLoading || featuredBatchLoading);
-
-  const activeCourseId = courseSlug ? slugCourseId : settingsCourseId;
+    : false;
 
   if (isCountdownLoading) return null;
-  if (!activeCourseId || !batch || status === 'completed' || !timeLeft) return null;
+  if (!batch || !timeLeft || !label) return null;
 
   return (
-    <FadeIn delay={0.1} className="mt-8 mb-4">
+    <FadeIn delay={0.1} className="mt-8 mb-4" style={themeVars}>
       <div className="text-center space-y-6">
-        {/* Status badge — matches premium pulsing-dot badge across all sections */}
+        {/* Status badge */}
         <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full
           bg-primary/10 border border-primary/25 backdrop-blur-sm
           shadow-[0_0_20px_hsl(156_70%_42%/0.12)]">
           <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
-          <p className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90 font-bangla">
-            {status === 'upcoming' ? "এনরোলমেন্ট শুরু হতে বাকি" : "এনরোলমেন্ট শেষ হতে বাকি"}
+          <p className="text-xs font-semibold  uppercase text-primary/90 font-bangla">
+            {label}
           </p>
         </div>
 

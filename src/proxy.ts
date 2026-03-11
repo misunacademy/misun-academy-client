@@ -14,7 +14,7 @@ export function proxy(request: NextRequest) {
     }
 
     // Protected routes that require authentication
-    const protectedPaths = ['/dashboard', '/checkout'];
+    const protectedPaths = ['/dashboard', '/checkout', '/my-classes', '/profile'];
     const isProtectedRoute = protectedPaths.some(path => pathname.startsWith(path));
 
     if (isProtectedRoute) {
@@ -31,5 +31,5 @@ export function proxy(request: NextRequest) {
 
 // Configuration
 export const config = {
-    matcher: ['/dashboard/:path*', '/checkout/:path*'],
+    matcher: ['/dashboard/:path*', '/checkout/:path*', '/my-classes/:path*','/profile/:path*'], 
 };

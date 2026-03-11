@@ -17,6 +17,7 @@ import {
   Gift,
   FileBadge,
   Rocket,
+  type LucideIcon,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -25,7 +26,7 @@ import { FadeIn } from '@/components/ui/FadeIn';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const features = [
+const features: { icon: LucideIcon; title: string; description: string; highlight: string }[] = [
   {
     icon: Headphones,
     title: 'প্রতিদিন ৩ বার সাপোর্ট সেশন',
@@ -115,7 +116,7 @@ const features = [
   },
 ];
 
-const stats = [
+const stats: { icon: LucideIcon; value: string; label: string }[] = [
   { icon: Users, value: '১৫০০+', label: 'শিক্ষার্থী ভর্তি হয়েছেন' },
   { icon: Star, value: '৪.৯', label: 'কোর্স রেটিং' },
   { icon: Clock, value: '৪ মাস', label: 'মেয়াদ' },
@@ -153,7 +154,7 @@ const WhyChooseSection = () => {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full
             bg-primary/10 border border-primary/25 backdrop-blur-sm mb-5">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90 font-bangla">
+            <span className="text-xs font-semibold  uppercase text-primary/90 font-bangla">
               প্রিমিয়াম গ্রাফিক্স ডিজাইন কোর্স
             </span>
           </div>
@@ -385,9 +386,9 @@ const WhyChooseSection = () => {
 // ─── Timeline Card Sub-component ──────────────────────────────────────────────
 
 interface TimelineCardProps {
-  feature: { icon: React.ElementType; title: string; description: string; highlight: string };
+  feature: { icon: LucideIcon; title: string; description: string; highlight: string };
   index: number;
-  Icon: React.ElementType;
+  Icon: LucideIcon;
 }
 
 function TimelineCard({ feature, Icon }: TimelineCardProps) {

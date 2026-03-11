@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import Link from 'next/link';
@@ -17,104 +16,69 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { User, LogOut, Settings, UserCircle, LayoutDashboard } from 'lucide-react';
+import { User, LogOut, UserCircle, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import type { AuthUser } from '@/types/auth';
+import { useGetMyEnrollmentsQuery } from '@/redux/api/enrollmentApi';
 
 export default function Navbar() {
-  const [isDark, setIsDark] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false); // ensure SSR/CSR markup match
   const navbarRef = useRef<HTMLDivElement>(null);
-  const { user, signOut } = useAuth();
+  const { user, signOut ,isLoading} = useAuth();
   const router = useRouter();
+    const { data: EnrollmentsData, isLoading: isEnrollmentsLoading } = useGetMyEnrollmentsQuery({ status: "active" }, { skip: !user }); 
 
-  // Normalize role to the dashboard segment used in routes
-  const getDashboardSegment = (role?: string) => {
-    const normalized = role?.toLowerCase();
-    const map: Record<string, string> = {
-      superadmin: 'admin',
-      admin: 'admin',
-      instructor: 'admin',
-      learner: 'student',
-      student: 'student',
-    };
-    return map[normalized ?? ''] ?? 'student';
-  };
-
+  
   const handleLogout = async () => {
     const result = await signOut();
     if (result.success) {
       router.push('/');
     }
   };
-
+  
+  const handleEnrollClick = () => {
+    import('@/lib/metaPixel').then(({ track }) =>
+      track('InitiateCheckout', {
+        content_name: 'Graphic Design Course',
+        content_type: 'course',
+        value: 4000,
+        currency: 'BDT',
+      })
+    );
+  };
+  
   useEffect(() => {
     // Defer to next paint to avoid synchronous setState warning
     const id = requestAnimationFrame(() => setIsHydrated(true));
     return () => cancelAnimationFrame(id);
   }, []);
-
-  useEffect(() => {
-    const navbar = navbarRef.current;
-    if (!navbar) return;
-
-    const handleScroll = () => {
-      const navbarHeight = navbar.offsetHeight;
-      const sections = document.querySelectorAll<HTMLElement>(
-        '[data-dark-section]'
-      );
-
-      // Check if any dark section is overlapping with the navbar
-      const isOverDarkSection = Array.from(sections).some((section) => {
-        const rect = section.getBoundingClientRect();
-        // Check if the section is overlapping with the navbar area
-        return rect.top <= navbarHeight && rect.bottom >= 0;
-      });
-
-      setIsDark(isOverDarkSection);
-      setIsScrolled(window.scrollY > 50);
-    };
-
-    // Throttle the scroll event for better performance
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    // Initial check on mount
-    handleScroll();
-
-    // Cleanup
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  
 
   // Use a safe user value that matches the server render until hydration completes
   const safeUser = isHydrated ? user : null;
-  const userRole = (safeUser as any)?.role;
 
+  const userRole = (safeUser as AuthUser | null)?.role;
+  const isEnrolled = (EnrollmentsData?.data?.length ?? 0) > 0
+
+  if (isLoading || isEnrollmentsLoading) {
+    return (
+      <div className="sticky top-0 z-[999] w-full bg-[#040a07] backdrop-blur-xl border-b border-primary/20 shadow-[0_4px_24px_rgba(0,0,0,0.6)]">
+        <Container className="max-w-7xl mx-auto">
+          <div className="h-16 flex items-center justify-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+          </div>
+        </Container>
+      </div>
+    );
+  }
   return (
-    // <div className={cn(
-    //   "fixed top-0 z-[999] w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
-    //   isScrolled
-    //     ? "bg-[#060f0a]/95 backdrop-blur-xl border-b border-primary/20 shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
-    //     : "bg-transparent border-b border-transparent"
-    // )}>
-    <div className={cn(
-      "sticky text-black top-0 z-[999] w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
-      "bg-white  backdrop-blur-xl border-b border-primary/20 shadow-[0_4px_24px_rgba(0,0,0,0.6)]",
-
-    )}>
-      {/* {!isScrolled && (
-        <>
-          <div className="nav-mask-bg absolute z-10 h-full w-full bg-black/10 transition-opacity duration-500 delay-100"></div>
-          <div className="nav-mask-sm absolute z-20 h-full w-full backdrop-blur-sm transition-opacity duration-500 delay-150"></div>
-          <div className="nav-mask-md absolute z-30 h-full w-full backdrop-blur-md transition-opacity duration-500 delay-200"></div>
-        </>
-      )} */}
-      {/* Scrolled state: subtle primary glow along bottom edge */}
-      {/* {isScrolled && (
-        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-      )} */}
+    <div
+      ref={navbarRef}
+      className="sticky text-white top-0 z-[999] w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] bg-[#040a07] backdrop-blur-xl border-b border-primary/20 shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
+    >
       <Container className="relative z-50 max-w-7xl mx-auto">
-        <nav ref={navbarRef} className="h-16 flex items-center justify-between">
+        <nav className="h-16 flex items-center justify-between">
           <Link href="/">
             {/* <Logo /> */}
             <Image
@@ -129,8 +93,7 @@ export default function Navbar() {
           <div className="flex items-center space-x-8">
             <div
               className={cn(
-                'transition-all duration-500 hidden md:flex items-center space-x-10 font-bold tracking-wide text-black ',
-
+                'transition-all duration-500 hidden md:flex items-center space-x-10 font-bold tracking-wide text-white ',
               )}
             >
               {[
@@ -144,20 +107,33 @@ export default function Navbar() {
                   href={link.path}
                   className="relative group py-2"
                 >
-                  <span className="group-hover:text-primary transition-colors duration-300">
+                  <span className="group-hover:text-primary transition-colors duration-300 text-xs">
                     {link.name}
                   </span>
                   {/* Hover Underline effect */}
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-glow group-hover:w-full transition-all duration-300 ease-out" />
                 </Link>
               ))}
+              {
+                userRole&& userRole.toLowerCase() === 'learner' && isEnrolled&& 
+                <Link
+                  href={'/my-classes'}
+                  className="relative group py-2"
+                >
+                  <span className="group-hover:text-primary transition-colors duration-300 text-xs">
+                    আমার ক্লাসগুলো
+                  </span>
+                  {/* Hover Underline effect */}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-glow group-hover:w-full transition-all duration-300 ease-out" />
+                </Link>
+              }
 
               {!safeUser ? (
                 <Link
                   href={"/auth"}
-                  className={cn("relative group py-2 font-bold text-primary-glow drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]")}
+                  className={cn("relative group py-2 font-bold text-primary-glow ")}
                 >
-                  <span className="transition-colors duration-300 group-hover:text-white">লগইন</span>
+                  <span className="transition-colors duration-300 group-hover:text-primary">লগইন</span>
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-glow group-hover:w-full transition-all duration-300 ease-out" />
                 </Link>
               ) : null}
@@ -175,52 +151,31 @@ export default function Navbar() {
                 </Link>
               </div> */}
               <div className="flex items-center justify-end">
-                <Link href="/checkout" className="w-full sm:w-auto block">
-                  <div
-                    className="relative p-[2px] rounded-full overflow-hidden cursor-pointer
-                      shadow-[0_4px_20px_rgba(32,180,134,0.4)] hover:shadow-[0_4px_30px_rgba(32,180,134,0.65)]
-                      transition-shadow duration-300 group"
-                    onClick={() => {
-                      import('@/lib/metaPixel').then(({ track }) =>
-                        track('InitiateCheckout', {
-                          content_name: 'Graphic Design Course',
-                          content_type: 'course',
-                          value: 4000,
-                          currency: 'BDT',
-                        })
-                      );
-                    }}
-                  >
-                    {/* Spinning conic border */}
-                    {/* <span
-                      className="absolute inset-[-100%] animate-[spin_3s_linear_infinite]"
-                      style={{
-                        background:
-                          'conic-gradient(from 90deg, transparent 20%, hsl(156 70% 42%) 45%, hsl(156 85% 70%) 55%, hsl(156 70% 42%) 70%, transparent 80%)',
-                      }}
-                    /> */}
-                    {/* Inner button */}
-                    {/* <div className="relative bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white px-7 py-2.5 rounded-full flex items-center justify-center gap-2
-                      group-hover:from-[#0f6e41] group-hover:via-[#18a06a] group-hover:to-[#0f6e41]
-                      transition-colors duration-300 w-full h-full overflow-hidden"> */}
-                    {/* Shine sweep */}
-                    {/* <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
-                      <span className="relative font-bold text-sm tracking-wide">এনরোল করুন</span>
-                      <svg className="relative w-4 h-4 text-white group-hover:translate-x-1 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
-                    </div> */}
-                    <div className="relative z-10 flex justify-center w-full">
-                      <div className="relative group overflow-hidden rounded-full p-[2px] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_8px_30px_hsl(156_70%_42%/0.3)] bg-[#060f0a]">
-                        {/* Spinning Gradient Border */}
-                        <div className="absolute inset-[-100%] animate-[spin_4s_linear_infinite]"
-                          style={{ background: 'conic-gradient(from 0deg, transparent 0%, transparent 25%, hsl(156 70% 42% / 0.6) 38%, hsl(156 80% 58%) 48%, hsl(156 90% 80%) 53%, hsl(0 0% 100% / 0.9) 56%, hsl(156 90% 80%) 59%, hsl(156 80% 58%) 64%, hsl(156 70% 42% / 0.4) 72%, transparent 82%)' }} />
-                        <div className="relative flex items-center gap-3 bg-[#060f0a] px-4 py-3 rounded-full z-10 h-full w-full">
-                          <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent text-sm font-bold drop-shadow-sm font-mona tabular-nums">
-                            এনরোল করুন
-                          </span>
-                          <svg className="relative w-4 h-4 text-white group-hover:translate-x-1 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
-                        </div>
-                      </div>
-                    </div>
+                <Link href="/checkout" className="w-full sm:w-auto block" onClick={handleEnrollClick}>
+                  {/* Spinning glowing border wrapper */}
+                  <div className="relative inline-flex p-[1.5px] rounded-full overflow-hidden
+                    shadow-[0_4px_24px_rgba(32,180,134,0.35)]
+                    hover:shadow-[0_8px_36px_rgba(32,180,134,0.60)]
+                    hover:scale-105 hover:-translate-y-0.5
+                    active:scale-95 active:translate-y-0
+                    transition-all duration-300 ease-out">
+                    {/* Rotating conic-gradient border */}
+                    <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,hsl(156_70%_42%)_25%,hsl(156_85%_70%)_50%,hsl(156_70%_42%)_75%,transparent_100%)]" />
+                    <button className="group relative overflow-hidden
+                      inline-flex items-center gap-2
+                      px-6 py-2
+                      text-sm font-bold tracking-wide rounded-full
+                      bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38]
+                      text-white
+                      hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]
+                      transition-all duration-300 ease-out">
+                      <span className="relative z-10 flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-white animate-pulse" />
+                        এনরোল করুন
+                      </span>
+                      {/* Shine sweep */}
+                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                    </button>
                   </div>
                 </Link>
               </div>
@@ -229,38 +184,35 @@ export default function Navbar() {
               {safeUser ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className={cn(
-                      "relative h-10 w-10 rounded-full border transition-all duration-300 p-0 overflow-hidden",
-                      isScrolled
-                        ? "border-primary/40 hover:border-primary hover:shadow-[0_0_15px_hsl(156_70%_42%/0.4)]"
-                        : "border-white/40 hover:border-primary hover:shadow-[0_0_15px_hsl(156_70%_42%/0.4)]"
-                    )}>
-                      {
-                        safeUser?.image ? <Image
-                          src={safeUser.image || '/default-avatar.png'}
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full border border-primary/40 transition-all duration-300 p-0 overflow-hidden hover:border-primary hover:shadow-[0_0_15px_hsl(156_70%_42%/0.4)]">
+                      {safeUser.image ? (
+                        <Image
+                          src={safeUser.image}
                           alt="User Avatar"
                           width={40}
                           height={40}
                           className="h-full w-full object-cover"
-                        /> : <User className={cn("h-6 w-6", isDark && !isScrolled ? "text-white" : "text-primary")} />
-                      }
+                        />
+                      ) : (
+                        <User className="h-6 w-6 text-primary" />
+                      )}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56 mt-2 z-[9999]" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{safeUser?.name || 'User'}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{safeUser?.email}</p>
+                        <p className="text-sm font-medium leading-none">{safeUser.name || 'User'}</p>
+                        <p className="text-xs leading-none text-muted-foreground">{safeUser.email}</p>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href={`/dashboard/${getDashboardSegment(userRole)}/profile`} className="flex items-center">
+                      <Link href={`/profile`} className="flex items-center">
                         <UserCircle className="mr-2 h-4 w-4" />
                         Profile
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
+                    {/* <DropdownMenuItem asChild>
                       <Link href={`/dashboard/${getDashboardSegment(userRole)}`} className="flex items-center">
                         <LayoutDashboard className="mr-2 h-4 w-4" />
                         Dashboard
@@ -271,16 +223,7 @@ export default function Navbar() {
                         <Settings className="mr-2 h-4 w-4" />
                         Settings
                       </Link>
-                    </DropdownMenuItem>
-
-                    {/* <DropdownMenuItem asChild>
-                        <Link href={`/support`} className="flex items-center">
-                        <HelpCircleIcon className="mr-2 h-4 w-4" />
-        
-                      Support
-                      </Link>
-                      </DropdownMenuItem>
-                    <DropdownMenuSeparator /> */}
+                    </DropdownMenuItem> */}
                     <DropdownMenuItem onClick={handleLogout} className="flex items-center text-red-600">
                       <LogOut className="mr-2 h-4 w-4" />
                       Log out
@@ -291,7 +234,7 @@ export default function Navbar() {
             </div>
             <div className="md:hidden px-3">
               {/* <PhoneNavbar /> */}
-              <MobileNavbar isScrolled={isScrolled} />
+              <MobileNavbar />
             </div>
           </div>
         </nav>

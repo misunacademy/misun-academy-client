@@ -9,6 +9,7 @@ import ForgotPasswordModal from "@/components/module/auth/ForgotPasswordModal";
 import EmailVerificationModal from "@/components/module/auth/EmailVerificationModal";
 import LoginForm from "@/components/module/auth/LoginForm";
 import RegisterForm from "@/components/module/auth/RegisterForm";
+import { useGetMyEnrollmentsQuery } from "@/redux/api/enrollmentApi";
 
 
 const AuthPage = () => {
@@ -22,7 +23,11 @@ const AuthPage = () => {
     const router = useRouter();
     const { signIn, signUp, user, isAuthenticated, isLoading } = useAuth();
     const searchParams = useSearchParams();
-    const redirectTo = searchParams.get('redirectTo');
+    const {data:EnrollmentsData,isLoading:isEnrollmentsLoading}=useGetMyEnrollmentsQuery({status: "active"}, { skip: !user }); // prime the cache with user's enrollments if logged in
+
+  // guard against undefined length by defaulting to 0
+  const redirectTo = searchParams.get('redirectTo');
+  const isEnrolled = (EnrollmentsData?.data?.length ?? 0) > 0
 
     // handlers passed to forms
     const handleLogin = async (data: { email: string; password: string }) => {
@@ -44,7 +49,7 @@ const AuthPage = () => {
     };
 
     useEffect(() => {
-        if (isLoading) return;
+        if (isLoading || isEnrollmentsLoading) return;
 
         if (isAuthenticated && user) {
             // User is already logged in, redirect to requested page or dashboard
@@ -56,11 +61,11 @@ const AuthPage = () => {
                     ? '/dashboard/admin'
                     : userRole === 'instructor'
                         ? '/dashboard/instructor'
-                        : '/dashboard/student';
+                        : isEnrolled?'/my-classes':'/';
                 router.replace(dashboardRoute);
             }
         }
-    }, [isAuthenticated, user, redirectTo, router, isLoading]);
+    }, [isAuthenticated, user, redirectTo, router, isLoading,isEnrollmentsLoading,isEnrolled]);
 
 
 

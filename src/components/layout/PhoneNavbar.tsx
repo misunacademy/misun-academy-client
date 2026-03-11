@@ -19,8 +19,8 @@ export default function PhoneNavbar() {
   return (
     <Drawer open={open} onOpenChange={() => setOpen(!open)}>
       <DrawerTrigger asChild>
-        <Button variant="outline" className="border-secondary md:hidden">
-          <Menu />
+        <Button variant="outline" className="border-secondary text-primary md:hidden">
+          <Menu className="text-primary" />
         </Button>
       </DrawerTrigger>
       <DrawerContent>

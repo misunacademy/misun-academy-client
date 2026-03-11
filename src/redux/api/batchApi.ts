@@ -1,11 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "./baseApi";
 
+export interface CourseInfo {
+  _id: string;
+  title: string;
+  slug: string;
+  thumbnailImage: string;
+  shortDescription: string;
+  instructor?: string;
+}
+
 export interface BatchResponse {
   _id: string;
   title: string;
   batchNumber: number;
-  courseId: any; // Can be string or populated course object
+  /** Populated by backend — may be a full CourseInfo object or just the ID string */
+  courseId: CourseInfo | string;
   startDate: Date;
   endDate: Date;
   enrollmentStartDate: Date;
@@ -63,6 +73,14 @@ const batchApi = baseApi.injectEndpoints({
       providesTags: ["Batches"],
     }),
 
+    // Get current enrollment batches for all courses
+    getCurrentEnrollmentBatches: build.query<{ data: BatchResponse[] }, void>({
+      query: () => ({
+        url: "/batches/current-enrollments",
+      }),
+      providesTags: ["Batches"],
+    }),
+
     // Get batch by ID
     getBatchById: build.query<{ data: BatchResponse }, string>({
       query: (id) => ({
@@ -116,6 +134,7 @@ export const {
   useGetAllBatchesQuery,
   useGetUpcomingBatchesQuery,
   useGetCurrentEnrollmentBatchQuery,
+  useGetCurrentEnrollmentBatchesQuery,
   useGetBatchByIdQuery,
   useCreateBatchMutation,
   useUpdateBatchMutation,

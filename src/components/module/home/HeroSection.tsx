@@ -3,9 +3,7 @@
 import Image from 'next/image';
 import { HeroBanner } from '@/assets/images';
 import { HeroBg } from '@/assets/svg';
-import { Button } from '@/components/ui/button';
-import { Briefcase, CalendarCheck, CalendarX, Home, PenTool, Palette, Layers, Crop, MousePointer2 } from 'lucide-react';
-import { enrollmentPeriod } from '@/constants/enrollment';
+import { Briefcase, Video, UserCheck, Clock, Home, PenTool, Palette, Layers, Crop, MousePointer2 } from 'lucide-react';
 import Link from 'next/link';
 import { FadeIn } from '@/components/ui/FadeIn';
 
@@ -56,7 +54,7 @@ export default function HeroSection() {
                   সঠিক সিদ্ধান্তে সফল 
                 </span>
                 {/* কোর্স */}
-                ক্য্যারিয়ার
+                ক্যারিয়ার
               </h1>
               <h2 className="text-2xl sm:text-3xl font-semibold text-white/90 leading-snug">
                 আপনার ক্রিয়েটিভ <span className="text-primary-glow">ক্যারিয়ার</span> শুরু করুন আজই!
@@ -68,34 +66,49 @@ export default function HeroSection() {
               ডিজিটাল এই যুগে সঠিক স্কিল শেখার মাধ্যমেই তৈরি হবে আপনার সফল ক্যারিয়ার। আর সেই পথটা সহজ করতে, শুরু থেকে শেষ পর্যন্ত আপনার পাশে থাকবে <strong className="text-primary font-medium tracking-wide">MISUN Academy</strong>। শুধু শেখানো নয়, আমরা বিশ্বাস করি একজন শিক্ষার্থীর পরিপূর্ণ ক্যারিয়ার গঠনে গাইড করাটাই সবচেয়ে গুরুত্বপূর্ণ।
             </p>
 
-            {/* Enrollment Dates (Glass Pill) */}
-            <div className="inline-flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 bg-white/5 border border-white/10 backdrop-blur-md px-6 py-4 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+            {/* Platform Highlights (Glass Pill) */}
+            <div className="inline-flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 bg-white/5 border border-white/10 backdrop-blur-md px-6 py-4 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+              {/* Highlight 1 */}
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
-                  <CalendarCheck size={18} className="text-primary-glow" />
+                  <UserCheck size={18} className="text-primary-glow" />
                 </div>
                 <div>
-                  <div className="text-[11px] text-white/50 uppercase tracking-wider mb-0.5">এনরোলমেন্ট শুরু</div>
-                  <div className="text-sm font-semibold text-white">{enrollmentPeriod.startDate}</div>
+                  <div className="text-sm font-semibold text-white">এক্সপার্ট মেন্টরশিপ</div>
+                  <div className="text-[11px] text-white/50 uppercase tracking-wider mt-0.5">সবসময় গাইডেন্স</div>
                 </div>
               </div>
 
               <div className="hidden sm:block w-px h-8 bg-white/10" />
 
+              {/* Highlight 2 */}
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center border border-red-500/30">
-                  <CalendarX size={18} className="text-red-400" />
+                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+                  <Video size={18} className="text-blue-400" />
                 </div>
                 <div>
-                  <div className="text-[11px] text-white/50 uppercase tracking-wider mb-0.5">এনরোলমেন্ট শেষ</div>
-                  <div className="text-sm font-semibold text-white">{enrollmentPeriod.endDate}</div>
+                  <div className="text-sm font-semibold text-white">লাইভ সাপোর্ট</div>
+                  <div className="text-[11px] text-white/50 uppercase tracking-wider mt-0.5">নিয়মিত প্র্যাকটিস</div>
+                </div>
+              </div>
+
+              <div className="hidden sm:block w-px h-8 bg-white/10" />
+
+              {/* Highlight 3 */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30">
+                  <Clock size={18} className="text-yellow-400" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-white">লাইফটাইম এক্সেস</div>
+                  <div className="text-[11px] text-white/50 uppercase tracking-wider mt-0.5">কোর্স রেকর্ডিং</div>
                 </div>
               </div>
             </div>
 
             {/* CTA */}
             <div className="pt-4">
-              <Link href="/checkout">
+              <Link href="/courses">
                 {/* Spinning glowing border wrapper */}
                 <div className="relative inline-flex p-[2px] rounded-xl overflow-hidden
                   shadow-[0_4px_24px_rgba(32,180,134,0.35)]
@@ -114,7 +127,7 @@ export default function HeroSection() {
                     hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]
                     transition-all duration-300 ease-out">
                     <span className="relative z-10 flex items-center gap-2">
-                      এখনই এনরোল করুন
+                      আমাদের কোর্সসমূহ দেখুন
                       <MousePointer2 className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
                     </span>
                     {/* Shine sweep */}

@@ -200,7 +200,10 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
   };
 
   return (
-    <Link href={`/courses/${course.slug}`} className="group block" style={{ perspective: "1100px" }}>
+    <Link href={course.slug === 'graphic-design'
+  ? `/courses/${course.slug}`
+  : 'https://esun.misun-academy.com/courses'
+} className="group block" style={{ perspective: "1100px" }}>
       <div
         ref={cardRef}
         onMouseMove={handleMouseMove}
@@ -209,7 +212,6 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
         className={`
           relative overflow-hidden rounded-3xl
           bg-gradient-to-br from-[#0a1a10] via-[#0c2318] to-[#060f0a]
-          border border-white/8
           ${course.border}
           ${course.glow}
         `}
@@ -355,16 +357,16 @@ export default function CoursesListClient() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
             </span>
-            <span className="text-xs font-semibold tracking-[0.18em] uppercase text-primary/90">আমাদের কোর্সসমূহ</span>
+            <span className="text-xs font-semibold  uppercase text-primary/90">আমাদের কোর্সসমূহ</span>
           </div>
 
           {/* Title */}
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-[1.15] tracking-tight">
-            <span className="block bg-gradient-to-r from-white via-white/95 to-white/75 bg-clip-text text-transparent">
-              আপনার স্বপ্নের
+            <span className="block bg-gradient-to-r from-white via-white/95 to-white/75 bg-clip-text text-transparent pt-2">
+              আপনার ক্যারিয়ার শুরু
             </span>
-            <span className="block bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_30px_hsl(156_70%_42%/0.45)] mt-1">
-              কোর্স বেছে নিন
+            <span className="block bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_30px_hsl(156_70%_42%/0.45)] mt-1 pt-2">
+              উপযোগী কোর্স বেছে নিন
             </span>
           </h1>
 

@@ -45,6 +45,7 @@ export default function page() {
       <HeroSection />
       <WhyThisCourse />
       <GraphicsSkills />
+      {/* <EnglishSkills /> */}
       <WhyUs />
       <EnrollmentSection />
       <Feedback />

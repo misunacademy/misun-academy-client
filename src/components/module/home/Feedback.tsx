@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { studentFeedbacks } from '@/constants/studentFeedbacks';
 import { FadeIn } from '../../ui/FadeIn';
-import { Play, Star, Quote } from 'lucide-react';
+import { Play, Star, Quote, ArrowRight } from 'lucide-react';
 
 // Only id and videoId are stored; titles will be fetched from YouTube.
 interface SuccessStory {
@@ -113,7 +113,7 @@ export default function Feedback() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full
               bg-primary/10 border border-primary/25 backdrop-blur-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">
+              <span className="text-xs font-semibold uppercase text-primary/90">
                 শিক্ষার্থীদের অর্জন
               </span>
             </div>
@@ -204,7 +204,7 @@ export default function Feedback() {
                       )}
                     </div>
                     {/* video title caption */}
-                    <div className="mt-2 text-sm text-white/80 line-clamp-2 leading-snug">
+                    <div className="mt-2 text-sm text-white/80 line-clamp-2 leading-snug truncate">
                       {videoTitles[story.videoId] || 'Loading video title...'}
                     </div>
                     </div>{/* card body */}
@@ -235,15 +235,15 @@ export default function Feedback() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full
               bg-primary/10 border border-primary/25 backdrop-blur-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">
+              <span className="text-xs font-semibold  uppercase text-primary/90">
                 রিয়েল রিভিউ
               </span>
             </div>
           </div>
           <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold font-bangla uppercase
-            bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">
-            চাকরি পাওয়া{' '}
-            <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent relative inline-block">
+            bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent pt-2">
+        
+            <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent relative inline-block py-2">
               স্টুডেন্টদের
               <span className="absolute -bottom-1 left-0 w-full h-[3px] rounded-full bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
             </span>{' '}
@@ -342,9 +342,10 @@ export default function Feedback() {
                 bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38]
                 hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]
                 transition-all duration-300 tracking-wide
-                shadow-lg shadow-primary/30 group-hover:shadow-primary/50"
+                shadow-lg shadow-primary/30 group-hover:shadow-primary/50 flex gap-2 items-center"
             >
               আরো মতামত দেখো
+              <ArrowRight/>
             </button>
           </div>
         </Link>

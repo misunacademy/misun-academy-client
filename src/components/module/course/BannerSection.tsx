@@ -7,61 +7,66 @@ import Countdown from './Countdown';
 import { useGetSettingsQuery } from '@/redux/api/settingsApi';
 import { useGetCourseBySlugQuery } from '@/redux/api/courseApi';
 import { useGetCurrentEnrollmentBatchQuery } from '@/redux/api/batchApi';
+import Link from 'next/link';
+import Image from 'next/image';
+import designerImage from '@/assets/3d-elements/abstract-graphic-designers.png';
+import tool1Image from '@/assets/3d-elements/tool_1.png';
+import tool2Image from '@/assets/3d-elements/tool_2.png';
 
 interface BannerSectionProps {
-    courseSlug?: string;
+  courseSlug?: string;
 }
 
 export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
-    // Settings-based fallback (used when no courseSlug provided)
-    const { data: settingsData, isLoading: settingsLoading } = useGetSettingsQuery();
+  // Settings-based fallback (used when no courseSlug provided)
+  const { data: settingsData, isLoading: settingsLoading } = useGetSettingsQuery();
 
-    // Course-slug based resolution — fetches the current enrollment batch directly for this course
-    const { data: courseBySlug, isLoading: courseBySlugLoading } = useGetCourseBySlugQuery(
-        courseSlug!, { skip: !courseSlug }
-    );
-    const slugCourseId = (courseBySlug?.data as any)?._id;
+  // Course-slug based resolution — fetches the current enrollment batch directly for this course
+  const { data: courseBySlug, isLoading: courseBySlugLoading } = useGetCourseBySlugQuery(
+    courseSlug!, { skip: !courseSlug }
+  );
+  const slugCourseId = (courseBySlug?.data as any)?._id;
 
-    const { data: currentBatchRes, isLoading: slugBatchLoading } = useGetCurrentEnrollmentBatchQuery(
-        { courseId: slugCourseId },
-        { skip: !slugCourseId }
-    );
+  const { data: currentBatchRes, isLoading: slugBatchLoading } = useGetCurrentEnrollmentBatchQuery(
+    { courseId: slugCourseId },
+    { skip: !slugCourseId }
+  );
 
-    // Resolve batch: course-specific takes priority over global settings
-    const resolvedBatch = courseSlug
-        ? (currentBatchRes?.data as any)
-        : (settingsData?.data?.featuredEnrollmentBatch as any);
+  // Resolve batch: course-specific takes priority over global settings
+  const resolvedBatch = courseSlug
+    ? (currentBatchRes?.data as any)
+    : (settingsData?.data?.featuredEnrollmentBatch as any);
 
-    const isLoading = courseSlug
-        ? (courseBySlugLoading || (!!slugCourseId && slugBatchLoading))
-        : settingsLoading;
+  const isLoading = courseSlug
+    ? (courseBySlugLoading || (!!slugCourseId && slugBatchLoading))
+    : settingsLoading;
 
-    const batch = resolvedBatch?.batchNumber || 0;
-    const enrollmentPeriod = {
-        startDate: resolvedBatch?.enrollmentStartDate
-            ? new Date(resolvedBatch.enrollmentStartDate).toLocaleDateString('bn-BD', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-            })
-            : 'N/A',
-        endDate: resolvedBatch?.enrollmentEndDate
-            ? new Date(resolvedBatch.enrollmentEndDate).toLocaleDateString('bn-BD', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-            })
-            : 'N/A',
-        classStart: resolvedBatch?.startDate
-            ? new Date(resolvedBatch.startDate).toLocaleDateString('bn-BD', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-            })
-            : 'N/A',
-    };
+  const batch = resolvedBatch?.batchNumber || 0;
+  const enrollmentPeriod = {
+    startDate: resolvedBatch?.enrollmentStartDate
+      ? new Date(resolvedBatch.enrollmentStartDate).toLocaleDateString('bn-BD', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+      : 'N/A',
+    endDate: resolvedBatch?.enrollmentEndDate
+      ? new Date(resolvedBatch.enrollmentEndDate).toLocaleDateString('bn-BD', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+      : 'N/A',
+    classStart: resolvedBatch?.startDate
+      ? new Date(resolvedBatch.startDate).toLocaleDateString('bn-BD', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+      : 'N/A',
+  };
 
-    if (isLoading) return null;
+  if (isLoading) return null;
 
 
   return (
@@ -97,8 +102,8 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           position: 'relative', overflow: 'hidden',
         }}>
-          <div style={{ position:'absolute', top:0, left:0, right:0, height:1, background:'linear-gradient(90deg, transparent, rgba(49,168,255,0.55), transparent)' }} />
-          <span style={{ fontFamily:"Georgia, 'Times New Roman', serif", fontSize:28, fontStyle:'italic', fontWeight:700, color:'#31a8ff', letterSpacing:'-0.5px', textShadow:'0 0 22px rgba(49,168,255,0.9)' }}>Ps</span>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(49,168,255,0.55), transparent)' }} />
+          <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 28, fontStyle: 'italic', fontWeight: 700, color: '#31a8ff', letterSpacing: '-0.5px', textShadow: '0 0 22px rgba(49,168,255,0.9)' }}>Ps</span>
         </div>
       </div>
 
@@ -116,8 +121,8 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           position: 'relative', overflow: 'hidden',
         }}>
-          <div style={{ position:'absolute', top:0, left:0, right:0, height:1, background:'linear-gradient(90deg, transparent, rgba(255,154,0,0.55), transparent)' }} />
-          <span style={{ fontFamily:"Georgia, 'Times New Roman', serif", fontSize:28, fontStyle:'italic', fontWeight:700, color:'#ff9a00', letterSpacing:'-0.5px', textShadow:'0 0 22px rgba(255,154,0,0.9)' }}>Ai</span>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,154,0,0.55), transparent)' }} />
+          <span style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 28, fontStyle: 'italic', fontWeight: 700, color: '#ff9a00', letterSpacing: '-0.5px', textShadow: '0 0 22px rgba(255,154,0,0.9)' }}>Ai</span>
         </div>
       </div>
 
@@ -127,13 +132,13 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
         style={{ animation: 'designFloat 13s ease-in-out infinite' }}
       >
         <svg width="80" height="130" viewBox="0 0 80 130" fill="none">
-          <path d="M 20 15 C 65 25, 10 88, 62 118" stroke="hsl(156 70% 42%)" strokeWidth="1.5" strokeDasharray="4 3" fill="none"/>
-          <line x1="20" y1="15" x2="65" y2="25" stroke="hsl(156, 70%, 42%, 0.45)" strokeWidth="1"/>
-          <line x1="62" y1="118" x2="10" y2="88" stroke="hsl(156, 70%, 42%, 0.45)" strokeWidth="1"/>
-          <rect x="14" y="9" width="12" height="12" rx="1" fill="none" stroke="hsl(156 70% 42%)" strokeWidth="1.5" transform="rotate(45 20 15)"/>
-          <rect x="56" y="112" width="12" height="12" rx="1" fill="none" stroke="hsl(156 70% 42%)" strokeWidth="1.5" transform="rotate(45 62 118)"/>
-          <circle cx="65" cy="25" r="3.5" fill="none" stroke="hsl(156, 70%, 42%, 0.65)" strokeWidth="1.2"/>
-          <circle cx="10" cy="88" r="3.5" fill="none" stroke="hsl(156, 70%, 42%, 0.65)" strokeWidth="1.2"/>
+          <path d="M 20 15 C 65 25, 10 88, 62 118" stroke="hsl(156 70% 42%)" strokeWidth="1.5" strokeDasharray="4 3" fill="none" />
+          <line x1="20" y1="15" x2="65" y2="25" stroke="hsl(156, 70%, 42%, 0.45)" strokeWidth="1" />
+          <line x1="62" y1="118" x2="10" y2="88" stroke="hsl(156, 70%, 42%, 0.45)" strokeWidth="1" />
+          <rect x="14" y="9" width="12" height="12" rx="1" fill="none" stroke="hsl(156 70% 42%)" strokeWidth="1.5" transform="rotate(45 20 15)" />
+          <rect x="56" y="112" width="12" height="12" rx="1" fill="none" stroke="hsl(156 70% 42%)" strokeWidth="1.5" transform="rotate(45 62 118)" />
+          <circle cx="65" cy="25" r="3.5" fill="none" stroke="hsl(156, 70%, 42%, 0.65)" strokeWidth="1.2" />
+          <circle cx="10" cy="88" r="3.5" fill="none" stroke="hsl(156, 70%, 42%, 0.65)" strokeWidth="1.2" />
         </svg>
       </div>
 
@@ -143,12 +148,12 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
         style={{ animation: 'designFloat2 10s ease-in-out infinite' }}
       >
         <svg width="92" height="92" viewBox="0 0 92 92" fill="none">
-          <rect x="8" y="8" width="76" height="76" rx="1" fill="none" stroke="rgba(255,154,0,0.75)" strokeWidth="1.2" strokeDasharray="5 3"/>
-          {([[5,5],[40,5],[75,5],[5,40],[75,40],[5,75],[40,75],[75,75]] as [number,number][]).map(([x,y],i) => (
-            <rect key={i} x={x} y={y} width="7" height="7" rx="1" fill="#07070d" stroke="rgba(255,154,0,0.95)" strokeWidth="1.2"/>
+          <rect x="8" y="8" width="76" height="76" rx="1" fill="none" stroke="rgba(255,154,0,0.75)" strokeWidth="1.2" strokeDasharray="5 3" />
+          {([[5, 5], [40, 5], [75, 5], [5, 40], [75, 40], [5, 75], [40, 75], [75, 75]] as [number, number][]).map(([x, y], i) => (
+            <rect key={i} x={x} y={y} width="7" height="7" rx="1" fill="#07070d" stroke="rgba(255,154,0,0.95)" strokeWidth="1.2" />
           ))}
-          <line x1="46" y1="39" x2="46" y2="53" stroke="rgba(255,154,0,0.35)" strokeWidth="1"/>
-          <line x1="39" y1="46" x2="53" y2="46" stroke="rgba(255,154,0,0.35)" strokeWidth="1"/>
+          <line x1="46" y1="39" x2="46" y2="53" stroke="rgba(255,154,0,0.35)" strokeWidth="1" />
+          <line x1="39" y1="46" x2="53" y2="46" stroke="rgba(255,154,0,0.35)" strokeWidth="1" />
         </svg>
       </div>
 
@@ -158,12 +163,12 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
         style={{ animation: 'designFloat 16s ease-in-out infinite 2s' }}
       >
         <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-          <polyline points="0,20 0,0 20,0" fill="none" stroke="hsl(156 70% 42%)" strokeWidth="2"/>
-          <polyline points="44,0 64,0 64,20" fill="none" stroke="hsl(156 70% 42%)" strokeWidth="2"/>
-          <polyline points="0,44 0,64 20,64" fill="none" stroke="hsl(156 70% 42%)" strokeWidth="2"/>
-          <polyline points="44,64 64,64 64,44" fill="none" stroke="hsl(156 70% 42%)" strokeWidth="2"/>
-          <circle cx="32" cy="32" r="2.5" fill="hsl(156, 70%, 42%, 0.5)"/>
-          <circle cx="32" cy="32" r="7" fill="none" stroke="hsl(156, 70%, 42%, 0.3)" strokeWidth="1" strokeDasharray="3 2"/>
+          <polyline points="0,20 0,0 20,0" fill="none" stroke="hsl(156 70% 42%)" strokeWidth="2" />
+          <polyline points="44,0 64,0 64,20" fill="none" stroke="hsl(156 70% 42%)" strokeWidth="2" />
+          <polyline points="0,44 0,64 20,64" fill="none" stroke="hsl(156 70% 42%)" strokeWidth="2" />
+          <polyline points="44,64 64,64 64,44" fill="none" stroke="hsl(156 70% 42%)" strokeWidth="2" />
+          <circle cx="32" cy="32" r="2.5" fill="hsl(156, 70%, 42%, 0.5)" />
+          <circle cx="32" cy="32" r="7" fill="none" stroke="hsl(156, 70%, 42%, 0.3)" strokeWidth="1" strokeDasharray="3 2" />
         </svg>
       </div>
 
@@ -172,19 +177,19 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
         className="absolute bottom-16 right-5 xl:right-12 hidden xl:block pointer-events-none opacity-[0.18]"
         style={{ animation: 'designFloat2 14s ease-in-out infinite 1s' }}
       >
-        <div style={{ position:'relative', width:52, height:50 }}>
+        <div style={{ position: 'relative', width: 52, height: 50 }}>
           {([
-            { top:18, bg:'linear-gradient(135deg,#001d26,#002a3a)', border:'rgba(49,168,255,0.35)' },
-            { top:9,  bg:'linear-gradient(135deg,#1a0e00,#2a1600)', border:'rgba(255,154,0,0.35)' },
-            { top:0,  bg:'linear-gradient(135deg,#0d0d14,#151522)', border:'rgba(255,255,255,0.12)' },
-          ] as { top:number; bg:string; border:string }[]).map((l,i) => (
+            { top: 18, bg: 'linear-gradient(135deg,#001d26,#002a3a)', border: 'rgba(49,168,255,0.35)' },
+            { top: 9, bg: 'linear-gradient(135deg,#1a0e00,#2a1600)', border: 'rgba(255,154,0,0.35)' },
+            { top: 0, bg: 'linear-gradient(135deg,#0d0d14,#151522)', border: 'rgba(255,255,255,0.12)' },
+          ] as { top: number; bg: string; border: string }[]).map((l, i) => (
             <div key={i} style={{
-              position:'absolute', left:0, top:l.top, width:46, height:26,
-              background:l.bg, border:`1px solid ${l.border}`, borderRadius:4,
-            }}/>
+              position: 'absolute', left: 0, top: l.top, width: 46, height: 26,
+              background: l.bg, border: `1px solid ${l.border}`, borderRadius: 4,
+            }} />
           ))}
         </div>
-        <p style={{ fontSize:8, color:'white', opacity:0.45, fontFamily:'monospace', textAlign:'center', marginTop:6, letterSpacing:'0.12em' }}>LAYERS</p>
+        <p style={{ fontSize: 8, color: 'white', opacity: 0.45, fontFamily: 'monospace', textAlign: 'center', marginTop: 6, letterSpacing: '0.12em' }}>LAYERS</p>
       </div>
 
       {/* Mini Ps + Ai chips — left mid-scatter */}
@@ -193,18 +198,71 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
         style={{ animation: 'designFloat2 18s ease-in-out infinite 3s' }}
       >
         {([
-          { label:'Ps', color:'#31a8ff', bg:'#001d26' },
-          { label:'Ai', color:'#ff9a00', bg:'#1a0e00' },
-        ] as { label:string; color:string; bg:string }[]).map((chip,i) => (
+          { label: 'Ps', color: '#31a8ff', bg: '#001d26' },
+          { label: 'Ai', color: '#ff9a00', bg: '#1a0e00' },
+        ] as { label: string; color: string; bg: string }[]).map((chip, i) => (
           <div key={i} style={{
-            width:30, height:30, background:chip.bg, borderRadius:6,
-            border:`1px solid ${chip.color}44`,
-            display:'flex', alignItems:'center', justifyContent:'center',
-            boxShadow:`0 0 10px ${chip.color}22`,
+            width: 30, height: 30, background: chip.bg, borderRadius: 6,
+            border: `1px solid ${chip.color}44`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: `0 0 10px ${chip.color}22`,
           }}>
-            <span style={{ fontFamily:"Georgia,serif", fontSize:11, fontStyle:'italic', fontWeight:700, color:chip.color }}>{chip.label}</span>
+            <span style={{ fontFamily: "Georgia,serif", fontSize: 11, fontStyle: 'italic', fontWeight: 700, color: chip.color }}>{chip.label}</span>
           </div>
         ))}
+      </div>
+
+      {/* 3D Tool 1 (Palette UI) */}
+      <div
+        className="absolute top-[12%] left-[10%] lg:right-[22%] xl:right-[30%] hidden md:block pointer-events-none z-0"
+        style={{ animation: 'designFloat2 15s ease-in-out infinite 1s' }}
+      >
+        <div className="relative w-[140px] h-[140px] lg:w-[180px] lg:h-[180px] xl:w-[220px] xl:h-[220px]">
+          <div className="absolute inset-x-4 inset-y-4 bg-primary/15 blur-[40px] rounded-full" />
+          <Image
+            src={tool1Image}
+            alt="3D Palette Tool"
+            fill
+            className="object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.4)] opacity-70 lg:opacity-90 xl:opacity-100"
+            sizes="(max-width: 1200px) 180px, 220px"
+          />
+        </div>
+      </div>
+
+      {/* 3D Tool 2 (Ruler) */}
+      <div
+        className="absolute bottom-[20%] left-[2%] lg:left-[5%] xl:left-[8%] hidden md:block pointer-events-none z-0"
+        style={{ animation: 'designFloat 18s ease-in-out infinite' }}
+      >
+        <div className="relative w-[180px] h-[180px] lg:w-[240px] lg:h-[240px] xl:w-[280px] xl:h-[280px] -rotate-12">
+          <div className="absolute inset-x-6 inset-y-6 bg-primary/10 blur-[50px] rounded-full" />
+          <Image
+            src={tool2Image}
+            alt="3D Ruler Tool"
+            fill
+            className="object-contain drop-shadow-[0_15px_30px_rgba(0,0,0,0.5)] opacity-60 lg:opacity-80 xl:opacity-100"
+            sizes="(max-width: 1200px) 240px, 280px"
+          />
+        </div>
+      </div>
+
+      {/* Main 3D Character Illustration */}
+      <div
+        className="absolute top-1/4 -translate-y-1/2 right-[-10%] md:right-[-5%] lg:right-[2%] xl:right-[6%] hidden md:block pointer-events-none z-0 mt-12"
+        style={{ animation: 'designFloat 14s ease-in-out infinite' }}
+      >
+        <div className="relative w-[320px] h-[320px] lg:w-[450px] lg:h-[450px] xl:w-[550px] xl:h-[550px]">
+          {/* Ambient glow behind the character */}
+          <div className="absolute inset-x-10 inset-y-10 bg-primary/20 blur-[100px] rounded-full" />
+          <Image
+            src={designerImage}
+            alt="3D Graphic Designer"
+            fill
+            className="object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.5)] opacity-50 lg:opacity-75 xl:opacity-100"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            priority
+          />
+        </div>
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center pt-24 md:pt-28 pb-24 px-4">
@@ -215,7 +273,7 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
           </span>
-          <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স</span>
+          <span className="text-xs font-semibold  uppercase text-primary/90">কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স</span>
         </div>
         <h1 className="font-bold font-bangla text-[28px] md:text-3xl lg:text-5xl text-center uppercase pt-2 bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent leading-snug">
           কমপ্লিট{' '}
@@ -242,9 +300,10 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
         </div>
 
         <div className="relative my-6 p-[1.5px] rounded-xl overflow-hidden">
-          <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
-          <div className="relative bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] rounded-xl px-8 py-4 font-bold font-bangla text-xl text-white shadow-[0_0_24px_hsl(156_70%_42%/0.4)]">
-          কোর্স ফি: মাত্র ৪,০০০ টাকা
+          {/* <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" /> */}
+          <div className="relative  rounded-xl px-8 py-4 font-bold font-bangla text-xl text-white shadow-[0_0_24px_hsl(156_70%_42%/0.4)]">
+            কোর্স ফি: মাত্র <span className="text-primary text-bold">৪,০০০
+            </span> টাকা
           </div>
         </div>
 
@@ -298,6 +357,29 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
         <p className="text-sm text-white/50 mb-4 text-center w-5/6 mx-auto md:w-full font-bangla leading-relaxed">
           কথা দিচ্ছি এত সাপোর্ট এবং পুরোপুরি লেগে থাকলে কোর্স শেষ হবার আগেই ক্লাইন্ট এর সাথে কাজ করার সুযোগ আর কোন কোর্সেই পাবেন না।
         </p>
+        {/* Enroll CTA */}
+        <div className="mt-8 mb-10">
+          <Link href={`/checkout?course=${courseSlug}`}>
+            <div className="inline-block relative p-[1.5px] rounded-xl overflow-hidden">
+              <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
+              <button className="relative bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41] transition-all duration-300 text-white font-semibold font-bangla text-lg px-10 py-4 rounded-xl shadow-[0_0_20px_hsl(156_70%_42%/0.35)] cursor-pointer flex items-center gap-2">
+                <span className=''>
+
+                  এনরোল করুন
+                </span>
+                {/* Arrow */}
+                <svg
+                  className="relative w-4 h-4 group-hover:translate-x-1 transition-transform duration-300 shrink-0"
+                  style={{ color: 'hsla(0, 0%, 100%, 1.00)' }}
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                >
+                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </Link>
+        </div>
+
       </div>
 
     </section>

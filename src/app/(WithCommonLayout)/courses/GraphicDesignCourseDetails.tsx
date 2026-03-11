@@ -20,12 +20,13 @@ const CourseDetails = () => {
             content_ids: ["rvtheryheyhtwe1234"],
         });
     }, []);
+
     return (
         <div>
             <BreadcrumbJsonLd />
             <BannerSection courseSlug="graphic-design" />
             <InstructorSection />
-            <CourseWorkflow />
+            <CourseWorkflow courseSlug="graphic-design" />
             <CourseCurriculum />
             <FaqSection />
             <EnrollCtaSection courseSlug="graphic-design" />

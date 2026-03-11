@@ -10,6 +10,7 @@ interface FadeInProps {
   duration?: number;
   direction?: 'up' | 'down' | 'left' | 'right' | 'none';
   className?: string;
+  style?: React.CSSProperties;
   amount?: 'some' | 'all' | number;
   once?: boolean;
 }
@@ -20,6 +21,7 @@ export function FadeIn({
   duration = 0.5,
   direction = 'up',
   className,
+  style,
   amount = 0.2,
   once = true,
 }: FadeInProps) {
@@ -52,6 +54,7 @@ export function FadeIn({
         ease: [0.21, 0.47, 0.32, 0.98], // cubic-bezier for smooth premium feel
       }}
       className={cn('', className)}
+      style={style}
     >
       {children}
     </motion.div>
