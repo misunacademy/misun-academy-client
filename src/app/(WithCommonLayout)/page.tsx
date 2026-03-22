@@ -1,9 +1,6 @@
-import { EnrollmentSection } from '@/components/module/home/EnrollmentSection';
-import Feedback from '@/components/module/home/Feedback';
-import GraphicsSkills from '@/components/module/home/GraphicsSkills';
+import EnrollmentFixed from '@/components/module/home/EnrollmentFixed';
 import HeroSection from '@/components/module/home/HeroSection';
-import WhyThisCourse from '@/components/module/home/WhyThisCourse';
-import WhyUs from '@/components/module/home/WhyUs';
+import HomeDeferredSections from '@/components/module/home/HomeDeferredSections';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import { generateMetadata } from '@/lib/generateMetadata';
 
@@ -43,14 +40,8 @@ export default function page() {
     <div>
       <BreadcrumbJsonLd />
       <HeroSection />
-      <WhyThisCourse />
-      <GraphicsSkills />
-      {/* <EnglishSkills /> */}
-      <WhyUs />
-      <EnrollmentSection />
-      <Feedback />
-      {/* <Partner /> */}
-      {/* <EnrollmentFixed /> */}
+      <HomeDeferredSections />
+      <EnrollmentFixed />
     </div>
   );
 }

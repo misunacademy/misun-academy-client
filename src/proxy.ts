@@ -21,7 +21,7 @@ export function proxy(request: NextRequest) {
         if (!betterAuthSession) {
             // Redirect to login with return URL
             const loginUrl = new URL('/auth', request.url);
-            loginUrl.searchParams.set('redirectTo', pathname);
+            loginUrl.searchParams.set('redirect_url', `${request.nextUrl.origin}${pathname}${request.nextUrl.search}`);
             return NextResponse.redirect(loginUrl);
         }
     }

@@ -170,11 +170,11 @@ const adminItems = [
         url: "/dashboard/admin/users",
         icon: Users,
     },
-    {
-        title: "Dynamic Updates",
-        url: "/dashboard/admin/dynamic-updates",
-        icon: Globe,
-    },
+    // {
+    //     title: "Dynamic Updates",
+    //     url: "/dashboard/admin/dynamic-updates",
+    //     icon: Globe,
+    // },
     // {
     //     title: "Settings",
     //     url: "/dashboard/admin/settings",

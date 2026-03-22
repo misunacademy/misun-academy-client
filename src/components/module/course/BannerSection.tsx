@@ -302,7 +302,7 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
         <div className="relative my-6 p-[1.5px] rounded-xl overflow-hidden">
           {/* <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" /> */}
           <div className="relative  rounded-xl px-8 py-4 font-bold font-bangla text-xl text-white shadow-[0_0_24px_hsl(156_70%_42%/0.4)]">
-            কোর্স ফি: মাত্র <span className="text-primary text-bold">৪,০০০
+            কোর্স ফি: মাত্র <span className="text-primary text-bold">  {resolvedBatch?.price ? resolvedBatch?.price.toLocaleString('bn-IN') : '--'}
             </span> টাকা
           </div>
         </div>

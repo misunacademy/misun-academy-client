@@ -1,7 +1,6 @@
 // import Footer from '@/components/layout/Footer';
 import Footer from '@/components/layout/Footer';
 import Navbar from '@/components/layout/Navbar';
-import { Toaster } from '@/components/ui/sonner';
 
 export default function layout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,7 +8,6 @@ export default function layout({ children }: { children: React.ReactNode }) {
       <Navbar />
       <main>{children}</main>
       <Footer />
-      <Toaster />
     </div>
   );
 }

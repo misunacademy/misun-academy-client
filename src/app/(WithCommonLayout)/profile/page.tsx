@@ -4,6 +4,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useGetUserProfileQuery } from "@/redux/features/profile/profileApi";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
+import ProtectedRoute from "@/components/shared/ProtectedRoute";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -27,6 +28,7 @@ import {
 import { FaMoneyBill } from "react-icons/fa";
 import { PaymentHistoryTab } from "@/components/module/profile/PaymentHistoryTab";
 import { SettingsTab } from "@/components/module/profile/SettingsTab";
+import EnrollmentPosterTab from "@/components/module/profile/EnrollmentPosterTab";
 
 // Navigation items matching the screenshot
 const NAV_ITEMS = [
@@ -34,6 +36,7 @@ const NAV_ITEMS = [
     { id: "additional", label: "Additional Info", icon: Info, completed: false }, // Will be updated dynamically
     { id: "certification", label: "Certification", icon: Award, completed: true },
     { id: "enrollments", label: "Enrollments", icon: ShoppingBagIcon, completed: true },
+    // { id: "enrollment-poster", label: "Enrollment Poster", icon: UserPlus, completed: true },
     { id: "payment-history", label: "Payment History", icon: FaMoneyBill, completed: true },
     { id: "settings", label: "Settings", icon: Settings, completed: true }
 ];
@@ -109,6 +112,7 @@ export default function StudentProfile() {
             setSessions(prev => prev.filter(s => s.token !== token));
             toast.success("Session removed successfully");
         } catch (error) {
+            console.log(error)
             toast.error("Failed to remove session");
         }
     };
@@ -161,6 +165,7 @@ export default function StudentProfile() {
     const profileCompletion = Math.round((completedTabsCount / updatedNavItems.length) * 100) || 0;
 
     return (
+        <ProtectedRoute>
         <div className="min-h-[calc(100vh-80px)] bg-[#060f0a] p-6 lg:p-8 font-bangla">
             <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
 
@@ -264,11 +269,13 @@ export default function StudentProfile() {
                     />
                 )}
                 {activeTab === "additional" && <AdditionalInfoTab profile={profile} refetch={refetch} />}
+                {activeTab === "enrollment-poster" && <EnrollmentPosterTab />}
                 {activeTab === "certification" && <CertificationTab />}
                 {activeTab === "enrollments" && <EnrollmentsTab profile={profile} />}
                 {activeTab === "payment-history" && <PaymentHistoryTab profile={profile} />}
                 {activeTab === "settings" && <SettingsTab profile={profile} />}
             </div>
         </div>
+        </ProtectedRoute>
     );
 }

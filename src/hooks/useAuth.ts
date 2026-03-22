@@ -1,27 +1,103 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { authClient, useSession } from '@/lib/auth-client';
+import { authClient } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AuthUser } from '@/types/auth';
 import { getAuthErrorMessage } from '@/lib/auth-errors';
 
 /**
- * Simplified auth hook using Better Auth
- * All authentication is now handled by Better Auth (no Redux, no custom JWT)
+ * Centralized auth hook.
+ * Session source of truth is backend GET /api/v1/auth/me.
  */
 export function useAuth() {
   const router = useRouter();
-  const { data: session, isPending, error, refetch } = useSession();
+  const [user, setUser] = useState<AuthUser | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  const user = session?.user as AuthUser | undefined;
+  const baseApiUrl = process.env.NEXT_PUBLIC_BASE_API_URL;
+
+  const session = useMemo(() => (user ? { user } : null), [user]);
   const isAuthenticated = !!user;
-  const isLoading = isPending;
+
+  const isAllowedRedirectUrl = useCallback((target?: string | null) => {
+    if (!target) return false;
+
+    try {
+      if (target.startsWith('/')) return true;
+
+      const url = new URL(target);
+      const host = url.hostname.toLowerCase();
+      const mainHost = process.env.NEXT_PUBLIC_MA_FRONTEND_URL
+        ? new URL(process.env.NEXT_PUBLIC_MA_FRONTEND_URL).hostname.toLowerCase()
+        : '';
+
+      return host === mainHost || host.endsWith('.maindomain.com');
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const goToRedirect = useCallback((target: string) => {
+    if (target.startsWith('/')) {
+      router.push(target);
+      return;
+    }
+
+    if (typeof window !== 'undefined') {
+      window.location.assign(target);
+    }
+  }, [router]);
+
+  const refetchSession = useCallback(async () => {
+    if (!baseApiUrl) {
+      setUser(undefined);
+      setError(new Error('Missing NEXT_PUBLIC_BASE_API_URL'));
+      setIsLoading(false);
+      return null;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${baseApiUrl}/auth/me`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (response.status === 401) {
+        setUser(undefined);
+        setError(null);
+        setIsLoading(false);
+        return null;
+      }
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch auth user: ${response.status}`);
+      }
+
+      const payload = await response.json();
+      const nextUser = payload?.data?.user as AuthUser | undefined;
+      setUser(nextUser);
+      setError(null);
+      return nextUser || null;
+    } catch (err) {
+      setError(err as Error);
+      setUser(undefined);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [baseApiUrl]);
+
+  useEffect(() => {
+    refetchSession();
+  }, [refetchSession]);
 
   /**
    * Sign in with email and password
    */
-  const signIn = async (email: string, password: string, redirectTo?: string) => {
+  const signIn = async (email: string, password: string, redirectUrl?: string) => {
     try {
       const result = await authClient.signIn.email({
         email,
@@ -37,9 +113,20 @@ export function useAuth() {
       if (result.data) {
         toast.success('Successfully logged in!');
 
-        // Redirect to dashboard or specified page
-        const destination = redirectTo || getDashboardRoute(result.data.user as AuthUser);
-        router.push(destination);
+        const signedInUser = (await refetchSession()) || (result.data.user as AuthUser);
+        const enrolledCourses = (signedInUser as any)?.enrolledCourses || [];
+
+        const destination = getPostLoginDestination(
+          signedInUser,
+          redirectUrl,
+          isAllowedRedirectUrl,
+        );
+
+        if (enrolledCourses.length > 0 && destination === '/my-classes') {
+          router.push('/my-classes');
+        } else {
+          goToRedirect(destination);
+        }
 
         return { success: true, user: result.data.user as AuthUser };
       }
@@ -86,8 +173,9 @@ export function useAuth() {
   const signOut = async () => {
     try {
       await authClient.signOut();
+      setUser(undefined);
       toast.success('Successfully logged out');
-      router.push('/auth');
+      router.push('/');
       return { success: true };
     } catch (error: unknown) {
       toast.error('Logout failed');
@@ -98,14 +186,20 @@ export function useAuth() {
   /**
    * Sign in with Google
    */
-  const signInWithGoogle = async (redirectTo?: string) => {
+  const signInWithGoogle = async (redirectUrl?: string) => {
     try {
-      // Use relative path - Better Auth will handle the full URL
-      const callbackURL = redirectTo || `${process.env.NEXT_PUBLIC_AUTH_URL!}/auth/callback`;
+      const callbackURL = process.env.NEXT_PUBLIC_AUTH_URL
+        ? `${process.env.NEXT_PUBLIC_AUTH_URL}/auth/callback`
+        : '/auth/callback';
+
+      const validatedRedirect = isAllowedRedirectUrl(redirectUrl) ? redirectUrl : undefined;
+      const finalCallbackUrl = validatedRedirect
+        ? `${callbackURL}${callbackURL.includes('?') ? '&' : '?'}redirect_url=${encodeURIComponent(validatedRedirect)}`
+        : callbackURL;
 
       await authClient.signIn.social({
         provider: 'google',
-        callbackURL, // Relative path
+        callbackURL: finalCallbackUrl,
       });
       return { success: true };
     } catch (error: unknown) {
@@ -216,7 +310,7 @@ export function useAuth() {
     verifyEmail: verifyEmailToken,
 
     // Manual session refresh
-    refetchSession: refetch,
+    refetchSession,
 
     // User update with automatic session refresh
     updateUserProfile: async (data: Partial<AuthUser>) => {
@@ -228,7 +322,7 @@ export function useAuth() {
         }
 
         // Automatically refresh session to get updated user data
-        await refetch();
+        await refetchSession();
 
         return { success: true, data: result.data };
       } catch (error: unknown) {
@@ -239,9 +333,25 @@ export function useAuth() {
 }
 
 /**
- * Helper to determine dashboard route based on user role
+ * Post-login redirect priority:
+ * 1) learners with enrollments -> /my-classes
+ * 2) validated redirect_url
+ * 3) role landing or home
  */
-function getDashboardRoute(user: AuthUser | null | undefined): string {
+function getPostLoginDestination(
+  user: AuthUser | null | undefined,
+  redirectUrl: string | undefined,
+  isAllowedRedirectUrl: (target?: string | null) => boolean,
+): string {
+  const enrolledCourses = ((user as any)?.enrolledCourses || []) as any[];
+  if (enrolledCourses.length > 0) {
+    return '/my-classes';
+  }
+
+  if (redirectUrl && isAllowedRedirectUrl(redirectUrl)) {
+    return redirectUrl;
+  }
+
   const role = user?.role || 'learner';
 
   switch (role.toLowerCase()) {

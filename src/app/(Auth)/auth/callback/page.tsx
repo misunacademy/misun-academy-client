@@ -2,19 +2,36 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useGetMyEnrollmentsQuery } from '@/redux/api/enrollmentApi';
 
 
 export default function AuthCallbackPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isLoading } = useAuth();
-  const { data: EnrollmentsData, isLoading: isEnrollmentsLoading } = useGetMyEnrollmentsQuery({ status: "active" }, { skip: !user }); // prime the cache with user's enrollments if logged in
-  const isEnrolled = (EnrollmentsData?.data?.length ?? 0) > 0
+  const redirectUrl = searchParams.get('redirect_url');
+
+  const isAllowedRedirectUrl = (target?: string | null) => {
+    if (!target) return false;
+
+    try {
+      if (target.startsWith('/')) return true;
+
+      const parsed = new URL(target);
+      const host = parsed.hostname.toLowerCase();
+      const mainHost = process.env.NEXT_PUBLIC_MA_FRONTEND_URL
+        ? new URL(process.env.NEXT_PUBLIC_MA_FRONTEND_URL).hostname.toLowerCase()
+        : '';
+
+      return host === mainHost || host.endsWith('.maindomain.com');
+    } catch {
+      return false;
+    }
+  };
 
   useEffect(() => {
-    if (isLoading || isEnrollmentsLoading) return;
+    if (isLoading) return;
 
     if (!user) {
       // No session found, redirect to login
@@ -22,7 +39,22 @@ export default function AuthCallbackPage() {
       return;
     }
 
-    // Determine dashboard route based on user role
+    const enrolledCourses = ((user as any).enrolledCourses || []) as unknown[];
+    if (enrolledCourses.length > 0) {
+      router.replace('/my-classes');
+      return;
+    }
+
+    if (redirectUrl && isAllowedRedirectUrl(redirectUrl)) {
+      if (redirectUrl.startsWith('/')) {
+        router.replace(redirectUrl);
+      } else {
+        window.location.assign(redirectUrl);
+      }
+      return;
+    }
+
+    // Determine dashboard route based on user role (admin/instructor stay on main domain)
     const role = user.role || 'learner';
     let destination = '/';
 
@@ -35,7 +67,7 @@ export default function AuthCallbackPage() {
         destination = '/dashboard/instructor';
         break;
       case 'learner':
-        destination = isEnrolled ? '/my-classes' : '/';
+        destination = '/';
         break;
       default:
         destination = '/';
@@ -43,7 +75,7 @@ export default function AuthCallbackPage() {
     }
 
     router.push(destination);
-  }, [user, isLoading, router, isEnrollmentsLoading, isEnrolled]);
+  }, [user, isLoading, router, redirectUrl]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">

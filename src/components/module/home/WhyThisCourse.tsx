@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Container from '@/components/ui/container';
 import WhyThisCourseModal from './WhyThisCourseModal';
 import { VideoThumb, Bg1 } from '@/assets/images';
-import AbstractLiquid from '@/assets/3d-elements/3d-abstract-colorful-twisted-liquid-shapes-creative-design-elements-vector-modern-gradient-shapes-elements-bannerbackgroundposter.png';
+import AbstractLiquid from '@/assets/3d-elements/3d-abstract-colorful-twisted-liquid-shapes.png';
 import FluidShape from '@/assets/3d-elements/3d-abstract-fluid-shape-icon.png';
 import { FolderArchive, NotebookPen, Projector } from 'lucide-react';
 import PlayButton from '@/components/shared/PlayButton';

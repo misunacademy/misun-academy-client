@@ -13,13 +13,20 @@ phone number : 01778371211
 export default function Footer() {
   return (
     <footer
-      className="relative overflow-hidden pb-12 md:pb-24 bg-[#060f0a] bg-contain lg:bg-cover bg-bottom bg-no-repeat"
-      style={{
-        backgroundImage: `url(${FooterBg.src})`,
-      }}
+      className="relative overflow-hidden pb-12 md:pb-24 bg-[#060f0a]"
     >
+      {/* Decorative image loads lazily and avoids early network cost. */}
+    <div className="absolute inset-0 z-0 pointer-events-none">
+        <Image
+          src={FooterBg}
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover object-bottom"
+        />
+      </div>
       {/* Dark overlay so text stays readable over the image */}
-      <div className="absolute inset-0 bg-[#060f0a]/82 pointer-events-none z-0" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#060a12] via-[#060a12]/85 to-[#060a12]/60 pointer-events-none z-0" />
 
       {/* ── Top separator ── */}
       <div className="absolute inset-x-0 top-0 z-20 pointer-events-none">

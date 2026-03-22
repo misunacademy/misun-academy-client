@@ -2,7 +2,7 @@
 "use client";
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useSession } from '@/lib/auth-client';
+import { useAuth } from '@/hooks/useAuth';
 import type { AuthUser } from '@/types/auth';
 
 interface AuthGuardProps {
@@ -13,26 +13,29 @@ interface AuthGuardProps {
 export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const { data: session, isPending } = useSession();
+    const { user, isLoading } = useAuth();
 
-    const user = session?.user as AuthUser | undefined;
-    const isAuthenticated = !!user;
-    const userRole = user?.role || null;
+    const authUser = user as AuthUser | undefined;
+    const isAuthenticated = !!authUser;
+    const userRole = authUser?.role || null;
 
     useEffect(() => {
-        if (isPending) return;
+        if (isLoading) return;
 
         if (!isAuthenticated) {
             console.warn('[AuthGuard] No valid session — redirecting to /auth');
-            const redirectUrl = `/auth?redirectTo=${encodeURIComponent(pathname)}`;
+            const currentUrl = typeof window !== 'undefined'
+                ? window.location.href
+                : `${pathname}`;
+            const redirectUrl = `/auth?redirect_url=${encodeURIComponent(currentUrl)}`;
             router.replace(redirectUrl);
             return;
         }
-    }, [isPending, isAuthenticated, router, pathname]);
+    }, [isLoading, isAuthenticated, router, pathname]);
 
     // Role-based access control
     useEffect(() => {
-        if (!isAuthenticated || isPending) return;
+        if (!isAuthenticated || isLoading) return;
 
         // Check if user is accessing admin routes
         const isAdminRoute = pathname.startsWith('/dashboard/admin') || pathname.startsWith('/admin');
@@ -78,9 +81,9 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
                 return;
             }
         }
-    }, [isAuthenticated, userRole, pathname, router, requiredRoles, isPending]);
+    }, [isAuthenticated, userRole, pathname, router, requiredRoles, isLoading]);
 
-    if (isPending || !isAuthenticated) {
+    if (isLoading || !isAuthenticated) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>

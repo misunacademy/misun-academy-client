@@ -2,6 +2,7 @@ import Script from 'next/script';
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/next";
 import Providers from '@/providers/Providers';
+import MetaPixelPageViewTracker from '@/components/analytics/MetaPixelPageViewTracker';
 import type { Metadata } from 'next';
 import { Hind_Siliguri, Mona_Sans } from 'next/font/google';
 import './globals.css';
@@ -13,9 +14,9 @@ const monaSans = Mona_Sans({
 
 const hindSiliguri = Hind_Siliguri({
   subsets: ['bengali'],
-  weight: ['400', '400', '500', '600', '700'],
+  weight: ['400', '700'],
   variable: '--font-bangla',
-  display: 'swap',
+  display: 'optional',
 });
 
 export const metadata: Metadata = {
@@ -40,7 +41,7 @@ export default function RootLayout({
           <>
             <Script
               id="facebook-pixel"
-              strategy="afterInteractive"
+              strategy="lazyOnload"
             >
               {`
             !function(f,b,e,v,n,t,s)
@@ -67,17 +68,11 @@ export default function RootLayout({
             </noscript>
           </>
         )}
-        {/* Load GA script only if GA_ID is available */}
-        {GA_ID && (
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-            strategy="afterInteractive"
-            async
-          />
-        )}
       </head>
       <body className=''>
         <Providers>
+          <MetaPixelPageViewTracker />
+
           {/* Initialize GA tracking only if GA_ID is available */}
           {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
 

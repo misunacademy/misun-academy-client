@@ -11,7 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useGetCourseBySlugQuery } from '@/redux/api/courseApi';
 
-const formatDate = (date: Date | string) => {
+export const formatDate = (date: Date | string) => {
     return format(new Date(date), 'dd MMM, yyyy');
 };
 
@@ -177,7 +177,7 @@ function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
 
 // ── Main Section ──────────────────────────────────────────────────────────────
 export const EnrollmentSection = () => {
-    const { data: gdCourseData, isLoading: gdCourseLoading } = useGetCourseBySlugQuery('graphic-design');
+    const { data: gdCourseData, isLoading: gdCourseLoading } = useGetCourseBySlugQuery('complete-graphic-design-with-freelancing');
     const gdCourseId = (gdCourseData?.data as any)?._id;
     const { data: gdCurrentRes, isLoading: gdCurrentLoading } = useGetCurrentEnrollmentBatchQuery(
         { courseId: gdCourseId }, { skip: !gdCourseId });

@@ -22,6 +22,7 @@ import Link from "next/link";
 import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studentApi";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/shared/ProtectedRoute";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
 import * as THREE from "three";
@@ -478,12 +479,13 @@ const MyClassesPage = () => {
   const firstName = user?.name?.split(" ")[0] ?? "Student";
 
   return (
-    <div
-      className="relative min-h-screen overflow-hidden"
-      style={{
-        background: "linear-gradient(180deg, #0a0f18 0%, #060f0a 60%, #040c07 100%)",
-      }}
-    >
+    <ProtectedRoute>
+      <div
+        className="relative min-h-screen overflow-hidden"
+        style={{
+          background: "linear-gradient(180deg, #0a0f18 0%, #060f0a 60%, #040c07 100%)",
+        }}
+      >
       {/* ── Three.js 3D background canvas ── */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <Canvas camera={{ position: [0, 0, 5], fov: 60 }} gl={{ alpha: true, antialias: true }}>
@@ -628,7 +630,8 @@ const MyClassesPage = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 };
 

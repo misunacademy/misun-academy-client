@@ -24,12 +24,12 @@ const CourseDetails = () => {
     return (
         <div>
             <BreadcrumbJsonLd />
-            <BannerSection courseSlug="graphic-design" />
+            <BannerSection courseSlug="complete-graphic-design-with-freelancing" />
             <InstructorSection />
-            <CourseWorkflow courseSlug="graphic-design" />
+            <CourseWorkflow courseSlug="complete-graphic-design-with-freelancing" />
             <CourseCurriculum />
             <FaqSection />
-            <EnrollCtaSection courseSlug="graphic-design" />
+            <EnrollCtaSection courseSlug="complete-graphic-design-with-freelancing" />
         </div>
     );
 };

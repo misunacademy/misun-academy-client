@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from 'react';
+import { Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle, XCircle, Loader2, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -174,4 +175,10 @@ const VerifyEmailPage = () => {
     );
 };
 
-export default VerifyEmailPage;
+export default function VerifyEmailPageWithSuspense() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#060f0a]" />}>
+            <VerifyEmailPage />
+        </Suspense>
+    );
+}

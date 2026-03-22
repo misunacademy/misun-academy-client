@@ -2,11 +2,12 @@
 
 import React, { useRef, Suspense } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
 import * as THREE from "three";
-import  CourseThumbnail  from "@/assets/images/batch-6-web-cover.png";
+import  graphic  from "@/assets/images/graphic-design.png";
+import  english  from "@/assets/images/english-for-professional.png";
 
 // ─── Three.js floating wireframe shapes ──────────────────────────────────────
 
@@ -81,7 +82,7 @@ function Scene() {
 
 // ─── English thumbnail — CSS art ──────────────────────────────────────────────
 
-function EnglishThumbnail() {
+function EnglishThumbnail({img}:{img:StaticImageData}) {
   return (
     <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
       {/* Deep blue gradient base */}
@@ -97,8 +98,9 @@ function EnglishThumbnail() {
           backgroundSize: "28px 28px",
         }}
       />
+      <Image src={img} alt="course thumbnail"  fill className=""/>
       {/* Central content */}
-      <div className="relative z-10 flex flex-col items-center justify-center gap-3 text-center px-4">
+      {/* <div className="relative z-10 flex flex-col items-center justify-center gap-3 text-center px-4">
         <div className="text-5xl font-black font-sans tracking-tighter select-none">
           <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(217_91%_60%/0.6)]">
             E
@@ -115,7 +117,7 @@ function EnglishThumbnail() {
             <span key={i} className={`text-[10px] font-semibold tracking-widest uppercase ${w === "•" ? "text-blue-400/50" : "text-blue-300/70"}`}>{w}</span>
           ))}
         </div>
-      </div>
+      </div> */}
       {/* Shimmer overlay */}
       <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#060a12]/80 to-transparent" />
     </div>
@@ -126,7 +128,7 @@ function EnglishThumbnail() {
 
 const courses = [
   {
-    slug: "graphic-design",
+    slug: "complete-graphic-design-with-freelancing",
     badge: "কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স",
     label: "Design",
     title: "কমপ্লিট গ্রাফিক্স ডিজাইন উইথ ফ্রিল্যান্সিং",
@@ -202,7 +204,7 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
   return (
     <Link href={course.slug === 'graphic-design'
   ? `/courses/${course.slug}`
-  : 'https://esun.misun-academy.com/courses'
+  : `${process.env.NEXT_PUBLIC_EP_FRONTEND_URL}`
 } className="group block" style={{ perspective: "1100px" }}>
       <div
         ref={cardRef}
@@ -229,11 +231,11 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
         <div className="absolute bottom-0 right-0 w-7 h-7 border-b-[1.5px] border-r-[1.5px] border-white/10 rounded-br-3xl" />
 
         {/* ── Thumbnail ── */}
-        <div className="relative w-full h-48 overflow-hidden">
-          {course.thumbnail === "graphic-design" ? (
-            <>
+        <div className="relative w-full h-56 overflow-hidden my-4">
+          {/* {course.thumbnail === "graphic-design" ? ( */}
+            {/* <> */}
               <Image
-                src={CourseThumbnail}
+                src={course.thumbnail === "graphic-design" ?graphic:english}
                 alt="Graphic Design Course"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -241,10 +243,10 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
               />
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#060f0a] via-[#060f0a]/20 to-transparent" />
-            </>
-          ) : (
-            <EnglishThumbnail />
-          )}
+            {/* </> */}
+          {/* ) : (
+            <EnglishThumbnail img={english} />
+          )} */}
 
           {/* NEW badge */}
           {course.isNew && (
@@ -272,7 +274,7 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
 
           {/* Title block */}
           <div style={{ transform: "translateZ(6px)" }}>
-            <h2 className="text-xl md:text-2xl font-bold font-bangla bg-gradient-to-r from-white via-white/95 to-white/75 bg-clip-text text-transparent leading-snug">
+            <h2 className="text-xl md:text-2xl font-bold font-bangla bg-gradient-to-r pt-2 from-white via-white/95 to-white/75 bg-clip-text text-transparent leading-snug">
               {course.title}
             </h2>
             <p className="text-[11px] text-white/30 mt-1 font-sans tracking-wide">{course.titleEn}</p>
@@ -362,11 +364,11 @@ export default function CoursesListClient() {
 
           {/* Title */}
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-[1.15] tracking-tight">
-            <span className="block bg-gradient-to-r from-white via-white/95 to-white/75 bg-clip-text text-transparent pt-2">
-              আপনার ক্যারিয়ার শুরু
+            <span className="block bg-gradient-to-r from-white via-white/95 to-white/75 bg-clip-text text-transparent pt-4">
+              স্বপ্নকে পেশায় রূপ দিন
             </span>
-            <span className="block bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_30px_hsl(156_70%_42%/0.45)] mt-1 pt-2">
-              উপযোগী কোর্স বেছে নিন
+            <span className="block bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_30px_hsl(156_70%_42%/0.45)] mt-1 pt-4">
+              সঠিক লার্নিং ট্র্যাক বেছে নিন
             </span>
           </h1>
 

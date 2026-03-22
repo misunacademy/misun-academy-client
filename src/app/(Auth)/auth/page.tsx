@@ -3,13 +3,13 @@
 "use client";
 import { ArrowLeft, BookOpen, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import ForgotPasswordModal from "@/components/module/auth/ForgotPasswordModal";
 import EmailVerificationModal from "@/components/module/auth/EmailVerificationModal";
 import LoginForm from "@/components/module/auth/LoginForm";
 import RegisterForm from "@/components/module/auth/RegisterForm";
-import { useGetMyEnrollmentsQuery } from "@/redux/api/enrollmentApi";
 
 
 const AuthPage = () => {
@@ -23,15 +23,30 @@ const AuthPage = () => {
     const router = useRouter();
     const { signIn, signUp, user, isAuthenticated, isLoading } = useAuth();
     const searchParams = useSearchParams();
-    const {data:EnrollmentsData,isLoading:isEnrollmentsLoading}=useGetMyEnrollmentsQuery({status: "active"}, { skip: !user }); // prime the cache with user's enrollments if logged in
+    const redirectUrl = searchParams.get('redirect_url') || searchParams.get('redirectTo');
 
-  // guard against undefined length by defaulting to 0
-  const redirectTo = searchParams.get('redirectTo');
-  const isEnrolled = (EnrollmentsData?.data?.length ?? 0) > 0
+    const isAllowedRedirectUrl = (target?: string | null) => {
+        if (!target) return false;
+
+        try {
+            if (target.startsWith('/')) return true;
+
+            const parsed = new URL(target);
+            const host = parsed.hostname.toLowerCase();
+            const mainHost = process.env.NEXT_PUBLIC_MA_FRONTEND_URL
+                ? new URL(process.env.NEXT_PUBLIC_MA_FRONTEND_URL).hostname.toLowerCase()
+                : '';
+
+            return host === mainHost || host.endsWith('.maindomain.com');
+        } catch {
+            return false;
+        }
+    };
 
     // handlers passed to forms
     const handleLogin = async (data: { email: string; password: string }) => {
-        const result = await signIn(data.email, data.password, redirectTo || undefined);
+        const validatedRedirect = isAllowedRedirectUrl(redirectUrl) ? redirectUrl : undefined;
+        const result = await signIn(data.email, data.password, validatedRedirect || undefined);
         if (result.success) {
             import('@/lib/metaPixel').then(({ track }) => track('Lead'));
             // redirect/notification logic is handled inside useAuth
@@ -49,23 +64,39 @@ const AuthPage = () => {
     };
 
     useEffect(() => {
-        if (isLoading || isEnrollmentsLoading) return;
+        if (isLoading) return;
 
         if (isAuthenticated && user) {
-            // User is already logged in, redirect to requested page or dashboard
-            if (redirectTo && redirectTo !== '/auth') {
-                router.replace(redirectTo);
+            const enrolledCourses = ((user as any).enrolledCourses || []) as unknown[];
+
+            // Redirect priority:
+            // 1) learners with enrollments -> /my-classes
+            // 2) validated redirect_url
+            // 3) role/home fallback
+            if (enrolledCourses.length > 0) {
+                router.replace('/my-classes');
+                return;
+            }
+
+            if (redirectUrl && isAllowedRedirectUrl(redirectUrl)) {
+                if (redirectUrl.startsWith('/')) {
+                    router.replace(redirectUrl);
+                } else {
+                    window.location.assign(redirectUrl);
+                }
+                return;
+            }
+
+            const userRole = (user as any).role;
+            if (userRole === 'admin' || userRole === 'superadmin') {
+                router.replace('/dashboard/admin');
+            } else if (userRole === 'instructor') {
+                router.replace('/dashboard/instructor');
             } else {
-                const userRole = (user as any).role;
-                const dashboardRoute = userRole === 'admin' || userRole === 'superadmin'
-                    ? '/dashboard/admin'
-                    : userRole === 'instructor'
-                        ? '/dashboard/instructor'
-                        : isEnrolled?'/my-classes':'/';
-                router.replace(dashboardRoute);
+                router.replace('/');
             }
         }
-    }, [isAuthenticated, user, redirectTo, router, isLoading,isEnrollmentsLoading,isEnrolled]);
+    }, [isAuthenticated, user, redirectUrl, router, isLoading]);
 
 
 
@@ -198,4 +229,10 @@ const AuthPage = () => {
     );
 };
 
-export default AuthPage;
+export default function AuthPageWithSuspense() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#060f0a]" />}>
+            <AuthPage />
+        </Suspense>
+    );
+}

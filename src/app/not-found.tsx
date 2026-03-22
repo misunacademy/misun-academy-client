@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function NotFoundPage() {
-    const [path, setPath] = useState(window.location.href);
-    const [referrer, setReferrer] = useState(document.referrer || '');
+    const [path, setPath] = useState('');
+    const [referrer, setReferrer] = useState('');
 
     useEffect(() => {
         // Run only in development to avoid sending logs in production
@@ -14,6 +14,9 @@ export default function NotFoundPage() {
 
         const p = window.location.href;
         const r = document.referrer || '';
+
+        setPath(p);
+        setReferrer(r);
 
         console.warn('[NotFound] Rendered for path:', p, 'referrer:', r);
 

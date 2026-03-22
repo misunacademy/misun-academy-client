@@ -1,11 +1,8 @@
-'use client';
-
 import Image from 'next/image';
 import { HeroBanner } from '@/assets/images';
 import { HeroBg } from '@/assets/svg';
 import { Briefcase, Video, UserCheck, Clock, Home, PenTool, Palette, Layers, Crop, MousePointer2 } from 'lucide-react';
 import Link from 'next/link';
-import { FadeIn } from '@/components/ui/FadeIn';
 
 export default function HeroSection() {
   return (
@@ -31,7 +28,7 @@ export default function HeroSection() {
         <div className="container mx-auto px-4 max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center">
 
           {/* ── Left Column: Typography & Info ── */}
-          <FadeIn delay={0.1} direction="up" className="font-bangla space-y-8 max-w-2xl">
+          <div className="font-bangla space-y-8 max-w-2xl">
 
             {/* Badges */}
             <div className="flex flex-wrap gap-3">
@@ -137,10 +134,10 @@ export default function HeroSection() {
               </Link>
             </div>
 
-          </FadeIn>
+          </div>
 
           {/* ── Right Column: Hero Image & 3D Floating Elements ── */}
-          <FadeIn delay={0.3} direction="left" className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square flex items-center justify-center mt-12 lg:mt-0">
+          <div className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square flex items-center justify-center mt-12 lg:mt-0">
 
             {/* The Main Image */}
             <div className="relative z-10 w-[85%] h-[85%] transition-transform duration-1000 ease-out hover:scale-105 hover:rotate-1">
@@ -150,10 +147,12 @@ export default function HeroSection() {
               <Image
                 src={HeroBanner}
                 alt="Graphic Design Hero Banner"
-                layout="fill"
-                objectFit="contain"
+                fill
+                sizes="(max-width: 640px) 72vw, (max-width: 1024px) 86vw, 42vw"
                 priority
+                quality={65}
                 className="relative z-10 drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+                style={{ objectFit: 'contain' }}
               />
             </div>
 
@@ -194,7 +193,7 @@ export default function HeroSection() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full border border-dashed border-white/5 rounded-full animate-[spin_60s_linear_infinite] pointer-events-none -z-10" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] border border-dashed border-primary/10 rounded-full animate-[spin_40s_linear_infinite_reverse] pointer-events-none -z-10" />
 
-          </FadeIn>
+          </div>
 
         </div>
       </div>

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import ProtectedRoute from '@/components/shared/ProtectedRoute';
 import EnrollmentCheckout from '@/components/module/checkout/EnrollmentCheckout';
 import {
     Dialog,
@@ -193,14 +194,14 @@ function CourseEnrollmentCard({
 // ── Inner content (uses useSearchParams — must be inside Suspense) ─────────-
 function CheckoutContent() {
     const router = useRouter();
-    const courseSlug = 'graphic-design'; // single supported course
+    const courseSlug = 'complete-graphic-design-with-freelancing'; // single supported course
 
     const { user, isLoading: authLoading } = useAuth();
     const hasTracked = useRef(false);
     const [openModal, setOpenModal] = useState(false);
 
     // Fetch the single course's data for modal and checkout
-    const { data: gdCourseData, isLoading: gdCourseLoading } = useGetCourseBySlugQuery('graphic-design');
+    const { data: gdCourseData, isLoading: gdCourseLoading } = useGetCourseBySlugQuery('complete-graphic-design-with-freelancing');
     const gdCourseId = (gdCourseData?.data as any)?._id;
     const { data: gdCurrentRes, isLoading: gdCurrentLoading } = useGetCurrentEnrollmentBatchQuery(
         { courseId: gdCourseId }, { skip: !gdCourseId }
@@ -346,9 +347,11 @@ function CheckoutContent() {
 // ── Page export — wraps content in Suspense for useSearchParams ───────────────
 export default function Page() {
     return (
-        <Suspense fallback={<Spinner />}>
-            <CheckoutContent />
-        </Suspense>
+        <ProtectedRoute>
+            <Suspense fallback={<Spinner />}>
+                <CheckoutContent />
+            </Suspense>
+        </ProtectedRoute>
     );
 }
 

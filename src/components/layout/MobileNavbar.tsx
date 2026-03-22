@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '../ui/button';
-import { AlignLeft } from 'lucide-react';
+import { AlignLeft, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function MobileNavbar() {
@@ -13,13 +13,13 @@ export default function MobileNavbar() {
         <div className="relative">
             {/* Mobile Menu Button */}
             <button onClick={() => setIsOpen(!isOpen)} className="transition-colors text-primary">
-                {isOpen ? <AlignLeft className='text-primary' size={28} /> : <AlignLeft className='text-primary' size={28} />}
+                {isOpen ? <X className='text-primary' size={28} /> : <AlignLeft className='text-primary' size={28} />}
             </button>
 
             {/* Mobile Menu */}
             <div
                 className={cn(
-                    'absolute right-0 top-14 w-[365px] mr-1 bg-gray-100 shadow-lg rounded-lg px-8 pb-10 pt-6 flex flex-col transition-all',
+                    'absolute right-0 top-14 w-[365px] mr-1 bg-[#040a07] shadow-[0_4px_24px_rgba(0,0,0,0.6)]  rounded-lg px-8 pb-10 pt-6 flex flex-col transition-all',
                     isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
                 )}
             >
@@ -32,35 +32,35 @@ export default function MobileNavbar() {
                 <Link
                     onClick={() => setIsOpen(!isOpen)}
                     href="/"
-                    className="text-lg h-14 flex items-center border-b border-dark font-bangla"
+                    className="text-lg h-14 flex items-center border-b border-primary font-bangla"
                 >
                     হোম
                 </Link>
                 <Link
                     onClick={() => setIsOpen(!isOpen)}
                     href="/courses"
-                    className="text-lg h-14 flex items-center border-b border-dark font-bangla"
+                    className="text-lg h-14 flex items-center border-b border-primary font-bangla"
                 >
                     কোর্স সম্পর্কে
                 </Link>
                 <Link
                     onClick={() => setIsOpen(!isOpen)}
                     href="/feedback"
-                    className="text-lg h-14 flex items-center border-b border-dark font-bangla"
+                    className="text-lg h-14 flex items-center border-b border-primary font-bangla"
                 >
                     শিক্ষার্থীদের মতামত
                 </Link>
                 <Link
                     onClick={() => setIsOpen(!isOpen)}
                     href="/about"
-                    className="text-lg h-14 flex items-center border-b border-dark font-bangla"
+                    className="text-lg h-14 flex items-center border-b border-primary font-bangla"
                 >
                     আমাদের সম্পর্কে
                 </Link>
                 {/* <Link
                     onClick={() => setIsOpen(!isOpen)}
                     href="/blogs"
-                    className="text-lg h-14 flex items-center border-b border-dark"
+                    className="text-lg h-14 flex items-center border-b border-primary"
                 >
                     Blogs
                 </Link> */}

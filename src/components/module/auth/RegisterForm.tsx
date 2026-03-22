@@ -178,7 +178,7 @@ const RegisterForm = (
                     <div className={`relative p-[2px] rounded-xl overflow-hidden ${registerForm.formState.isSubmitting ? 'opacity-60' : ''}`}>
                         <span className="absolute inset-[-100%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_35%,hsl(156_100%_60%)_50%,transparent_65%)]" />
                         <button type="submit" disabled={registerForm.formState.isSubmitting}
-                            className="relative w-full bg-[#060f0a] hover:bg-primary/15 disabled:cursor-not-allowed transition-all duration-300 text-primary font-bold py-3 rounded-[10px] text-sm border border-primary/20 shadow-[inset_0_0_20px_hsl(156_70%_42%/0.08)]">
+                            className="relative w-full bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41] disabled:cursor-not-allowed transition-all duration-300 text-white font-bold py-3.5 rounded-xl text-base disabled:bg-primary/50 disabled:hover:bg-primary/50">
                             {registerForm.formState.isSubmitting ? "অ্যাকাউন্ট তৈরি হচ্ছে..." : "অ্যাকাউন্ট তৈরি করুন"}
                         </button>
                     </div>

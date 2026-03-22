@@ -36,10 +36,8 @@ const successStories: SuccessStory[] = [
 
 export default function Feedback() {
   const [api, setApi] = useState<CarouselApi>();
-  const [successApi, setSuccessApi] = useState<CarouselApi>();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
-  const [videoTitles, setVideoTitles] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!api) return;
@@ -55,28 +53,6 @@ export default function Feedback() {
       api.off('select', onSelect);
     };
   }, [api]);
-
-  // fetch video titles via YouTube oEmbed once on mount
-  useEffect(() => {
-    // run once, fetch titles for each video
-    successStories.forEach((story) => {
-      // skip if already fetched
-      if (videoTitles[story.videoId]) return;
-
-      fetch(
-        `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${story.videoId}&format=json`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data.title) {
-            setVideoTitles((prev) => ({ ...prev, [story.videoId]: data.title }));
-          }
-        })
-        .catch((err) => {
-          console.error('Failed to fetch title for', story.videoId, err);
-        });
-    });
-  }, []);
 
   return (
     <section
@@ -173,9 +149,7 @@ export default function Feedback() {
                       {playingVideoId === story.videoId ? (
                         <iframe
                           src={`https://www.youtube.com/embed/${story.videoId}?autoplay=1&rel=0`}
-                          title={
-                            videoTitles[story.videoId] || 'YouTube video'
-                          }
+                          title="Student success story video"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
                           className="absolute inset-0 w-full h-full border-0"
@@ -188,7 +162,7 @@ export default function Feedback() {
                           {/* YouTube Thumbnail */}
                           <img
                             src={`https://i.ytimg.com/vi/${story.videoId}/mqdefault.jpg`}
-                            alt={videoTitles[story.videoId] || 'Success Story'}
+                            alt="Success story thumbnail"
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                           />
                           {/* Hover Overlay */}
@@ -205,7 +179,7 @@ export default function Feedback() {
                     </div>
                     {/* video title caption */}
                     <div className="mt-2 text-sm text-white/80 line-clamp-2 leading-snug truncate">
-                      {videoTitles[story.videoId] || 'Loading video title...'}
+                      ভিডিও টেস্টিমোনিয়াল
                     </div>
                     </div>{/* card body */}
                   </div>{/* border wrapper */}

@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true, // Enable strict mode for better development warnings
 
   experimental: {
-    optimizePackageImports: ['@/lib/metaPixel', 'lucide-react'],
+    optimizePackageImports: ['lucide-react', 'react-icons', 'framer-motion'],
   },
 
   images: {

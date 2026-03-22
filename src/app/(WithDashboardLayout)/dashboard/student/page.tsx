@@ -1,12 +1,12 @@
 'use client';
 
-import { useSession } from '@/lib/auth-client';
+import { useAuth } from '@/hooks/useAuth';
 import StudentDashboardClient from "./StudentDashboardClient";
 
 export default function StudentDashboard() {
-    const { data: session, isPending } = useSession();
+    const { user, isLoading } = useAuth();
 
-    if (isPending) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -14,7 +14,7 @@ export default function StudentDashboard() {
         );
     }
 
-    if (!session?.user) {
+    if (!user) {
         // Middleware will handle redirect to /auth
         return null;
     }
