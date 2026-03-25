@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ShoppingBagIcon } from "lucide-react";
 import { format } from "date-fns";
 
@@ -109,7 +110,7 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
                         <ShoppingBagIcon className="w-16 h-16 text-primary/40 mb-4" />
                         <h3 className="text-xl text-white/90 font-medium mb-2">No Enrollments Found</h3>
                         <p className="text-white/50 max-w-md">
-                            You haven't enrolled in any courses yet. Browse our catalog to start your learning journey!
+                            You haven&apos;t enrolled in any courses yet. Browse our catalog to start your learning journey!
                         </p>
                     </div>
                 )}

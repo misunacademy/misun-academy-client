@@ -3,14 +3,101 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Download, Calendar, Award } from "lucide-react";
-import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studentApi";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldCheck, FileCheck, Clock, Ban, ExternalLink, Send } from "lucide-react";
+import { useGetMyCertificatesQuery, useRequestCertificateMutation, type CertificateResponse } from "@/redux/api/certificateApi";
+import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
+import { toast } from "sonner";
 
-export default function StudentCertificates() {
-  const { data: dashboardData, isLoading } = useGetStudentDashboardDataQuery({});
+const normalizeStatus = (status?: string) => {
+  const value = (status || "").toLowerCase();
+  if (value === "active" || value === "approved") return "approved";
+  if (value === "revoked" || value === "rejected") return "rejected";
+  return "pending";
+};
 
-  if (isLoading) {
+const getEnrollmentId = (certificate: CertificateResponse) =>
+  typeof certificate.enrollmentId === "string"
+    ? certificate.enrollmentId
+    : (certificate.enrollmentId as unknown as { _id?: string })?._id || "";
+
+const getCourseTitle = (certificate: CertificateResponse) => {
+  if (certificate.course?.title) return certificate.course.title;
+  const batch = certificate.batchId as unknown as { courseId?: { title?: string } };
+  return batch?.courseId?.title || "Course";
+};
+
+const getBatchTitle = (certificate: CertificateResponse) => {
+  if (certificate.batch?.title) return certificate.batch.title;
+  return (certificate.batchId as unknown as { title?: string })?.title || "Batch";
+};
+
+export default function StudentCertificatesPage() {
+  const { data, isLoading, refetch } = useGetMyCertificatesQuery();
+  const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useGetEnrollmentsQuery();
+  const [requestCertificate, { isLoading: isRequesting }] = useRequestCertificateMutation();
+
+  const certificates = data?.data || [];
+  const enrollments = enrollmentsData?.data || [];
+
+  const certificateByEnrollment = new Set(
+    certificates.map((c) => getEnrollmentId(c)).filter(Boolean)
+  );
+
+  const requestableEnrollments = enrollments.filter((enrollment) => {
+    const enrollmentId = enrollment._id;
+    const completed = enrollment.status === "completed" || enrollment.status === "active";
+    const missingCertificate = !certificateByEnrollment.has(enrollmentId);
+    return completed && missingCertificate;
+  });
+
+  const pendingCount = certificates.filter((c) => normalizeStatus(c.status) === "pending").length;
+  const approvedCount = certificates.filter((c) => normalizeStatus(c.status) === "approved").length;
+  const rejectedCount = certificates.filter((c) => normalizeStatus(c.status) === "rejected").length;
+
+  const handleRequestCertificate = async (enrollmentId: string) => {
+    try {
+      await requestCertificate(enrollmentId).unwrap();
+      toast.success("Certificate request submitted. Awaiting admin approval.");
+      refetch();
+    } catch (error: unknown) {
+      const message =
+        typeof error === "object" && error !== null && "data" in error
+          ? (error as { data?: { message?: string } }).data?.message
+          : undefined;
+      toast.error(message || "Failed to request certificate");
+    }
+  };
+
+  const statusBadge = (status: string) => {
+    const normalized = normalizeStatus(status);
+
+    if (normalized === "approved") {
+      return (
+        <Badge variant="default" className="flex items-center gap-1 w-fit">
+          <FileCheck className="h-3 w-3" />
+          Approved
+        </Badge>
+      );
+    }
+
+    if (normalized === "rejected") {
+      return (
+        <Badge variant="destructive" className="flex items-center gap-1 w-fit">
+          <Ban className="h-3 w-3" />
+          Rejected
+        </Badge>
+      );
+    }
+
+    return (
+      <Badge variant="secondary" className="flex items-center gap-1 w-fit">
+        <Clock className="h-3 w-3" />
+        Pending
+      </Badge>
+    );
+  };
+
+  if (isLoading || isEnrollmentsLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="w-8 h-8 animate-spin" />
@@ -18,82 +105,125 @@ export default function StudentCertificates() {
     );
   }
 
-  const completedCoursesCount = dashboardData?.completedCoursesCount || 0;
-  const enrolledCourses = dashboardData?.enrolledCourses || [];
-
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">My Certificates</h1>
-        <p className="text-muted-foreground">View and download your earned certificates.</p>
+        <p className="text-muted-foreground">Request, track, and verify your certificates.</p>
       </div>
 
-      {completedCoursesCount === 0 ? (
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Trophy className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Certificates Yet</h3>
-            <p className="text-muted-foreground text-center mb-4">
-              Complete your enrolled courses to earn certificates. Keep learning!
-            </p>
-          </CardContent>
+          <CardHeader className="pb-3">
+            <CardDescription>Pending</CardDescription>
+            <CardTitle className="text-3xl">{pendingCount}</CardTitle>
+          </CardHeader>
         </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {/* Placeholder for future certificate display */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-yellow-500" />
-                  Certificate System
-                </CardTitle>
-                <Badge variant="secondary">Coming Soon</Badge>
-              </div>
-              <CardDescription>Certificate generation in progress</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  <span>Available when course completed</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Award className="h-4 w-4" />
-                  <span>Grade: Available upon completion</span>
-                </div>
-                <Button className="w-full" size="sm" disabled>
-                  <Download className="h-4 w-4 mr-2" />
-                  Coming Soon
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardDescription>Approved</CardDescription>
+            <CardTitle className="text-3xl text-green-600">{approvedCount}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardDescription>Rejected</CardDescription>
+            <CardTitle className="text-3xl text-red-600">{rejectedCount}</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Certificate Statistics</CardTitle>
-          <CardDescription>Your achievement summary</CardDescription>
+          <CardTitle>Request Certificates</CardTitle>
+          <CardDescription>
+            Completed enrollments without a certificate request can be submitted from here.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {requestableEnrollments.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No eligible enrollment found for new certificate request.</p>
+          ) : (
+            requestableEnrollments.map((enrollment) => (
+              <div key={enrollment._id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                <div>
+                  <p className="font-medium">{enrollment.batchId?.courseId?.title || "Course"}</p>
+                  <p className="text-xs text-muted-foreground">{enrollment.batchId?.title || "Batch"}</p>
+                </div>
+                <Button
+                  onClick={() => handleRequestCertificate(enrollment._id)}
+                  disabled={isRequesting}
+                  size="sm"
+                >
+                  {isRequesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
+                  Request
+                </Button>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-green-600" />
+            Certificate Requests & History
+          </CardTitle>
+          <CardDescription>All your pending, approved, and revoked certificates.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{completedCoursesCount}</div>
-              <p className="text-sm text-muted-foreground">Completed Courses</p>
+          {certificates.length === 0 ? (
+            <p className="text-muted-foreground">No certificates found yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {certificates.map((certificate) => {
+                const normalizedStatus = normalizeStatus(certificate.status);
+                const certificateLink = certificate.verificationUrl || certificate.certificateUrl;
+
+                return (
+                  <div key={certificate._id} className="rounded-lg border p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h3 className="font-semibold">{getCourseTitle(certificate)}</h3>
+                        <p className="text-sm text-muted-foreground">{getBatchTitle(certificate)}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Certificate ID: {certificate.certificateId}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        {statusBadge(certificate.status)}
+
+                        {certificateLink ? (
+                          <Button asChild size="sm" variant="outline">
+                            <a href={certificateLink} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-4 w-4 mr-1" />
+                              Verify
+                            </a>
+                          </Button>
+                        ) : null}
+
+                        {normalizedStatus === "approved" && certificate.certificateUrl ? (
+                          <Button asChild size="sm">
+                            <a href={certificate.certificateUrl} target="_blank" rel="noopener noreferrer">
+                              Download
+                            </a>
+                          </Button>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    {normalizedStatus === "rejected" ? (
+                      <p className="text-xs text-red-600 mt-2">
+                        Reason: {certificate.rejectionReason || certificate.revokedReason || "Not provided"}
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              })}
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">
-                {enrolledCourses.length > 0 ? Math.round((completedCoursesCount / enrolledCourses.length) * 100) : 0}%
-              </div>
-              <p className="text-sm text-muted-foreground">Completion Rate</p>
-            </div>
-            <div className="text-center">
-              {/* <div className="text-2xl font-bold text-primary">-</div>
-              <p className="text-sm text-muted-foreground">Average Grade</p> */}
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -15,7 +15,7 @@ export const TestimonialCard = ({ name, batch, studentId, testimonial, postLink,
         <div
             className="group relative overflow-hidden rounded-2xl
                 bg-[#060f0a] border border-primary/15
-                p-6 h-full flex flex-col
+                p-6 flex flex-col self-start
                 transition-all duration-300 hover:-translate-y-1
                 hover:border-primary/40 hover:shadow-[0_8px_32px_hsl(156_70%_42%/0.18)]
                 animate-fade-in-up"
@@ -36,7 +36,7 @@ export const TestimonialCard = ({ name, batch, studentId, testimonial, postLink,
                 <Quote className="w-16 h-16 text-primary" />
             </div>
 
-            <div className="relative z-10 flex flex-col gap-4 flex-1">
+            <div className="relative z-10 flex flex-col gap-4">
                 {/* Header */}
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-col gap-2">
@@ -82,7 +82,7 @@ export const TestimonialCard = ({ name, batch, studentId, testimonial, postLink,
                 <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
 
                 {/* Testimonial */}
-                <blockquote className="flex-1 relative">
+                <blockquote className="relative">
                     <span className="absolute -left-1 -top-2 text-primary/50 text-2xl leading-none select-none">&ldquo;</span>
                     <p className="pl-3 text-sm text-white/55 leading-relaxed font-bangla group-hover:text-white/70 transition-colors duration-300">
                         {testimonial}

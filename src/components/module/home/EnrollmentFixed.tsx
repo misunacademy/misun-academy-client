@@ -25,10 +25,10 @@ export default function EnrollmentFixed() {
             <div
                 className="
         fixed bottom-5 left-5
-        bg-white bg-opacity-90
-        shadow-lg rounded-md
+        bg-[#07120d]/95 border border-primary/20
+        shadow-[0_12px_30px_hsl(156_70%_42%/0.18)] rounded-md
         p-4 max-w-xs
-        font-bangla text-gray-700
+        font-bangla text-white/80
         text-sm font-medium
         z-50
       "
@@ -43,10 +43,10 @@ export default function EnrollmentFixed() {
             <div
                 className="
         fixed bottom-5 left-5 
-        bg-white bg-opacity-90 
-        shadow-lg rounded-md 
+        bg-[#07120d]/95 border border-primary/20 
+        shadow-[0_12px_30px_hsl(156_70%_42%/0.18)] rounded-md 
         p-4 max-w-xs 
-        font-bangla text-gray-700 
+        font-bangla text-white/80 
         text-sm font-medium
         z-50
       "
@@ -56,7 +56,7 @@ export default function EnrollmentFixed() {
                     type="button"
                     aria-label="পপআপ বন্ধ করুন"
                     onClick={() => setIsOpen(false)}
-                    className="absolute -top-2 -right-2 grid h-6 w-6 place-items-center rounded-full border border-white/80 bg-white text-slate-600 shadow-md transition hover:scale-105 hover:text-slate-900"
+                    className="absolute -top-2 -right-2 grid h-6 w-6 place-items-center rounded-full border border-primary/30 bg-[#0b1d14] text-white/70 shadow-md transition hover:scale-105 hover:text-white"
                 >
                     <X size={14} />
                 </button>

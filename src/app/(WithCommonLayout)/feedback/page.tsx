@@ -98,7 +98,7 @@ const Feedback = () => {
 
                     {/* Stats grid */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-                        {[
+                        {[    // ৭ম
                             { icon: <Users className="w-6 h-6 text-primary" />, value: "১৫০০+", label: "হ্যাপি শিক্ষার্থী" },
                             { icon: <TrendingUp className="w-6 h-6 text-cyan-400" />, value: "৬ষ্ঠ", label: "ব্যাচ চলছে" },
                             { icon: <Star className="w-6 h-6 text-yellow-400" />, value: "৯৮%", label: "সন্তুষ্টি" },
@@ -180,17 +180,18 @@ const Feedback = () => {
                     <div id="testimonials-section" className="scroll-mt-20">
                         {paginatedTestimonials.length > 0 ? (
                             <>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+                                <div className="columns-1 md:columns-2 lg:columns-3 gap-5 mb-8">
                                     {paginatedTestimonials.map((feedback, index) => (
-                                        <TestimonialCard
-                                            key={index}
-                                            name={feedback.name!}
-                                            batch={feedback.batch!}
-                                            studentId={feedback?.studentId || "N/A"}
-                                            testimonial={feedback.testimonial!}
-                                            postLink={feedback.post_link!}
-                                            index={index}
-                                        />
+                                        <div key={index} className="mb-5 break-inside-avoid">
+                                            <TestimonialCard
+                                                name={feedback.name!}
+                                                batch={feedback.batch!}
+                                                studentId={feedback?.studentId || "N/A"}
+                                                testimonial={feedback.testimonial!}
+                                                postLink={feedback.post_link!}
+                                                index={index}
+                                            />
+                                        </div>
                                     ))}
                                 </div>
                                 {totalPages > 1 && (

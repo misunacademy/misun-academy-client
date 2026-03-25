@@ -7,7 +7,7 @@ import CourseDetails from '../GraphicDesignCourseDetails';
 // ─── Static course config ────────────────────────────────────────────────────
 
 const courseConfig = {
-  'graphic-design': {
+  'complete-graphic-design-with-freelancing': {
     title: 'কমপ্লিট গ্রাফিক্স ডিজাইন উইথ ফ্রিল্যান্সিং | MISUN Academy',
     description:
       'বেসিক থেকে অ্যাডভান্স লেভেল পর্যন্ত গ্রাফিক্স ডিজাইন শিখুন। লাইভ ক্লাস, ১:১ মেন্টরশিপ এবং ফ্রিল্যান্সিং গাইডসহ সম্পূর্ণ কোর্স।',

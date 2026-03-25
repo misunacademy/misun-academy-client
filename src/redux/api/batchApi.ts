@@ -24,6 +24,7 @@ export interface BatchResponse {
   currentEnrollment: number;
   status: 'draft' | 'upcoming' | 'running' | 'completed';
   price: number;
+  manualPaymentPrice?: number;
   currency?: string;
   accessDurationAfterEnd?: number;
   instructors: Array<{

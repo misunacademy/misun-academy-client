@@ -385,7 +385,7 @@ export default function CourseDetails() {
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold text-white mb-3">Course Content Coming Soon</h2>
                 <p className="text-white/40 max-w-md mx-auto leading-relaxed text-sm">
-                  The instructor hasn't uploaded any modules for this course yet. Check back later for exciting new content!
+                  The instructor hasn&apos;t uploaded any modules for this course yet. Check back later for exciting new content!
                 </p>
               </DarkCard>
             ) : currentLesson && !showCookingMessage ? (
@@ -460,7 +460,7 @@ export default function CourseDetails() {
                     <p>Final progress: <span className="text-primary font-semibold">{calculatedPercentage}%</span></p>
                     <p>Completed on {new Date().toLocaleDateString()}</p>
                   </div>
-                  <Link href="/dashboard/student/certificates">
+                  <Link href="/my-classes/certificates">
                     <PrimaryBtn className="mx-auto">
                       <CheckCircle className="h-4 w-4" />
                       Get Your Certificate

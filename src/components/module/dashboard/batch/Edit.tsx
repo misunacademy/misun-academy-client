@@ -21,7 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { toast } from 'sonner';
-import { ArrowBigLeft, Loader2, X } from 'lucide-react';
+import { ArrowBigLeft, Loader2 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useGetBatchByIdQuery, useUpdateBatchMutation } from '@/redux/api/batchApi';
 
@@ -38,6 +38,7 @@ type BatchStatus = 'draft' | 'upcoming' | 'running' | 'completed';
 interface FormState {
     title: string;
     price: string;
+    manualPaymentPrice: string;
     status: BatchStatus;
     selectedCourse: string;
     startDate: string;
@@ -50,6 +51,7 @@ interface FormState {
 const INITIAL_FORM_STATE: FormState = {
     title: '',
     price: '',
+    manualPaymentPrice: '',
     status: 'draft',
     selectedCourse: '',
     startDate: '',
@@ -76,6 +78,7 @@ export default function BatchEdit() {
         const newFormData = {
             title: batch.data.title || '',
             price: batch.data.price?.toString() || '',
+            manualPaymentPrice: batch.data.manualPaymentPrice?.toString() || '',
             status: (batch.data.status as BatchStatus) || 'draft',
             selectedCourse: (batch.data.courseId as any)._id || '',
             startDate: batch.data.startDate
@@ -122,6 +125,7 @@ export default function BatchEdit() {
         const batchData = {
             title: formData.title,
             price: Number(formData.price),
+            manualPaymentPrice: formData.manualPaymentPrice ? Number(formData.manualPaymentPrice) : undefined,
             status: formData.status,
             courseId: formData.selectedCourse,
             startDate: formData.startDate ? new Date(formData.startDate) : undefined,
@@ -230,7 +234,7 @@ export default function BatchEdit() {
                             </Select>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="title">Batch Title *</Label>
                                 <Input
@@ -250,6 +254,17 @@ export default function BatchEdit() {
                                     onChange={(e) => handleInputChange('price', e.target.value)}
                                     placeholder="4000"
                                     required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="manualPaymentPrice">Manual Payment Price (BDT)</Label>
+                                <Input
+                                    id="manualPaymentPrice"
+                                    type="number"
+                                    min="0"
+                                    value={formData.manualPaymentPrice}
+                                    onChange={(e) => handleInputChange('manualPaymentPrice', e.target.value)}
+                                    placeholder="3000"
                                 />
                             </div>
                             <div className="space-y-2">

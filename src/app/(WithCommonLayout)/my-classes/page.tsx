@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
@@ -17,16 +15,25 @@ import {
   Clock,
   Radio,
   CheckCircle2,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studentApi";
+import {
+  Recording,
+  useGetStudentRecordingsQuery,
+  useIncrementRecordingViewMutation,
+} from "@/redux/features/recording/recordingApi";
+import { useGetCourseProgressQuery } from "@/redux/features/course/courseApi";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
 import * as THREE from "three";
-import { useRef, Suspense } from "react";
+import { useRef, Suspense, useState } from "react";
 
 interface EnrolledCourse {
   id: string;
@@ -182,6 +189,161 @@ function CourseThumbnail({ title }: { title: string }) {
   );
 }
 
+function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
+  const { data: progressData } = useGetCourseProgressQuery(enrollment.courseId, {
+    skip: !enrollment.courseId,
+  });
+
+  const isActive = enrollment.status === "active";
+  const isCompleted = enrollment.status === "completed";
+  const apiProgress = progressData?.data?.percentage;
+  const progress =
+    typeof apiProgress === "number"
+      ? Math.min(100, Math.max(0, Math.round(apiProgress)))
+      : isCompleted
+      ? 100
+      : 0;
+
+  return (
+    <div
+      key={enrollment.id}
+      className="group relative p-[1.5px] rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-0.5"
+    >
+      {/* Spinning conic gradient border on hover */}
+      <span
+        className="absolute inset-[-100%] opacity-0 group-hover:opacity-100 animate-[spin_5s_linear_infinite] transition-opacity duration-800"
+        style={{
+          background:
+            "conic-gradient(from 0deg, transparent 20%, hsl(156 70% 42% / 0.5) 38%, hsl(156 80% 60%) 50%, hsl(156 70% 42% / 0.5) 62%, transparent 80%)",
+        }}
+      />
+      {/* Static border when not hovered */}
+      <span className="absolute inset-0 rounded-2xl border border-primary/10  group-hover:border-transparent transition-all duration-300" />
+
+      {/* Card body */}
+      <div className="relative flex flex-col sm:flex-row min-h-[160px] rounded-2xl bg-[#060f0a] overflow-hidden
+        group-hover:shadow-xl group-hover:shadow-primary/10 transition-all duration-500">
+
+        {/* Corner accents */}
+        <div className="absolute top-0 left-0 w-5 h-5 border-t border-l border-primary/30 rounded-tl-2xl z-10" />
+        <div className="absolute top-0 right-0 w-5 h-5 border-t border-r border-primary/30 rounded-tr-2xl z-10" />
+        <div className="absolute bottom-0 left-0 w-5 h-5 border-b border-l border-primary/15 rounded-bl-2xl z-10" />
+        <div className="absolute bottom-0 right-0 w-5 h-5 border-b border-r border-primary/15 rounded-br-2xl z-10" />
+
+        {/* Thumbnail */}
+        <div className="relative w-full sm:w-56 md:w-64 shrink-0 min-h-[140px] sm:min-h-0">
+          <CourseThumbnail title={enrollment.courseTitle} />
+          {/* Status pill */}
+          <div className="absolute top-3 left-3 z-10">
+            <span
+              className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border ${
+                isActive
+                  ? "bg-primary/20 text-primary border-primary/40"
+                  : isCompleted
+                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-400/40"
+                  : "bg-white/10 text-white/60 border-white/10"
+              }`}
+            >
+              {isCompleted && <CheckCircle2 className="w-3 h-3" />}
+              {isActive ? "Active" : isCompleted ? "Completed" : enrollment.status}
+            </span>
+          </div>
+        </div>
+
+        {/* Details */}
+        <div className="flex-1 p-5 sm:p-6 flex flex-col gap-3">
+          {/* Background hover glow */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+          <div className="relative">
+            <h3 className="text-base sm:text-lg font-bold text-white leading-snug group-hover:text-primary transition-colors duration-300 line-clamp-2">
+              {enrollment.courseTitle}
+            </h3>
+            <p className="text-sm text-white/45 mt-1">
+              {enrollment.instructor?.name || "Mithun Sarkar"}
+              {enrollment.batchTitle ? (
+                <span className="text-white/30"> • {enrollment.batchTitle}</span>
+              ) : null}
+            </p>
+          </div>
+
+          {enrollment.shortDescription && (
+            <p className="relative text-sm text-white/35 line-clamp-2 leading-relaxed">
+              {enrollment.shortDescription}
+            </p>
+          )}
+
+          {/* Progress */}
+          <div className="relative space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-white/40 font-medium">Progress</span>
+              <span className="font-bold text-primary">{progress}%</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-white/8 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{
+                  width: `${progress}%`,
+                  background:
+                    "linear-gradient(90deg, hsl(156 70% 42%), hsl(156 85% 65%))",
+                  boxShadow: progress > 0 ? "0 0 8px hsl(156 70% 42% / 0.6)" : "none",
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Meta + Buttons row */}
+          <div className="relative flex flex-col sm:flex-row sm:items-center gap-3 mt-auto pt-1">
+            <div className="flex items-center gap-1.5 text-xs text-white/35">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>
+                Enrolled:{" "}
+                {new Date(enrollment.enrolledAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 sm:ml-auto">
+              {enrollment.courseId ? (
+                <Link href={`/my-classes/${enrollment.courseId}`}>
+                  <button className="group/btn inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm
+                    bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white
+                    shadow-[0_0_14px_hsl(156_70%_42%/0.35)] hover:shadow-[0_0_22px_hsl(156_70%_42%/0.55)]
+                    transition-all duration-300 hover:-translate-y-px">
+                    <PlayCircle className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                    Continue Learning
+                  </button>
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm opacity-40 cursor-not-allowed bg-white/5 border border-white/10 text-white/60"
+                >
+                  <PlayCircle className="w-4 h-4" />
+                  Unavailable
+                </button>
+              )}
+              <button
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm
+                  border border-white/12 text-white/60 bg-white/4
+                  hover:border-primary/40 hover:text-primary hover:bg-primary/5
+                  transition-all duration-300"
+                onClick={() => toast.info("Course outline coming soon!")}
+              >
+                <ListOrdered className="w-4 h-4" />
+                Outline
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Courses Tab ──────────────────────────────────────────────────────────────
 
 function CoursesTab({ enrolledCourses }: { enrolledCourses: EnrolledCourse[] }) {
@@ -222,150 +384,9 @@ function CoursesTab({ enrolledCourses }: { enrolledCourses: EnrolledCourse[] }) 
 
   return (
     <div className="flex flex-col gap-4">
-      {enrolledCourses.map((enrollment) => {
-        const isActive = enrollment.status === "active";
-        const isCompleted = enrollment.status === "completed";
-        const progress = isCompleted ? 100 : 0;
-
-        return (
-          <div
-            key={enrollment.id}
-            className="group relative p-[1.5px] rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-0.5"
-          >
-            {/* Spinning conic gradient border on hover */}
-            <span
-              className="absolute inset-[-100%] opacity-0 group-hover:opacity-100 animate-[spin_5s_linear_infinite] transition-opacity duration-800"
-              style={{
-                background:
-                  "conic-gradient(from 0deg, transparent 20%, hsl(156 70% 42% / 0.5) 38%, hsl(156 80% 60%) 50%, hsl(156 70% 42% / 0.5) 62%, transparent 80%)",
-              }}
-            />
-            {/* Static border when not hovered */}
-            <span className="absolute inset-0 rounded-2xl border border-primary/10  group-hover:border-transparent transition-all duration-300" />
-
-            {/* Card body */}
-            <div className="relative flex flex-col sm:flex-row min-h-[160px] rounded-2xl bg-[#060f0a] overflow-hidden
-              group-hover:shadow-xl group-hover:shadow-primary/10 transition-all duration-500">
-
-              {/* Corner accents */}
-              <div className="absolute top-0 left-0 w-5 h-5 border-t border-l border-primary/30 rounded-tl-2xl z-10" />
-              <div className="absolute top-0 right-0 w-5 h-5 border-t border-r border-primary/30 rounded-tr-2xl z-10" />
-              <div className="absolute bottom-0 left-0 w-5 h-5 border-b border-l border-primary/15 rounded-bl-2xl z-10" />
-              <div className="absolute bottom-0 right-0 w-5 h-5 border-b border-r border-primary/15 rounded-br-2xl z-10" />
-
-              {/* Thumbnail */}
-              <div className="relative w-full sm:w-56 md:w-64 shrink-0 min-h-[140px] sm:min-h-0">
-                <CourseThumbnail title={enrollment.courseTitle} />
-                {/* Status pill */}
-                <div className="absolute top-3 left-3 z-10">
-                  <span
-                    className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border ${
-                      isActive
-                        ? "bg-primary/20 text-primary border-primary/40"
-                        : isCompleted
-                        ? "bg-emerald-500/20 text-emerald-400 border-emerald-400/40"
-                        : "bg-white/10 text-white/60 border-white/10"
-                    }`}
-                  >
-                    {isCompleted && <CheckCircle2 className="w-3 h-3" />}
-                    {isActive ? "Active" : isCompleted ? "Completed" : enrollment.status}
-                  </span>
-                </div>
-              </div>
-
-              {/* Details */}
-              <div className="flex-1 p-5 sm:p-6 flex flex-col gap-3">
-                {/* Background hover glow */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
-                <div className="relative">
-                  <h3 className="text-base sm:text-lg font-bold text-white leading-snug group-hover:text-primary transition-colors duration-300 line-clamp-2">
-                    {enrollment.courseTitle}
-                  </h3>
-                  <p className="text-sm text-white/45 mt-1">
-                    {enrollment.instructor?.name || "Mithun Sarkar"}
-                    {enrollment.batchTitle ? (
-                      <span className="text-white/30"> • {enrollment.batchTitle}</span>
-                    ) : null}
-                  </p>
-                </div>
-
-                {enrollment.shortDescription && (
-                  <p className="relative text-sm text-white/35 line-clamp-2 leading-relaxed">
-                    {enrollment.shortDescription}
-                  </p>
-                )}
-
-                {/* Progress */}
-                <div className="relative space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-white/40 font-medium">Progress</span>
-                    <span className="font-bold text-primary">{progress}%</span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-white/8 overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${progress}%`,
-                        background:
-                          "linear-gradient(90deg, hsl(156 70% 42%), hsl(156 85% 65%))",
-                        boxShadow: progress > 0 ? "0 0 8px hsl(156 70% 42% / 0.6)" : "none",
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Meta + Buttons row */}
-                <div className="relative flex flex-col sm:flex-row sm:items-center gap-3 mt-auto pt-1">
-                  <div className="flex items-center gap-1.5 text-xs text-white/35">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>
-                      Enrolled:{" "}
-                      {new Date(enrollment.enrolledAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 sm:ml-auto">
-                    {enrollment.courseId ? (
-                      <Link href={`/my-classes/${enrollment.courseId}`}>
-                        <button className="group/btn inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm
-                          bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white
-                          shadow-[0_0_14px_hsl(156_70%_42%/0.35)] hover:shadow-[0_0_22px_hsl(156_70%_42%/0.55)]
-                          transition-all duration-300 hover:-translate-y-px">
-                          <PlayCircle className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
-                          Continue Learning
-                        </button>
-                      </Link>
-                    ) : (
-                      <button
-                        disabled
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm opacity-40 cursor-not-allowed bg-white/5 border border-white/10 text-white/60"
-                      >
-                        <PlayCircle className="w-4 h-4" />
-                        Unavailable
-                      </button>
-                    )}
-                    <button
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm
-                        border border-white/12 text-white/60 bg-white/4
-                        hover:border-primary/40 hover:text-primary hover:bg-primary/5
-                        transition-all duration-300"
-                      onClick={() => toast.info("Course outline coming soon!")}
-                    >
-                      <ListOrdered className="w-4 h-4" />
-                      Outline
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      })}
+      {enrolledCourses.map((enrollment) => (
+        <CourseCard key={enrollment.id} enrollment={enrollment} />
+      ))}
     </div>
   );
 }
@@ -373,8 +394,38 @@ function CoursesTab({ enrolledCourses }: { enrolledCourses: EnrolledCourse[] }) 
 // ── Live Recordings Tab ──────────────────────────────────────────────────────
 
 function LiveRecordingsTab() {
-  // Replace with real API data when available
-  const recordings: any[] = [];
+  const [playingRecording, setPlayingRecording] = useState<Recording | null>(null);
+  const { data: recordings = [], isLoading, isError } = useGetStudentRecordingsQuery();
+  const [incrementView] = useIncrementRecordingViewMutation();
+
+  const handlePlayRecording = async (recording: Recording) => {
+    setPlayingRecording(recording);
+    try {
+      await incrementView(recording._id).unwrap();
+    } catch {
+      toast.error("Could not update view count.");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="relative rounded-2xl border border-primary/20 bg-[#060f0a] overflow-hidden py-14 px-6 flex flex-col items-center justify-center gap-3 text-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-white/45">Loading live class recordings...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Alert variant="destructive" className="border-red-500/30 bg-red-500/10 text-red-100">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+          Failed to load class recordings. Please try again in a moment.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   if (recordings.length === 0) {
     return (
@@ -412,29 +463,68 @@ function LiveRecordingsTab() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {recordings.map((rec) => (
-        <div
-          key={rec.id}
-          className="group relative rounded-2xl border border-white/8 bg-[#060f0a] p-5 flex items-center gap-4
-            hover:border-primary/30 transition-all duration-300"
-        >
-          <div className="w-14 h-14 shrink-0 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-            <Radio className="w-6 h-6 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-white line-clamp-1">{rec.title}</h4>
-            <p className="text-sm text-white/40">{rec.date}</p>
-          </div>
-          <button className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold
-            border border-white/12 text-white/60 hover:border-primary/40 hover:text-primary hover:bg-primary/5
-            transition-all duration-300">
-            <PlayCircle className="w-4 h-4" />
-            Watch
-          </button>
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="flex flex-col gap-4">
+        {recordings.map((rec) => {
+          const courseTitle =
+            typeof rec.courseId === "object" ? rec.courseId.title : "Live Class";
+
+          return (
+            <div
+              key={rec._id}
+              className="group relative rounded-2xl border border-primary/20 bg-[#060f0a] p-5 flex flex-col sm:flex-row sm:items-center gap-4
+              hover:border-primary/30 transition-all duration-300"
+            >
+              <div className="w-14 h-14 shrink-0 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <Radio className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-white line-clamp-1">{rec.title}</h4>
+                <p className="text-sm text-white/40 line-clamp-1">{courseTitle}</p>
+                <p className="text-xs text-white/30 mt-1">
+                  {new Date(rec.sessionDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                  {rec.duration ? ` • ${rec.duration} min` : ""}
+                </p>
+              </div>
+              <button
+                onClick={() => handlePlayRecording(rec)}
+                className="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold
+                border border-primary/20 text-white/60 hover:border-primary/40 hover:text-primary hover:bg-primary/5
+                transition-all duration-300"
+              >
+                <PlayCircle className="w-4 h-4" />
+                Watch
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      <Dialog
+        open={!!playingRecording}
+        onOpenChange={(open) => {
+          if (!open) setPlayingRecording(null);
+        }}
+      >
+        <DialogContent className="max-w-4xl w-full bg-[#060f0a] border border-primary/25 text-white">
+          <DialogHeader>
+            <DialogTitle>{playingRecording?.title}</DialogTitle>
+          </DialogHeader>
+          {playingRecording ? (
+            <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-white/10">
+              <YoutubePrivatePlayer
+                url={playingRecording.videoUrl ?? ""}
+                className="absolute inset-0 w-full h-full"
+              />
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -618,6 +708,20 @@ const MyClassesPage = () => {
                 <Video className="w-4 h-4" />
                 Live Class Recordings
               </TabsTrigger>
+
+              <TabsTrigger
+                value="certificates"
+                className="
+                  flex items-center gap-2 px-5 py-3 rounded-none border-b-2 border-transparent
+                  text-sm font-semibold text-white/40
+                  data-[state=active]:border-primary data-[state=active]:text-primary
+                  data-[state=active]:bg-transparent data-[state=active]:shadow-none
+                  hover:text-white/70 transition-all duration-200
+                "
+              >
+                <ShieldCheck className="w-4 h-4" />
+                Certificates
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -627,6 +731,38 @@ const MyClassesPage = () => {
 
           <TabsContent value="recordings" className="mt-0">
             <LiveRecordingsTab />
+          </TabsContent>
+
+          <TabsContent value="certificates" className="mt-0">
+            <div className="relative rounded-2xl border border-primary/20 bg-[#060f0a] overflow-hidden flex flex-col items-center justify-center py-20 gap-5 text-center px-6">
+              <div
+                className="absolute inset-0 opacity-[0.10] pointer-events-none"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)",
+                  backgroundSize: "28px 28px",
+                }}
+              />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="relative p-5 rounded-2xl bg-primary/10 border border-primary/25">
+                <ShieldCheck className="h-10 w-10 text-primary" />
+              </div>
+              <div className="relative">
+                <h3 className="text-xl font-bold text-white mb-2">Manage Your Certificates</h3>
+                <p className="text-white/50 text-sm max-w-sm leading-relaxed">
+                  Request new certificates for completed courses and track approval status.
+                </p>
+              </div>
+              <Link href="/my-classes/certificates" className="relative">
+                <button className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm
+                  bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white
+                  shadow-[0_0_20px_hsl(156_70%_42%/0.3)] hover:shadow-[0_0_30px_hsl(156_70%_42%/0.5)]
+                  transition-all duration-300 hover:-translate-y-0.5">
+                  Open Certificates
+                </button>
+              </Link>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

@@ -48,7 +48,6 @@ const RegisterForm = (
         if (!result.success) {
             toast.error(result.error || "Google লগইন ব্যর্থ হয়েছে");
         }
-        // Note: Success toast will be shown after OAuth callback in useAuth hook
     };
     const handleRegister = async (data: RegisterFormData) => {
         await onRegister(data);
@@ -86,7 +85,7 @@ const RegisterForm = (
                                 <FormLabel className="text-white/65 text-sm">পূর্ণ নাম</FormLabel>
                                 <FormControl>
                                     <Input type="text" placeholder="আপনার নাম" {...field}
-                                        className="h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/30 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors" />
+                                        className="h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/30 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors autofill:shadow-[inset_0_0_0px_1000px_rgb(13,31,18)] autofill:[-webkit-text-fill-color:white]" />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -101,7 +100,7 @@ const RegisterForm = (
                                 <FormLabel className="text-white/65 text-sm">ইমেইল</FormLabel>
                                 <FormControl>
                                     <Input type="email" placeholder="your@email.com" {...field}
-                                        className="h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/30 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors" />
+                                        className="h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/30 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors autofill:shadow-[inset_0_0_0px_1000px_rgb(13,31,18)] autofill:[-webkit-text-fill-color:white]" />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -120,7 +119,7 @@ const RegisterForm = (
                                             type={showPassword ? "text" : "password"}
                                             placeholder="••••••••"
                                             {...field}
-                                            className="h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/30 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors pr-10"
+                                            className="h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/30 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors pr-10 autofill:shadow-[inset_0_0_0px_1000px_rgb(13,31,18)] autofill:[-webkit-text-fill-color:white]"
                                         />
                                         <button
                                             type="button"
@@ -148,7 +147,7 @@ const RegisterForm = (
                                             type={showConfirmPassword ? "text" : "password"}
                                             placeholder="••••••••"
                                             {...field}
-                                            className="h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/30 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors pr-10"
+                                            className="h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/30 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors pr-10 autofill:shadow-[inset_0_0_0px_1000px_rgb(13,31,18)] autofill:[-webkit-text-fill-color:white]"
                                         />
                                         <button
                                             type="button"

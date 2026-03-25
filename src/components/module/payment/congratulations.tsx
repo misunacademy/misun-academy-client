@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback, use } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Image from 'next/image';
 import {
   ArrowLeft,
@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { courseInfo } from '@/constants/enrollment';
 import { useAuth } from '@/hooks/useAuth';
 import { useGetEnrollmentsQuery } from '@/redux/api/enrollmentApi';
 import { useGetBatchByIdQuery } from '@/redux/api/batchApi';
@@ -31,44 +32,61 @@ import { useGetBatchByIdQuery } from '@/redux/api/batchApi';
 /*                                  Templates                                 */
 /* -------------------------------------------------------------------------- */
 
-const TEMPLATES = [
-  {
-    id: 1,
-    name: 'Green Neon Style',
-    src: '/posters/templete-1.png',
-    config: {
-      canvasWidth: 1080,
-      canvasHeight: 1080,
-      photo: { x: 535, y: 578, radius: 155 },
-      name: { x: 540, y: 870, fontSize: 58, color: '#FFFFFF' },
-      batch: {
-        x: 540,
-        y: 930,
-        fontSize: 28,
-        color: '#000000',
-        bgColor: '#88f400',
+type PosterTemplate = {
+  id: number;
+  name: string;
+  src: string;
+  config: {
+    canvasWidth: number;
+    canvasHeight: number;
+    photo: { x: number; y: number; radius: number };
+    name: { x: number; y: number; fontSize: number; color: string };
+    batch: { x: number; y: number; fontSize: number; color: string; bgColor: string };
+  };
+};
+
+const TEMPLATES: Record<'graphic' | 'english', PosterTemplate[]> = {
+  "graphic":[
+
+    {
+      id: 1,
+      name: 'Green Neon Style',
+      src: '/posters/templete-1.png',
+      config: {
+        canvasWidth: 1080,
+        canvasHeight: 1080,
+        photo: { x: 535, y: 578, radius: 155 },
+        name: { x: 540, y: 870, fontSize: 58, color: '#FFFFFF' },
+        batch: {
+          x: 540,
+          y: 930,
+          fontSize: 28,
+          color: '#000000',
+          bgColor: '#88f400',
+        },
       },
     },
-  },
-  {
-    id: 2,
-    name: 'Teal Ribbon Style',
-    src: '/posters/templete-2.png',
-    config: {
-      canvasWidth: 1080,
-      canvasHeight: 1080,
-      photo: { x: 535, y: 578, radius: 155 },
-      name: { x: 540, y: 870, fontSize: 58, color: '#FFFFFF' },
-      batch: {
-        x: 540,
-        y: 930,
-        fontSize: 28,
-        color: '#000000',
-        bgColor: '#00ffb4',
+    {
+      id: 2,
+      name: 'Teal Ribbon Style',
+      src: '/posters/templete-2.png',
+      config: {
+        canvasWidth: 1080,
+        canvasHeight: 1080,
+        photo: { x: 535, y: 578, radius: 155 },
+        name: { x: 540, y: 870, fontSize: 58, color: '#FFFFFF' },
+        batch: {
+          x: 540,
+          y: 930,
+          fontSize: 28,
+          color: '#000000',
+          bgColor: '#00ffb4',
+        },
       },
     },
-  },
-];
+  ],
+  "english":[]
+};
 
 /* -------------------------------------------------------------------------- */
 /*                               Helper Functions                              */
@@ -95,11 +113,59 @@ const drawRoundedRect = (
   ctx.closePath();
 };
 
+const normalizeText = (value?: string | null) =>
+  (value || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+const toSlug = (value?: string | null) =>
+  normalizeText(value)
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+
+const getCourseType = (title?: string | null): 'graphic' | 'english' | 'general' => {
+  const normalized = normalizeText(title);
+  if (/(graphic|design|freelancing|photoshop|illustrator)/i.test(normalized)) return 'graphic';
+  if (/(english|spoken|ielts|language)/i.test(normalized)) return 'english';
+  return 'general';
+};
+
+const getBatchNumber = (batchValue?: string | null): number | null => {
+  if (!batchValue) return null;
+  const match = batchValue.match(/(\d+)/);
+  if (!match) return null;
+  const parsed = Number(match[1]);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const getTemplatePriority = (
+  courseType: 'graphic' | 'english' | 'general',
+  batchNumber: number | null
+) => {
+  const isEvenBatch = batchNumber !== null ? batchNumber % 2 === 0 : false;
+
+  if (courseType === 'graphic') {
+    return isEvenBatch ? [1, 0] : [0, 1];
+  }
+
+  if (courseType === 'english') {
+    return isEvenBatch ? [0, 1] : [1, 0];
+  }
+
+  return isEvenBatch ? [1, 0] : [0, 1];
+};
+
+const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+
+interface CongratulationsPageProps {
+  courseSlug?: string | null;
+}
+
 /* -------------------------------------------------------------------------- */
 /*                                   Page                                     */
 /* -------------------------------------------------------------------------- */
 
-function CongratulationsPage() {
+function CongratulationsPage({ courseSlug }: CongratulationsPageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   /* ------------------------------- User Data -------------------------------- */
@@ -110,9 +176,36 @@ function CongratulationsPage() {
     skip: !user?.id,
   });
 
-  const latestEnrollment =
-    enrollmentsData?.data?.find((e) => e.status === 'active') ??
-    enrollmentsData?.data?.[0];
+  const appCourseType = getCourseType(courseInfo?.title);
+
+  const latestEnrollment = (() => {
+    const allEnrollments = enrollmentsData?.data ?? [];
+    const activeEnrollments = allEnrollments.filter((e) => e.status === 'active');
+    const sourceList = activeEnrollments.length > 0 ? activeEnrollments : allEnrollments;
+
+    const queryCourseSlug = toSlug(courseSlug);
+    if (queryCourseSlug) {
+      const matchedBySlug = sourceList.find((e) => {
+        const enrollment = e as any;
+        const enrollmentCourseSlug =
+          toSlug(enrollment?.course?.slug) ||
+          toSlug(enrollment?.courseId?.slug) ||
+          toSlug(enrollment?.course?.title);
+
+        return enrollmentCourseSlug === queryCourseSlug;
+      });
+
+      if (matchedBySlug) return matchedBySlug;
+    }
+
+    const matchedByCourse = sourceList.find(
+      (e) => getCourseType(e?.course?.title) === appCourseType
+    );
+
+    return matchedByCourse ?? sourceList[0];
+  })();
+
+  const courseTitle = latestEnrollment?.course?.title || courseInfo?.title || '';
 
   const { data: batchData } = useGetBatchByIdQuery(
     (latestEnrollment?.batchId as any)?._id || '',
@@ -159,8 +252,6 @@ function CongratulationsPage() {
     pointerId?: number;
   } | null>(null);
   const previewImgRef = useRef<HTMLDivElement | null>(null);
-
-  const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
   const moveImage = (dx: number, dy: number) => {
     setImageOffset((prev) => ({
@@ -222,6 +313,24 @@ function CongratulationsPage() {
     latestEnrollment?.batch?.title ??
     (batchData?.data ? `BATCH-${batchData.data.batchNumber}` : '');
 
+  const batchNumber = getBatchNumber(batchNo);
+  const selectedCourseType = getCourseType(courseTitle);
+  const templatePriority = getTemplatePriority(selectedCourseType, batchNumber);
+
+  const templateGroups: Record<'graphic' | 'english' | 'general', PosterTemplate[]> = {
+    graphic: TEMPLATES.graphic,
+    english: TEMPLATES.english.length > 0 ? TEMPLATES.english : TEMPLATES.graphic,
+    general: TEMPLATES.graphic,
+  };
+
+  const activeTemplateGroup = templateGroups[selectedCourseType];
+
+  const courseTemplates = templatePriority
+    .map((templateIndex) => activeTemplateGroup[templateIndex])
+    .filter(Boolean);
+
+  const resolvedTemplates = courseTemplates.length > 0 ? courseTemplates : activeTemplateGroup;
+
   /* ----------------------------- Image Upload ------------------------------- */
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -246,7 +355,10 @@ function CongratulationsPage() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const template = TEMPLATES[selectedTemplateIndex];
+    const template =
+      resolvedTemplates[selectedTemplateIndex] ||
+      resolvedTemplates[0] ||
+      TEMPLATES.graphic[0];
     const { config } = template;
 
     const cssWidth = config.canvasWidth;
@@ -422,7 +534,7 @@ function CongratulationsPage() {
       ctx.fillStyle = color;
       ctx.fillText(text, x, y + 2);
     }
-  }, [selectedTemplateIndex, userImage, userName, batchNo, imageOffset, imageZoom]);
+  }, [selectedTemplateIndex, userImage, userName, batchNo, imageOffset, imageZoom, resolvedTemplates]);
 
   /* ---------------------------- Auto Regenerate ----------------------------- */
 
@@ -527,7 +639,7 @@ function CongratulationsPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-4">
-                  {TEMPLATES.map((template, index) => (
+                  {resolvedTemplates.map((template, index) => (
                     <div
                       key={template.id}
                       onClick={() => setSelectedTemplateIndex(index)}

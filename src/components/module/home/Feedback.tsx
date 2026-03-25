@@ -288,7 +288,7 @@ export default function Feedback() {
                       <h4 className="text-sm font-semibold text-white line-clamp-1">{item.name}</h4>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] sm:text-xs text-gray-400">{item.batch}</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary uppercase font-medium">Batch {item.batch.replace('Batch ', '')}</span>
+                        {/* <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary uppercase font-medium">Batch {item.batch.replace('Batch ', '')}</span> */}
                       </div>
                     </div>
                   </div>

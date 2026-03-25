@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCreateBatchMutation } from '@/redux/features/batch/batchApi';
 import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { toast } from 'sonner';
-import { ArrowBigLeft, Loader2, Plus, X } from 'lucide-react';
+import { ArrowBigLeft, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const BATCH_STATUSES = [
@@ -35,6 +35,7 @@ const BATCH_STATUSES = [
 const INITIAL_FORM_STATE = {
     title: '',
     price: '',
+    manualPaymentPrice: '',
     status: 'draft',
     selectedCourse: '',
     startDate: '',
@@ -71,6 +72,7 @@ export default function BatchCrate() {
         const batchData = {
             title: formData.title,
             price: Number(formData.price),
+            manualPaymentPrice: formData.manualPaymentPrice ? Number(formData.manualPaymentPrice) : undefined,
             status: formData.status as 'draft' | 'upcoming' | 'running' | 'completed',
             courseId: formData.selectedCourse,
             startDate: formData.startDate ? new Date(formData.startDate) : undefined,
@@ -149,7 +151,7 @@ export default function BatchCrate() {
                             </Select>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="title">Batch Title *</Label>
                                 <Input
@@ -169,6 +171,17 @@ export default function BatchCrate() {
                                     onChange={(e) => handleInputChange('price', e.target.value)}
                                     placeholder="4000"
                                     required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="manualPaymentPrice">Manual Payment Price (BDT)</Label>
+                                <Input
+                                    id="manualPaymentPrice"
+                                    type="number"
+                                    min="0"
+                                    value={formData.manualPaymentPrice}
+                                    onChange={(e) => handleInputChange('manualPaymentPrice', e.target.value)}
+                                    placeholder="3000"
                                 />
                             </div>
                             <div className="space-y-2">

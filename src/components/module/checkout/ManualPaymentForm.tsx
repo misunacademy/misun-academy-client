@@ -21,9 +21,16 @@ type PaymentForm = z.infer<typeof paymentSchema>;
 interface ManualPaymentFormProps {
     onBack: () => void;
     onPaymentComplete: (data: { senderNumber: string; transactionId: string }) => void;
+    manualAmount?: number;
+    manualCurrency?: string;
 }
 
-const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps) => {
+const ManualPaymentForm = ({
+    onBack,
+    onPaymentComplete,
+    manualAmount,
+    manualCurrency,
+}: ManualPaymentFormProps) => {
     const form = useForm<PaymentForm>({
         resolver: zodResolver(paymentSchema),
         defaultValues: {
@@ -43,6 +50,15 @@ const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps
     const onSubmit = (data: PaymentForm) => {
         onPaymentComplete(data);
     };
+
+    const displayCurrency = manualCurrency || paymentInfo.currency || 'BDT';
+    const displayAmount = typeof manualAmount === 'number' ? manualAmount : paymentInfo.amount;
+    const dynamicInstructions = paymentInfo.instructions.map((instruction) => {
+        if (instruction.toLowerCase().includes('enter the exact amount')) {
+            return `Enter the exact amount: ${displayCurrency} ${displayAmount.toLocaleString('en-IN')}`;
+        }
+        return instruction;
+    });
 
     return (
         <div className="space-y-5">
@@ -107,7 +123,7 @@ const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps
                     <div className="flex justify-center">
                         <div className="relative overflow-hidden rounded-xl bg-red-500/8 border border-red-500/25 px-6 py-2.5">
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
-                            <span className="font-bold text-red-400 text-lg">Amount: INR {paymentInfo.amount.toLocaleString('en-IN')}</span>
+                            <span className="font-bold text-red-400 text-lg">Amount: {displayCurrency} {displayAmount.toLocaleString('en-IN')}</span>
                         </div>
                     </div>
 
@@ -116,7 +132,7 @@ const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps
                         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
                         <h4 className="font-semibold text-white/75 text-sm mb-3">Payment Instructions:</h4>
                         <ol className="space-y-2.5">
-                            {paymentInfo.instructions.map((instruction, index) => (
+                            {dynamicInstructions.map((instruction, index) => (
                                 <li key={index} className="flex items-start gap-3">
                                     <div className="w-5 h-5 bg-primary/15 border border-primary/30 text-primary rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">
                                         {index + 1}
@@ -149,7 +165,7 @@ const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps
                                                 placeholder="Enter your phone pay number"
                                                 {...field}
                                                 className={cn(
-                                                    "h-12 bg-primary/6 border-primary/20 text-white placeholder:text-white/30 focus:border-primary/50",
+                                                    "h-12 bg-[#0a1812] border-primary/25 text-white placeholder:text-white/30 focus:border-primary/55 focus-visible:ring-primary/40 autofill:shadow-[inset_0_0_0px_1000px_rgb(10,24,18)] autofill:[-webkit-text-fill-color:white]",
                                                     fieldState.invalid
                                                         ? "border-red-500/60 focus-visible:ring-red-500/30"
                                                         : fieldState.isTouched && field.value
@@ -174,7 +190,7 @@ const ManualPaymentForm = ({ onBack, onPaymentComplete }: ManualPaymentFormProps
                                                 placeholder="Enter transaction ID from phone pay"
                                                 {...field}
                                                 className={cn(
-                                                    "h-12 font-mono bg-primary/6 border-primary/20 text-white placeholder:text-white/30 focus:border-primary/50",
+                                                    "h-12 font-mono bg-[#0a1812] border-primary/25 text-white placeholder:text-white/30 focus:border-primary/55 focus-visible:ring-primary/40 autofill:shadow-[inset_0_0_0px_1000px_rgb(10,24,18)] autofill:[-webkit-text-fill-color:white]",
                                                     fieldState.invalid
                                                         ? "border-red-500/60 focus-visible:ring-red-500/30"
                                                         : fieldState.isTouched && field.value

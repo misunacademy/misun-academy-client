@@ -58,7 +58,7 @@ export default function Navbar() {
           <div className="flex items-center space-x-8">
             <div
               className={cn(
-                'transition-all duration-500 hidden md:flex items-center space-x-10 font-bold tracking-wide text-white ',
+                'transition-all duration-500 hidden md:flex items-center space-x-5 font-bold tracking-wide text-white ',
               )}
             >
               {[
@@ -66,6 +66,7 @@ export default function Navbar() {
                 { name: 'কোর্সসমূহ', path: '/courses' },
                 { name: 'শিক্ষার্থীদের মতামত', path: '/feedback' },
                 { name: 'আমাদের সম্পর্কে', path: '/about' },
+                { name: 'প্রফেশনাল ইংলিশ', path: `${process.env.NEXT_PUBLIC_EP_FRONTEND_URL}/` },
               ].map((link) => (
                 <Link
                   key={link.path}

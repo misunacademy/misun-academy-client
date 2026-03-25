@@ -26,25 +26,46 @@ import { Loader2, CheckCircle, XCircle, Clock, Eye } from "lucide-react";
 import { useGetCertificatesQuery, useUpdateCertificateMutation, type CertificateResponse } from "@/redux/api/certificateApi";
 import { toast } from "sonner";
 
+const normalizeStatus = (status: string) => {
+  const value = status.toLowerCase();
+  if (value === "active" || value === "approved") return "approved";
+  if (value === "revoked" || value === "rejected") return "rejected";
+  return "pending";
+};
+
+const getStudentName = (cert: CertificateResponse) =>
+  cert.user?.name || (cert.userId as unknown as { name?: string })?.name || "N/A";
+
+const getStudentEmail = (cert: CertificateResponse) =>
+  cert.user?.email || (cert.userId as unknown as { email?: string })?.email || "";
+
+const getCourseTitle = (cert: CertificateResponse) =>
+  cert.course?.title ||
+  (cert.batchId as unknown as { courseId?: { title?: string } })?.courseId?.title ||
+  "N/A";
+
+const getBatchTitle = (cert: CertificateResponse) =>
+  cert.batch?.title || (cert.batchId as unknown as { title?: string })?.title || "N/A";
+
 // Move CertificateTable outside component
 const CertificateTable = ({ certificates, onViewDetails }: { certificates: CertificateResponse[]; onViewDetails: (cert: CertificateResponse) => void }) => {
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Approved':
+    switch (normalizeStatus(status)) {
+      case 'approved':
         return (
           <Badge variant="default" className="flex items-center gap-1 w-fit">
             <CheckCircle className="h-3 w-3" />
             Approved
           </Badge>
         );
-      case 'Pending':
+      case 'pending':
         return (
           <Badge variant="secondary" className="flex items-center gap-1 w-fit">
             <Clock className="h-3 w-3" />
             Pending
           </Badge>
         );
-      case 'Rejected':
+      case 'rejected':
         return (
           <Badge variant="destructive" className="flex items-center gap-1 w-fit">
             <XCircle className="h-3 w-3" />
@@ -79,11 +100,11 @@ const CertificateTable = ({ certificates, onViewDetails }: { certificates: Certi
           certificates.map((cert) => (
             <TableRow key={cert._id}>
               <TableCell className="font-medium">
-                {cert.user?.name || 'N/A'}
-                <div className="text-xs text-muted-foreground">{cert.user?.email}</div>
+                {getStudentName(cert)}
+                <div className="text-xs text-muted-foreground">{getStudentEmail(cert)}</div>
               </TableCell>
-              <TableCell>{cert.course?.title || 'N/A'}</TableCell>
-              <TableCell>{cert.batch?.title || 'N/A'}</TableCell>
+              <TableCell>{getCourseTitle(cert)}</TableCell>
+              <TableCell>{getBatchTitle(cert)}</TableCell>
               <TableCell>{new Date(cert.createdAt).toLocaleDateString('en-US')}</TableCell>
               <TableCell>{getStatusBadge(cert.status)}</TableCell>
               <TableCell>
@@ -115,8 +136,8 @@ export default function CertificateManagementPage() {
   const certificates = data?.data || [];
 
   const pendingCertificates = certificates.filter((c) => c.status.toLowerCase() === 'pending');
-  const approvedCertificates = certificates.filter((c) => c.status.toLowerCase() === 'approved');
-  const rejectedCertificates = certificates.filter((c) => c.status.toLowerCase() === 'rejected');
+  const approvedCertificates = certificates.filter((c) => normalizeStatus(c.status) === 'approved');
+  const rejectedCertificates = certificates.filter((c) => normalizeStatus(c.status) === 'rejected');
 
   const handleApprove = async (certificateId: string) => {
     try {
@@ -162,22 +183,22 @@ export default function CertificateManagementPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Approved':
+    switch (normalizeStatus(status)) {
+      case 'approved':
         return (
           <Badge variant="default" className="flex items-center gap-1 w-fit">
             <CheckCircle className="h-3 w-3" />
             Approved
           </Badge>
         );
-      case 'Pending':
+      case 'pending':
         return (
           <Badge variant="secondary" className="flex items-center gap-1 w-fit">
             <Clock className="h-3 w-3" />
             Pending
           </Badge>
         );
-      case 'Rejected':
+      case 'rejected':
         return (
           <Badge variant="destructive" className="flex items-center gap-1 w-fit">
             <XCircle className="h-3 w-3" />
@@ -280,16 +301,16 @@ export default function CertificateManagementPage() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Student</p>
-                  <p className="font-medium">{selectedCertificate.user?.name}</p>
-                  <p className="text-xs text-muted-foreground">{selectedCertificate.user?.email}</p>
+                  <p className="font-medium">{getStudentName(selectedCertificate)}</p>
+                  <p className="text-xs text-muted-foreground">{getStudentEmail(selectedCertificate)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Course</p>
-                  <p className="font-medium">{selectedCertificate.course?.title}</p>
+                  <p className="font-medium">{getCourseTitle(selectedCertificate)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Batch</p>
-                  <p className="font-medium">{selectedCertificate.batch?.title}</p>
+                  <p className="font-medium">{getBatchTitle(selectedCertificate)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Course Completed</p>
@@ -350,10 +371,10 @@ export default function CertificateManagementPage() {
                 </>
               )}
 
-              {selectedCertificate.status === 'Rejected' && (
+              {normalizeStatus(selectedCertificate.status) === 'rejected' && (
                 <div className="p-3 bg-red-50 rounded-md border border-red-200">
                   <p className="text-sm font-medium text-red-800 mb-1">Rejection Reason:</p>
-                  <p className="text-sm text-red-700">{selectedCertificate.rejectionReason || 'No reason specified'}</p>
+                  <p className="text-sm text-red-700">{selectedCertificate.rejectionReason || selectedCertificate.revokedReason || 'No reason specified'}</p>
                 </div>
               )}
             </div>

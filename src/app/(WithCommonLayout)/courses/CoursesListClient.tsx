@@ -6,8 +6,8 @@ import Image, { StaticImageData } from "next/image";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
 import * as THREE from "three";
-import  graphic  from "@/assets/images/graphic-design.png";
-import  english  from "@/assets/images/english-for-professional.png";
+import graphic from "@/assets/images/graphic-design.png";
+import english from "@/assets/images/english-for-professional.png";
 
 // ─── Three.js floating wireframe shapes ──────────────────────────────────────
 
@@ -82,47 +82,47 @@ function Scene() {
 
 // ─── English thumbnail — CSS art ──────────────────────────────────────────────
 
-function EnglishThumbnail({img}:{img:StaticImageData}) {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-      {/* Deep blue gradient base */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0b1a3b] via-[#0d2257] to-[#060a12]" />
-      {/* Glowing orbs */}
-      <div className="absolute top-4 right-6 w-24 h-24 rounded-full bg-blue-500/30 blur-2xl" />
-      <div className="absolute bottom-4 left-6 w-20 h-20 rounded-full bg-indigo-500/25 blur-2xl" />
-      {/* Grid lines */}
-      <div
-        className="absolute inset-0 opacity-[0.06]"
-        style={{
-          backgroundImage: "linear-gradient(hsl(217 91% 60%) 1px, transparent 1px), linear-gradient(90deg, hsl(217 91% 60%) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-        }}
-      />
-      <Image src={img} alt="course thumbnail"  fill className=""/>
-      {/* Central content */}
-      {/* <div className="relative z-10 flex flex-col items-center justify-center gap-3 text-center px-4">
-        <div className="text-5xl font-black font-sans tracking-tighter select-none">
-          <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(217_91%_60%/0.6)]">
-            E
-          </span>
-          <span className="bg-gradient-to-r from-cyan-300 via-white/90 to-blue-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-            P
-          </span>
-          <span className="bg-gradient-to-r from-blue-400 via-blue-300 to-indigo-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(217_91%_60%/0.5)]">
-            C
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          {["English", "•", "Pro", "•", "Comm"].map((w, i) => (
-            <span key={i} className={`text-[10px] font-semibold tracking-widest uppercase ${w === "•" ? "text-blue-400/50" : "text-blue-300/70"}`}>{w}</span>
-          ))}
-        </div>
-      </div> */}
-      {/* Shimmer overlay */}
-      <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#060a12]/80 to-transparent" />
-    </div>
-  );
-}
+// function EnglishThumbnail({ img }: { img: StaticImageData }) {
+//   return (
+//     <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+//       {/* Deep blue gradient base */}
+//       <div className="absolute inset-0 bg-gradient-to-br from-[#0b1a3b] via-[#0d2257] to-[#060a12]" />
+//       {/* Glowing orbs */}
+//       <div className="absolute top-4 right-6 w-24 h-24 rounded-full bg-blue-500/30 blur-2xl" />
+//       <div className="absolute bottom-4 left-6 w-20 h-20 rounded-full bg-indigo-500/25 blur-2xl" />
+//       {/* Grid lines */}
+//       <div
+//         className="absolute inset-0 opacity-[0.06]"
+//         style={{
+//           backgroundImage: "linear-gradient(hsl(217 91% 60%) 1px, transparent 1px), linear-gradient(90deg, hsl(217 91% 60%) 1px, transparent 1px)",
+//           backgroundSize: "28px 28px",
+//         }}
+//       />
+//       <Image src={img} alt="course thumbnail" fill className="" />
+//       {/* Central content */}
+//       {/* <div className="relative z-10 flex flex-col items-center justify-center gap-3 text-center px-4">
+//         <div className="text-5xl font-black font-sans tracking-tighter select-none">
+//           <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(217_91%_60%/0.6)]">
+//             E
+//           </span>
+//           <span className="bg-gradient-to-r from-cyan-300 via-white/90 to-blue-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+//             P
+//           </span>
+//           <span className="bg-gradient-to-r from-blue-400 via-blue-300 to-indigo-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(217_91%_60%/0.5)]">
+//             C
+//           </span>
+//         </div>
+//         <div className="flex items-center gap-1.5">
+//           {["English", "•", "Pro", "•", "Comm"].map((w, i) => (
+//             <span key={i} className={`text-[10px] font-semibold tracking-widest uppercase ${w === "•" ? "text-blue-400/50" : "text-blue-300/70"}`}>{w}</span>
+//           ))}
+//         </div>
+//       </div> */}
+//       {/* Shimmer overlay */}
+//       <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#060a12]/80 to-transparent" />
+//     </div>
+//   );
+// }
 
 // ─── Course card data ─────────────────────────────────────────────────────────
 
@@ -175,6 +175,7 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
 
+  console.log(course)
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const card = cardRef.current;
     if (!card) return;
@@ -202,10 +203,10 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
   };
 
   return (
-    <Link href={course.slug === 'graphic-design'
-  ? `/courses/${course.slug}`
-  : `${process.env.NEXT_PUBLIC_EP_FRONTEND_URL}`
-} className="group block" style={{ perspective: "1100px" }}>
+    <Link href={!course.slug.includes('graphic')
+      ? `${process.env.NEXT_PUBLIC_EP_FRONTEND_URL}`
+      : `/courses/${course.slug}`
+    } className="group block" style={{ perspective: "1100px" }}>
       <div
         ref={cardRef}
         onMouseMove={handleMouseMove}
@@ -233,17 +234,17 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
         {/* ── Thumbnail ── */}
         <div className="relative w-full h-56 overflow-hidden my-4">
           {/* {course.thumbnail === "graphic-design" ? ( */}
-            {/* <> */}
-              <Image
-                src={course.thumbnail === "graphic-design" ?graphic:english}
-                alt="Graphic Design Course"
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#060f0a] via-[#060f0a]/20 to-transparent" />
-            {/* </> */}
+          {/* <> */}
+          <Image
+            src={course.thumbnail === "graphic-design" ? graphic : english}
+            alt="Graphic Design Course"
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#060f0a] via-[#060f0a]/20 to-transparent" />
+          {/* </> */}
           {/* ) : (
             <EnglishThumbnail img={english} />
           )} */}

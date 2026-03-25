@@ -10,6 +10,7 @@ import Congratulations from '@/components/module/payment/congratulations';
 function PaymentStatusContent() {
     const searchParams = useSearchParams();
     const status = searchParams?.get('status') || 'failed';
+    const courseSlug = searchParams?.get('course');
 
     const getStatusContent = () => {
         switch (status) {
@@ -64,7 +65,7 @@ function PaymentStatusContent() {
                 </CardContent>
             </Card>
             {
-                status === 'success' && <Congratulations />
+                status === 'success' && <Congratulations courseSlug={courseSlug} />
             }
         </div>
     );

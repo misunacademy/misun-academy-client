@@ -40,7 +40,7 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
             })
         );
     };
-    console.log(userRole);
+
     return (
         <>
             {canSeeClasses ? (
@@ -55,7 +55,7 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
             {!safeUser ? (
                 <Link
                     href="/auth"
-                    className={cn('relative group py-2 font-bold text-primary-glow')}
+                    className={cn('relative group py-2 font-bold text-primary-glow text-xs')}
                 >
                     <span className="transition-colors duration-300 group-hover:text-primary">লগইন</span>
                     <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-glow group-hover:w-full transition-all duration-300 ease-out" />
