@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ShoppingBagIcon } from "lucide-react";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface EnrollmentsTabProps {
     profile: any;
@@ -37,6 +39,13 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
                     <ShoppingBagIcon className="w-6 h-6" />
                     My Enrollments
                 </h2>
+                <div className="">
+                    <Link href="/enrollment-posters" className="">
+                        <Button variant={"outline"} className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">
+                            Get Your Enrollment Posters
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
             <div className="relative z-10 grid gap-6">

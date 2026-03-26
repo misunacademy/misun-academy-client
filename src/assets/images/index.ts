@@ -1,6 +1,5 @@
 import HeroBanner from './hero-banner.png';
 import VideoThumb from './video-thumb.png';
-import Bg1 from './bg-1.png';
 import PhotoshopImg from './photoshop.png';
 import Logo from './ma-logo.png'
 import IllustratorImg from './illustrator.png';
@@ -15,7 +14,6 @@ import phonePe from './phonePe.png';
 export {
     HeroBanner,
     VideoThumb,
-    Bg1,
     PhotoshopImg,
     Logo,
     IllustratorImg,
