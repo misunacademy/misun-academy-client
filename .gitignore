@@ -2,3 +2,4 @@ node_modules
 dist
 .env
 .next
+/src/app/(WithCommonLayout)/test

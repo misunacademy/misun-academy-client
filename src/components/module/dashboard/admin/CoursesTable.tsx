@@ -89,6 +89,7 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
               <TableHead>Category</TableHead>
               <TableHead>Level</TableHead>
               <TableHead>Duration</TableHead>
+              <TableHead>Certificate</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -116,6 +117,11 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
                     </Badge>
                   </TableCell>
                   <TableCell>{course.durationEstimate || '—'}</TableCell>
+                  <TableCell>
+                    <Badge variant={course.isCertificateAvailable ? 'default' : 'destructive'}>
+                      {course.isCertificateAvailable ? 'Available' : 'Not Available'}
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <Badge variant={course.status === 'published' ? 'default' : course.status === 'archived' ? 'destructive' : 'secondary'}>
                       {course.status || 'draft'}

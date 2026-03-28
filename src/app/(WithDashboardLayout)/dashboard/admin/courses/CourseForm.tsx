@@ -34,6 +34,7 @@ const formSchema = z.object({
   tags: z.string().optional(),
   featured: z.boolean().optional().default(false),
   status: z.enum(["draft", "published", "archived"]).optional().default("draft"),
+  isCertificateAvailable: z.boolean().optional().default(true),
   instructor: z.string().optional(),
   features: z.array(z.string()).optional().default([]),
   highlights: z.array(z.string()).optional().default([]),
@@ -126,6 +127,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
       tags: "",
       featured: false,
       status: "draft",
+      isCertificateAvailable: true,
       instructor: "",
       features: [],
       highlights: [],
@@ -159,6 +161,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
         tags: ((course as any).tags || []).join(", "),
         featured: Boolean((course as any).featured),
         status: (course as any).status || "draft",
+        isCertificateAvailable: (course as any).isCertificateAvailable ?? true,
         price: (course as any).price ?? 0,
         discountPercentage: (course as any).discountPercentage ?? 0,
         instructor: (course as any).instructor || "",
@@ -189,7 +192,6 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
   }, [course, form]);
 
   const thumbnailValue = form.watch("thumbnailImage");
-  const coverValue = form.watch("coverImage");
   const { errors } = form.formState;
 
   const handleFileChange = (field: ImageField, e: ChangeEvent<HTMLInputElement>) => {
@@ -260,6 +262,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
       tags: values.tags ? splitTags(values.tags) : [],
       featured: values.featured ?? false,
       status: values.status ?? "draft",
+      isCertificateAvailable: values.isCertificateAvailable ?? true,
       instructor: values.instructor?.trim() || undefined,
       features: features,
       highlights: highlights,
@@ -492,8 +495,15 @@ Portfolio development and client presentation"
                   <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
               </Select>
-            </Field>
-            {/* <Field label="Cover Image (optional upload)">
+            </Field>            <Field label="Certificate Availability">
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={form.watch("isCertificateAvailable")}
+                  onCheckedChange={(checked) => form.setValue("isCertificateAvailable", Boolean(checked), { shouldDirty: true })}
+                />
+                <span className="text-sm">Can students request certificate</span>
+              </div>
+            </Field>            {/* <Field label="Cover Image (optional upload)">
               <input type="hidden" {...form.register("coverImage")} />
               <div className="space-y-2">
                 <div className="flex items-center gap-2">

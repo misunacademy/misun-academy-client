@@ -34,18 +34,21 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
 import * as THREE from "three";
 import { useRef, Suspense, useState } from "react";
+import Image from "next/image";
 
 interface EnrolledCourse {
   id: string;
   courseId: string;
   courseTitle: string;
   courseSlug: string;
+  thumbnailImage: string;
   shortDescription: string;
   instructor: { name: string } | null;
   batchTitle: string;
   batchNumber: string;
   enrolledAt: string;
   status: string;
+  isCertificateAvailable?: boolean;
 }
 
 // ─── Three.js floating wireframe shapes ──────────────────────────────────────
@@ -142,7 +145,7 @@ function getInitials(title: string): string {
 
 // ── Course thumbnail (generated gradient) ───────────────────────────────────
 
-function CourseThumbnail({ title }: { title: string }) {
+function CourseThumbnail({ title ,img}: { title: string,img:string }) {
   const hue = stringToHue(title);
   const hue2 = (hue + 50) % 360;
   return (
@@ -179,7 +182,9 @@ function CourseThumbnail({ title }: { title: string }) {
             textShadow: `0 0 20px hsl(${hue} 80% 50% / 0.6)`,
           }}
         >
-          {getInitials(title)}
+          {/* {getInitials(title)} */}
+          ,<Image src={img} alt={title} width={48} height={48} className="rounded-full border-2 border-white/30 shadow-sm" />
+
         </div>
         <div className="text-[10px] text-white/50 font-medium line-clamp-2 leading-tight max-w-[110px]">
           {title}
@@ -232,7 +237,10 @@ function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
 
         {/* Thumbnail */}
         <div className="relative w-full sm:w-56 md:w-64 shrink-0 min-h-[140px] sm:min-h-0">
-          <CourseThumbnail title={enrollment.courseTitle} />
+          {/* <CourseThumbnail title={enrollment.courseTitle} img={enrollment.thumbnailImage} /> */}
+          <div className="">
+            <Image src={enrollment?.thumbnailImage} alt={enrollment.courseTitle} fill  className="object-contain w-full h-full" />
+          </div>
           {/* Status pill */}
           <div className="absolute top-3 left-3 z-10">
             <span

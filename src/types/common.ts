@@ -430,6 +430,7 @@ export interface Course {
     coverImageUrl?: string;
     isPublished?: boolean;
     isFeatured?: boolean;
+    isCertificateAvailable?: boolean;
     isCompleted?: boolean;
     createdBy?: string;
     updatedBy?: string;

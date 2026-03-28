@@ -42,6 +42,7 @@ export interface EnrollmentResponse {
   batch?: {
     title: string;
   };
+  isCertificateAvailable?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -314,7 +314,7 @@ export default function CertificateManagementPage() {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Course Completed</p>
-                  <p className="font-medium">{selectedCertificate.completionPercentage || 0}%</p>
+                  <p className="font-medium">{selectedCertificate.completionPercentage ?? 0}%</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Application Date</p>

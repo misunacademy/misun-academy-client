@@ -32,6 +32,14 @@ export interface CertificateResponse {
   updatedAt: Date;
 }
 
+export interface VerifiedCertificate {
+  certificateId: string;
+  recipientName: string;
+  courseName: string;
+  batchName?: string;
+  issuedDate: string;
+}
+
 const certificateApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
@@ -68,7 +76,7 @@ const certificateApi = baseApi.injectEndpoints({
     }),
 
     // Verify certificate (public)
-    verifyCertificate: build.query<{ data: { isValid: boolean; status: string; certificate?: any; reason?: string } }, string>({
+    verifyCertificate: build.query<{ data: { isValid: boolean; status: string; certificate?: VerifiedCertificate; reason?: string } }, string>({
       query: (certificateId) => ({
         url: `/certificates/verify/${certificateId}`,
       }),
@@ -137,6 +145,7 @@ export const {
   useGetMyCertificatesQuery,
   useGetCertificateByEnrollmentQuery,
   useVerifyCertificateQuery,
+  useLazyVerifyCertificateQuery,
   useGetCertificatesQuery,
   useGetPendingCertificatesQuery,
   useUpdateCertificateMutation,

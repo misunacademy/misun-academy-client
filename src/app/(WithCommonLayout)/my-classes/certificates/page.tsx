@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, ShieldCheck, FileCheck, Clock, Ban, ExternalLink, Send, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
-import { useGetMyCertificatesQuery, useRequestCertificateMutation, type CertificateResponse } from "@/redux/api/certificateApi";
-import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
+import { useGetMyCertificatesQuery, useLazyVerifyCertificateQuery, useRequestCertificateMutation, type CertificateResponse } from "@/redux/api/certificateApi";
+import { useGetEnrollmentsQuery, type EnrollmentResponse } from "@/redux/api/enrollmentApi";
+import { downloadCertificatePdf } from "@/lib/certificateDownload";
 
 const normalizeStatus = (status?: string) => {
   const value = (status || "").toLowerCase();
@@ -37,9 +39,11 @@ export default function MyClassesCertificatesPage() {
   const { data, isLoading, refetch } = useGetMyCertificatesQuery();
   const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useGetEnrollmentsQuery();
   const [requestCertificate, { isLoading: isRequesting }] = useRequestCertificateMutation();
+  const [verifyCertificate] = useLazyVerifyCertificateQuery();
+  const [downloadingCertificateId, setDownloadingCertificateId] = useState<string | null>(null);
 
   const certificates = data?.data || [];
-  const enrollments = enrollmentsData?.data || [];
+  const enrollments = (enrollmentsData?.data || []) as (EnrollmentResponse & { isCertificateAvailable?: boolean })[];
 
   const certificateByEnrollment = new Set(
     certificates.map((c) => getEnrollmentId(c)).filter(Boolean)
@@ -49,7 +53,8 @@ export default function MyClassesCertificatesPage() {
     const enrollmentId = enrollment._id;
     const completed = enrollment.status === "completed" || enrollment.status === "active";
     const missingCertificate = !certificateByEnrollment.has(enrollmentId);
-    return completed && missingCertificate;
+    const certificateAllowed = enrollment.isCertificateAvailable !== false;
+    return completed && missingCertificate && certificateAllowed;
   });
 
   const pendingCount = certificates.filter((c) => normalizeStatus(c.status) === "pending").length;
@@ -67,6 +72,26 @@ export default function MyClassesCertificatesPage() {
           ? (error as { data?: { message?: string } }).data?.message
           : undefined;
       toast.error(message || "Failed to request certificate");
+    }
+  };
+
+  const handleDownloadCertificate = async (certificateId: string) => {
+    try {
+      setDownloadingCertificateId(certificateId);
+      const result = await verifyCertificate(certificateId).unwrap();
+      const verifiedCertificate = result?.data?.certificate;
+
+      if (!result?.data?.isValid || !verifiedCertificate) {
+        toast.error("Certificate is not available for download yet");
+        return;
+      }
+
+      downloadCertificatePdf(verifiedCertificate);
+      toast.success("Certificate PDF downloaded");
+    } catch {
+      toast.error("Failed to download certificate");
+    } finally {
+      setDownloadingCertificateId(null);
     }
   };
 
@@ -215,7 +240,6 @@ export default function MyClassesCertificatesPage() {
                 <div className="space-y-3">
                   {certificates.map((certificate) => {
                     const normalizedStatus = normalizeStatus(certificate.status);
-                    const certificateLink = certificate.verificationUrl || certificate.certificateUrl;
 
                     return (
                       <div key={certificate._id} className="rounded-lg border border-white/10 bg-white/[0.02] p-4">
@@ -231,20 +255,28 @@ export default function MyClassesCertificatesPage() {
                           <div className="flex flex-wrap items-center gap-2">
                             {statusBadge(certificate.status)}
 
-                            {certificateLink ? (
-                              <Button asChild size="sm" variant="outline" className="border-white/15 bg-white/[0.02] text-white/80 hover:bg-primary/10 hover:text-primary hover:border-primary/40">
-                                <a href={certificateLink} target="_blank" rel="noopener noreferrer">
-                                  <ExternalLink className="h-4 w-4 mr-1" />
-                                  Verify
-                                </a>
-                              </Button>
-                            ) : null}
+                            <Button asChild size="sm" variant="outline" className="border-white/15 bg-white/[0.02] text-white/80 hover:bg-primary/10 hover:text-primary hover:border-primary/40">
+                              <a
+                                href={`/verify-certificate/${certificate.certificateId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <ExternalLink className="h-4 w-4 mr-1" />
+                                Verify
+                              </a>
+                            </Button>
 
-                            {normalizedStatus === "approved" && certificate.certificateUrl ? (
-                              <Button asChild size="sm" className="bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]">
-                                <a href={certificate.certificateUrl} target="_blank" rel="noopener noreferrer">
-                                  Download
-                                </a>
+                            {normalizedStatus === "approved" ? (
+                              <Button
+                                size="sm"
+                                className="bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]"
+                                onClick={() => void handleDownloadCertificate(certificate.certificateId)}
+                                disabled={downloadingCertificateId === certificate.certificateId}
+                              >
+                                {downloadingCertificateId === certificate.certificateId ? (
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                ) : null}
+                                Download
                               </Button>
                             ) : null}
                           </div>

@@ -28,6 +28,7 @@ export interface CourseResponse {
   targetAudience?: string;
   tags?: string[];
   featured?: boolean;
+  isCertificateAvailable?: boolean;
   createdBy?: string;
   createdAt?: Date;
   updatedAt?: Date; 

@@ -1,12 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ShieldCheck, FileCheck, Clock, Ban, ExternalLink, Send } from "lucide-react";
-import { useGetMyCertificatesQuery, useRequestCertificateMutation, type CertificateResponse } from "@/redux/api/certificateApi";
+import { useGetMyCertificatesQuery, useLazyVerifyCertificateQuery, useRequestCertificateMutation, type CertificateResponse } from "@/redux/api/certificateApi";
 import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
 import { toast } from "sonner";
+import { downloadCertificatePdf } from "@/lib/certificateDownload";
 
 const normalizeStatus = (status?: string) => {
   const value = (status || "").toLowerCase();
@@ -35,6 +37,8 @@ export default function StudentCertificatesPage() {
   const { data, isLoading, refetch } = useGetMyCertificatesQuery();
   const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useGetEnrollmentsQuery();
   const [requestCertificate, { isLoading: isRequesting }] = useRequestCertificateMutation();
+  const [verifyCertificate] = useLazyVerifyCertificateQuery();
+  const [downloadingCertificateId, setDownloadingCertificateId] = useState<string | null>(null);
 
   const certificates = data?.data || [];
   const enrollments = enrollmentsData?.data || [];
@@ -65,6 +69,26 @@ export default function StudentCertificatesPage() {
           ? (error as { data?: { message?: string } }).data?.message
           : undefined;
       toast.error(message || "Failed to request certificate");
+    }
+  };
+
+  const handleDownloadCertificate = async (certificateId: string) => {
+    try {
+      setDownloadingCertificateId(certificateId);
+      const result = await verifyCertificate(certificateId).unwrap();
+      const verifiedCertificate = result?.data?.certificate;
+
+      if (!result?.data?.isValid || !verifiedCertificate) {
+        toast.error("Certificate is not available for download yet");
+        return;
+      }
+
+      downloadCertificatePdf(verifiedCertificate);
+      toast.success("Certificate PDF downloaded");
+    } catch {
+      toast.error("Failed to download certificate");
+    } finally {
+      setDownloadingCertificateId(null);
     }
   };
 
@@ -179,7 +203,6 @@ export default function StudentCertificatesPage() {
             <div className="space-y-3">
               {certificates.map((certificate) => {
                 const normalizedStatus = normalizeStatus(certificate.status);
-                const certificateLink = certificate.verificationUrl || certificate.certificateUrl;
 
                 return (
                   <div key={certificate._id} className="rounded-lg border p-4">
@@ -195,20 +218,28 @@ export default function StudentCertificatesPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         {statusBadge(certificate.status)}
 
-                        {certificateLink ? (
-                          <Button asChild size="sm" variant="outline">
-                            <a href={certificateLink} target="_blank" rel="noopener noreferrer">
-                              <ExternalLink className="h-4 w-4 mr-1" />
-                              Verify
-                            </a>
-                          </Button>
-                        ) : null}
+                        <Button asChild size="sm" variant="outline">
+                          <a
+                            href={`/verify-certificate/${certificate.certificateId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <ExternalLink className="h-4 w-4 mr-1" />
+                            Verify
+                          </a>
+                        </Button>
 
-                        {normalizedStatus === "approved" && certificate.certificateUrl ? (
-                          <Button asChild size="sm">
-                            <a href={certificate.certificateUrl} target="_blank" rel="noopener noreferrer">
-                              Download
-                            </a>
+                        {normalizedStatus === "approved" ? (
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]"
+                            onClick={() => void handleDownloadCertificate(certificate.certificateId)}
+                            disabled={downloadingCertificateId === certificate.certificateId}
+                          >
+                            {downloadingCertificateId === certificate.certificateId ? (
+                              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                            ) : null}
+                            Download
                           </Button>
                         ) : null}
                       </div>
