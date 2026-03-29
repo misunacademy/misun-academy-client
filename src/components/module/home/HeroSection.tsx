@@ -64,9 +64,9 @@ export default function HeroSection() {
             </p>
 
             {/* Platform Highlights (Glass Pill) */}
-            <div className="inline-flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 bg-white/5 border border-white/10 backdrop-blur-md px-6 py-4 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+            <div className="inline-flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 bg-white/5 border border-white/10 backdrop-blur-md px-6 py-4 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.2)] w-full">
               {/* Highlight 1 */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3  ">
                 <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
                   <UserCheck size={18} className="text-primary-glow" />
                 </div>

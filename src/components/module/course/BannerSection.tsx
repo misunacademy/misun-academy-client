@@ -4,7 +4,6 @@
 // import { enrollmentPeriod } from '@/constants/enrollment';
 import { DiamondMinus } from 'lucide-react';
 import Countdown from './Countdown';
-import { useGetSettingsQuery } from '@/redux/api/settingsApi';
 import { useGetCourseBySlugQuery } from '@/redux/api/courseApi';
 import { useGetCurrentEnrollmentBatchQuery } from '@/redux/api/batchApi';
 import Link from 'next/link';
@@ -19,7 +18,6 @@ interface BannerSectionProps {
 
 export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
   // Settings-based fallback (used when no courseSlug provided)
-  const { data: settingsData, isLoading: settingsLoading } = useGetSettingsQuery();
 
   // Course-slug based resolution — fetches the current enrollment batch directly for this course
   const { data: courseBySlug, isLoading: courseBySlugLoading } = useGetCourseBySlugQuery(
@@ -35,13 +33,13 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
   // Resolve batch: course-specific takes priority over global settings
   const resolvedBatch = courseSlug
     ? (currentBatchRes?.data as any)
-    : (settingsData?.data?.featuredEnrollmentBatch as any);
+    : '';
 
   const isLoading = courseSlug
     ? (courseBySlugLoading || (!!slugCourseId && slugBatchLoading))
-    : settingsLoading;
+    : '';
 
-  const batch = resolvedBatch?.batchNumber || 0;
+  const batch = Number(resolvedBatch?.title.split(' ')[1] || 0);
   const enrollmentPeriod = {
     startDate: resolvedBatch?.enrollmentStartDate
       ? new Date(resolvedBatch.enrollmentStartDate).toLocaleDateString('bn-BD', {
@@ -285,7 +283,7 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
         </h2>
 
         <p className="w-auto sm:w-10/12 text-[15px] leading-[170%] text-center max-w-3xl mt-6 mx-5 font-bangla text-white/65">
-          Complete Graphic Design With Freelancing (Batch-{batch}) – এই কোর্সটি আপনাকে বেসিক থেকে অ্যাডভান্স লেভেল পর্যন্ত গ্রাফিক্স ডিজাইন শেখাবে বাস্তব প্রজেক্ট ও ক্লাইন্ট হান্টিং স্ট্র্যাটেজির মাধ্যমে। ২৪/৭ সাপোর্ট, <strong>১:১</strong> মেন্টরশিপ, লাইভ ক্লাস এবং AI ইনটিগ্রেটেড ডিজাইনের সাহায্যে আপনি নিজেকে গড়ে তুলতে পারবেন একজন দক্ষ ফ্রিল্যান্স ডিজাইনার হিসেবে।
+          Complete Graphic Design With Freelancing (Batch-0{batch}) – এই কোর্সটি আপনাকে বেসিক থেকে অ্যাডভান্স লেভেল পর্যন্ত গ্রাফিক্স ডিজাইন শেখাবে বাস্তব প্রজেক্ট ও ক্লাইন্ট হান্টিং স্ট্র্যাটেজির মাধ্যমে। ২৪/৭ সাপোর্ট, <strong>১:১</strong> মেন্টরশিপ, লাইভ ক্লাস এবং AI ইনটিগ্রেটেড ডিজাইনের সাহায্যে আপনি নিজেকে গড়ে তুলতে পারবেন একজন দক্ষ ফ্রিল্যান্স ডিজাইনার হিসেবে।
         </p>
         <Countdown courseSlug={courseSlug} />
         {/* Decorative divider */}

@@ -78,7 +78,7 @@ const ForgotPasswordModal = (
                                 <div className={`flex-1 relative p-[2px] rounded-xl overflow-hidden ${forgetPasswordForm.formState.isSubmitting ? 'opacity-60' : ''}`}>
                                     <span className="absolute inset-[-100%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_35%,hsl(156_100%_60%)_50%,transparent_65%)]" />
                                     <button type="submit" disabled={forgetPasswordForm.formState.isSubmitting}
-                                        className="relative w-full bg-[#060f0a] hover:bg-primary/15 disabled:cursor-not-allowed transition-all duration-300 text-primary font-bold py-2.5 rounded-[10px] text-sm border border-primary/20 shadow-[inset_0_0_20px_hsl(156_70%_42%/0.08)]">
+                                        className="relative w-full bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41] transition-all duration-300 text-white font-bold py-2.5 rounded-[10px] text-sm disabled:cursor-not-allowed disabled:bg-primary/50 disabled:hover:bg-primary/50">
                                         {forgetPasswordForm.formState.isSubmitting ? "পাঠানো হচ্ছে..." : "ইমেইল পাঠান"}
                                     </button>
                                 </div>

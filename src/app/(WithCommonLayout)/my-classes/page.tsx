@@ -683,54 +683,59 @@ const MyClassesPage = () => {
           <div className="relative">
             {/* Divider line */}
             <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
-            <TabsList className="h-auto p-0 bg-transparent rounded-none w-full justify-start gap-0">
-              <TabsTrigger
-                value="courses"
-                className="
-                  flex items-center gap-2 px-5 py-3 rounded-none border-b-2 border-transparent
-                  text-sm font-semibold text-white/40
-                  data-[state=active]:border-primary data-[state=active]:text-primary
-                  data-[state=active]:bg-transparent data-[state=active]:shadow-none
-                  hover:text-white/70 transition-all duration-200
-                "
-              >
-                <BookOpen className="w-4 h-4" />
-                My Courses
-                {enrolledCourses.length > 0 && (
-                  <span className="ml-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-primary/20 text-primary border border-primary/30">
-                    {enrolledCourses.length}
-                  </span>
-                )}
-              </TabsTrigger>
+            <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              <TabsList className="h-auto p-0 bg-transparent rounded-none min-w-max w-max sm:w-full justify-start gap-0">
+                <TabsTrigger
+                  value="courses"
+                  className="
+                    shrink-0 whitespace-nowrap flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-none border-b-2 border-transparent
+                    text-xs sm:text-sm font-semibold text-white/40
+                    data-[state=active]:border-primary data-[state=active]:text-primary
+                    data-[state=active]:bg-transparent data-[state=active]:shadow-none
+                    hover:text-white/70 transition-all duration-200
+                  "
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span className="hidden sm:inline">My Courses</span>
+                  <span className="sm:hidden">Courses</span>
+                  {enrolledCourses.length > 0 && (
+                    <span className="ml-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-primary/20 text-primary border border-primary/30">
+                      {enrolledCourses.length}
+                    </span>
+                  )}
+                </TabsTrigger>
 
-              <TabsTrigger
-                value="recordings"
-                className="
-                  flex items-center gap-2 px-5 py-3 rounded-none border-b-2 border-transparent
-                  text-sm font-semibold text-white/40
-                  data-[state=active]:border-primary data-[state=active]:text-primary
-                  data-[state=active]:bg-transparent data-[state=active]:shadow-none
-                  hover:text-white/70 transition-all duration-200
-                "
-              >
-                <Video className="w-4 h-4" />
-                Live Class Recordings
-              </TabsTrigger>
+                <TabsTrigger
+                  value="recordings"
+                  className="
+                    shrink-0 whitespace-nowrap flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-none border-b-2 border-transparent
+                    text-xs sm:text-sm font-semibold text-white/40
+                    data-[state=active]:border-primary data-[state=active]:text-primary
+                    data-[state=active]:bg-transparent data-[state=active]:shadow-none
+                    hover:text-white/70 transition-all duration-200
+                  "
+                >
+                  <Video className="w-4 h-4" />
+                  <span className="hidden sm:inline">Live Class Recordings</span>
+                  <span className="sm:hidden">Recordings</span>
+                </TabsTrigger>
 
-              <TabsTrigger
-                value="certificates"
-                className="
-                  flex items-center gap-2 px-5 py-3 rounded-none border-b-2 border-transparent
-                  text-sm font-semibold text-white/40
-                  data-[state=active]:border-primary data-[state=active]:text-primary
-                  data-[state=active]:bg-transparent data-[state=active]:shadow-none
-                  hover:text-white/70 transition-all duration-200
-                "
-              >
-                <ShieldCheck className="w-4 h-4" />
-                Certificates
-              </TabsTrigger>
-            </TabsList>
+                <TabsTrigger
+                  value="certificates"
+                  className="
+                    shrink-0 whitespace-nowrap flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-none border-b-2 border-transparent
+                    text-xs sm:text-sm font-semibold text-white/40
+                    data-[state=active]:border-primary data-[state=active]:text-primary
+                    data-[state=active]:bg-transparent data-[state=active]:shadow-none
+                    hover:text-white/70 transition-all duration-200
+                  "
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  <span className="hidden sm:inline">Certificates</span>
+                  <span className="sm:hidden">Certificates</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
           </div>
 
           <TabsContent value="courses" className="mt-0">

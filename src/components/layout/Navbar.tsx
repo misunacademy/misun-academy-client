@@ -40,7 +40,7 @@ export default function Navbar() {
   return (
     <div
       ref={navbarRef}
-      className="sticky text-white top-0 z-[999] w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] bg-[#040a07] backdrop-blur-xl border-b border-primary/20 shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
+      className="sticky text-white top-0 z-[999] w-full transition-all duration-700 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] bg-[#040a07] backdrop-blur-xl border-b border-primary/20 shadow-[0_4px_24px_rgba(0,0,0,0.6)]"
     >
       <Container className="relative z-50 max-w-7xl mx-auto">
         <nav className="h-16 flex items-center justify-between">

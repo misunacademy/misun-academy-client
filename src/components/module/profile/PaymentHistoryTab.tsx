@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Loader2, CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useGetMyPaymentsQuery } from "@/redux/api/paymentApi";
 
@@ -88,7 +89,7 @@ export function PaymentHistoryTab({ profile }: PaymentHistoryTabProps) {
                         <CreditCard className="w-16 h-16 text-primary/40 mb-4" />
                         <h3 className="text-xl text-white/90 font-medium mb-2">No Payment Records Found</h3>
                         <p className="text-white/50 max-w-md">
-                            You haven't made any payments yet.
+                            You haven&apos;t made any payments yet.
                         </p>
                     </div>
                 ) : (
@@ -101,7 +102,8 @@ export function PaymentHistoryTab({ profile }: PaymentHistoryTabProps) {
                                         {payment.course?.title || 'No course information'}
                                     </h3>
                                     <p className="text-white/50 text-sm">
-                                        Batch: <span className="text-white/80">{payment.batch?.title || 'N/A'}</span> ({payment.batch?.batchNumber || 'N/A'})
+                                        Batch: <span className="text-white/80">{payment.batch?.title?.split(' ')[1] || 'N/A'}</span> 
+                                        {/* ({payment.batch?.batchNumber || 'N/A'}) */}
                                     </p>
                                 </div>
                                 <div>
@@ -193,7 +195,7 @@ export function PaymentHistoryTab({ profile }: PaymentHistoryTabProps) {
                                 {payment.status === 'review' && payment.method === 'PhonePay' && (
                                     <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
                                         <p className="text-sm text-yellow-400">
-                                            <span className="font-medium text-yellow-300">⏳ Payment Under Review:</span> Our team is verifying your PhonePe payment. You'll receive a confirmation email once approved.
+                                            <span className="font-medium text-yellow-300">⏳ Payment Under Review:</span> Our team is verifying your PhonePe payment. You&apos;ll receive a confirmation email once approved.
                                         </p>
                                     </div>
                                 )}

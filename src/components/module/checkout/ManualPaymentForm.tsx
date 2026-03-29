@@ -23,6 +23,7 @@ interface ManualPaymentFormProps {
     onPaymentComplete: (data: { senderNumber: string; transactionId: string }) => void;
     manualAmount?: number;
     manualCurrency?: string;
+    batch:string
 }
 
 const ManualPaymentForm = ({
@@ -30,6 +31,7 @@ const ManualPaymentForm = ({
     onPaymentComplete,
     manualAmount,
     manualCurrency,
+    batch
 }: ManualPaymentFormProps) => {
     const form = useForm<PaymentForm>({
         resolver: zodResolver(paymentSchema),
@@ -55,7 +57,7 @@ const ManualPaymentForm = ({
     const displayAmount = typeof manualAmount === 'number' ? manualAmount : paymentInfo.amount;
     const dynamicInstructions = paymentInfo.instructions.map((instruction) => {
         if (instruction.toLowerCase().includes('enter the exact amount')) {
-            return `Enter the exact amount: ${displayCurrency} ${displayAmount.toLocaleString('en-IN')}`;
+            return `Enter the exact amount: INR ${displayAmount.toLocaleString('en-IN')}`;
         }
         return instruction;
     });
@@ -123,7 +125,7 @@ const ManualPaymentForm = ({
                     <div className="flex justify-center">
                         <div className="relative overflow-hidden rounded-xl bg-red-500/8 border border-red-500/25 px-6 py-2.5">
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
-                            <span className="font-bold text-red-400 text-lg">Amount: {displayCurrency} {displayAmount.toLocaleString('en-IN')}</span>
+                            <span className="font-bold text-red-400 text-lg">Amount: INR {displayAmount.toLocaleString('en-IN')}</span>
                         </div>
                     </div>
 
@@ -137,7 +139,7 @@ const ManualPaymentForm = ({
                                     <div className="w-5 h-5 bg-primary/15 border border-primary/30 text-primary rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">
                                         {index + 1}
                                     </div>
-                                    <span className="text-sm text-white/55 leading-relaxed">{instruction}</span>
+                                    <span className="text-sm text-white/55 leading-relaxed">{instruction.includes("MA")?`Add reference: 'MA-${batch}'`:instruction}</span>
                                 </li>
                             ))}
                         </ol>

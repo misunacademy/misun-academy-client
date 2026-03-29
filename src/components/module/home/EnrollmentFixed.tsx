@@ -10,13 +10,32 @@ import { formatDate } from './EnrollmentSection';
 
 export default function EnrollmentFixed() {
     const [isOpen, setIsOpen] = useState(true);
-    const { data: gdCourseData, isLoading: gdCourseLoading } = useGetCourseBySlugQuery('complete-graphic-design-with-freelancing');
+    const {
+        data: gdCourseData,
+        isLoading: gdCourseLoading,
+        isError: gdCourseError,
+    } = useGetCourseBySlugQuery('complete-graphic-design-with-freelancing');
     const gdCourseId = (gdCourseData?.data as any)?._id;
-    const { data: gdCurrentRes, isLoading: gdCurrentLoading } = useGetCurrentEnrollmentBatchQuery(
+    const {
+        data: gdCurrentRes,
+        isLoading: gdCurrentLoading,
+        isError: gdCurrentError,
+    } = useGetCurrentEnrollmentBatchQuery(
         { courseId: gdCourseId }, { skip: !gdCourseId });
 
 
-    const batch = useMemo(() => (gdCurrentRes?.data ?? {}) as BatchResponse, [gdCurrentRes]);
+    const batch = useMemo(() => (gdCurrentRes?.data ?? null) as BatchResponse | null, [gdCurrentRes]);
+    const hasApiError = gdCourseError || gdCurrentError;
+
+    const safeFormatDate = (date?: Date | string | null) => {
+        if (!date) return 'তথ্য পাওয়া যায়নি';
+
+        try {
+            return formatDate(date);
+        } catch {
+            return 'তথ্য পাওয়া যায়নি';
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -61,24 +80,31 @@ export default function EnrollmentFixed() {
                     <X size={14} />
                 </button>
 
-                <div className="flex items-center gap-2 mb-2">
-                    <CalendarCheck size={20} className="text-green-600" />
-                    <p>
-                        এনরোলমেন্ট শুরু: <span className="text-primary font-semibold">{formatDate(batch.enrollmentStartDate)}</span>
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
-                    <CalendarX size={20} className="text-red-600" />
-                    <p>
-                        এনরোলমেন্ট শেষ: <span className="text-primary font-semibold">{formatDate(batch.enrollmentEndDate)}</span>
-                    </p>
-                </div>
-            </div>
-
-            <Link
+                {hasApiError || !batch ? (
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                            <CalendarX size={20} className="text-red-600" />
+                            <p>এনরোলমেন্ট তথ্য এখন পাওয়া যাচ্ছে না</p>
+                        </div>
+                        <p className="text-xs text-white/70">অনুগ্রহ করে কিছুক্ষণ পরে আবার চেষ্টা করুন</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="flex items-center gap-2 mb-2">
+                            <CalendarCheck size={20} className="text-green-600" />
+                            <p>
+                                এনরোলমেন্ট শুরু: <span className="text-primary font-semibold">{safeFormatDate(batch.enrollmentStartDate)}</span>
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <CalendarX size={20} className="text-red-600" />
+                            <p>
+                                এনরোলমেন্ট শেষ: <span className="text-primary font-semibold">{safeFormatDate(batch.enrollmentEndDate)}</span>
+                            </p>
+                        </div><Link
                 href="#enroll-now"
                 aria-label="এনরোলমেন্ট করুন"
-                className="fixed left-[270px] bottom-[37px] z-50 group"
+                className="fixed left-[260px] bottom-[17px] z-50 group"
             >
                 <span className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400/55 via-cyan-400/45 to-blue-500/55 blur-lg group-hover:blur-xl transition-all duration-300" />
                 <span className="absolute inset-[-7px] rounded-full border border-cyan-200/60 animate-ping" />
@@ -94,6 +120,11 @@ export default function EnrollmentFixed() {
                     ENROLL
                 </span>
             </Link>
+                    </>
+                )}
+            </div>
+
+            
         </div>
     );
 }

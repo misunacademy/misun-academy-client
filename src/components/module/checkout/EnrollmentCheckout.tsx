@@ -116,9 +116,7 @@ const EnrollmentCheckout = ({ courseSlug }: { courseSlug?: string } = {}) => {
     const manualPaymentAmount =
         typeof featuredBatchId?.manualPaymentPrice === 'number'
             ? featuredBatchId.manualPaymentPrice
-            : isEnglishCourse
-                ? 2000
-                : 3000;
+            : 0;
 
     const manualPaymentCurrency = featuredBatchId?.currency || 'BDT';
 
@@ -303,11 +301,11 @@ const EnrollmentCheckout = ({ courseSlug }: { courseSlug?: string } = {}) => {
                                             <p className="text-xs font-semibold tracking-[0.12em] uppercase text-primary/70 mb-3">Price Summary</p>
                                             <div className="flex justify-between items-center text-lg font-semibold">
                                                 <span className="text-white/70">Course Price</span>
-                                                <span className="text-primary font-bold">৳{(featuredBatchId.price || 0)}</span>
+                                                <span className="text-primary font-bold">৳{(featuredBatchId?.price?.toLocaleString('en-IN') || 0)}</span>
                                             </div>
-                                            {featuredBatchId.currency && featuredBatchId.currency !== 'BDT' && (
+                                            {/* {featuredBatchId.currency && featuredBatchId.currency !== 'BDT' && (
                                                 <p className="text-xs text-white/35">Currency: {featuredBatchId.currency}</p>
-                                            )}
+                                            )} */}
                                         </>
                                     ) : (
                                         <div className="text-center">
@@ -320,7 +318,7 @@ const EnrollmentCheckout = ({ courseSlug }: { courseSlug?: string } = {}) => {
                     </div>
 
                     {/* Enrollment Form - Right Side */}
-                    <div className="lg:col-span-2 mt-10">
+                    <div className="lg:col-span-2 ">
                         <div className="relative overflow-hidden rounded-2xl bg-[#060f0a] border border-primary/15">
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
                             <div className="absolute top-0 left-0 w-5 h-5 border-t border-l border-primary/40 rounded-tl-2xl" />
@@ -532,7 +530,7 @@ const EnrollmentCheckout = ({ courseSlug }: { courseSlug?: string } = {}) => {
                                                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
                                                     <div className="flex justify-between items-center font-semibold text-lg">
                                                         <span className="text-white/70">Total Amount:</span>
-                                                        <span className="text-primary font-bold">৳{(featuredBatchId?.price)}</span>
+                                                        <span className="text-primary font-bold">৳{(featuredBatchId?.price?.toLocaleString('en-IN'))}</span>
                                                     </div>
                                                 </div>
                                                 {!isEnrollmentOpen && featuredBatchId && (
@@ -589,6 +587,7 @@ const EnrollmentCheckout = ({ courseSlug }: { courseSlug?: string } = {}) => {
                                         onPaymentComplete={handleManualPaymentComplete}
                                         manualAmount={manualPaymentAmount}
                                         manualCurrency={manualPaymentCurrency}
+                                        batch={featuredBatchId?.title?.split(' ')[1]}
                                     />
                                 ) : null}
                             </div>

@@ -119,11 +119,13 @@ export default function InstructorSection() {
                         {/* Heading */}
                         <h2 className="text-3xl lg:text-5xl font-bold leading-[140%]">
                             <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent pt-2">
-                                অভিজ্ঞতা দিয়ে গাইড করা,{" "}
+                                {/* অভিজ্ঞতা দিয়ে গাইড করা,{" "} */}
+                                সঠিক সিদ্ধান্তে সফল
                             </span>
                             <br />
-                            <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.45)]">
-                                শুধু তত্ত্ব নয়।
+                            <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.45)] pt-4">
+                                {/* শুধু তত্ত্ব নয়। */}
+                                ক্যারিয়ার
                             </span>
                         </h2>
 
