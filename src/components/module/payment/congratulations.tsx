@@ -41,7 +41,15 @@ type PosterTemplate = {
     canvasHeight: number;
     photo: { x: number; y: number; radius: number };
     name: { x: number; y: number; fontSize: number; color: string };
-    batch: { x: number; y: number; fontSize: number; color: string; bgColor: string };
+    batch: {
+      x: number;
+      y: number;
+      fontSize: number;
+      color: string;
+      bgColor: string;
+      minWidth?: number;
+      minHeight?: number;
+    };
   };
 };
 
@@ -85,7 +93,46 @@ const TEMPLATES: Record<'graphic' | 'english', PosterTemplate[]> = {
       },
     },
   ],
-  "english":[]
+"english":[ {
+      id: 1,
+      name: 'Blue Neon Style',
+      src: '/posters/esun1.png',
+      config: {
+        canvasWidth: 1080,
+        canvasHeight: 1080,
+        photo: { x: 535, y: 578, radius: 155 },
+        name: { x: 540, y: 870, fontSize: 58, color: '#FFFFFF' },
+        batch: {
+          x: 540,
+          y: 936,
+          fontSize: 28,
+          color: '#000000',
+          bgColor: '#1e90ff',
+          minWidth: 220,
+          minHeight: 62,
+        },
+      },
+    },
+    {
+      id: 2,
+      name: 'Sky Ribbon Style',
+      src: '/posters/esun2.png',
+      config: {
+        canvasWidth: 1080,
+        canvasHeight: 1080,
+        photo: { x: 535, y: 578, radius: 155 },
+        name: { x: 540, y: 870, fontSize: 58, color: '#FFFFFF' },
+        batch: {
+          x: 540,
+          y: 936,
+          fontSize: 28,
+          color: '#000000',
+          bgColor: '#38bdf8',
+          minWidth: 220,
+          minHeight: 62,
+        },
+      },
+    },]
 };
 
 /* -------------------------------------------------------------------------- */
@@ -176,20 +223,23 @@ function CongratulationsPage({ courseSlug }: CongratulationsPageProps) {
     skip: !user?.id,
   });
 
-  const appCourseType = getCourseType(courseInfo?.title);
+  const queryCourseSlug = toSlug(courseSlug);
+  const appCourseType = getCourseType(queryCourseSlug || courseInfo?.title);
 
   const latestEnrollment = (() => {
     const allEnrollments = enrollmentsData?.data ?? [];
     const activeEnrollments = allEnrollments.filter((e) => e.status === 'active');
     const sourceList = activeEnrollments.length > 0 ? activeEnrollments : allEnrollments;
 
-    const queryCourseSlug = toSlug(courseSlug);
     if (queryCourseSlug) {
       const matchedBySlug = sourceList.find((e) => {
         const enrollment = e as any;
         const enrollmentCourseSlug =
           toSlug(enrollment?.course?.slug) ||
+          toSlug(enrollment?.batchId?.courseId?.slug) ||
           toSlug(enrollment?.courseId?.slug) ||
+          toSlug(enrollment?.batchId?.courseId?.title) ||
+          toSlug(enrollment?.courseId?.title) ||
           toSlug(enrollment?.course?.title);
 
         return enrollmentCourseSlug === queryCourseSlug;
@@ -198,14 +248,26 @@ function CongratulationsPage({ courseSlug }: CongratulationsPageProps) {
       if (matchedBySlug) return matchedBySlug;
     }
 
-    const matchedByCourse = sourceList.find(
-      (e) => getCourseType(e?.course?.title) === appCourseType
-    );
+    const matchedByCourse = sourceList.find((e) => {
+      const enrollment = e as any;
+      const enrollmentCourseTitle =
+        enrollment?.batchId?.courseId?.title ||
+        enrollment?.course?.title ||
+        enrollment?.courseId?.title ||
+        '';
+
+      return getCourseType(enrollmentCourseTitle) === appCourseType;
+    });
 
     return matchedByCourse ?? sourceList[0];
   })();
 
-  const courseTitle = latestEnrollment?.course?.title || courseInfo?.title || '';
+  const courseTitle =
+    (latestEnrollment as any)?.batchId?.courseId?.title ||
+    (latestEnrollment as any)?.course?.title ||
+    (latestEnrollment as any)?.courseId?.title ||
+    courseInfo?.title ||
+    '';
 
   const { data: batchData } = useGetBatchByIdQuery(
     (latestEnrollment?.batchId as any)?._id || '',
@@ -311,10 +373,13 @@ function CongratulationsPage({ courseSlug }: CongratulationsPageProps) {
   const batchNo =
     batchData?.data?.title ??
     latestEnrollment?.batch?.title ??
+    (latestEnrollment as any)?.batchId?.title ??
     (batchData?.data ? `BATCH-${batchData.data.batchNumber}` : '');
 
   const batchNumber = getBatchNumber(batchNo);
-  const selectedCourseType = getCourseType(courseTitle);
+  const selectedCourseType = queryCourseSlug
+    ? getCourseType(queryCourseSlug)
+    : getCourseType(courseTitle);
   const templatePriority = getTemplatePriority(selectedCourseType, batchNumber);
 
   const templateGroups: Record<'graphic' | 'english' | 'general', PosterTemplate[]> = {
@@ -508,8 +573,8 @@ function CongratulationsPage({ courseSlug }: CongratulationsPageProps) {
     }
 
     /* Batch */
-    if (batchNo) {
-      const { x, y, fontSize, color, bgColor } = config.batch;
+  if (batchNo) {
+      const { x, y, fontSize, color, bgColor, minWidth, minHeight } = config.batch;
       ctx.font = `bold ${fontSize}px Arial`;
 
       const text = batchNo.toUpperCase();
@@ -517,8 +582,8 @@ function CongratulationsPage({ courseSlug }: CongratulationsPageProps) {
 
       const paddingX = 30;
       const paddingY = 12;
-      const width = metrics.width + paddingX * 2;
-      const height = fontSize + paddingY * 2;
+      const width = Math.max(metrics.width + paddingX * 2, minWidth ?? 0);
+      const height = Math.max(fontSize + paddingY * 2, minHeight ?? 0);
 
       ctx.fillStyle = bgColor;
       drawRoundedRect(
