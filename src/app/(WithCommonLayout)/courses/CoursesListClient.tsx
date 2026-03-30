@@ -6,8 +6,8 @@ import Image, { StaticImageData } from "next/image";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
 import * as THREE from "three";
-import graphic from "@/assets/images/graphic-design.png";
-import english from "@/assets/images/english-for-professional.png";
+import graphic from "@/assets/images/thumb_2.png";
+import english from "@/assets/images/thumb_1.png";
 
 // ─── Three.js floating wireframe shapes ──────────────────────────────────────
 
@@ -175,7 +175,7 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
 
-  console.log(course)
+ 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const card = cardRef.current;
     if (!card) return;
@@ -232,14 +232,14 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
         <div className="absolute bottom-0 right-0 w-7 h-7 border-b-[1.5px] border-r-[1.5px] border-white/10 rounded-br-3xl" />
 
         {/* ── Thumbnail ── */}
-        <div className="relative w-full h-56 overflow-hidden my-4">
+        <div className="relative w-full h-56 overflow-hidden">
           {/* {course.thumbnail === "graphic-design" ? ( */}
           {/* <> */}
           <Image
             src={course.thumbnail === "graphic-design" ? graphic : english}
             alt="Graphic Design Course"
             fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            className="object-cover h-full transition-transform duration-700 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, 50vw"
           />
           {/* Gradient overlay */}
