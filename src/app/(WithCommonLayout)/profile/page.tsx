@@ -12,7 +12,7 @@ import {
     Loader2, Edit, User, Info, ShoppingBagIcon,
     Settings
 } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
+import { authServerApi } from "@/lib/auth-server-api";
 
 
 // Functional Tabs
@@ -54,8 +54,14 @@ export default function StudentProfile() {
     useEffect(() => {
         const fetchSessions = async () => {
             try {
-                const { data } = await authClient.listSessions();
-                if (data) setSessions(data);
+                const result = await authServerApi.listSessions();
+                if (result.error) {
+                    throw new Error(result.error.message);
+                }
+
+                if (Array.isArray(result.data)) {
+                    setSessions(result.data);
+                }
             } catch (error) {
                 console.error("Failed to fetch sessions", error);
             }
@@ -105,7 +111,10 @@ export default function StudentProfile() {
 
     const handleRevokeSession = async (token: string) => {
         try {
-            await authClient.revokeSession({ token });
+            const result = await authServerApi.revokeSession(token);
+            if (result.error) {
+                throw new Error(result.error.message);
+            }
             setSessions(prev => prev.filter(s => s.token !== token));
             toast.success("Session removed successfully");
         } catch (error) {

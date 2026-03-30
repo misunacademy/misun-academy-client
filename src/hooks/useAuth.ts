@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { authClient } from '@/lib/auth-client';
+import { authServerApi } from '@/lib/auth-server-api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -99,7 +99,7 @@ export function useAuth() {
    */
   const signIn = async (email: string, password: string, redirectUrl?: string) => {
     try {
-      const result = await authClient.signIn.email({
+      const result = await authServerApi.signInEmail({
         email,
         password,
       });
@@ -113,7 +113,8 @@ export function useAuth() {
       if (result.data) {
         toast.success('Successfully logged in!');
 
-        const signedInUser = (await refetchSession()) || (result.data.user as AuthUser);
+        const responseUser = (result.data as any)?.user as AuthUser | undefined;
+        const signedInUser = (await refetchSession()) || responseUser;
         const enrolledCourses = (signedInUser as any)?.enrolledCourses || [];
 
         const destination = getPostLoginDestination(
@@ -128,7 +129,7 @@ export function useAuth() {
           goToRedirect(destination);
         }
 
-        return { success: true, user: result.data.user as AuthUser };
+        return { success: true, user: responseUser || signedInUser || undefined };
       }
 
       return { success: false, error: 'Login failed' };
@@ -143,7 +144,7 @@ export function useAuth() {
    */
   const signUp = async (name: string, email: string, password: string) => {
     try {
-      const result = await authClient.signUp.email({
+      const result = await authServerApi.signUpEmail({
         email,
         password,
         name,
@@ -172,7 +173,10 @@ export function useAuth() {
    */
   const signOut = async () => {
     try {
-      await authClient.signOut();
+      const result = await authServerApi.signOut();
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
       setUser(undefined);
       toast.success('Successfully logged out');
       router.push('/');
@@ -188,6 +192,10 @@ export function useAuth() {
    */
   const signInWithGoogle = async (redirectUrl?: string) => {
     try {
+      if (!baseApiUrl) {
+        return { success: false, error: 'Missing NEXT_PUBLIC_BASE_API_URL' };
+      }
+
       const callbackURL = process.env.NEXT_PUBLIC_AUTH_URL
         ? `${process.env.NEXT_PUBLIC_AUTH_URL}/auth/callback`
         : '/auth/callback';
@@ -197,10 +205,24 @@ export function useAuth() {
         ? `${callbackURL}${callbackURL.includes('?') ? '&' : '?'}redirect_url=${encodeURIComponent(validatedRedirect)}`
         : callbackURL;
 
-      await authClient.signIn.social({
+      const result = await authServerApi.signInSocial({
         provider: 'google',
         callbackURL: finalCallbackUrl,
       });
+
+      if (result.error) {
+        return { success: false, error: result.error.message };
+      }
+
+      const oauthRedirectUrl = (result.data as any)?.url as string | undefined;
+      if (!oauthRedirectUrl) {
+        return { success: false, error: 'No OAuth redirect URL returned by server' };
+      }
+
+      if (typeof window !== 'undefined') {
+        window.location.assign(oauthRedirectUrl);
+      }
+
       return { success: true };
     } catch (error: unknown) {
       toast.error('Google sign-in failed');
@@ -214,8 +236,7 @@ export function useAuth() {
   const forgotPassword = async (email: string) => {
     try {
 
-      // Use Better Auth client's requestPasswordReset method (not forgetPassword)
-      const result = await authClient.requestPasswordReset({
+      const result = await authServerApi.requestPasswordReset({
         email,
         redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/reset-password`,
       });
@@ -243,7 +264,7 @@ export function useAuth() {
    */
   const resetPassword = async (newPassword: string, token: string) => {
     try {
-      const result = await authClient.resetPassword({
+      const result = await authServerApi.resetPassword({
         newPassword,
         token,
       });
@@ -271,11 +292,7 @@ export function useAuth() {
    */
   const verifyEmailToken = useCallback(async (token: string) => {
     try {
-      const result = await authClient.verifyEmail({
-        query: {
-          token,
-        },
-      });
+      const result = await authServerApi.verifyEmail(token);
 
       if (result.error) {
         const errorMsg = getAuthErrorMessage(result.error.code, result.error.message);
@@ -315,7 +332,7 @@ export function useAuth() {
     // User update with automatic session refresh
     updateUserProfile: async (data: Partial<AuthUser>) => {
       try {
-        const result = await authClient.updateUser(data);
+        const result = await authServerApi.updateUser(data as Record<string, unknown>);
 
         if (result.error) {
           return { success: false, error: result.error.message };

@@ -239,7 +239,7 @@ function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
         <div className="relative w-full sm:w-56 md:w-64 shrink-0 min-h-[140px] sm:min-h-0">
           {/* <CourseThumbnail title={enrollment.courseTitle} img={enrollment.thumbnailImage} /> */}
           <div className="">
-            <Image src={enrollment?.thumbnailImage} alt={enrollment.courseTitle} fill  className="object-contain w-full h-full" />
+            <Image src={enrollment?.thumbnailImage} alt={enrollment.courseTitle} fill  className="object-cover w-full h-full" />
           </div>
           {/* Status pill */}
           <div className="absolute top-3 left-3 z-10">
@@ -334,7 +334,7 @@ function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
                   Unavailable
                 </button>
               )}
-              <button
+              {/* <button
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm
                   border border-white/12 text-white/60 bg-white/4
                   hover:border-primary/40 hover:text-primary hover:bg-primary/5
@@ -343,7 +343,7 @@ function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
               >
                 <ListOrdered className="w-4 h-4" />
                 Outline
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
