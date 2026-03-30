@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { useUpdateUserProfileMutation } from "@/redux/features/profile/profileApi";
 import { toast } from "sonner";
-import { authClient } from "@/lib/auth-client";
+import { authServerApi } from "@/lib/auth-server-api";
 import Image from "next/image";
 
 interface SettingsTabProps {
@@ -123,7 +123,7 @@ export function SettingsTab({ profile }: SettingsTabProps) {
         try {
             setPasswordLoading(true);
 
-            const result = await authClient.changePassword({
+            const result = await authServerApi.changePassword({
                 currentPassword,
                 newPassword,
                 revokeOtherSessions: false,

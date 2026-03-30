@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ShoppingBagIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -11,16 +11,33 @@ interface EnrollmentsTabProps {
 export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
     const enrollments = profile?.enrollments || [];
 
-    const getStatusStyle = (status: string) => {
-        switch (status?.toLowerCase()) {
+    const normalizeStatus = (status?: string) =>
+        (status || "").toLowerCase().replace(/_/g, "-");
+
+    const getStatusLabel = (status?: string) => {
+        if (!status) return "unknown";
+        return status.replace(/[_-]+/g, " ");
+    };
+
+    const getFormattedDate = (dateValue: string | Date | undefined) => {
+        if (!dateValue) return "N/A";
+        const parsed = new Date(dateValue);
+        return isValid(parsed) ? format(parsed, 'MMM dd, yyyy') : "N/A";
+    };
+
+    const getStatusStyle = (status?: string) => {
+        switch (normalizeStatus(status)) {
             case 'active':
                 return 'bg-green-500/10 text-green-400 border-green-500/20';
             case 'completed':
                 return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
             case 'pending':
-            case 'payment_pending':
+            case 'payment-pending':
                 return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+            case 'payment-failed':
+            case 'failed':
             case 'cancelled':
+            case 'canceled':
             case 'suspended':
                 return 'bg-red-500/10 text-red-400 border-red-500/20';
             default:
@@ -51,23 +68,25 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
             <div className="relative z-10 grid gap-6">
                 {enrollments.length > 0 ? (
                     enrollments.map((enrollment: any, index: number) => (
-                        <div key={index} className="flex flex-col md:flex-row gap-6 p-6 rounded-xl border border-primary/10 bg-primary/5 hover:bg-primary/10 transition-colors">
+                        <div key={enrollment?.enrollmentId || enrollment?._id || index} className="flex flex-col md:flex-row gap-6 p-6 rounded-xl border border-primary/10 bg-primary/5 hover:bg-primary/10 transition-colors">
                             <div className="flex-1 space-y-4">
                                 <div className="flex flex-wrap justify-between items-start gap-4">
                                     <div>
                                         <div className="flex items-center gap-3 mb-2">
                                             <span className="text-white/50 text-sm font-mono bg-white/5 px-2 py-1 rounded-md">
-                                                {enrollment.enrollmentId}
+                                                {enrollment?.enrollmentId || "N/A"}
                                             </span>
                                             <span className={`px-3 py-1 rounded-full text-xs font-medium border capitalize ${getStatusStyle(enrollment.status)}`}>
-                                                {enrollment.status.replace('_', ' ')}
+                                                {getStatusLabel(enrollment?.status)}
                                             </span>
                                         </div>
                                         <h3 className="text-white font-medium text-lg leading-tight">
-                                            {typeof enrollment.courseId === 'object' && enrollment.courseId?.title ? (
+                                            {typeof enrollment?.batchId?.courseId === 'object' && enrollment?.batchId?.courseId?.title ? (
+                                                <span className="text-white">{enrollment.batchId.courseId.title}</span>
+                                            ) : typeof enrollment?.courseId === 'object' && enrollment?.courseId?.title ? (
                                                 <span className="text-white">{enrollment.courseId.title}</span>
                                             ) : (
-                                                <>Course ID: <span className="text-primary/80 font-mono text-base">{typeof enrollment.courseId === 'string' ? enrollment.courseId : enrollment.courseId?._id || 'Unknown'}</span></>
+                                                <>Course: <span className="text-primary/80 font-mono text-base">N/A</span></>
                                             )}
                                         </h3>
                                     </div>
@@ -77,33 +96,33 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
                                     <div>
                                         <p className="text-white/40 text-xs mb-1">Enrolled On</p>
                                         <p className="text-white/80 text-sm">
-                                            {format(new Date(enrollment.enrolledAt), 'MMM dd, yyyy')}
+                                            {getFormattedDate(enrollment?.enrolledAt)}
                                         </p>
                                     </div>
                                     <div>
                                         <p className="text-white/40 text-xs mb-1">Batch</p>
-                                        <p className="text-white/80 text-sm font-mono truncate" title={typeof enrollment.batchId === 'object' ? enrollment.batchId?.batchName : enrollment.batchId}>
-                                            {typeof enrollment.batchId === 'object' && (enrollment.batchId?.batchName || enrollment.batchId?.batchNumber) ? (
-                                                <span className="font-sans">{enrollment.batchId.batchName || `Batch ${enrollment.batchId.batchNumber}`}</span>
+                                        <p className="text-white/80 text-sm font-mono truncate" title={typeof enrollment?.batchId === 'object' ? enrollment?.batchId?.title : enrollment?.batchId?._id}>
+                                            {typeof enrollment?.batchId === 'object' && (enrollment?.batchId?.title) ? (
+                                                <span className="font-sans">{enrollment?.batchId?.title}</span>
                                             ) : (
-                                                enrollment.batchId
+                                                enrollment?.batchId?._id || 'N/A'
                                             )}
                                         </p>
                                     </div>
                                     <div>
                                         <p className="text-white/40 text-xs mb-1">Course Fee</p>
-                                        <p className="text-white/80 text-sm font-mono truncate" title={typeof enrollment.batchId === 'object' ? enrollment.batchId?.batchName : enrollment.batchId}>
-                                            {typeof enrollment.batchId === 'object' && (enrollment.batchId?.price || enrollment.batchId?.batchNumber) ? (
-                                                <span className="font-sans text-primary text-base"> <span className="text-white/50 text-lg">৳</span> {enrollment.batchId.price}</span>
+                                        <p className="text-white/80 text-sm font-mono truncate" title={typeof enrollment?.batchId === 'object' ? enrollment?.batchId?.title : enrollment?.batchId}>
+                                            {typeof enrollment?.batchId === 'object' && (enrollment?.batchId?.price || enrollment?.batchId?.price === 0) ? (
+                                                <span className="font-sans text-primary text-base"> <span className="text-white/50 text-lg">৳</span> {enrollment?.batchId?.price}</span>
                                             ) : (
-                                                0
+                                                'N/A'
                                             )}
                                         </p>
                                     </div>
                                     <div>
                                         <p className="text-white/40 text-xs mb-1">Certificate</p>
                                         <p className="text-white/80 text-sm">
-                                            {enrollment.certificateIssued ? (
+                                            {enrollment?.certificateIssued ? (
                                                 <span className="text-primary">Issued</span>
                                             ) : (
                                                 <span className="text-white/30">Not issued</span>

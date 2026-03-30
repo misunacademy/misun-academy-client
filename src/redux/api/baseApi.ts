@@ -9,7 +9,7 @@ import {
     fetchBaseQuery,
 } from "@reduxjs/toolkit/query/react";
 import { toast } from "sonner";
-import { authClient } from '@/lib/auth-client';
+import { authServerApi } from '@/lib/auth-server-api';
 
 const baseQuery = fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_BASE_API_URL,
@@ -40,7 +40,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
 
         // Better Auth handles sessions via HTTP-only cookies
         // Sign out and redirect to login
-        await authClient.signOut();
+        await authServerApi.signOut();
 
         if (typeof window !== 'undefined') {
             toast.error('Your session has expired. Please login again.');

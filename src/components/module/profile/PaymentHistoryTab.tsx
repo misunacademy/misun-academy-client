@@ -10,7 +10,7 @@ export function PaymentHistoryTab({ profile }: PaymentHistoryTabProps) {
     const { data, isLoading, error } = useGetMyPaymentsQuery();
 
     const payments = data?.data || [];
-    console.log(payments)
+
 
     const getStatusStyle = (status: string) => {
         const statusLower = status?.toLowerCase();
