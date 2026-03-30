@@ -41,7 +41,7 @@ const teamMembers = [
     },
     {
         name: "Ajeful Mallick",
-        role: "Desing And Social Media Coordinator",
+        role: "Design And Social Media Coordinator",
         company: "MISUN Academy",
         image: ajeful,
 
