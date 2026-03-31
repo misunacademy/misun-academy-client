@@ -10,12 +10,23 @@ export type AuthServerResult<T = any> = {
   status: number;
 };
 
-const getAuthServerBaseUrl = () => {
+type SocialSignInInput = {
+  provider: string;
+  callbackURL?: string;
+  errorCallbackURL?: string;
+  newUserCallbackURL?: string;
+};
+
+const getBaseApiUrl = () => {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_API_URL;
   if (!baseUrl) {
     throw new Error('Missing NEXT_PUBLIC_BASE_API_URL');
   }
-  return `${baseUrl}/auth/server`;
+  return baseUrl;
+};
+
+const getAuthServerBaseUrl = () => {
+  return `${getBaseApiUrl()}/auth/server`;
 };
 
 const parseResponsePayload = async (response: Response) => {
@@ -74,6 +85,32 @@ const authServerRequest = async <T = any>(
   };
 };
 
+const absoluteRequest = async <T = any>(
+  url: string,
+  init?: RequestInit
+): Promise<AuthServerResult<T>> => {
+  const response = await fetch(url, {
+    credentials: 'include',
+    ...init,
+  });
+
+  const payload = await parseResponsePayload(response);
+
+  if (!response.ok) {
+    return {
+      data: null,
+      error: buildError(response.status, payload),
+      status: response.status,
+    };
+  }
+
+  return {
+    data: (payload as T) ?? null,
+    error: null,
+    status: response.status,
+  };
+};
+
 const jsonRequest = <T = any>(
   path: string,
   method: 'POST' | 'PATCH',
@@ -96,12 +133,26 @@ export const authServerApi = {
     rememberMe?: boolean;
   }) => jsonRequest('/sign-in/email', 'POST', body),
 
-  signInSocial: (body: {
-    provider: string;
-    callbackURL?: string;
-    errorCallbackURL?: string;
-    newUserCallbackURL?: string;
-  }) => jsonRequest('/sign-in/social', 'POST', body),
+  signInSocial: async (body: SocialSignInInput) => {
+    const socialPayload = {
+      ...body,
+      disableRedirect: true,
+    };
+
+    const wrappedEndpointResult = await jsonRequest('/sign-in/social', 'POST', socialPayload);
+    if (wrappedEndpointResult.status !== 404) {
+      return wrappedEndpointResult;
+    }
+
+    // Backward-compatible fallback for environments where /auth/server route is not deployed yet.
+    return absoluteRequest(`${getBaseApiUrl()}/auth/sign-in/social`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify(socialPayload),
+    });
+  },
 
   signUpEmail: (body: {
     name: string;

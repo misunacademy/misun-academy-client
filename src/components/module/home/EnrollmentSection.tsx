@@ -2,12 +2,11 @@
 "use client";
 
 import { useMemo } from 'react';
-import { CalendarCheck, CalendarX, ArrowRight, BookOpen } from "lucide-react";
+import { CalendarCheck, CalendarX, ArrowRight } from "lucide-react";
 import Countdown from "../course/Countdown";
 import { format } from "date-fns";
 import { FadeIn } from "../../ui/FadeIn";
-import { useGetCurrentEnrollmentBatchesQuery, BatchResponse, CourseInfo, useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
-import Image from "next/image";
+import {  BatchResponse, CourseInfo, useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
 import Link from "next/link";
 import { useGetCourseBySlugQuery } from '@/redux/api/courseApi';
 
