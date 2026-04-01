@@ -108,10 +108,6 @@ export interface IRegister {
     password: string;
 }
 
-export interface IRefreshToken {
-    refreshToken: string;
-}
-
 export interface IChangePassword {
     oldPassword: string;
     newPassword: string;
