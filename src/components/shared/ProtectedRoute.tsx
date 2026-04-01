@@ -44,7 +44,8 @@ export default function ProtectedRoute({
 
     if (!user) {
       const loginUrl = new URL('/auth', window.location.origin);
-      loginUrl.searchParams.set('redirect_url', window.location.href);
+      const redirectPath = `${window.location.pathname}${window.location.search}`;
+      loginUrl.searchParams.set('redirect_url', redirectPath);
       window.location.assign(loginUrl.toString());
       return;
     }

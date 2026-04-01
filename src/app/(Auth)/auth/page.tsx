@@ -10,6 +10,7 @@ import ForgotPasswordModal from "@/components/module/auth/ForgotPasswordModal";
 import EmailVerificationModal from "@/components/module/auth/EmailVerificationModal";
 import LoginForm from "@/components/module/auth/LoginForm";
 import RegisterForm from "@/components/module/auth/RegisterForm";
+import { isAllowedRedirectUrl } from '@/lib/auth-redirect';
 
 
 const AuthPage = () => {
@@ -24,24 +25,6 @@ const AuthPage = () => {
     const { signIn, signUp, user, isAuthenticated, isLoading } = useAuth();
     const searchParams = useSearchParams();
     const redirectUrl = searchParams.get('redirect_url') || searchParams.get('redirectTo');
-
-    const isAllowedRedirectUrl = (target?: string | null) => {
-        if (!target) return false;
-
-        try {
-            if (target.startsWith('/')) return true;
-
-            const parsed = new URL(target);
-            const host = parsed.hostname.toLowerCase();
-            const mainHost = process.env.NEXT_PUBLIC_MA_FRONTEND_URL
-                ? new URL(process.env.NEXT_PUBLIC_MA_FRONTEND_URL).hostname.toLowerCase()
-                : '';
-
-            return host === mainHost;
-        } catch {
-            return false;
-        }
-    };
 
     // handlers passed to forms
     const handleLogin = async (data: { email: string; password: string }) => {
