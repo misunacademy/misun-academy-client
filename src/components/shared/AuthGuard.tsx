@@ -24,10 +24,10 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
 
         if (!isAuthenticated) {
             console.warn('[AuthGuard] No valid session — redirecting to /auth');
-            const currentUrl = typeof window !== 'undefined'
-                ? window.location.href
+            const currentPath = typeof window !== 'undefined'
+                ? `${window.location.pathname}${window.location.search}`
                 : `${pathname}`;
-            const redirectUrl = `/auth?redirect_url=${encodeURIComponent(currentUrl)}`;
+            const redirectUrl = `/auth?redirect_url=${encodeURIComponent(currentPath)}`;
             router.replace(redirectUrl);
             return;
         }
@@ -41,7 +41,7 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
         const isAdminRoute = pathname.startsWith('/dashboard/admin') || pathname.startsWith('/admin');
         const isInstructorRoute = pathname.startsWith('/dashboard/instructor') || pathname.startsWith('/instructor');
 
-        const role = userRole?.toLowerCase() || 'learner'; // ✅ Safe null check
+        const role = userRole?.toLowerCase() || 'learner'; //  Safe null check
         const hasAdminAccess = ['superadmin', 'admin'].includes(role);
         const hasInstructorAccess = role === 'instructor';
 

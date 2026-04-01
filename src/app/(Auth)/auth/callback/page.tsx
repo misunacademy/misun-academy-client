@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { isAllowedRedirectUrl } from '@/lib/auth-redirect';
 
 
 function AuthCallbackContent() {
@@ -12,24 +13,6 @@ function AuthCallbackContent() {
   const searchParams = useSearchParams();
   const { user, isLoading } = useAuth();
   const redirectUrl = searchParams.get('redirect_url');
-
-  const isAllowedRedirectUrl = (target?: string | null) => {
-    if (!target) return false;
-
-    try {
-      if (target.startsWith('/')) return true;
-
-      const parsed = new URL(target);
-      const host = parsed.hostname.toLowerCase();
-      const mainHost = process.env.NEXT_PUBLIC_MA_FRONTEND_URL
-        ? new URL(process.env.NEXT_PUBLIC_MA_FRONTEND_URL).hostname.toLowerCase()
-        : '';
-
-      return host === mainHost;
-    } catch {
-      return false;
-    }
-  };
 
   useEffect(() => {
     if (isLoading) return;

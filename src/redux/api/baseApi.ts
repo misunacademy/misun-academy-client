@@ -45,7 +45,8 @@ const baseQueryWithSessionHandling: BaseQueryFn<
         if (typeof window !== 'undefined') {
             toast.error('Your session has expired. Please login again.');
             const loginUrl = new URL('/auth', window.location.origin);
-            loginUrl.searchParams.set('redirect_url', window.location.href);
+            const redirectPath = `${window.location.pathname}${window.location.search}`;
+            loginUrl.searchParams.set('redirect_url', redirectPath);
             window.location.href = loginUrl.toString();
         }
 

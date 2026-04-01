@@ -1,35 +1,39 @@
+// proxy.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getSessionCookie } from 'better-auth/cookies';
+
+const PROTECTED_PATHS = [
+    '/dashboard',
+    '/checkout',
+    '/my-classes',
+    '/profile',
+] as const;
 
 export function proxy(request: NextRequest) {
-    const { pathname } = request.nextUrl;
+    const { pathname, search } = request.nextUrl;
+    const sessionCookie = Boolean(getSessionCookie(request));
 
-    // Check for Better Auth session cookie
-    const betterAuthSession = 
-        // request.cookies.get('better-auth.session_token')?.value 
-        request.cookies.get('__Secure-better-auth.session_token')?.value;
+    const isProtectedRoute = PROTECTED_PATHS.some((path) => pathname.startsWith(path));
 
-    if (process.env.NODE_ENV === 'development') {
-        console.debug(`[Proxy] Path: ${pathname} | Better Auth Session: ${!!betterAuthSession}`);
+    if (!isProtectedRoute || sessionCookie) {
+        return NextResponse.next();
     }
 
-    // Protected routes that require authentication
-    const protectedPaths = ['/dashboard', '/checkout', '/my-classes', '/profile'];
-    const isProtectedRoute = protectedPaths.some(path => pathname.startsWith(path));
+    // URLSearchParams encodes automatically; do not double-encode this value.
+    const redirectPath = `${pathname}${search}`;
+    const loginUrl = new URL('/auth', request.url);
+    loginUrl.searchParams.set('redirect_url', redirectPath);
 
-    if (isProtectedRoute) {
-        if (!betterAuthSession) {
-            // Redirect to login with return URL
-            const loginUrl = new URL('/auth', request.url);
-            loginUrl.searchParams.set('redirect_url', `${request.nextUrl.origin}${pathname}${request.nextUrl.search}`);
-            return NextResponse.redirect(loginUrl);
-        }
-    }
-
-    return NextResponse.next();
+    return NextResponse.redirect(loginUrl);
 }
 
-// Configuration
+// Match protected routes (use /path* pattern consistently)
 export const config = {
-    matcher: ['/dashboard/:path*', '/checkout/:path*', '/my-classes/:path*','/profile/:path*'], 
+    matcher: [
+        '/dashboard/:path*',
+        '/checkout/:path*',
+        '/my-classes/:path*',
+        '/profile/:path*',
+    ],
 };

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AuthUser } from '@/types/auth';
 import { getAuthErrorMessage } from '@/lib/auth-errors';
+import { getRedirectUrlFromLocation, isAllowedRedirectUrl } from '@/lib/auth-redirect';
 
 /**
  * Centralized auth hook.
@@ -21,22 +22,8 @@ export function useAuth() {
   const session = useMemo(() => (user ? { user } : null), [user]);
   const isAuthenticated = !!user;
 
-  const isAllowedRedirectUrl = useCallback((target?: string | null) => {
-    if (!target) return false;
-
-    try {
-      if (target.startsWith('/')) return true;
-
-      const url = new URL(target);
-      const host = url.hostname.toLowerCase();
-      const mainHost = process.env.NEXT_PUBLIC_MA_FRONTEND_URL
-        ? new URL(process.env.NEXT_PUBLIC_MA_FRONTEND_URL).hostname.toLowerCase()
-        : '';
-
-      return host === mainHost;
-    } catch {
-      return false;
-    }
+  const isAllowedRedirect = useCallback((target?: string | null) => {
+    return isAllowedRedirectUrl(target);
   }, []);
 
   const goToRedirect = useCallback((target: string) => {
@@ -120,7 +107,7 @@ export function useAuth() {
         const destination = getPostLoginDestination(
           signedInUser,
           redirectUrl,
-          isAllowedRedirectUrl,
+          isAllowedRedirect,
         );
 
         if (enrolledCourses.length > 0 && destination === '/my-classes') {
@@ -200,7 +187,8 @@ export function useAuth() {
         ? `${process.env.NEXT_PUBLIC_AUTH_URL}/auth/callback`
         : '/auth/callback';
 
-      const validatedRedirect = isAllowedRedirectUrl(redirectUrl) ? redirectUrl : undefined;
+      const redirectCandidate = redirectUrl || getRedirectUrlFromLocation();
+      const validatedRedirect = isAllowedRedirect(redirectCandidate) ? redirectCandidate : undefined;
       const finalCallbackUrl = validatedRedirect
         ? `${callbackURL}${callbackURL.includes('?') ? '&' : '?'}redirect_url=${encodeURIComponent(validatedRedirect)}`
         : callbackURL;
