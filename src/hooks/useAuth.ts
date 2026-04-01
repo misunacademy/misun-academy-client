@@ -33,7 +33,7 @@ export function useAuth() {
         ? new URL(process.env.NEXT_PUBLIC_MA_FRONTEND_URL).hostname.toLowerCase()
         : '';
 
-      return host === mainHost || host.endsWith('.maindomain.com');
+      return host === mainHost;
     } catch {
       return false;
     }

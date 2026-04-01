@@ -20,7 +20,7 @@ const baseQuery = fetchBaseQuery({
     },
 });
 
-const baseQueryWithRefreshToken: BaseQueryFn<
+const baseQueryWithSessionHandling: BaseQueryFn<
     FetchArgs,
     BaseQueryApi,
     DefinitionType
@@ -57,7 +57,7 @@ const baseQueryWithRefreshToken: BaseQueryFn<
 
 export const baseApi = createApi({
     reducerPath: "baseApi",
-    baseQuery: baseQueryWithRefreshToken,
+    baseQuery: baseQueryWithSessionHandling,
     tagTypes: [
         'Users', 
         'Students', 
