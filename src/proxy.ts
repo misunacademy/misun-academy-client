@@ -10,9 +10,30 @@ const PROTECTED_PATHS = [
     '/profile',
 ] as const;
 
+const BETTER_AUTH_COOKIE_KEYS = [
+    'better-auth.session_token',
+    '__Secure-better-auth.session_token',
+    'better-auth.session_token.0',
+    '__Secure-better-auth.session_token.0',
+] as const;
+
+function hasBetterAuthSession(request: NextRequest): boolean {
+    if (getSessionCookie(request)) {
+        return true;
+    }
+
+    for (const key of BETTER_AUTH_COOKIE_KEYS) {
+        if (request.cookies.get(key)?.value) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export function proxy(request: NextRequest) {
-    const { pathname, search } = request.nextUrl;
-    const sessionCookie = Boolean(getSessionCookie(request));
+    const { pathname } = request.nextUrl;
+    const sessionCookie = hasBetterAuthSession(request);
 
     const isProtectedRoute = PROTECTED_PATHS.some((path) => pathname.startsWith(path));
 
@@ -20,12 +41,10 @@ export function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // URLSearchParams encodes automatically; do not double-encode this value.
-    const redirectPath = `${pathname}${search}`;
-    const loginUrl = new URL('/auth', request.url);
-    loginUrl.searchParams.set('redirect_url', redirectPath);
-
-    return NextResponse.redirect(loginUrl);
+    // Better Auth can keep auth cookies scoped to API domain in some deployments.
+    // In that case, edge middleware cannot see the cookie reliably on frontend host.
+    // Let client-side auth flow validate session via /auth/me to avoid redirect loops.
+    return NextResponse.next();
 }
 
 // Match protected routes (use /path* pattern consistently)

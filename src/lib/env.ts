@@ -6,6 +6,7 @@ const envSchema = z.object({
     NEXT_PUBLIC_FACEBOOK_PIXEL_ID: z.string().optional(),
     NEXT_PUBLIC_AUTH_URL: z.string().url().optional(),
     NEXT_PUBLIC_APP_URL: z.string().url().optional(),
+    NEXT_PUBLIC_EP_FRONTEND_URL: z.string().url().optional(),
     NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
     NEXT_PUBLIC_GA_ID: z.string().optional(),
 

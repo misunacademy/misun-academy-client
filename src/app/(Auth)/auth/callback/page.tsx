@@ -12,7 +12,7 @@ function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoading } = useAuth();
-  const redirectUrl = searchParams.get('redirect_url');
+  const redirectUrl = searchParams.get('redirect_url') || searchParams.get('redirectTo');
 
   useEffect(() => {
     if (isLoading) return;
@@ -23,12 +23,7 @@ function AuthCallbackContent() {
       return;
     }
 
-    const enrolledCourses = ((user as any).enrolledCourses || []) as unknown[];
-    if (enrolledCourses.length > 0) {
-      router.replace('/my-classes');
-      return;
-    }
-
+    // Priority 1: valid redirect_url
     if (redirectUrl && isAllowedRedirectUrl(redirectUrl)) {
       if (redirectUrl.startsWith('/')) {
         router.replace(redirectUrl);
@@ -38,27 +33,26 @@ function AuthCallbackContent() {
       return;
     }
 
-    // Determine dashboard route based on user role (admin/instructor stay on main domain)
+    // Priority 2: role-based fallback
     const role = user.role || 'learner';
     let destination = '/';
 
     switch (role.toLowerCase()) {
       case 'superadmin':
       case 'admin':
+      case 'employee':
+      case 'instructor':
         destination = '/dashboard/admin';
         break;
-      case 'instructor':
-        destination = '/dashboard/instructor';
-        break;
       case 'learner':
-        destination = '/';
+        destination = '/my-classes';
         break;
       default:
-        destination = '/';
+        destination = '/my-classes';
         break;
     }
 
-    router.push(destination);
+    router.replace(destination);
   }, [user, isLoading, router, redirectUrl]);
 
   return (

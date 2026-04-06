@@ -33,6 +33,16 @@ export function useAuth() {
     }
 
     if (typeof window !== 'undefined') {
+      try {
+        const host = new URL(target).hostname.toLowerCase();
+        if (host === 'esun.misun-academy.com') {
+          window.open(target, '_blank', 'noopener,noreferrer');
+          return;
+        }
+      } catch {
+        // Fall through to assign for malformed absolute URLs.
+      }
+
       window.location.assign(target);
     }
   }, [router]);
@@ -102,7 +112,6 @@ export function useAuth() {
 
         const responseUser = (result.data as any)?.user as AuthUser | undefined;
         const signedInUser = (await refetchSession()) || responseUser;
-        const enrolledCourses = (signedInUser as any)?.enrolledCourses || [];
 
         const destination = getPostLoginDestination(
           signedInUser,
@@ -110,11 +119,7 @@ export function useAuth() {
           isAllowedRedirect,
         );
 
-        if (enrolledCourses.length > 0 && destination === '/my-classes') {
-          router.push('/my-classes');
-        } else {
-          goToRedirect(destination);
-        }
+        goToRedirect(destination);
 
         return { success: true, user: responseUser || signedInUser || undefined };
       }
@@ -208,7 +213,21 @@ export function useAuth() {
       }
 
       if (typeof window !== 'undefined') {
-        window.location.assign(oauthRedirectUrl);
+        let finalOauthUrl = oauthRedirectUrl;
+
+        if (validatedRedirect) {
+          try {
+            const parsedOauthUrl = new URL(oauthRedirectUrl, window.location.origin);
+            if (!parsedOauthUrl.searchParams.get('redirect_url')) {
+              parsedOauthUrl.searchParams.set('redirect_url', validatedRedirect);
+            }
+            finalOauthUrl = parsedOauthUrl.toString();
+          } catch {
+            // Keep original URL when parsing fails.
+          }
+        }
+
+        window.location.assign(finalOauthUrl);
       }
 
       return { success: true };
@@ -339,34 +358,30 @@ export function useAuth() {
 
 /**
  * Post-login redirect priority:
- * 1) learners with enrollments -> /my-classes
- * 2) validated redirect_url
- * 3) role landing or home
+ * 1) validated redirect_url
+ * 2) role landing or home
  */
 function getPostLoginDestination(
   user: AuthUser | null | undefined,
   redirectUrl: string | undefined,
   isAllowedRedirectUrl: (target?: string | null) => boolean,
 ): string {
-  const enrolledCourses = ((user as any)?.enrolledCourses || []) as any[];
-  if (enrolledCourses.length > 0) {
-    return '/my-classes';
-  }
-
+  // Priority 1: Respect cross-domain redirects (e.g., from Esun subdomain)
   if (redirectUrl && isAllowedRedirectUrl(redirectUrl)) {
     return redirectUrl;
   }
 
+  // Priority 2: Role-based redirect
   const role = user?.role || 'learner';
 
   switch (role.toLowerCase()) {
     case 'superadmin':
     case 'admin':
-      return '/dashboard/admin';
+    case 'employee':
     case 'instructor':
-      return '/dashboard/instructor';
+      return '/dashboard/admin';
     case 'learner':
     default:
-      return '/dashboard/student';
+      return '/my-classes';
   }
 }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -44,21 +43,24 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
         const role = userRole?.toLowerCase() || 'learner'; //  Safe null check
         const hasAdminAccess = ['superadmin', 'admin'].includes(role);
         const hasInstructorAccess = role === 'instructor';
+        const hasDashboardAccess = hasAdminAccess || hasInstructorAccess || role === 'employee';
 
         // Redirect if user doesn't have access to the route
-        if (isAdminRoute && !hasAdminAccess) {
+        if (isAdminRoute && !hasAdminAccess && !hasInstructorAccess) {
             console.warn('[AuthGuard] Insufficient permissions for admin route');
-            if (hasInstructorAccess) {
-                router.replace('/instructor/dashboard');
-            } else {
-                router.replace('/dashboard/student');
-            }
+            router.replace('/my-classes');
             return;
         }
 
         if (isInstructorRoute && !hasInstructorAccess && !hasAdminAccess) {
             console.warn('[AuthGuard] Insufficient permissions for instructor route');
-            router.replace('/dashboard/student');
+            router.replace('/my-classes');
+            return;
+        }
+
+        // Block learners from dashboard layout entirely.
+        if (pathname.startsWith('/dashboard') && !hasDashboardAccess) {
+            router.replace('/my-classes');
             return;
         }
 
@@ -74,9 +76,9 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
                 if (hasAdminAccess) {
                     router.replace('/dashboard/admin');
                 } else if (hasInstructorAccess) {
-                    router.replace('/instructor/dashboard');
+                    router.replace('/dashboard/admin');
                 } else {
-                    router.replace('/dashboard/student');
+                    router.replace('/my-classes');
                 }
                 return;
             }
