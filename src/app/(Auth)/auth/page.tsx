@@ -50,22 +50,23 @@ const AuthPage = () => {
         if (isLoading) return;
 
         if (isAuthenticated && user) {
-            const enrolledCourses = ((user as any).enrolledCourses || []) as unknown[];
-
             // Redirect priority:
-            // 1) learners with enrollments -> /my-classes
-            // 2) validated redirect_url
-            // 3) role/home fallback
-            if (enrolledCourses.length > 0) {
-                router.replace('/my-classes');
-                return;
-            }
-
+            // 1) validated redirect_url (respects cross-client SSO)
+            // 2) role/home fallback
             if (redirectUrl && isAllowedRedirectUrl(redirectUrl)) {
                 if (redirectUrl.startsWith('/')) {
                     router.replace(redirectUrl);
                 } else {
-                    window.location.assign(redirectUrl);
+                    try {
+                        const host = new URL(redirectUrl).hostname.toLowerCase();
+                        if (host === 'esun.misun-academy.com') {
+                            window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+                        } else {
+                            window.location.assign(redirectUrl);
+                        }
+                    } catch {
+                        window.location.assign(redirectUrl);
+                    }
                 }
                 return;
             }
@@ -73,10 +74,12 @@ const AuthPage = () => {
             const userRole = (user as any).role;
             if (userRole === 'admin' || userRole === 'superadmin') {
                 router.replace('/dashboard/admin');
+            } else if (userRole === 'employee') {
+                router.replace('/dashboard/admin');
             } else if (userRole === 'instructor') {
-                router.replace('/dashboard/instructor');
+                router.replace('/dashboard/admin');
             } else {
-                router.replace('/');
+                router.replace('/my-classes');
             }
         }
     }, [isAuthenticated, user, redirectUrl, router, isLoading]);
@@ -165,9 +168,8 @@ const AuthPage = () => {
                                 <button
                                     key={tab}
                                     onClick={() => setAuthMode(tab)}
-                                    className={`flex-1 py-3.5 text-sm font-semibold transition-all duration-200 relative ${
-                                        authMode === tab ? 'text-primary' : 'text-white/40 hover:text-white/70'
-                                    }`}
+                                    className={`flex-1 py-3.5 text-sm font-semibold transition-all duration-200 relative ${authMode === tab ? 'text-primary' : 'text-white/40 hover:text-white/70'
+                                        }`}
                                 >
                                     {tab === 'login' ? 'লগইন' : 'রেজিস্টার'}
                                     {authMode === tab && (

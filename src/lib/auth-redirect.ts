@@ -1,7 +1,12 @@
 const REDIRECT_HOST_ENV_KEYS = [
   'NEXT_PUBLIC_MA_FRONTEND_URL',
+  'NEXT_PUBLIC_EP_FRONTEND_URL',
   'NEXT_PUBLIC_APP_URL',
   'NEXT_PUBLIC_AUTH_URL',
+] as const;
+
+const REDIRECT_HOST_FALLBACKS = [
+  'esun.misun-academy.com',
 ] as const;
 
 function toHostname(urlLike?: string | null): string | null {
@@ -37,6 +42,10 @@ export function isAllowedRedirectUrl(target?: string | null, currentOrigin?: str
 
     if (typeof window !== 'undefined') {
       allowedHosts.add(window.location.hostname.toLowerCase());
+    }
+
+    for (const host of REDIRECT_HOST_FALLBACKS) {
+      allowedHosts.add(host);
     }
 
     return allowedHosts.has(targetHost);

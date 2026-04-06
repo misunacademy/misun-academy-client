@@ -9,7 +9,7 @@ type BaseUser = Session["user"];
 
 // Extended user type with our custom fields
 export interface AuthUser extends BaseUser {
-  role: "learner" | "instructor" | "admin" | "superadmin";
+  role: "learner" | "instructor" | "admin" | "superadmin" | "employee";
   status: "active" | "suspended" | "deleted";
   phone?: string;
   address?: string;

@@ -23,7 +23,8 @@ const defaultFallback = (
 const roleHome: Record<Role, string> = {
   superadmin: '/dashboard/admin',
   admin: '/dashboard/admin',
-  instructor: '/dashboard/instructor',
+  instructor: '/dashboard/admin',
+  employee: '/dashboard/admin',
   learner: '/my-classes',
 };
 
