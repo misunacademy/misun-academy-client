@@ -257,11 +257,11 @@ const Feedback = () => {
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
                                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
                             </span>
-                            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">এখনই যোগ দিন</span>
+                            <span className="text-xs font-semibold  uppercase text-primary/90">এখনই যোগ দিন</span>
                         </div>
 
                         <h3 className="text-2xl md:text-4xl font-bold leading-[145%] mb-5">
-                            <span className="bg-gradient-to-r from-white via-white/95 to-white/85 bg-clip-text text-transparent">আপনিও কি আপনার </span>
+                            <span className="bg-gradient-to-r from-white via-white/95 to-white/85 bg-clip-text text-transparent pt-4">আপনিও কি আপনার </span>
                             <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.5)]">স্বপ্নের যাত্রা</span>
                             <span className="bg-gradient-to-r from-white via-white/95 to-white/85 bg-clip-text text-transparent"> শুরু করতে প্রস্তুত?</span>
                         </h3>
