@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type MouseEvent } from 'react';
 import Link from 'next/link';
 import { CalendarCheck, CalendarX, Rocket, X } from 'lucide-react';
 import { useGetCourseBySlugQuery } from '@/redux/api/courseApi';
@@ -10,6 +10,51 @@ import { formatDate } from './EnrollmentSection';
 
 export default function EnrollmentFixed() {
     const [isOpen, setIsOpen] = useState(true);
+    const scrollToEnrollSection = (e: MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+
+        const targetSectionId = 'enroll-now';
+        const fallbackAnchorId = 'enroll-now-anchor';
+        const scrollToElement = (el: HTMLElement) => {
+            const targetTop = el.getBoundingClientRect().top + window.scrollY - 24;
+            window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+        };
+
+        const scrollToCurrentBestTarget = () => {
+            const section = document.getElementById(targetSectionId);
+            if (section) {
+                scrollToElement(section);
+                return true;
+            }
+
+            const fallback = document.getElementById(fallbackAnchorId);
+            if (fallback) {
+                scrollToElement(fallback);
+                return true;
+            }
+
+            return false;
+        };
+
+        window.history.replaceState(null, '', `#${targetSectionId}`);
+        scrollToCurrentBestTarget();
+
+        // Deferred content can mount after the first scroll; retry until the real section is present.
+        const startedAt = Date.now();
+        const retryUntilReady = () => {
+            const hasRealSection = !!document.getElementById(targetSectionId);
+            if (hasRealSection) {
+                scrollToCurrentBestTarget();
+                return;
+            }
+
+            if (Date.now() - startedAt < 4000) {
+                window.setTimeout(retryUntilReady, 180);
+            }
+        };
+
+        window.setTimeout(retryUntilReady, 180);
+    };
     const {
         data: gdCourseData,
         isLoading: gdCourseLoading,
@@ -103,6 +148,7 @@ export default function EnrollmentFixed() {
                             </p>
                         </div><Link
                 href="#enroll-now"
+                    onClick={scrollToEnrollSection}
                 aria-label="এনরোলমেন্ট করুন"
                 className="fixed left-[260px] bottom-[17px] z-50 group"
             >

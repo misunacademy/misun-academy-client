@@ -3,7 +3,7 @@
 
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, RotateCcw, Minus, Plus } from 'lucide-react'
 
 declare global {
@@ -36,6 +36,20 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
+const QUALITY_LABELS: Record<string, string> = {
+  auto: 'Auto',
+  small: '240p',
+  medium: '360p',
+  large: '480p',
+  hd720: '720p',
+  hd1080: '1080p',
+  highres: '1440p+',
+}
+
+function formatQualityLabel(level: string): string {
+  return QUALITY_LABELS[level] ?? level.toUpperCase()
+}
+
 interface YoutubePrivatePlayerProps {
   url: string
   className?: string
@@ -58,11 +72,86 @@ export function YoutubePrivatePlayer({ url, className }: YoutubePrivatePlayerPro
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [isEnded, setIsEnded] = useState(false)
   const [volume, setVolume] = useState(100)
+  const [playbackRates, setPlaybackRates] = useState<number[]>([0.5, 1, 1.5, 2])
+  const [playbackRate, setPlaybackRate] = useState(1)
+  const [qualityLevels, setQualityLevels] = useState<string[]>(['auto'])
+  const [qualityLevel, setQualityLevel] = useState('auto')
 
   const progressInterval = useRef<any>(null)
   const controlsTimer = useRef<any>(null)
+  const qualityApplyTimer = useRef<any>(null)
+  const qualityPreferenceRef = useRef<string>('auto')
 
   const videoId = extractVideoId(url)
+
+  useEffect(() => {
+    qualityPreferenceRef.current = qualityLevel
+  }, [qualityLevel])
+
+  const applyQualityPreference = useCallback((nextQuality: string, hardReload = false) => {
+    if (!playerRef.current) return
+
+    const ytQuality = nextQuality === 'auto' ? 'default' : nextQuality
+    playerRef.current.setPlaybackQuality?.(ytQuality)
+
+    // Some players respond better when quality range is pinned.
+    if (typeof playerRef.current.setPlaybackQualityRange === 'function') {
+      try {
+        if (nextQuality === 'auto') {
+          playerRef.current.setPlaybackQualityRange('default')
+        } else {
+          playerRef.current.setPlaybackQualityRange(ytQuality, ytQuality)
+        }
+      } catch {
+        // ignore unsupported signature variants
+      }
+    }
+
+    if (!hardReload || !videoId || nextQuality === 'auto') return
+
+    // Force re-buffer from the same timestamp with a suggested quality as fallback.
+    const now = playerRef.current.getCurrentTime?.() ?? 0
+    const state = playerRef.current.getPlayerState?.()
+    const wasPlaying = state === window.YT?.PlayerState?.PLAYING
+
+    playerRef.current.loadVideoById?.({
+      videoId,
+      startSeconds: now,
+      suggestedQuality: ytQuality,
+    })
+
+    if (!wasPlaying) {
+      playerRef.current.pauseVideo?.()
+      playerRef.current.seekTo?.(now, true)
+    }
+  }, [videoId])
+
+  const syncPlaybackOptions = useCallback(() => {
+    if (!playerRef.current) return
+
+    const rates = playerRef.current.getAvailablePlaybackRates?.() as number[] | undefined
+    if (Array.isArray(rates) && rates.length > 0) {
+      setPlaybackRates(rates)
+    }
+
+    const currentRate = playerRef.current.getPlaybackRate?.()
+    if (typeof currentRate === 'number' && Number.isFinite(currentRate)) {
+      setPlaybackRate(currentRate)
+    }
+
+    const qualities = playerRef.current.getAvailableQualityLevels?.() as string[] | undefined
+    if (Array.isArray(qualities) && qualities.length > 0) {
+      const normalized = qualities
+        .filter((q) => !!q && q !== 'unknown' && q !== 'tiny')
+        .map((q) => (q === 'default' ? 'auto' : q))
+      const nextQualities = Array.from(new Set(['auto', ...normalized]))
+      setQualityLevels(nextQualities)
+      setQualityLevel((prev) => (nextQualities.includes(prev) ? prev : 'auto'))
+    } else {
+      setQualityLevels(['auto'])
+      setQualityLevel('auto')
+    }
+  }, [])
 
   useEffect(() => {
     if (!videoId) return
@@ -104,6 +193,7 @@ export function YoutubePrivatePlayer({ url, className }: YoutubePrivatePlayerPro
             setVolume(e.target.getVolume?.() ?? 100)
             setIsMuted(e.target.isMuted?.() ?? false)
             setIsReady(true)
+            syncPlaybackOptions()
             // ensure the injected iframe fills the container
             const iframe = e.target.getIframe?.()
             if (iframe) {
@@ -129,6 +219,10 @@ export function YoutubePrivatePlayer({ url, className }: YoutubePrivatePlayerPro
             if (destroyed) return
             const { PlayerState } = window.YT
             if (e.data === PlayerState.PLAYING) {
+              syncPlaybackOptions()
+              if (qualityPreferenceRef.current !== 'auto') {
+                applyQualityPreference(qualityPreferenceRef.current)
+              }
               setIsPlaying(true)
               setIsEnded(false)
               progressInterval.current = setInterval(() => {
@@ -148,6 +242,19 @@ export function YoutubePrivatePlayer({ url, className }: YoutubePrivatePlayerPro
             } else {
               setIsPlaying(false)
               clearInterval(progressInterval.current)
+            }
+          },
+          onPlaybackRateChange(e: any) {
+            if (destroyed) return
+            if (typeof e.data === 'number' && Number.isFinite(e.data)) {
+              setPlaybackRate(e.data)
+            }
+          },
+          onPlaybackQualityChange(e: any) {
+            if (destroyed) return
+            if (typeof e.data === 'string' && e.data.length > 0) {
+              const apiQuality = e.data === 'default' || e.data === 'tiny' ? 'auto' : e.data
+              setQualityLevel((prev) => (prev === 'auto' ? apiQuality : prev))
             }
           },
         },
@@ -186,6 +293,7 @@ export function YoutubePrivatePlayer({ url, className }: YoutubePrivatePlayerPro
       destroyed = true
       clearInterval(progressInterval.current)
       clearTimeout(controlsTimer.current)
+      clearTimeout(qualityApplyTimer.current)
       // Destroy whichever ref is live
       playerRef.current?.destroy?.()
       rawPlayer?.destroy?.()
@@ -193,7 +301,7 @@ export function YoutubePrivatePlayer({ url, className }: YoutubePrivatePlayerPro
       setIsReady(false)
       setIsPlaying(false)
     }
-  }, [videoId])
+  }, [videoId, applyQualityPreference, syncPlaybackOptions])
 
   // Track native fullscreen state so we can style the container correctly
   useEffect(() => {
@@ -250,6 +358,35 @@ export function YoutubePrivatePlayer({ url, className }: YoutubePrivatePlayerPro
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.stopPropagation()
     updateVolume(Number(e.target.value))
+  }
+
+  const handlePlaybackRateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    e.stopPropagation()
+    if (!playerRef.current) return
+    const nextRate = Number(e.target.value)
+    if (!Number.isFinite(nextRate)) return
+    playerRef.current.setPlaybackRate?.(nextRate)
+    setPlaybackRate(nextRate)
+  }
+
+  const handleQualityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    e.stopPropagation()
+    if (!playerRef.current) return
+    const nextQuality = e.target.value
+
+    applyQualityPreference(nextQuality)
+
+    clearTimeout(qualityApplyTimer.current)
+    qualityApplyTimer.current = setTimeout(() => {
+      if (!playerRef.current || nextQuality === 'auto') return
+      const applied = playerRef.current.getPlaybackQuality?.()
+      const normalizedApplied = applied === 'default' ? 'auto' : applied
+      if (normalizedApplied !== nextQuality) {
+        applyQualityPreference(nextQuality, true)
+      }
+    }, 800)
+
+    setQualityLevel(nextQuality)
   }
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -499,16 +636,46 @@ export function YoutubePrivatePlayer({ url, className }: YoutubePrivatePlayerPro
               </span>
             </div>
 
-            <button
-              onClick={handleFullscreen}
-              className="text-white hover:text-red-400 transition-colors"
-              aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-            >
-              {isFullscreen
-                ? <Minimize2 className="w-4 h-4" />
-                : <Maximize2 className="w-4 h-4" />
-              }
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                <select
+                  value={qualityLevel}
+                  onChange={handleQualityChange}
+                  className="h-7 rounded bg-black/50 border border-white/20 text-white text-xs px-2 outline-none"
+                  aria-label="Resolution"
+                >
+                  {qualityLevels.map((quality) => (
+                    <option key={quality} value={quality}>
+                      {formatQualityLabel(quality)}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={playbackRate}
+                  onChange={handlePlaybackRateChange}
+                  className="h-7 rounded bg-black/50 border border-white/20 text-white text-xs px-2 outline-none"
+                  aria-label="Playback speed"
+                >
+                  {playbackRates.map((rate) => (
+                    <option key={rate} value={rate}>
+                      {rate}x
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                onClick={handleFullscreen}
+                className="text-white hover:text-red-400 transition-colors"
+                aria-label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+              >
+                {isFullscreen
+                  ? <Minimize2 className="w-4 h-4" />
+                  : <Maximize2 className="w-4 h-4" />
+                }
+              </button>
+            </div>
           </div>
         </div>
       </div>

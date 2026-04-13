@@ -523,7 +523,7 @@ function LiveRecordingsTab() {
             <DialogTitle>{playingRecording?.title}</DialogTitle>
           </DialogHeader>
           {playingRecording ? (
-            <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-white/10">
+            <div className="relative aspect-video w-full rounded-lg overflow-hidden">
               <YoutubePrivatePlayer
                 url={playingRecording.videoUrl ?? ""}
                 className="absolute inset-0 w-full h-full"

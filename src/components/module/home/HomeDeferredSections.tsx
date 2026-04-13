@@ -99,7 +99,7 @@ export default function HomeDeferredSections() {
         <WhyUs />
       </DeferredSection>
 
-      <DeferredSection minHeight="700px" rootMargin="250px" anchorId="enroll-now">
+      <DeferredSection minHeight="700px" rootMargin="250px" anchorId="enroll-now-anchor">
         <EnrollmentSection />
       </DeferredSection>
 
