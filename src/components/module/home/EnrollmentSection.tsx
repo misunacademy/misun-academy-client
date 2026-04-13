@@ -186,7 +186,7 @@ export const EnrollmentSection = () => {
 
     if (gdCourseLoading || gdCurrentLoading) {
         return (
-            <section className="relative py-20 px-4 bg-[#060f0a] font-bangla">
+            <section id="enroll-now" className="relative scroll-mt-24 py-20 px-4 bg-[#060f0a] font-bangla">
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
                 <div className="max-w-4xl mx-auto text-center">
                     <p className="text-white/40 text-sm animate-pulse">লোড হচ্ছে...</p>
@@ -199,8 +199,9 @@ export const EnrollmentSection = () => {
 
     return (
         <section
+            id="enroll-now"
             data-dark-section
-            className="relative py-24 px-4 bg-[#060f0a] overflow-hidden font-bangla"
+            className="relative scroll-mt-24 py-24 px-4 bg-[#060f0a] overflow-hidden font-bangla"
         >
             {/* ── Top edge ── */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
