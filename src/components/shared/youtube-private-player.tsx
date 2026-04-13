@@ -142,7 +142,7 @@ export function YoutubePrivatePlayer({ url, className }: YoutubePrivatePlayerPro
     const qualities = playerRef.current.getAvailableQualityLevels?.() as string[] | undefined
     if (Array.isArray(qualities) && qualities.length > 0) {
       const normalized = qualities
-        .filter((q) => !!q && q !== 'unknown')
+        .filter((q) => !!q && q !== 'unknown' && q !== 'tiny')
         .map((q) => (q === 'default' ? 'auto' : q))
       const nextQualities = Array.from(new Set(['auto', ...normalized]))
       setQualityLevels(nextQualities)
@@ -253,7 +253,7 @@ export function YoutubePrivatePlayer({ url, className }: YoutubePrivatePlayerPro
           onPlaybackQualityChange(e: any) {
             if (destroyed) return
             if (typeof e.data === 'string' && e.data.length > 0) {
-              const apiQuality = e.data === 'default' ? 'auto' : e.data
+              const apiQuality = e.data === 'default' || e.data === 'tiny' ? 'auto' : e.data
               setQualityLevel((prev) => (prev === 'auto' ? apiQuality : prev))
             }
           },
