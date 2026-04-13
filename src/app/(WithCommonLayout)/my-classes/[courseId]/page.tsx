@@ -405,7 +405,7 @@ export default function CourseDetails() {
                 </div>
                 <div className="p-4">
                   {currentLesson.media?.url ? (
-                    <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-white/8">
+                    <div className="relative aspect-video w-full rounded-xl overflow-hidden">
                       <YoutubePrivatePlayer
                         url={currentLesson.media.url}
                         className="absolute inset-0 w-full h-full"
