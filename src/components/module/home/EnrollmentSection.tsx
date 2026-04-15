@@ -92,7 +92,7 @@ function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
                                 bg-primary/10 border border-primary/20 mb-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
                                 <span className="text-[10px] font-semibold tracking-[0.15em] uppercase text-primary/80 font-bangla">
-                                    ব্যাচ-{String(batch.batchNumber).padStart(2, '0')}
+                                    ব্যাচ-{String(batch?.title?.split(' ')[1])?.padStart(2, '0')}
                                 </span>
                             </div>
                             {/* <h3 className="text-white font-bold text-lg leading-tight font-bangla line-clamp-2
