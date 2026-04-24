@@ -200,6 +200,17 @@ export default function RecordingsPage() {
   const batches = batchesData?.data || [];
   const recordings = recordingsData?.data || [];
 
+  const getBatchCourseId = (batch: Batch) =>
+    typeof batch.courseId === "string" ? batch.courseId : batch.courseId._id;
+
+  const filteredFilterBatches = filters.courseId
+    ? batches.filter((batch) => getBatchCourseId(batch) === filters.courseId)
+    : batches;
+
+  const filteredFormBatches = formData.courseId
+    ? batches.filter((batch) => getBatchCourseId(batch) === formData.courseId)
+    : batches;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -223,7 +234,7 @@ export default function RecordingsPage() {
               formData={formData}
               setFormData={setFormData}
               courses={courses}
-              batches={batches}
+              batches={filteredFormBatches}
               onSubmit={handleCreate}
               isLoading={isCreating}
             />
@@ -239,9 +250,10 @@ export default function RecordingsPage() {
         <CardContent className="flex gap-4">
           <Select
             value={filters.courseId || "all"}
-            onValueChange={(value) =>
-              setFilters({ ...filters, courseId: value === "all" ? undefined : value })
-            }
+            onValueChange={(value) => {
+              const nextCourseId = value === "all" ? undefined : value;
+              setFilters({ ...filters, courseId: nextCourseId, batchId: undefined });
+            }}
           >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="All Courses" />
@@ -267,7 +279,7 @@ export default function RecordingsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Batches</SelectItem>
-              {batches.map((batch: Batch) => (
+              {filteredFilterBatches.map((batch: Batch) => (
                 <SelectItem key={batch._id} value={batch._id}>
                   {batch.title}
                 </SelectItem>
@@ -443,7 +455,7 @@ export default function RecordingsPage() {
             formData={formData}
             setFormData={setFormData}
             courses={courses}
-            batches={batches}
+            batches={filteredFormBatches}
             onSubmit={handleEdit}
             isLoading={isUpdating}
           />
@@ -476,7 +488,12 @@ function RecordingForm({
           <Label>
             Course <span className="text-red-500">*</span>
           </Label>
-          <Select value={formData.courseId} onValueChange={(value) => setFormData({ ...formData, courseId: value })}>
+          <Select
+            value={formData.courseId}
+            onValueChange={(value) =>
+              setFormData({ ...formData, courseId: value, batchId: "" })
+            }
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select course" />
             </SelectTrigger>
@@ -495,7 +512,7 @@ function RecordingForm({
             Batch <span className="text-red-500">*</span>
           </Label>
           <Select value={formData.batchId} onValueChange={(value) => setFormData({ ...formData, batchId: value })}>
-            <SelectTrigger>
+            <SelectTrigger disabled={!formData.courseId}>
               <SelectValue placeholder="Select batch" />
             </SelectTrigger>
             <SelectContent>

@@ -68,9 +68,14 @@ export default function BatchDashboard() {
     const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [batchToDelete, setBatchToDelete] = useState<any>(null);
+    const [courseFilter, setCourseFilter] = useState("all");
+    const [statusFilter, setStatusFilter] = useState("all");
     const [formData, setFormData] = useState(INITIAL_FORM_STATE);
-const router = useRouter();
-    const { data: batches, isLoading, error, refetch } = useGetAllBatchesQuery({});
+    const router = useRouter();
+    const { data: batches, isLoading, error, refetch } = useGetAllBatchesQuery({
+        courseId: courseFilter === "all" ? undefined : courseFilter,
+        status: statusFilter === "all" ? undefined : statusFilter,
+    });
     const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({ status: "published" });
     const [createBatch, { isLoading: isCreating }] = useCreateBatchMutation();
     const [updateBatch, { isLoading: isUpdating }] = useUpdateBatchMutation();
@@ -99,7 +104,7 @@ const router = useRouter();
         } catch (error) {
             toast.error((error as any)?.data?.message || 'Failed to update status');
         }
-    }; 
+    };
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -135,23 +140,6 @@ const router = useRouter();
         }
     };
 
-    const handleEdit = (batch: any) => {
-        setEditingBatchId(batch._id);
-        setFormData({
-            title: batch.title,
-            price: batch.price.toString(),
-            status: batch.status || 'running',
-            selectedCourse: typeof batch.courseId === 'object' ? batch.courseId._id : batch.courseId,
-            startDate: new Date(batch.startDate).toISOString().split('T')[0],
-            endDate: new Date(batch.endDate).toISOString().split('T')[0],
-            enrollmentStartDate: new Date(batch.enrollmentStartDate).toISOString().split('T')[0],
-            enrollmentEndDate: new Date(batch.enrollmentEndDate).toISOString().split('T')[0],
-            description: batch.description || '',
-        });
-        setShowForm(true);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
     const handleDeleteClick = (batch: any) => {
         setBatchToDelete(batch);
         setDeleteDialogOpen(true);
@@ -181,21 +169,21 @@ const router = useRouter();
 
     return (
         <div className="space-y-6 p-6">
-            {!showForm && (
+            {/* {!showForm && (
                 // <div className="flex justify-end">
                 //     <Button onClick={() => setShowForm(true)} className="gap-2">
                 //         <Plus className="w-4 h-4" />
                 //         Create New Batch
                 //     </Button>
                 // </div>
-                            <div className="flex justify-end">
-                                    <Button onClick={() => router.push("/dashboard/admin/batch/create")} className="gap-2">
-                                        <Plus className="w-4 h-4" />
-                                        Create New Batch
-                                    </Button>
-                                </div>
-                        
-            )}
+                <div className="flex justify-end">
+                    <Button onClick={() => router.push("/dashboard/admin/batch/create")} className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        Create New Batch
+                    </Button>
+                </div>
+
+            )} */}
 
             {showForm && (
                 <Card>
@@ -365,6 +353,42 @@ const router = useRouter();
                     <CardDescription>Manage and view all batches</CardDescription>
                 </CardHeader>
                 <CardContent>
+                    <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center justify-end">
+                        <div className="w-full md:w-64">
+                            {/* <Label className="mb-1 block">Filter by Course</Label> */}
+                            <Select value={courseFilter} onValueChange={setCourseFilter}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="All Courses" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Courses</SelectItem>
+                                    {courses.map((course: any) => (
+                                        <SelectItem key={course._id} value={course._id}>
+                                            {course.title}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="w-full md:w-52">
+                            {/* <Label className="mb-1 block">Filter by Status</Label> */}
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="All Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    {BATCH_STATUSES.map((status) => (
+                                        <SelectItem key={status.value} value={status.value}>
+                                            {status.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
                     {isLoading ? (
                         <div className="flex items-center justify-center h-32">
                             <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -376,13 +400,15 @@ const router = useRouter();
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-20">Batch #</TableHead>
+                                       
                                         <TableHead>Title</TableHead>
                                         <TableHead>Course</TableHead>
                                         <TableHead className="w-28">Price</TableHead>
                                         <TableHead className="w-32">Status</TableHead>
                                         <TableHead className="w-32">Start Date</TableHead>
                                         <TableHead className="w-32">End Date</TableHead>
+                                        <TableHead className="w-32">Enrollment Start</TableHead>
+                                        <TableHead className="w-32">Enrollment End</TableHead>
                                         <TableHead className="w-24">Enrolled</TableHead>
                                         <TableHead className="w-64">Actions</TableHead>
                                     </TableRow>
@@ -390,13 +416,15 @@ const router = useRouter();
                                 <TableBody>
                                     {(batches?.data || []).map((batch: any) => (
                                         <TableRow key={batch._id}>
-                                            <TableCell className="font-medium">#{batch.batchNumber}</TableCell>
+                                           
                                             <TableCell className="font-medium">{batch.title}</TableCell>
                                             <TableCell>{batch.courseId?.title || 'N/A'}</TableCell>
                                             <TableCell>৳{batch.price}</TableCell>
                                             <TableCell>{getStatusBadge(batch.status)}</TableCell>
                                             <TableCell>{new Date(batch.startDate).toLocaleDateString()}</TableCell>
                                             <TableCell>{new Date(batch.endDate).toLocaleDateString()}</TableCell>
+                                            <TableCell>{new Date(batch.enrollmentStartDate).toLocaleDateString()}</TableCell>
+                                            <TableCell>{new Date(batch.enrollmentEndDate).toLocaleDateString()}</TableCell>
                                             <TableCell className="text-center">{batch.currentEnrollment || 0}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-2">

@@ -34,6 +34,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             '/dashboard/admin/dynamic-updates': 'Dynamic Updates',
             '/dashboard/admin/reports': 'Reports',
             '/dashboard/admin/settings': 'Settings',
+            '/dashboard/admin/students-progress-tracker': 'Students Progress Tracker',
             '/dashboard/student': 'Student Dashboard',
             '/dashboard/student/browse': 'Browse Courses',
             '/dashboard/student/courses': 'My Courses',

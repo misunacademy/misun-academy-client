@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
-import { Users, Plus, Search, Edit, Trash2, UserCheck, UserX, ChevronRight, ChevronLeft } from "lucide-react";
+import { Users, Plus, Search, Edit, Trash2, UserCheck, UserX, ChevronRight, ChevronLeft, Download } from "lucide-react";
 import { useState, useEffect, FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { useGetAllUsersQuery, useCreateAdminMutation, useUpdateUserMutation, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
@@ -32,7 +32,7 @@ interface User {
   phone?: string;
   address?: string;
   image?: string;
-  avatar?: string; 
+  avatar?: string;
 }
 
 export default function AdminUsers() {
@@ -52,6 +52,7 @@ export default function AdminUsers() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   // RTK Query mutations
   const [createAdmin] = useCreateAdminMutation();
@@ -188,6 +189,44 @@ export default function AdminUsers() {
     }
   };
 
+  const handleExportExcel = async () => {
+    if (filteredUsers.length === 0) {
+      toast.error('No user data available to export');
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+
+      const XLSX = await import('xlsx');
+      const rows = filteredUsers.map((user, index) => ({
+        'SL': index + 1,
+        'Name': user.name,
+        'Email': user.email,
+        'Role': user.role,
+        'Status': user.status,
+        'Enrolled Courses/Batches': user.enrolledBatches?.join(' | ') || 'No',
+        'Phone': user.phone || '',
+        'Address': user.address || '',
+        'Join Date': new Date(user.createdAt).toLocaleDateString(),
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Users');
+
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
+      XLSX.writeFile(workbook, `users-${timestamp}.xlsx`);
+
+      toast.success('Excel sheet exported successfully');
+    } catch (error) {
+      console.error('Excel export failed:', error);
+      toast.error('Failed to export Excel sheet');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+  console.log(filteredUsers)
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -205,56 +244,68 @@ export default function AdminUsers() {
           <p className="text-muted-foreground">Manage all users, roles, and permissions</p>
         </div>
 
-        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Add New User
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Add New User</DialogTitle>
-              <DialogDescription>
-                Create a new user account with appropriate role and permissions.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreateUser}>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">Name</Label>
-                  <Input id="name" name="name" className="col-span-3" required />
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleExportExcel}
+            disabled={isExporting || isFetching || filteredUsers.length === 0}
+            className="flex items-center gap-2"
+          >
+            {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            Export Excel
+          </Button>
+
+          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Add New User
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add New User</DialogTitle>
+                <DialogDescription>
+                  Create a new user account with appropriate role and permissions.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleCreateUser}>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">Name</Label>
+                    <Input id="name" name="name" className="col-span-3" required />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="email" className="text-right">Email</Label>
+                    <Input id="email" name="email" type="email" className="col-span-3" required />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="password" className="text-right">Password</Label>
+                    <Input id="password" name="password" type="password" className="col-span-3" required />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="role" className="text-right">Role</Label>
+                    <Select name="role" defaultValue="learner">
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="learner">Learner</SelectItem>
+                        <SelectItem value="instructor">Instructor</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="superadmin">Super Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="email" className="text-right">Email</Label>
-                  <Input id="email" name="email" type="email" className="col-span-3" required />
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+                  <Button type="submit">Create User</Button>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="password" className="text-right">Password</Label>
-                  <Input id="password" name="password" type="password" className="col-span-3" required />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="role" className="text-right">Role</Label>
-                  <Select name="role" defaultValue="learner">
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="learner">Learner</SelectItem>
-                      <SelectItem value="instructor">Instructor</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="superadmin">Super Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
-                <Button type="submit">Create User</Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Edit Dialog - Controlled programmatically */}
@@ -470,9 +521,18 @@ export default function AdminUsers() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={user.enrolledBatches && user.enrolledBatches.length > 0 ? 'default' : 'outline'}>
-                      {user.enrolledBatches && user.enrolledBatches.length > 0 ? user.enrolledBatches.join(', ') : 'No'}
-                    </Badge>
+                    {user.enrolledBatches && user.enrolledBatches.length > 0 ? (
+                      <div className="">
+                        {user.enrolledBatches.map((entry) => (
+                          <div key={`${user._id}-${entry}`} className="text-xs flex gap-1">
+                            <span className="">{entry?.split('-')[0].includes('English') ? 'English -' : 'Graphic -'}</span>
+                            <span className="">{entry?.split('-')[1]}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <Badge variant="outline">No</Badge>
+                    )}
                   </TableCell>
                   <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell>

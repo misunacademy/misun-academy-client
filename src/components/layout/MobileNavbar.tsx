@@ -3,15 +3,17 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '../ui/button';
-import { AlignLeft, X } from 'lucide-react';
+import { AlignLeft, LogOut, User, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import type { AuthUser } from '@/types/auth';
+import Image from 'next/image';
 
 export default function MobileNavbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [isHydrated, setIsHydrated] = useState(false);
     const { user, signOut } = useAuth();
+    const isEnrolled = (user?.enrolledCourses?.length ?? 0) > 0;
 
     useEffect(() => {
         const id = requestAnimationFrame(() => setIsHydrated(true));
@@ -78,35 +80,35 @@ export default function MobileNavbar() {
                 <Link
                     onClick={() => setIsOpen(!isOpen)}
                     href="/"
-                    className="text-lg h-14 flex items-center border-b border-primary font-bangla"
+                    className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla"
                 >
                     হোম
                 </Link>
                 <Link
                     onClick={() => setIsOpen(!isOpen)}
                     href="/courses"
-                    className="text-lg h-14 flex items-center border-b border-primary font-bangla"
+                    className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla"
                 >
                     কোর্সসমূহ
                 </Link>
                 <Link
                     onClick={() => setIsOpen(!isOpen)}
                     href="/feedback"
-                    className="text-lg h-14 flex items-center border-b border-primary font-bangla"
+                    className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla"
                 >
                     শিক্ষার্থীদের মতামত
                 </Link>
                 <Link
                     onClick={() => setIsOpen(!isOpen)}
                     href="/about"
-                    className="text-lg h-14 flex items-center border-b border-primary font-bangla"
+                    className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla"
                 >
                     আমাদের সম্পর্কে
                 </Link>
                 <Link
                     onClick={() => setIsOpen(!isOpen)}
                     href={`${process.env.NEXT_PUBLIC_EP_FRONTEND_URL}/`}
-                    className="text-lg h-14 flex items-center border-b border-primary font-bangla"
+                    className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla"
                 >
                     প্রফেশনাল ইংলিশ
                 </Link>
@@ -114,7 +116,7 @@ export default function MobileNavbar() {
                     <Link
                         onClick={() => setIsOpen(!isOpen)}
                         href="/my-classes"
-                        className="text-lg h-14 flex items-center border-b border-primary font-bangla text-primary"
+                        className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla text-primary"
                     >
                         আমার ক্লাসগুলো
                     </Link>
@@ -130,24 +132,50 @@ export default function MobileNavbar() {
                     <Link
                         onClick={() => setIsOpen(!isOpen)}
                         href="/auth"
-                        className="text-lg h-14 flex items-center border-b border-primary font-bangla text-emerald-400"
+                        className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla text-emerald-400"
                     >
                         লগইন
                     </Link>
                 ) : (
                     <>
+                     <div className="py-4 border-b border-green-500/20 flex items-center gap-3">
+                                                <div className="h-10 w-10 rounded-full overflow-hidden border border-green-500/40 flex items-center justify-center">
+                                                    {user?.image ? (
+                                                        <Image
+                                                            src={user?.image}
+                                                            alt={user?.name || 'User profile'}
+                                                            width={40}
+                                                            height={40}
+                                                            className="h-full w-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <User className="h-5 w-5 text-green-400" />
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-semibold truncate">{user?.name || 'User'}</p>
+                                                    <p className="text-xs text-white/60 truncate">{user?.email}</p>
+                                                </div>
+                                            </div>
                         <Link
                             onClick={() => setIsOpen(!isOpen)}
                             href="/profile"
-                            className="text-lg h-14 flex items-center border-b border-primary font-bangla"
+                            className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla"
                         >
                             প্রোফাইল
                         </Link>
+                        {
+                            userRole === 'learner' && canSeeClasses && isEnrolled &&
+                            <Link href="/enrollment-posters" className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla">
+                                আপনার ভর্তি পোস্টারসমূহ
+                            </Link>
+
+                        }
                         {(userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor') ? (
                             <Link
                                 onClick={() => setIsOpen(!isOpen)}
                                 href={`/dashboard/${userRole}`}
-                                className="text-lg h-14 flex items-center border-b border-primary font-bangla"
+                                className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla"
                             >
                                 ড্যাশবোর্ড
                             </Link>
@@ -155,8 +183,9 @@ export default function MobileNavbar() {
                         <button
                             type="button"
                             onClick={handleLogout}
-                            className="text-left text-lg h-14 flex items-center border-b border-primary font-bangla text-red-400"
+                            className="text-left flex items-center gap-2  text-lg h-14 border-b border-primary/20 font-bangla text-red-400"
                         >
+                            <LogOut className="h-5 w-5" />
                             লগআউট
                         </button>
                     </>

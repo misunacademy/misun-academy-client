@@ -241,7 +241,7 @@ export default function BatchEdit() {
                                     id="title"
                                     value={formData.title}
                                     onChange={(e) => handleInputChange('title', e.target.value)}
-                                    placeholder="e.g. Batch 6 - Winter 2026"
+                                    placeholder="e.g. Batch 6"
                                     required
                                 />
                             </div>
@@ -252,19 +252,19 @@ export default function BatchEdit() {
                                     type="number"
                                     value={formData.price}
                                     onChange={(e) => handleInputChange('price', e.target.value)}
-                                    placeholder="4000"
+                                    placeholder="e.g. 4000"
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="manualPaymentPrice">Manual Payment Price (BDT)</Label>
+                                <Label htmlFor="manualPaymentPrice">Manual Payment Price (INR)</Label>
                                 <Input
                                     id="manualPaymentPrice"
                                     type="number"
                                     min="0"
                                     value={formData.manualPaymentPrice}
                                     onChange={(e) => handleInputChange('manualPaymentPrice', e.target.value)}
-                                    placeholder="3000"
+                                    placeholder="e.g. 3000"
                                 />
                             </div>
                             <div className="space-y-2">

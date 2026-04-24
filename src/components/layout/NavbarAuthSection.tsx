@@ -16,6 +16,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User, LogOut, UserCircle, Sparkles, LayoutDashboard } from 'lucide-react';
+import { FaRegFileAlt } from 'react-icons/fa';
 
 export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
     const { user, signOut } = useAuth();
@@ -23,13 +24,14 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
     const safeUser = hydrated ? user : null;
     const userRole = (safeUser as AuthUser | null)?.role;
     const canSeeClasses = !!userRole && userRole.toLowerCase() === 'learner';
-
+    const isEnrolled = (safeUser?.enrolledCourses?.length ?? 0) > 0;
     const handleLogout = async () => {
         const result = await signOut();
         if (result.success) {
             router.push('/');
         }
     };
+
     const handleEnrollClick = () => {
         import('@/lib/metaPixel').then(({ track }) =>
             track('InitiateCheckout', {
@@ -122,7 +124,17 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
                             </Link>
                         </DropdownMenuItem>
                         {
-                           ( userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor') &&
+                            userRole === 'learner' && canSeeClasses && isEnrolled &&
+                            <DropdownMenuItem asChild>
+                                <Link href="/enrollment-posters" className="">
+                                    <FaRegFileAlt className="mr-2 h-4 w-4" />
+                                    Your Enrollment Posters
+                                </Link>
+                            </DropdownMenuItem>
+
+                        }
+                        {
+                            (userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor') &&
                             <DropdownMenuItem asChild>
                                 <Link href={`/dashboard/${userRole}`} className="flex items-center">
                                     <LayoutDashboard className="mr-2 h-4 w-4" />

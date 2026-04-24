@@ -8,7 +8,6 @@ import {
   AlertCircle,
   Calendar,
   PlayCircle,
-  ListOrdered,
   GraduationCap,
   Sparkles,
   Video,
@@ -33,7 +32,7 @@ import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
 import * as THREE from "three";
-import { useRef, Suspense, useState } from "react";
+import { useRef, Suspense, useState, useMemo } from "react";
 import Image from "next/image";
 
 interface EnrolledCourse {
@@ -122,75 +121,6 @@ function Scene() {
       <WireframeIcosa position={[7.5, 4, -10]} color="#a855f7" speed={1.0} />
       <WireframeOcta position={[6, -4.5, -6]} color="#3b82f6" speed={1.2} />
     </>
-  );
-}
-
-// ── Helpers ─────────────────────────────────────────────────────────────────
-
-function stringToHue(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return Math.abs(hash) % 360;
-}
-
-function getInitials(title: string): string {
-  return title
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
-// ── Course thumbnail (generated gradient) ───────────────────────────────────
-
-function CourseThumbnail({ title ,img}: { title: string,img:string }) {
-  const hue = stringToHue(title);
-  const hue2 = (hue + 50) % 360;
-  return (
-    <div
-      className="w-full h-full flex items-center justify-center relative overflow-hidden"
-      style={{
-        background: `linear-gradient(135deg, hsl(${hue} 60% 18%), hsl(${hue2} 55% 12%))`,
-      }}
-    >
-      {/* Glow blobs */}
-      <div
-        className="absolute -top-6 -right-6 w-28 h-28 rounded-full blur-2xl opacity-25"
-        style={{ background: `hsl(${hue} 80% 55%)` }}
-      />
-      <div
-        className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full blur-xl opacity-20"
-        style={{ background: `hsl(${hue2} 75% 60%)` }}
-      />
-      {/* Dot-grid texture */}
-      <div
-        className="absolute inset-0 opacity-[0.12]"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)",
-          backgroundSize: "18px 18px",
-        }}
-      />
-      {/* Initials */}
-      <div className="relative z-10 flex flex-col items-center gap-2 px-3 text-center">
-        <div
-          className="text-4xl font-black tracking-wider"
-          style={{
-            color: `hsl(${hue} 90% 80%)`,
-            textShadow: `0 0 20px hsl(${hue} 80% 50% / 0.6)`,
-          }}
-        >
-          {/* {getInitials(title)} */}
-          ,<Image src={img} alt={title} width={48} height={48} className="rounded-full border-2 border-white/30 shadow-sm" />
-
-        </div>
-        <div className="text-[10px] text-white/50 font-medium line-clamp-2 leading-tight max-w-[110px]">
-          {title}
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -403,8 +333,40 @@ function CoursesTab({ enrolledCourses }: { enrolledCourses: EnrolledCourse[] }) 
 
 function LiveRecordingsTab() {
   const [playingRecording, setPlayingRecording] = useState<Recording | null>(null);
+  const [selectedCourseKey, setSelectedCourseKey] = useState<string>("");
   const { data: recordings = [], isLoading, isError } = useGetStudentRecordingsQuery();
   const [incrementView] = useIncrementRecordingViewMutation();
+
+  const courseGroups = useMemo(() => {
+    const grouped: Record<string, { key: string; title: string; recordings: Recording[] }> = {};
+
+    recordings.forEach((rec) => {
+      const courseObj = typeof rec.courseId === "object" ? rec.courseId : null;
+      const key = courseObj?._id || (typeof rec.courseId === "string" ? rec.courseId : "live-class");
+      const title = courseObj?.title || "Live Class";
+
+      if (!grouped[key]) {
+        grouped[key] = { key, title, recordings: [] };
+      }
+      grouped[key].recordings.push(rec);
+    });
+
+    return Object.values(grouped)
+      .map((group) => ({
+        ...group,
+        recordings: [...group.recordings].sort(
+          (a, b) => new Date(b.sessionDate).getTime() - new Date(a.sessionDate).getTime()
+        ),
+      }))
+      .sort((a, b) => a.title.localeCompare(b.title));
+  }, [recordings]);
+
+  const resolvedCourseKey =
+    courseGroups.some((group) => group.key === selectedCourseKey)
+      ? selectedCourseKey
+      : (courseGroups[0]?.key || "");
+
+  const activeCourseGroup = courseGroups.find((group) => group.key === resolvedCourseKey) || null;
 
   const handlePlayRecording = async (recording: Recording) => {
     setPlayingRecording(recording);
@@ -472,44 +434,68 @@ function LiveRecordingsTab() {
 
   return (
     <>
-      <div className="flex flex-col gap-4">
-        {recordings.map((rec) => {
-          const courseTitle =
-            typeof rec.courseId === "object" ? rec.courseId.title : "Live Class";
+      <div className="space-y-5">
+        <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex items-center gap-2 min-w-max">
+            {courseGroups.map((group) => {
+              const active = group.key === resolvedCourseKey;
+              return (
+                <button
+                  key={group.key}
+                  onClick={() => setSelectedCourseKey(group.key)}
+                  className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
+                    active
+                      ? "border-primary/50 bg-primary/15 text-primary"
+                      : "border-primary/20 bg-[#060f0a] text-white/60 hover:border-primary/35 hover:text-white"
+                  }`}
+                >
+                  <BookOpen className="w-4 h-4" />
+                  <span>{group.title}</span>
+                  <span className="rounded-full border border-primary/30 px-1.5 py-0.5 text-[11px] font-bold text-primary/90">
+                    {group.recordings.length}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-          return (
-            <div
-              key={rec._id}
-              className="group relative rounded-2xl border border-primary/20 bg-[#060f0a] p-5 flex flex-col sm:flex-row sm:items-center gap-4
-              hover:border-primary/30 transition-all duration-300"
-            >
-              <div className="w-14 h-14 shrink-0 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                <Radio className="w-6 h-6 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-white line-clamp-1">{rec.title}</h4>
-                <p className="text-sm text-white/40 line-clamp-1">{courseTitle}</p>
-                <p className="text-xs text-white/30 mt-1">
-                  {new Date(rec.sessionDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                  {rec.duration ? ` • ${rec.duration} min` : ""}
-                </p>
-              </div>
-              <button
-                onClick={() => handlePlayRecording(rec)}
-                className="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold
-                border border-primary/20 text-white/60 hover:border-primary/40 hover:text-primary hover:bg-primary/5
-                transition-all duration-300"
+        {activeCourseGroup ? (
+          <div className="flex flex-col gap-4">
+            {activeCourseGroup.recordings.map((rec) => (
+              <div
+                key={rec._id}
+                className="group relative rounded-2xl border border-primary/20 bg-[#060f0a] p-5 flex flex-col sm:flex-row sm:items-center gap-4
+                hover:border-primary/30 transition-all duration-300"
               >
-                <PlayCircle className="w-4 h-4" />
-                Watch
-              </button>
-            </div>
-          );
-        })}
+                <div className="w-14 h-14 shrink-0 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <Radio className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-white line-clamp-1">{rec.title}</h4>
+                  <p className="text-sm text-white/40 line-clamp-1">{activeCourseGroup.title}</p>
+                  <p className="text-xs text-white/30 mt-1">
+                    {new Date(rec.sessionDate).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                    {rec.duration ? ` • ${rec.duration} min` : ""}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handlePlayRecording(rec)}
+                  className="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold
+                  border border-primary/20 text-white/60 hover:border-primary/40 hover:text-primary hover:bg-primary/5
+                  transition-all duration-300"
+                >
+                  <PlayCircle className="w-4 h-4" />
+                  Watch
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <Dialog

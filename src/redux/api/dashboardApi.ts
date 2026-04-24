@@ -21,9 +21,10 @@ const dashboardApi = baseApi.injectEndpoints({
     }),
 
     // Get dashboard metadata (legacy - 60 days stats)
-    getDashboardMetadata: build.query<{ data: any }, void>({
-      query: () => ({
+    getDashboardMetadata: build.query<{ data: any }, { courseId?: string } | void>({
+      query: (params) => ({
         url: "/dashboard/metadata",
+        params: params || undefined,
       }),
       providesTags: ["Dashboard"],
     }),

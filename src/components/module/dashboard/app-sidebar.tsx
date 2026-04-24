@@ -164,6 +164,10 @@ const adminItems = [
         title: "Reports",
         url: "/dashboard/admin/reports",
         icon: FileText,
+    },{
+        title: "Students Progress Tracker",
+        url: "/dashboard/admin/students-progress-tracker",
+        icon: TrendingUp,
     },
     {
         title: "User Management",

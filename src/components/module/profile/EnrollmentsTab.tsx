@@ -10,7 +10,7 @@ interface EnrollmentsTabProps {
 
 export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
     const enrollments = profile?.enrollments || [];
-
+    const hasEnrollments = enrollments.length > 0;
     const normalizeStatus = (status?: string) =>
         (status || "").toLowerCase().replace(/_/g, "-");
 
@@ -56,13 +56,16 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
                     <ShoppingBagIcon className="w-6 h-6" />
                     My Enrollments
                 </h2>
-                <div className="">
-                    <Link href="/enrollment-posters" className="">
-                        <Button variant={"outline"} className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">
-                            Get Your Enrollment Posters
-                        </Button>
-                    </Link>
-                </div>
+                {
+                    hasEnrollments &&
+                    <div className="hidden md:block">
+                        <Link href="/enrollment-posters" className="">
+                            <Button variant={"outline"} className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-xs">
+                                Get Your Enrollment Posters
+                            </Button>
+                        </Link>
+                    </div>
+                }
             </div>
 
             <div className="relative z-10 grid gap-6">

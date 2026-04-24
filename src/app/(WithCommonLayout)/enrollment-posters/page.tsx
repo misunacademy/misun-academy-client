@@ -867,7 +867,7 @@ function CongratulationsPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <Button
                       onClick={downloadPoster}
-                      className="w-full bg-green-600 hover:bg-green-700 h-12 text-lg"
+                      className="w-full bg-green-600 hover:bg-green-700 sm:h-12 sm:text-lg"
                     >
                       <Download className="w-5 h-5 mr-2" />
                       Download Poster
@@ -875,7 +875,7 @@ function CongratulationsPage() {
                     <Button
                       onClick={sharePoster}
                       variant="outline"
-                      className="w-full h-12 text-lg border-primary/35 text-primary hover:bg-primary/10"
+                      className="w-full sm:h-12 sm:text-lg border-primary/35 text-primary hover:bg-primary/10"
                     >
                       <Share2 className="w-5 h-5 mr-2" />
                       Share

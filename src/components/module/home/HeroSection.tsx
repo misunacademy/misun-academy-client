@@ -24,7 +24,7 @@ export default function HeroSection() {
       <div className="absolute bottom-10 -right-20 lg:right-1/4 w-80 h-80 md:w-[30rem] md:h-[30rem] border-[12px] md:border-[24px] border-primary/5 rounded-full animate-zoom-in-out z-0 blur-2xl md:blur-3xl" style={{ animationDelay: '4s' }} />
 
       {/* ── Main Content Container ── */}
-      <div className="relative z-10 min-h-screen pt-32 pb-20 flex flex-col justify-center">
+      <div className="relative z-10 min-h-screen pt-16 pb-20 flex flex-col justify-center">
         <div className="container mx-auto px-4 max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center">
 
           {/* ── Left Column: Typography & Info ── */}

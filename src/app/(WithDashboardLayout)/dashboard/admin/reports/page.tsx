@@ -17,9 +17,12 @@ type TimePeriod = '7days' | '30days' | '90days' | '1year';
 
 export default function AdminReports() {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30days');
+  const [selectedCourseId, setSelectedCourseId] = useState('all');
   const [isExporting, setIsExporting] = useState(false);
 
-  const { data: metadata, isLoading: metadataLoading, error: metadataError, refetch: refetchMetadata } = useGetMetadataQuery(undefined);
+  const { data: metadata, isLoading: metadataLoading, error: metadataError, refetch: refetchMetadata } = useGetMetadataQuery(
+    selectedCourseId === 'all' ? undefined : { courseId: selectedCourseId }
+  );
   const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({});
 
   const isLoading = metadataLoading || coursesLoading;
@@ -49,9 +52,11 @@ export default function AdminReports() {
     });
 
 
-    // Get active courses count (check `status` field returned by API)
+    // Get active courses count (for selected course, this becomes either 1 or 0)
     const activeCourses = coursesData?.data?.filter((course: any) => (course.status || '').toLowerCase() === 'published') || [];
-    const activeCoursesCount = activeCourses.length;
+    const activeCoursesCount = selectedCourseId === 'all'
+      ? activeCourses.length
+      : activeCourses.filter((course: any) => course._id === selectedCourseId).length;
 
     // Format data for charts
     const enrollmentData = filteredDayWiseStats.map((stat: any) => ({
@@ -81,7 +86,13 @@ export default function AdminReports() {
       courseWiseStats: data.courseWiseStats || [],
       batchWiseIncome: data.batchWiseIncome || []
     };
-  }, [metadata, coursesData, selectedPeriod]);
+  }, [metadata, coursesData, selectedPeriod, selectedCourseId]);
+
+  const selectedCourseTitle = useMemo(() => {
+    if (selectedCourseId === 'all') return 'All Courses';
+    const found = (coursesData?.data || []).find((course: any) => course._id === selectedCourseId);
+    return found?.title || 'Selected Course';
+  }, [coursesData, selectedCourseId]);
 
   if (isLoading) {
     return (
@@ -107,6 +118,7 @@ export default function AdminReports() {
       // Create export data
       const exportData = {
         period: selectedPeriod,
+        course: selectedCourseTitle,
         generatedAt: new Date().toISOString(),
         summary: {
           totalRevenue: metadata?.data?.totalIncome || 0,
@@ -143,6 +155,7 @@ export default function AdminReports() {
   const generateCSV = (data: any) => {
     let csv = 'Academy Reports\n';
     csv += `Period: ${data.period}\n`;
+    csv += `Course: ${data.course}\n`;
     csv += `Generated: ${data.generatedAt}\n\n`;
 
     // Summary
@@ -177,9 +190,23 @@ export default function AdminReports() {
           <h1 className="text-3xl font-bold">Reports & Analytics</h1>
           <p className="text-muted-foreground">Comprehensive insights into your academy&apos;s performance</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="Course" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Courses</SelectItem>
+              {(coursesData?.data || []).map((course: any) => (
+                <SelectItem key={course._id} value={course._id}>
+                  {course.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Select value={selectedPeriod} onValueChange={(value: TimePeriod) => setSelectedPeriod(value)}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

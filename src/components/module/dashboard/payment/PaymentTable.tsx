@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
     flexRender,
     getCoreRowModel,
@@ -17,7 +17,9 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from '@/components/ui/table'; import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"; import { Input } from '@/components/ui/input';
+} from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
     Select,
@@ -40,6 +42,9 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { PaymentResponse } from '@/redux/api/paymentApi';
 import { useGetAllPaymentsQuery, useUpdatePaymentStatusMutation, useVerifyManualPaymentMutation } from '@/redux/api/paymentApi';
+import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
+import { useGetAllBatchesQuery } from '@/redux/api/batchApi';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 
@@ -47,14 +52,29 @@ const PaymentTable = () => {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [selectedCourseId, setSelectedCourseId] = useState('all');
+    const [selectedBatchId, setSelectedBatchId] = useState('all');
     const [openDialog, setOpenDialog] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
     const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
+
+    const { data: coursesData } = useGetAllCoursesQuery({});
+    const { data: batchesData } = useGetAllBatchesQuery({
+        courseId: selectedCourseId !== 'all' ? selectedCourseId : undefined,
+    });
+    const courses = coursesData?.data || [];
+    const batches = batchesData?.data || [];
+
+    useEffect(() => {
+        setPage(1);
+    }, [search, statusFilter, selectedCourseId, selectedBatchId]);
 
     // RTK Query hooks
     const paymentsQueryParams: any = {
         search: search || undefined,
         status: statusFilter !== 'all' ? statusFilter : undefined,
+        courseId: selectedCourseId !== 'all' ? selectedCourseId : undefined,
+        batchId: selectedBatchId !== 'all' ? selectedBatchId : undefined,
     };
     if (page > 1) paymentsQueryParams.page = page;
     const paramsToSend = Object.keys(paymentsQueryParams).length ? paymentsQueryParams : undefined;
@@ -63,7 +83,7 @@ const PaymentTable = () => {
     const [updatePaymentStatus] = useUpdatePaymentStatusMutation();
     const [verifyManualPayment] = useVerifyManualPaymentMutation();
 
-    const payments = data?.data || [];
+    const payments = useMemo(() => data?.data || [], [data]);
     const meta = data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
 
     const handleConfirmStatusChange = useCallback(async () => {
@@ -130,9 +150,9 @@ const PaymentTable = () => {
                 cell: ({ row }) => {
                     return <div>
                         <p className='font-medium'>{row.original.course?.title || 'N/A'}</p>
-                        {row.original.course?.slug && (
+                        {/* {row.original.course?.slug && (
                             <p className='text-[12px] text-gray-500'>{row.original.course.slug}</p>
-                        )}
+                        )} */}
                     </div>
                 }
             },
@@ -143,9 +163,9 @@ const PaymentTable = () => {
                 cell: ({ row }) => {
                     return <div>
                         <p className='font-medium'>{row.original.batch?.title || 'N/A'}</p>
-                        {row.original.batch?.batchNumber && (
-                            <p className='text-[12px] text-gray-500'>Code: {row.original.batch.batchNumber}</p>
-                        )}
+                        {/* {row.original.batch?.batchNumber && (
+                            <p className='text-[12px] text-gray-500'>Code: {row.original.batch.title.split(' ')[1]}</p>
+                        )} */}
                     </div>
                 }
             },
@@ -254,7 +274,7 @@ const PaymentTable = () => {
                 },
             },
         ],
-        [openDialog, selectedTransactionId, selectedStatus]
+        [openDialog, selectedTransactionId, selectedStatus, handleConfirmStatusChange]
     );
 
     const table = useReactTable({
@@ -297,26 +317,74 @@ const PaymentTable = () => {
                     <CardDescription>View and manage all payment transactions</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex justify-between mb-4 gap-4">
+                    <div className="mb-4 space-y-2">
+                        <p className="text-sm font-medium text-muted-foreground">Filter by course</p>
+                        <Tabs
+                            value={selectedCourseId}
+                            onValueChange={(value) => {
+                                setSelectedCourseId(value);
+                                setSelectedBatchId('all');
+                            }}
+                        >
+                            <TabsList className="h-auto min-h-12 w-full justify-start gap-2 overflow-x-auto overflow-y-hidden rounded-xl border border-primary/25 bg-muted/40 p-1.5">
+                                <TabsTrigger
+                                    value="all"
+                                    className="h-10 shrink-0 whitespace-nowrap rounded-lg border border-transparent px-4 py-2 text-sm font-semibold text-muted-foreground transition-all hover:bg-background/70 hover:text-foreground data-[state=active]:border-primary/70 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_10px_24px_hsl(var(--primary)/0.35)]"
+                                >
+                                    All Courses
+                                </TabsTrigger>
+                                {courses.map((course) => (
+                                    <TabsTrigger
+                                        key={course._id}
+                                        value={course._id}
+                                        className="h-10 shrink-0 whitespace-nowrap rounded-lg border border-transparent px-4 py-2 text-sm font-semibold text-muted-foreground transition-all hover:bg-background/70 hover:text-foreground data-[state=active]:border-primary/70 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-[0_0_0_1px_hsl(var(--primary)/0.35),0_10px_24px_hsl(var(--primary)/0.35)]"
+                                    >
+                                        {course.title}
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                        </Tabs>
+                    </div>
+
+                    <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <Input
                             placeholder="Search payments..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="max-w-sm"
+                            className="w-full sm:max-w-sm"
                             aria-label="Search payments"
                         />
-                        <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Filter by status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Status</SelectItem>
-                                <SelectItem value="success">Success</SelectItem>
-                                <SelectItem value="pending">Pending</SelectItem>
-                                <SelectItem value="review">Review</SelectItem>
-                                <SelectItem value="failed">Failed</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
+                            <Select
+                                value={selectedBatchId}
+                                onValueChange={setSelectedBatchId}
+                            >
+                                <SelectTrigger className="w-full sm:w-[230px]">
+                                    <SelectValue placeholder="Filter by batch" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Batches</SelectItem>
+                                    {batches.map((batch) => (
+                                        <SelectItem key={batch._id} value={batch._id}>
+                                            {batch.title}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger className="w-full sm:w-[180px]">
+                                    <SelectValue placeholder="Filter by status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Status</SelectItem>
+                                    <SelectItem value="success">Success</SelectItem>
+                                    <SelectItem value="pending">Pending</SelectItem>
+                                    <SelectItem value="review">Review</SelectItem>
+                                    <SelectItem value="failed">Failed</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div className="overflow-x-auto rounded-lg shadow">

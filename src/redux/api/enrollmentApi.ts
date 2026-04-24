@@ -8,7 +8,15 @@ export interface EnrollmentInitiateRequest {
 export interface EnrollmentResponse {
   _id: string;
   enrollmentId: string;
+  studentId?: string;
   userId: string;
+  student?: {
+    _id?: string;
+    name?: string;
+    email?: string;
+    phone?: string;
+    address?: string | null;
+  };
   batchId: {
     _id: string;
     title: string;
@@ -36,10 +44,13 @@ export interface EnrollmentResponse {
   watchedVideos?: string[];
   quizScore?: number;
   course?: {
+    _id?: string;
     title: string;
+    slug?: string;
     totalLessons?: number;
   };
   batch?: {
+    _id?: string;
     title: string;
   };
   isCertificateAvailable?: boolean;
@@ -86,7 +97,7 @@ const enrollmentApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Get all enrollments (supports search, pagination, sorting)
-    getAllEnrollments: build.query<{ data: EnrollmentResponse[]; meta?: { total: number; page: number; limit: number; totalPages: number } }, { status?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string }>({
+    getAllEnrollments: build.query<{ data: EnrollmentResponse[]; meta?: { total: number; page: number; limit: number; totalPages: number } }, { status?: string; page?: number; limit?: number; search?: string; courseId?: string; batchId?: string; sortBy?: string; sortOrder?: string }>({
       query: (params) => {
         let cleaned = params
           ? Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== null))

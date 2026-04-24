@@ -53,12 +53,12 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
         <CardDescription>View and manage all courses in the system</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center justify-between gap-4 mb-6">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search courses..." className="pl-9" />
           </div>
-          <Select>
+          {/* <Select>  
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
@@ -68,7 +68,7 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
               <SelectItem value="design">Design</SelectItem>
               <SelectItem value="business">Business</SelectItem>
             </SelectContent>
-          </Select>
+          </Select> */}
           <Select>
             <SelectTrigger className="w-32">
               <SelectValue placeholder="Status" />
