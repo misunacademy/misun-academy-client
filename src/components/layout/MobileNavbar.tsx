@@ -71,12 +71,6 @@ export default function MobileNavbar() {
                     isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-1 pointer-events-none'
                 )}
             >
-                {/* <Link
-                    onClick={() => setIsOpen(!isOpen)}
-                    href="/"
-                    className="text-lg h-14 flex items-center border-b border-dark">
-                    Home
-                </Link> */}
                 <Link
                     onClick={() => setIsOpen(!isOpen)}
                     href="/"
@@ -121,13 +115,6 @@ export default function MobileNavbar() {
                         আমার ক্লাসগুলো
                     </Link>
                 ) : null}
-                {/* <Link
-                    onClick={() => setIsOpen(!isOpen)}
-                    href="/blogs"
-                    className="text-lg h-14 flex items-center border-b border-primary"
-                >
-                    Blogs
-                </Link> */}
                 {!safeUser ? (
                     <Link
                         onClick={() => setIsOpen(!isOpen)}
@@ -168,6 +155,13 @@ export default function MobileNavbar() {
                             userRole === 'learner' && canSeeClasses && isEnrolled &&
                             <Link href="/enrollment-posters" className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla">
                                 আপনার ভর্তি পোস্টারসমূহ
+                            </Link>
+
+                        }
+                        {
+                            userRole === 'learner' && canSeeClasses && isEnrolled &&
+                            <Link href="/my-classes/certificates" className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla">
+                                সার্টিফিকেটসমূহ
                             </Link>
 
                         }

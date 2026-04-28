@@ -75,25 +75,25 @@ export default function MyClassesCertificatesPage() {
     }
   };
 
-  const handleDownloadCertificate = async (certificateId: string) => {
-    try {
-      setDownloadingCertificateId(certificateId);
-      const result = await verifyCertificate(certificateId).unwrap();
-      const verifiedCertificate = result?.data?.certificate;
+  // const handleDownloadCertificate = async (certificateId: string) => {
+  //   try {
+  //     setDownloadingCertificateId(certificateId);
+  //     const result = await verifyCertificate(certificateId).unwrap();
+  //     const verifiedCertificate = result?.data?.certificate;
 
-      if (!result?.data?.isValid || !verifiedCertificate) {
-        toast.error("Certificate is not available for download yet");
-        return;
-      }
+  //     if (!result?.data?.isValid || !verifiedCertificate) {
+  //       toast.error("Certificate is not available for download yet");
+  //       return;
+  //     }
 
-      downloadCertificatePdf(verifiedCertificate);
-      toast.success("Certificate PDF downloaded");
-    } catch {
-      toast.error("Failed to download certificate");
-    } finally {
-      setDownloadingCertificateId(null);
-    }
-  };
+  //     downloadCertificatePdf(verifiedCertificate);
+  //     toast.success("Certificate PDF downloaded");
+  //   } catch {
+  //     toast.error("Failed to download certificate");
+  //   } finally {
+  //     setDownloadingCertificateId(null);
+  //   }
+  // };
 
   const statusBadge = (status: string) => {
     const normalized = normalizeStatus(status);
@@ -254,19 +254,22 @@ export default function MyClassesCertificatesPage() {
 
                           <div className="flex flex-wrap items-center gap-2">
                             {statusBadge(certificate.status)}
+                       
+                            {
+                              certificate.status === 'active' &&
+                              <Button asChild size="sm" variant="outline" className="border-white/15 bg-white/[0.02] text-white/80 hover:bg-primary/10 hover:text-primary hover:border-primary/40">
+                                <a
+                                  href={`/verify-certificate/${certificate.certificateId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-1" />
+                                  view
+                                </a>
+                              </Button>
+                            }
 
-                            <Button asChild size="sm" variant="outline" className="border-white/15 bg-white/[0.02] text-white/80 hover:bg-primary/10 hover:text-primary hover:border-primary/40">
-                              <a
-                                href={`/verify-certificate/${certificate.certificateId}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <ExternalLink className="h-4 w-4 mr-1" />
-                                Verify
-                              </a>
-                            </Button>
-
-                            {normalizedStatus === "approved" ? (
+                            {/* {normalizedStatus === "approved" ? (
                               <Button
                                 size="sm"
                                 className="bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]"
@@ -278,7 +281,7 @@ export default function MyClassesCertificatesPage() {
                                 ) : null}
                                 Download
                               </Button>
-                            ) : null}
+                            ) : null} */}
                           </div>
                         </div>
 

@@ -706,7 +706,7 @@ const MyClassesPage = () => {
                   <span className="sm:hidden">Recordings</span>
                 </TabsTrigger>
 
-                <TabsTrigger
+                {/* <TabsTrigger
                   value="certificates"
                   className="
                     shrink-0 whitespace-nowrap flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-none border-b-2 border-transparent
@@ -719,7 +719,7 @@ const MyClassesPage = () => {
                   <ShieldCheck className="w-4 h-4" />
                   <span className="hidden sm:inline">Certificates</span>
                   <span className="sm:hidden">Certificates</span>
-                </TabsTrigger>
+                </TabsTrigger> */}
               </TabsList>
             </div>
           </div>
@@ -732,7 +732,7 @@ const MyClassesPage = () => {
             <LiveRecordingsTab />
           </TabsContent>
 
-          <TabsContent value="certificates" className="mt-0">
+          {/* <TabsContent value="certificates" className="mt-0">
             <div className="relative rounded-2xl border border-primary/20 bg-[#060f0a] overflow-hidden flex flex-col items-center justify-center py-20 gap-5 text-center px-6">
               <div
                 className="absolute inset-0 opacity-[0.10] pointer-events-none"
@@ -762,7 +762,7 @@ const MyClassesPage = () => {
                 </button>
               </Link>
             </div>
-          </TabsContent>
+          </TabsContent> */}
         </Tabs>
       </div>
       </div>

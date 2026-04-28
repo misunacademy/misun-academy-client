@@ -16,7 +16,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User, LogOut, UserCircle, Sparkles, LayoutDashboard } from 'lucide-react';
-import { FaRegFileAlt } from 'react-icons/fa';
+import { FaCertificate, FaRegFileAlt } from 'react-icons/fa';
 
 export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
     const { user, signOut } = useAuth();
@@ -37,7 +37,7 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
             track('InitiateCheckout', {
                 content_name: 'Graphic Design Course',
                 content_type: 'course',
-                value: 4000,
+                value: 4800,
                 currency: 'BDT',
             })
         );
@@ -129,6 +129,16 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
                                 <Link href="/enrollment-posters" className="">
                                     <FaRegFileAlt className="mr-2 h-4 w-4" />
                                     Your Enrollment Posters
+                                </Link>
+                            </DropdownMenuItem>
+
+                        }
+                        {
+                            userRole === 'learner' && canSeeClasses && isEnrolled &&
+                            <DropdownMenuItem asChild>
+                                <Link href="/my-classes/certificates" className="">
+                                    <FaCertificate className="mr-2 h-4 w-4" />
+                                    Certificates
                                 </Link>
                             </DropdownMenuItem>
 
