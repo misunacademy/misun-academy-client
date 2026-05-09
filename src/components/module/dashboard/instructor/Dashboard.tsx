@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   BookOpen, Users, Layers, Plus, ChevronDown, ChevronRight,
   Edit, Trash2, Video, FileText, Loader2, GripVertical, Book, ArrowUp, ArrowDown,
+  Eye,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
 import {
   useGetInstructorCoursesQuery,
   useGetInstructorCourseModulesQuery,
@@ -390,9 +392,21 @@ function ModuleCard({
   const [expanded, setExpanded] = useState(false);
   const [lessonDialog, setLessonDialog] = useState<{ open: boolean; mode: "create" | "edit"; data?: InstructorLesson }>({ open: false, mode: "create" });
   const [deleteLessonId, setDeleteLessonId] = useState<string | null>(null);
+  const [playingLesson, setPlayingLesson] = useState<InstructorLesson | null>(null);
   const [deleteLesson] = useDeleteInstructorLessonMutation();
   const { data: lessonsData, refetch: refetchLessons } = useGetInstructorModuleLessonsQuery(module._id, { skip: !expanded });
   const lessons = (lessonsData?.data || []) as InstructorLesson[];
+
+  const resolveLessonUrl = (lesson: InstructorLesson): string | null => {
+    if (lesson.videoUrl) return lesson.videoUrl;
+    if (lesson.videoSource === "youtube" && lesson.videoId) {
+      return `https://www.youtube.com/watch?v=${lesson.videoId}`;
+    }
+    if (lesson.videoSource === "googledrive" && lesson.videoId) {
+      return `https://drive.google.com/file/d/${lesson.videoId}/preview`;
+    }
+    return null;
+  };
 
   const handleDeleteLesson = async () => {
     if (!deleteLessonId) return;
@@ -458,6 +472,10 @@ function ModuleCard({
                   </div>
                   <div className="flex items-center gap-1">
                     {lesson.isMandatory && <Badge variant="outline" className="text-xs">Required</Badge>}
+
+                    <Button variant="ghost" size="sm" onClick={() => setPlayingLesson(lesson)}>
+                      <Eye className="h-3 w-3" />
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => setLessonDialog({ open: true, mode: "edit", data: lesson })}><Edit className="h-3 w-3" /></Button>
                     <Button variant="ghost" size="sm" onClick={() => setDeleteLessonId(lesson._id)}><Trash2 className="h-3 w-3 text-destructive" /></Button>
                   </div>
@@ -467,6 +485,61 @@ function ModuleCard({
           )}
         </CardContent>
       )}
+
+      <Dialog
+        open={!!playingLesson}
+        onOpenChange={(open) => {
+          if (!open) setPlayingLesson(null);
+        }}
+      >
+        <DialogContent className="max-w-4xl w-full bg-[#060f0a] border border-primary/25 text-white">
+          <DialogHeader>
+            <DialogTitle>{playingLesson?.title}</DialogTitle>
+            {playingLesson?.type && (
+              <DialogDescription className="text-white/70 capitalize">
+                {playingLesson.type}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          {playingLesson ? (
+            (() => {
+              const lessonUrl = resolveLessonUrl(playingLesson);
+              if (playingLesson.type === "video" && lessonUrl) {
+                if (playingLesson.videoSource === "googledrive") {
+                  return (
+                    <div className="relative aspect-video w-full rounded-lg overflow-hidden">
+                      <iframe
+                        src={lessonUrl}
+                        className="absolute inset-0 w-full h-full"
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        allowFullScreen
+                        title={playingLesson.title}
+                      />
+                    </div>
+                  );
+                }
+                return (
+                  <div className="relative aspect-video w-full rounded-lg overflow-hidden">
+                    <YoutubePrivatePlayer url={lessonUrl} className="absolute inset-0 w-full h-full" />
+                  </div>
+                );
+              }
+
+              if (playingLesson.type !== "video" && playingLesson.content) {
+                return (
+                  <div className="max-h-[60vh] overflow-y-auto whitespace-pre-wrap text-sm text-white/90">
+                    {playingLesson.content}
+                  </div>
+                );
+              }
+
+              return (
+                <p className="text-sm text-white/70">No preview available for this lesson.</p>
+              );
+            })()
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
       {lessonDialog.open && (
         <LessonFormDialog

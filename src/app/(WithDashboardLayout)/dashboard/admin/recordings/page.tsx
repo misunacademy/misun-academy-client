@@ -220,6 +220,13 @@ export default function RecordingsPage() {
   const getBatchCourseId = (batch: Batch) =>
     typeof batch.courseId === "string" ? batch.courseId : batch.courseId._id;
 
+  const getBatchCourseTitle = (batch: Batch) => {
+    if (typeof batch.courseId === "string") {
+      return courses.find((course: Course) => course._id === batch.courseId)?.title;
+    }
+    return batch.courseId.title;
+  };
+
   const filteredFilterBatches = filters.courseId
     ? batches.filter((batch) => getBatchCourseId(batch) === filters.courseId)
     : batches;
@@ -302,7 +309,7 @@ export default function RecordingsPage() {
               <SelectItem value="all">All Batches</SelectItem>
               {filteredFilterBatches.map((batch: Batch) => (
                 <SelectItem key={batch._id} value={batch._id}>
-                  {batch.title}
+                {getBatchCourseTitle(batch) || "Unknown Course"} - <strong>{batch.title}</strong> - {batch.status}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -614,7 +621,7 @@ function RecordingForm({
             <SelectContent>
               {batches.map((batch: Batch) => (
                 <SelectItem key={batch._id} value={batch._id}>
-                  {batch.title}
+                  {batch.title} - {batch.status}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -233,7 +233,7 @@ const EnrolledStudentTable = () => {
                                     <SelectItem value="all">All Batches</SelectItem>
                                     {batches.map((batch: any) => (
                                         <SelectItem key={batch._id} value={batch._id}>
-                                            {batch.title}
+                                          {batch.courseId.title} - <strong>{batch.title}</strong> - {batch.status}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

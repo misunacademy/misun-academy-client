@@ -154,24 +154,34 @@ const adminItems = [
         icon: Group,
     },
     {
-        title: "Student Management",
-        url: "/dashboard/admin/student",
-        icon: User2,
-    },
-    {
         title: "Live Class Recordings",
         url: "/dashboard/admin/recordings",
         icon: Video,
     },
     {
-        title: "Certificate Approval",
-        url: "/dashboard/admin/certificates",
-        icon: ShieldCheck,
+        title: "Student Management",
+        url: "/dashboard/admin/student",
+        icon: User2,
     },
     {
         title: "Payment Management",
         url: "/dashboard/admin/payment",
         icon: DollarSign,
+    },
+    {
+        title: "User Management",
+        url: "/dashboard/admin/users",
+        icon: Users,
+    },
+    {
+        title: "Students Progress Tracker",
+        url: "/dashboard/admin/students-progress-tracker",
+        icon: TrendingUp,
+    },
+    {
+        title: "Certificate Approval",
+        url: "/dashboard/admin/certificates",
+        icon: ShieldCheck,
     },
     {
         title: "Email Management",
@@ -182,15 +192,6 @@ const adminItems = [
         title: "Reports",
         url: "/dashboard/admin/reports",
         icon: FileText,
-    },{
-        title: "Students Progress Tracker",
-        url: "/dashboard/admin/students-progress-tracker",
-        icon: TrendingUp,
-    },
-    {
-        title: "User Management",
-        url: "/dashboard/admin/users",
-        icon: Users,
     },
     {
         title: "Settings",

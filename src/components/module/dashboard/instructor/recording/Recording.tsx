@@ -112,7 +112,7 @@ function RecordingForm({
                         <SelectContent>
                             {batches.map(b => (
                                 <SelectItem key={b._id} value={b._id}>
-                                    {b.title || `Batch #${b.batchNumber}`}
+                                    {b.title} - {b.status}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -406,7 +406,7 @@ export default function RecordingPage() {
                             <SelectItem value="all">All Batches</SelectItem>
                             {filterBatches.map((b: any) => (
                                 <SelectItem key={b._id} value={b._id}>
-                                    {b.title || `Batch #${b.batchNumber}`}
+                                    {b.title} - {b.status}
                                 </SelectItem>
                             ))}
                         </SelectContent>

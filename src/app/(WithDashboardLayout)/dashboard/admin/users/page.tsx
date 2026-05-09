@@ -15,6 +15,7 @@ import { useState, useEffect, FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { useGetAllUsersQuery, useCreateAdminMutation, useUpdateUserMutation, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
+import type { BatchResponse } from "@/redux/api/batchApi";
 import type { UsersListResponse, UpdateUserRequest } from "@/redux/api/adminApi";
 import { toast } from 'sonner';
 
@@ -177,6 +178,12 @@ export default function AdminUsers() {
 
   // Typed server response and current page rows
   const filteredUsers: User[] = (resp?.data as User[] | undefined) || [];
+  const batches = (batchesData?.data as BatchResponse[] | undefined) || [];
+
+  const getBatchCourseTitle = (batch: BatchResponse) => {
+    if (typeof batch.courseId === "string") return undefined;
+    return batch.courseId.title;
+  };
 
   const getRoleBadgeVariant = (role: string) => {
     const lr = role?.toLowerCase?.() ?? '';
@@ -226,7 +233,7 @@ export default function AdminUsers() {
       setIsExporting(false);
     }
   };
-  console.log(filteredUsers)
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -273,17 +280,21 @@ export default function AdminUsers() {
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="name" className="text-right">Name</Label>
-                    <Input id="name" name="name" className="col-span-3" required />
+                    <Input id="name" name="name" placeholder="Enter your name..." className="col-span-3" required />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="email" className="text-right">Email</Label>
-                    <Input id="email" name="email" type="email" className="col-span-3" required />
+                    <Input id="email" name="email" type="email" placeholder="Enter your email.." className="col-span-3" required />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="password" className="text-right">Password</Label>
-                    <Input id="password" name="password" type="password" className="col-span-3" required />
+                    <Input id="password" name="password" type="password" placeholder="*****" className="col-span-3" required />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
+                  <p className="text-xs text-muted-foreground text-justify">
+                    <span className="text-red-500">Note:*</span>
+                    The new user will receive an email to verify their account. Please ensure the email address is correct. This user will set default role as &ldquo;learner&ldquo; and can be updated later as your desired.
+                  </p>
+                  {/* <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="role" className="text-right">Role</Label>
                     <Select name="role" defaultValue="learner">
                       <SelectTrigger className="col-span-3">
@@ -296,7 +307,7 @@ export default function AdminUsers() {
                         <SelectItem value="superadmin">Super Admin</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
@@ -466,8 +477,9 @@ export default function AdminUsers() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Batches</SelectItem>
-                {(batchesData?.data || []).map((b: { _id: string; title: string }) => (
-                  <SelectItem key={b._id} value={b.title}>{b.title}</SelectItem>
+                {batches.map((b) => (
+                  <SelectItem key={b._id} value={b.title}>  {getBatchCourseTitle(b) || "Unknown Course"} - <strong>{b.title}</strong> - {b.status}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>

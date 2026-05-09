@@ -32,7 +32,7 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
   const [open, setOpen] = useState(false);
   const { data: courseData } = useGetCourseByIdQuery(courseId);
   const { data: instructorsData, isLoading: instructorsLoading } =
-    useGetAllInstructorProfilesQuery();
+    useGetAllInstructorProfilesQuery({ unassignedOnly: true });
   const [assignInstructor, { isLoading: isSaving }] =
     useAssignCourseInstructorMutation();
 

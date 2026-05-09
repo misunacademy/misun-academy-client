@@ -57,7 +57,7 @@ export default function StudentsPage() {
     const { data: coursesData, isLoading: coursesLoading } = useGetInstructorCoursesQuery();
     const courses: InstructorCourse[] = coursesData?.data || [];
 
-    const [selectedCourseId, setSelectedCourseId] = useState("all");
+
     const [selectedBatchId, setSelectedBatchId] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [search, setSearch] = useState("");
@@ -72,15 +72,19 @@ export default function StudentsPage() {
     }, [search]);
 
     // Reset batch when course changes
-    useEffect(() => { setSelectedBatchId("all"); setPageIndex(0); }, [selectedCourseId]);
+    useEffect(() => { setSelectedBatchId("all"); setPageIndex(0); }, []);
     useEffect(() => { setPageIndex(0); }, [statusFilter, debouncedSearch]);
 
-    // Batches for the selected course
     const courseBatches = useMemo(() => {
-        if (selectedCourseId === "all") return courses.flatMap(c => (c.batches || []).map(b => ({ ...b, courseTitle: c.title })));
-        const course = courses.find(c => c._id === selectedCourseId);
-        return (course?.batches || []).map(b => ({ ...b, courseTitle: course?.title || "" }));
-    }, [courses, selectedCourseId]);
+        return courses.flatMap((course) =>
+            (course.batches || []).map((batch) => ({
+                ...batch,
+                courseId: course._id,
+                courseTitle: course.title,
+            }))
+        );
+    }, [courses]);
+
 
     // When a specific batch is selected use it; otherwise fall back to the first available batch.
     // (Full multi-batch aggregation would require a dedicated server endpoint.)
@@ -147,15 +151,20 @@ export default function StudentsPage() {
             },
         },
         {
-            accessorKey: "phone",
-            header: "Phone",
-            cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original?.phone}</span>,
-        },
-        {
+            accessorKey: "enrollmentId",
+            header: "Enrollment ID",
+            cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original?.enrollmentId}</span>,
+        }, {
             accessorKey: "email",
             header: "Email",
             cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original.email}</span>,
         },
+        {
+            accessorKey: "phone",
+            header: "Phone",
+            cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original?.phone}</span>,
+        },
+
         {
             accessorKey: "courseTitle",
             header: "Course",
@@ -296,7 +305,7 @@ export default function StudentsPage() {
                                     <SelectItem value="all">All Batches</SelectItem>
                                     {courseBatches.map((b: any) => (
                                         <SelectItem key={b._id} value={b._id}>
-                                            {b.title || `Batch #${b.batchNumber}`}
+                                            {b.title} - {b.status}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

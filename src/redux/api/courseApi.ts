@@ -248,8 +248,11 @@ const courseApi = baseApi.injectEndpoints({
     }),
 
     // Admin: get all active instructor profiles for assignment UI
-    getAllInstructorProfiles: build.query<{ data: any[] }, void>({
-      query: () => ({ url: "/admin/instructors" }),
+    getAllInstructorProfiles: build.query<{ data: any[] }, { unassignedOnly?: boolean } | void>({
+      query: (params) =>
+        params
+          ? { url: "/admin/instructors", params }
+          : { url: "/admin/instructors" },
       providesTags: ["Instructors"],
     }),
   }),

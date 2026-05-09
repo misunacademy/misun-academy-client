@@ -133,7 +133,7 @@ const PaymentTable = () => {
                 cell: ({ row }) => row.original.method,
             },
             {
-                accessorFn: (row) => row.student ?.name ,
+                accessorFn: (row) => row.student?.name,
                 id: 'student.name',
                 header: 'Student',
                 cell: ({ row }) => {
@@ -366,7 +366,7 @@ const PaymentTable = () => {
                                     <SelectItem value="all">All Batches</SelectItem>
                                     {batches.map((batch) => (
                                         <SelectItem key={batch._id} value={batch._id}>
-                                            {batch.title}
+                                            {typeof (batch.courseId) === 'string' ? " " : `${batch.courseId.title}`}  - <strong>{batch.title}</strong> - {batch.status}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

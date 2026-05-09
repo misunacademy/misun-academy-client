@@ -227,7 +227,7 @@ const StudentProgressTracker = () => {
                                 <SelectItem value="all">All Batches</SelectItem>
                                 {batches.map((batch) => (
                                     <SelectItem key={batch._id} value={batch._id}>
-                                        {batch.title}
+                                        {typeof (batch.courseId) === 'string' ? " " : `${batch.courseId.title}`}  - <strong>{batch.title}</strong> - {batch.status}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -380,7 +380,7 @@ const StudentProgressTracker = () => {
 
                     <div className="mt-6 flex items-center justify-between">
                         <p className="text-sm text-muted-foreground">
-                              Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, meta?.total ?? 0)} of {meta?.total ?? 0} students
+                            Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, meta?.total ?? 0)} of {meta?.total ?? 0} students
                         </p>
 
                         <div className="flex items-center gap-2">
@@ -393,10 +393,10 @@ const StudentProgressTracker = () => {
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
                             <div className="flex items-center gap-1">
-                                    <span className="text-sm text-muted-foreground">
-                                        Page {page} of {meta?.totalPages ?? 1}
-                                    </span>
-                                </div>
+                                <span className="text-sm text-muted-foreground">
+                                    Page {page} of {meta?.totalPages ?? 1}
+                                </span>
+                            </div>
                             <Button
                                 variant="outline"
                                 size="sm"
