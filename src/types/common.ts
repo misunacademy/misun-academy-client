@@ -378,13 +378,18 @@ export interface Pricing {
 }
 
 export interface Enrollment {
-    capacity?: number;
-    currentEnrollment?: number;
-    status?: 'open' | 'closed' | 'waitlist' | 'coming_soon';
-    startDate?: Date;
-    endDate?: Date;
-    enrollmentDeadline?: Date;
-    waitlistAvailable?: boolean;
+    _id?: string;
+    userId: string;
+    batchId: string;
+    enrollmentId?: string; // Optional - assigned after payment confirmation
+    paymentId?: string;
+    status: EnrollmentStatus;
+    enrolledAt: Date;
+    completedAt?: Date;
+    certificateIssued: boolean;
+    certificateId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export interface Instructor {

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { BookOpen, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video, Search, CreditCard, ShieldCheck, ImageDown, TrendingUp, Globe, Mail } from "lucide-react";
+import { BookOpen, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video, Search, CreditCard, ShieldCheck, ImageDown, TrendingUp, Globe, Mail, GraduationCap, LayoutDashboard } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from 'next/link';
 import {
@@ -117,7 +117,25 @@ const employeeItems = [
         url: "/dashboard/employee/settings",
         icon: Settings,
     },
-]
+];
+
+const instructorItems = [
+    {
+        title: "Dashboard",
+        url: "/dashboard/instructor",
+        icon: LayoutDashboard,
+    },
+    {
+        title: "Live Class Recordings",
+        url: "/dashboard/instructor/recordings",
+        icon: Video,
+    },
+    {
+        title: "Students",
+        url: "/dashboard/instructor/students",
+        icon: User2,
+    },
+];
 
 const adminItems = [
     {
@@ -195,22 +213,22 @@ export function AppSidebar() {
     // Handle both uppercase (API) and lowercase (enum) role values
     const userRole = (user as any)?.role?.toLowerCase() || '';
 
+    const isInstructor = userRole === Role.INSTRUCTOR.toLowerCase();
     const isAdmin = [
         Role.SUPERADMIN.toLowerCase(),
         Role.ADMIN.toLowerCase(),
-        Role.INSTRUCTOR.toLowerCase()
     ].includes(userRole);
     const isEmployee = userRole === Role.EMPLOYEE.toLowerCase();
     // Build student menu based on enrollment status
-    const studentItems = isAdmin ? [] : [
+    const studentItems = (isAdmin || isInstructor) ? [] : [
         ...baseStudentItems,
         ...(hasEnrollments ? enrolledOnlyItems : []),
         ...bottomStudentItems,
     ];
 
-    const items = isAdmin ? adminItems : isEmployee ? employeeItems : studentItems;
+    const items = isAdmin ? adminItems : isInstructor ? instructorItems : isEmployee ? employeeItems : studentItems;
 
-    const panelText = isAdmin ? 'Admin Panel' : isEmployee ? 'Employee Panel' : 'Student Panel';
+    const panelText = isAdmin ? 'Admin Panel' : isInstructor ? 'Instructor Panel' : isEmployee ? 'Employee Panel' : 'Student Panel';
 
     const router = useRouter();
     const { signOut } = useAuth();

@@ -84,7 +84,7 @@ const certificateApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Get all certificates (pending, approved, rejected)
-    getCertificates: build.query<{ data: CertificateResponse[] }, { status?: string }>({
+    getCertificates: build.query<{ data: CertificateResponse[]; meta?: { total: number; page: number; limit: number; totalPages: number } }, { status?: string; page?: number; limit?: number }>({
       query: (params) => ({
         url: "/certificates",
         params,

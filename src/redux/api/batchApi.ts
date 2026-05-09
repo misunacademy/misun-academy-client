@@ -41,8 +41,8 @@ export interface BatchResponse {
 const batchApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
-    // Get all batches (public - filtered)
-    getAllBatches: build.query<{ data: BatchResponse[] }, { courseId?: string; status?: string; isPublished?: boolean }>({
+    // Get all batches (public - filtered) with pagination support
+    getAllBatches: build.query<{ data: BatchResponse[]; meta?: { total: number; page: number; limit: number; totalPages: number } }, { courseId?: string; status?: string; isPublished?: boolean; page?: number; limit?: number }>({
       query: (params) => {
         let cleaned = params
           ? Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== null))

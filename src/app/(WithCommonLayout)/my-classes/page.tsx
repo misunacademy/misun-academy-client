@@ -14,7 +14,6 @@ import {
   Clock,
   Radio,
   CheckCircle2,
-  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useGetStudentDashboardDataQuery } from "@/redux/features/student/studentApi";

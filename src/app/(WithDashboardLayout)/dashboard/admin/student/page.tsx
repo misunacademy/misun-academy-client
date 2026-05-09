@@ -1,4 +1,4 @@
-import EnrolledStudentTable from '@/components/module/dashboard/student/EnrolledStudent';
+import EnrolledStudentTable from '@/components/module/dashboard/admin/student/EnrolledStudent';
 
 const page = () => {
     return (

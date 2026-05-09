@@ -96,15 +96,14 @@ export default function BatchEdit() {
             description: (batch.data as any).description || '',
         };
 
-        // Use startTransition to avoid synchronous state update inside the effect
         startTransition(() => {
             setFormData(prev => {
-                // avoid unnecessary updates to prevent cascading renders
                 if (JSON.stringify(prev) === JSON.stringify(newFormData)) return prev;
                 return newFormData;
             });
         });
     }, [batch]);
+
 
     const handleInputChange = <K extends keyof FormState>(field: K, value: FormState[K]) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -186,20 +185,11 @@ export default function BatchEdit() {
                 </Button>
             </div>
 
-
+            {/* Batch Details Form */}
             <Card>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle>Edit Batch</CardTitle>
-                            <CardDescription>
-                                Update batch information
-                            </CardDescription>
-                        </div>
-                        {/* <Button variant="ghost" size="icon" onClick={resetForm}>
-                            <X className="w-4 h-4" />
-                        </Button> */}
-                    </div>
+                    <CardTitle>Edit Batch</CardTitle>
+                    <CardDescription>Update batch information</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -237,46 +227,28 @@ export default function BatchEdit() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="title">Batch Title *</Label>
-                                <Input
-                                    id="title"
-                                    value={formData.title}
+                                <Input id="title" value={formData.title}
                                     onChange={(e) => handleInputChange('title', e.target.value)}
-                                    placeholder="e.g. Batch 6"
-                                    required
-                                />
+                                    placeholder="e.g. Batch 6" required />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="price">Price (BDT) *</Label>
-                                <Input
-                                    id="price"
-                                    type="number"
-                                    value={formData.price}
+                                <Input id="price" type="number" value={formData.price}
                                     onChange={(e) => handleInputChange('price', e.target.value)}
-                                    placeholder="e.g. 4000"
-                                    required
-                                />
+                                    placeholder="e.g. 4000" required />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="manualPaymentPrice">Manual Payment Price (INR)</Label>
-                                <Input
-                                    id="manualPaymentPrice"
-                                    type="number"
-                                    min="0"
+                                <Label htmlFor="manualPaymentPrice">Manual Payment Price</Label>
+                                <Input id="manualPaymentPrice" type="number" min="0"
                                     value={formData.manualPaymentPrice}
                                     onChange={(e) => handleInputChange('manualPaymentPrice', e.target.value)}
-                                    placeholder="e.g. 3000"
-                                />
+                                    placeholder="e.g. 3000" />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="status">Status</Label>
-                                <Select
-                                    value={formData.status}
-                                    defaultValue={batch.data.status}
-                                    onValueChange={(val) => handleInputChange('status', val as BatchStatus)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
+                                <Select value={formData.status} defaultValue={batch.data.status}
+                                    onValueChange={(val) => handleInputChange('status', val as BatchStatus)}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                         {BATCH_STATUSES.map(status => (
                                             <SelectItem key={status.value} value={status.value}>
@@ -290,65 +262,39 @@ export default function BatchEdit() {
 
                         <div className="space-y-2">
                             <Label htmlFor="description">Description</Label>
-                            <Textarea
-                                id="description"
-                                value={formData.description}
+                            <Textarea id="description" value={formData.description}
                                 onChange={(e) => handleInputChange('description', e.target.value)}
-                                placeholder="Brief description of this batch"
-                                rows={3}
-                            />
+                                placeholder="Brief description of this batch" rows={3} />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="startDate">Batch Start Date *</Label>
-                                <Input
-                                    id="startDate"
-                                    type="date"
-                                    value={formData.startDate}
-                                    onChange={(e) => handleInputChange('startDate', e.target.value)}
-                                    required
-                                />
+                                <Input id="startDate" type="date" value={formData.startDate}
+                                    onChange={(e) => handleInputChange('startDate', e.target.value)} required />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="endDate">Batch End Date *</Label>
-                                <Input
-                                    id="endDate"
-                                    type="date"
-                                    value={formData.endDate}
-                                    onChange={(e) => handleInputChange('endDate', e.target.value)}
-                                    required
-                                />
+                                <Input id="endDate" type="date" value={formData.endDate}
+                                    onChange={(e) => handleInputChange('endDate', e.target.value)} required />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="enrollmentStartDate">Enrollment Start *</Label>
-                                <Input
-                                    id="enrollmentStartDate"
-                                    type="date"
-                                    value={formData.enrollmentStartDate}
-                                    onChange={(e) => handleInputChange('enrollmentStartDate', e.target.value)}
-                                    required
-                                />
+                                <Input id="enrollmentStartDate" type="date" value={formData.enrollmentStartDate}
+                                    onChange={(e) => handleInputChange('enrollmentStartDate', e.target.value)} required />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="enrollmentEndDate">Enrollment End *</Label>
-                                <Input
-                                    id="enrollmentEndDate"
-                                    type="date"
-                                    value={formData.enrollmentEndDate}
-                                    onChange={(e) => handleInputChange('enrollmentEndDate', e.target.value)}
-                                    required
-                                />
+                                <Input id="enrollmentEndDate" type="date" value={formData.enrollmentEndDate}
+                                    onChange={(e) => handleInputChange('enrollmentEndDate', e.target.value)} required />
                             </div>
                         </div>
 
                         <div className="flex gap-2 justify-end">
-                            <Button type="button" variant="outline" onClick={resetForm}>
-                                Cancel
-                            </Button>
+                            <Button type="button" variant="outline" onClick={resetForm}>Cancel</Button>
                             <Button type="submit" disabled={isUpdating}>
                                 {isUpdating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                                 Update Batch

@@ -1,4 +1,4 @@
-import BatchDashboard from '@/components/module/dashboard/batch/Batch';
+import BatchDashboard from '@/components/module/dashboard/admin/batch/Batch';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 

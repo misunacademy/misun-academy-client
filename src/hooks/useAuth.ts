@@ -377,10 +377,13 @@ function getPostLoginDestination(
   switch (role.toLowerCase()) {
     case 'superadmin':
     case 'admin':
-    case 'employee':
-    case 'instructor':
       return '/dashboard/admin';
+    case 'instructor':
+      return '/dashboard/instructor';
+    case 'employee':
+      return '/dashboard/employee';
     case 'learner':
+      return '/my-classes';
     default:
       return '/my-classes';
   }

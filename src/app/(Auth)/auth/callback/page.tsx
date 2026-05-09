@@ -39,10 +39,16 @@ function AuthCallbackContent() {
 
     switch (role.toLowerCase()) {
       case 'superadmin':
-      case 'admin':
-      case 'employee':
-      case 'instructor':
         destination = '/dashboard/admin';
+        break;
+      case 'admin':
+        destination = '/dashboard/admin';
+        break;
+      case 'instructor':
+        destination = '/dashboard/instructor';
+        break;
+      case 'employee':
+        destination = '/dashboard/employee';
         break;
       case 'learner':
         destination = '/my-classes';

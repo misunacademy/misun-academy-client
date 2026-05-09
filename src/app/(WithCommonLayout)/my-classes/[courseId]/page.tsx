@@ -156,10 +156,13 @@ export default function CourseDetails() {
   const [showCongratulations, setShowCongratulations] = useState(true);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
 
-  const { data: course, isLoading: courseLoading } = useGetCourseByIdQuery(courseId);
+  const { data: enrollments } = useGetEnrollmentsQuery();
+  const enrollment = enrollments?.data?.find((e: any) => e.batchId?.courseId?._id === courseId);
+  const batchId = enrollment?.batchId?._id as string | undefined;
+
+  const { data: course, isLoading: courseLoading } = useGetCourseByIdQuery({ id: courseId, batchId });
   const { data: progressData, isLoading: progressLoading, refetch: refetchProgress } = useGetCourseProgressQuery(courseId);
   const progress: CourseProgress | undefined = progressData?.data;
-  const { data: enrollments } = useGetEnrollmentsQuery();
   const [completeLesson] = useCompleteLessonMutation();
 
   const curriculum: ModuleType[] = useMemo(() => (course?.curriculum as ModuleType[]) || [], [course?.curriculum]);
@@ -178,8 +181,6 @@ export default function CourseDetails() {
     if (curriculum.length) setExpandedModules(new Set(curriculum.map((m) => m.moduleId)));
   }, [curriculum]);
 
-  const enrollment = enrollments?.data?.find((e: any) => e.batchId?.courseId?._id === courseId);
-  const batchId = enrollment?.batchId?._id;
   const { data: batchData } = useGetBatchByIdQuery(batchId || "", { skip: !batchId });
   const isBatchCompleted = batchData?.data?.status === "completed";
 
@@ -297,7 +298,12 @@ export default function CourseDetails() {
 
   const allResources = curriculum?.flatMap((module) =>
     module.lessons?.flatMap((lesson) =>
-      (lesson.resources || []).map((resource: any) => ({ ...resource, lessonTitle: lesson.title, moduleTitle: module.title })) || []
+      (lesson.resources || []).map((resource: any) => ({ 
+        ...resource, 
+        lessonTitle: lesson.title, 
+        moduleTitle: module.title,
+        lessonId: lesson.lessonId 
+      })) || []
     ) || []
   ) || [];
 
@@ -591,7 +597,7 @@ export default function CourseDetails() {
 
               {/* Resources tab */}
               <TabsContent value="resources" className="mt-4 space-y-3">
-                {allResources.length === 0 ? (
+                {allResources.filter((r)=>r?.lessonId===currentLesson?.lessonId)?.length === 0 ? (
                   <DarkCard className="p-8 text-center">
                     <div className="relative space-y-4">
                       <div className="w-14 h-14 bg-primary/10 border border-primary/25 rounded-2xl flex items-center justify-center mx-auto">
@@ -604,7 +610,7 @@ export default function CourseDetails() {
                     </div>
                   </DarkCard>
                 ) : (
-                  allResources.map((resource, index) => (
+                  allResources.filter((r)=>r?.lessonId===currentLesson?.lessonId)?.map((resource, index) => (
                     <DarkCard key={index} glowOnHover className="p-4">
                       <div className="flex items-start gap-3">
                         <div className="shrink-0 w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -679,7 +685,11 @@ export default function CourseDetails() {
                           onClick={() =>
                             setExpandedModules((prev) => {
                               const s = new Set(prev);
-                              s.has(module.moduleId) ? s.delete(module.moduleId) : s.add(module.moduleId);
+                              if (s.has(module.moduleId)) {
+                                s.delete(module.moduleId);
+                              } else {
+                                s.add(module.moduleId);
+                              }
                               return s;
                             })
                           }

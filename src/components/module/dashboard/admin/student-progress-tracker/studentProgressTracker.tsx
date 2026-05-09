@@ -67,7 +67,7 @@ const getProgressInfo = (enrollment: EnrollmentResponse) => {
 
 const StudentProgressTracker = () => {
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState("10");
+    const [limit, setLimit] = useState<number>(10);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [courseIdFilter, setCourseIdFilter] = useState("all");
@@ -94,7 +94,7 @@ const StudentProgressTracker = () => {
 
     const { data, isLoading, isError } = useGetEnrolledStudentsQuery({
         page,
-        limit: Number(limit),
+        limit,
         search: debouncedSearch || undefined,
         status: statusFilter || undefined,
         courseId: courseIdFilter !== "all" ? courseIdFilter : undefined,
@@ -103,7 +103,7 @@ const StudentProgressTracker = () => {
 
     const enrollments = useMemo(() => data?.data ?? [], [data?.data]);
     const meta = useMemo(
-        () => data?.meta ?? { total: 0, page: 1, limit: Number(limit), totalPages: 1 },
+        () => data?.meta ?? { total: 0, page: 1, limit: limit, totalPages: 1 },
         [data?.meta, limit]
     );
     const totalPages = Math.max(meta.totalPages || 1, 1);
@@ -254,10 +254,10 @@ const StudentProgressTracker = () => {
                             </SelectContent>
                         </Select>
 
-                        <Select
-                            value={limit}
+                        {/* <Select
+                            value={String(limit)}
                             onValueChange={(value) => {
-                                setLimit(value);
+                                setLimit(Number(value));
                                 setPage(1);
                             }}
                         >
@@ -269,7 +269,7 @@ const StudentProgressTracker = () => {
                                 <SelectItem value="20">20 per page</SelectItem>
                                 <SelectItem value="50">50 per page</SelectItem>
                             </SelectContent>
-                        </Select>
+                        </Select> */}
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -380,7 +380,7 @@ const StudentProgressTracker = () => {
 
                     <div className="mt-6 flex items-center justify-between">
                         <p className="text-sm text-muted-foreground">
-                            Page {meta.page} of {totalPages}
+                              Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, meta?.total ?? 0)} of {meta?.total ?? 0} students
                         </p>
 
                         <div className="flex items-center gap-2">
@@ -392,6 +392,11 @@ const StudentProgressTracker = () => {
                             >
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
+                            <div className="flex items-center gap-1">
+                                    <span className="text-sm text-muted-foreground">
+                                        Page {page} of {meta?.totalPages ?? 1}
+                                    </span>
+                                </div>
                             <Button
                                 variant="outline"
                                 size="sm"

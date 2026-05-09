@@ -18,6 +18,7 @@ import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { toast } from "sonner";
 import { Loader2, Book, Plus, X } from "lucide-react";
+import { InstructorAssignDialog } from "./[courseId]/page";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -319,6 +320,8 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
           <h1 className="text-3xl font-bold">{isNew ? "Create Course" : "Edit Course"}</h1>
           <p className="text-muted-foreground">Aligned with server course schema.</p>
         </div>
+        <div className="flex gap-2 items-center ">
+
         {!isNew && courseId && (
           <Button
             type="button"
@@ -329,6 +332,11 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
             Manage Content
           </Button>
         )}
+         {!isNew && courseId && (
+        <InstructorAssignDialog courseId={courseId} />
+      )}
+        </div>
+      
       </div>
 
       <Card>

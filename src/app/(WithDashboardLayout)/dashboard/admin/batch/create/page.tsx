@@ -1,9 +1,9 @@
-import BatchCrate from "@/components/module/dashboard/batch/Create";
+import BatchCrate from "@/components/module/dashboard/admin/batch/Create";
 
 
 const page = () => {
     return (
-       <div className="container mx-auto p-6 space-y-6">
+        <div className="container mx-auto p-6 space-y-6">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold">Batch Management</h1>

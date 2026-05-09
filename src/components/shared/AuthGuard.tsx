@@ -46,9 +46,15 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
         const hasDashboardAccess = hasAdminAccess || hasInstructorAccess || role === 'employee';
 
         // Redirect if user doesn't have access to the route
-        if (isAdminRoute && !hasAdminAccess && !hasInstructorAccess) {
+        if (isAdminRoute && !hasAdminAccess) {
             console.warn('[AuthGuard] Insufficient permissions for admin route');
-            router.replace('/my-classes');
+            if (hasInstructorAccess) {
+                router.replace('/dashboard/instructor');
+            } else if (role === 'employee') {
+                router.replace('/dashboard/employee');
+            } else {
+                router.replace('/my-classes');
+            }
             return;
         }
 
@@ -76,7 +82,7 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
                 if (hasAdminAccess) {
                     router.replace('/dashboard/admin');
                 } else if (hasInstructorAccess) {
-                    router.replace('/dashboard/admin');
+                    router.replace('/dashboard/instructor');
                 } else {
                     router.replace('/my-classes');
                 }

@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { CourseStats } from "@/components/module/dashboard/admin/CourseStats";
-import { CoursesTable } from "@/components/module/dashboard/admin/CoursesTable";
+import { CourseStats } from "@/components/module/dashboard/admin/course/CourseStats";
+import { CoursesTable } from "@/components/module/dashboard/admin/course/CoursesTable";
 import { Course } from "@/types/common";
 import { useGetAllCoursesQuery, useDeleteCourseMutation } from "@/redux/api/courseApi";
 import { toast } from "sonner";

@@ -40,7 +40,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Video, Edit, Trash2, Calendar, Clock, Loader2 } from "lucide-react"; 
+import { Plus, Video, Edit, Trash2, Calendar, Clock, Loader2, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import {
   useGetRecordingsQuery,
@@ -58,6 +58,7 @@ import type { BatchResponse } from "@/redux/api/batchApi";
 type Course = CourseResponse;
 type Batch = BatchResponse;
 import { format } from "date-fns";
+import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
 
 interface FormData {
   courseId: string;
@@ -77,6 +78,9 @@ export default function RecordingsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedRecording, setSelectedRecording] = useState<Recording | null>(null);
+  const [playingRecording, setPlayingRecording] = useState<Recording | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [filters, setFilters] = useState<{
     courseId?: string;
     batchId?: string;
@@ -87,7 +91,11 @@ export default function RecordingsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [recordingToDelete, setRecordingToDelete] = useState<Recording | null>(null);
 
-  const { data: recordingsData, isLoading } = useGetRecordingsQuery(filters);
+  const { data: recordingsData, isLoading } = useGetRecordingsQuery({
+    ...filters,
+    page,
+    limit,
+  });
   const { data: coursesData } = useGetAllCoursesQuery({});
   const { data: batchesData } = useGetAllBatchesQuery({});
 
@@ -199,6 +207,15 @@ export default function RecordingsPage() {
   const courses = coursesData?.data || [];
   const batches = batchesData?.data || [];
   const recordings = recordingsData?.data || [];
+  const meta = recordingsData?.meta ?? { page, limit, total: 0, totalPages: 1 };
+
+  const getRecordingUrl = (rec?: Recording | null) => {
+    if (!rec) return "";
+    if (rec.videoSource === "youtube") return `https://www.youtube.com/watch?v=${rec.videoId}`;
+    if (rec.videoSource === "googledrive") return `https://drive.google.com/file/d/${rec.videoId}/preview`;
+    // fallback to any stored url
+    return rec.videoUrl ?? "";
+  };
 
   const getBatchCourseId = (batch: Batch) =>
     typeof batch.courseId === "string" ? batch.courseId : batch.courseId._id;
@@ -253,6 +270,7 @@ export default function RecordingsPage() {
             onValueChange={(value) => {
               const nextCourseId = value === "all" ? undefined : value;
               setFilters({ ...filters, courseId: nextCourseId, batchId: undefined });
+              setPage(1);
             }}
           >
             <SelectTrigger className="w-[200px]">
@@ -271,7 +289,10 @@ export default function RecordingsPage() {
           <Select
             value={filters.batchId || "all"}
             onValueChange={(value) =>
-              setFilters({ ...filters, batchId: value === "all" ? undefined : value })
+              {
+                setFilters({ ...filters, batchId: value === "all" ? undefined : value });
+                setPage(1);
+              }
             }
           >
             <SelectTrigger className="w-[200px]">
@@ -295,12 +316,13 @@ export default function RecordingsPage() {
                   ? "published"
                   : "unpublished"
             }
-            onValueChange={(value) =>
+            onValueChange={(value) => {
               setFilters({
                 ...filters,
                 isPublished: value === "all" ? undefined : value === "published",
-              })
-            }
+              });
+              setPage(1);
+            }}
           >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="All Status" />
@@ -311,13 +333,30 @@ export default function RecordingsPage() {
               <SelectItem value="unpublished">Unpublished</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* <Select
+            value={String(limit)}
+            onValueChange={(value) => {
+              setLimit(Number(value));
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Rows per page" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10 per page</SelectItem>
+              <SelectItem value="20">20 per page</SelectItem>
+              <SelectItem value="50">50 per page</SelectItem>
+            </SelectContent>
+          </Select> */}
         </CardContent>
       </Card>
 
       {/* Recordings Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Recordings ({recordings.length})</CardTitle>
+          <CardTitle>Recordings ({meta.total})</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -401,6 +440,13 @@ export default function RecordingsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => setPlayingRecording(recording)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => openEditDialog(recording)}
                         >
                           <Edit className="h-4 w-4" />
@@ -412,7 +458,7 @@ export default function RecordingsPage() {
                           disabled={isDeleting}
                         >
                           <Trash2 className="h-4 w-4" />
-                        </Button> 
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -420,9 +466,59 @@ export default function RecordingsPage() {
               </TableBody>
             </Table>
           )}
+
+          <div className="mt-6 flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              Showing {meta.total === 0 ? 0 : ((page - 1) * limit) + 1} to {Math.min(page * limit, meta.total)} of {meta.total} recordings
+            </p>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((current) => Math.max(current - 1, 1))}
+                disabled={meta.page <= 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              <div className="flex items-center gap-1 px-3 py-1.5 text-sm text-muted-foreground">
+                Page {meta.page} of {meta.totalPages || 1}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((current) => Math.min(current + 1, meta.totalPages || 1))}
+                disabled={meta.page >= (meta.totalPages || 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
-
+      {/* preview Dialog */}
+      <Dialog
+        open={!!playingRecording}
+        onOpenChange={(open) => {
+          if (!open) setPlayingRecording(null);
+        }}
+      >
+        <DialogContent className="max-w-4xl w-full bg-[#060f0a] border border-primary/25 text-white">
+          <DialogHeader>
+            <DialogTitle>{playingRecording?.title}</DialogTitle>
+          </DialogHeader>
+          {playingRecording ? (
+            <div className="relative aspect-video w-full rounded-lg overflow-hidden">
+              <YoutubePrivatePlayer
+                url={getRecordingUrl(playingRecording)}
+                className="absolute inset-0 w-full h-full"
+              />
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>

@@ -3,9 +3,10 @@ import { baseApi } from "../../api/baseApi";
 const moduleApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         getCourseModules: builder.query({
-            query: (courseId) => ({
+            query: ({ courseId, batchId }) => ({
                 url: `/admin/modules/courses/${courseId}/modules`,
                 method: "GET",
+                params: { batchId },
             }),
             providesTags: ["Modules"],
         }),
@@ -16,11 +17,19 @@ const moduleApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Modules"],
         }),
+        getUnassignedCourseModules: builder.query({
+            query: (courseId) => ({
+                url: `/admin/modules/courses/${courseId}/modules/unassigned`,
+                method: "GET",
+            }),
+            providesTags: ["Modules"],
+        }),
         // Admin: Create module 
         createCourseModule: builder.mutation({
-            query: ({ courseId, ...data }) => ({
+            query: ({ courseId, batchId, ...data }) => ({
                 url: `/admin/modules/courses/${courseId}/modules`,
                 method: "POST",
+                params: { batchId },
                 body: data,
             }),
             invalidatesTags: ["Modules"],
@@ -43,9 +52,10 @@ const moduleApi = baseApi.injectEndpoints({
             invalidatesTags: ["Modules"],
         }),
         reorderModules: builder.mutation({
-            query: ({ courseId, moduleOrders }) => ({
+            query: ({ courseId, batchId, moduleOrders }) => ({
                 url: `/admin/modules/courses/${courseId}/modules/reorder`,
                 method: "PUT",
+                params: { batchId },
                 body: { moduleOrders },
             }),
             invalidatesTags: ["Modules"],
@@ -56,6 +66,7 @@ const moduleApi = baseApi.injectEndpoints({
 export const {
     useGetCourseModulesQuery,
     useGetModuleByIdQuery,
+    useGetUnassignedCourseModulesQuery,
     useCreateCourseModuleMutation,
     useUpdateCourseModuleMutation,
     useDeleteCourseModuleMutation,

@@ -1,4 +1,4 @@
-import StudentProgressTracker from "@/components/module/dashboard/student-progress-tracker/studentProgressTracker";
+import StudentProgressTracker from "@/components/module/dashboard/admin/student-progress-tracker/studentProgressTracker";
 
 
 const StudentsProgressTrackerPage = () => {

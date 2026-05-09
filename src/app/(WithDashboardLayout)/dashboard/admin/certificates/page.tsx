@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, CheckCircle, XCircle, Clock, Eye } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, Clock, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { useGetCertificatesQuery, useUpdateCertificateMutation, type CertificateResponse } from "@/redux/api/certificateApi";
 import { toast } from "sonner";
 
@@ -129,11 +129,28 @@ export default function CertificateManagementPage() {
   const [selectedCertificate, setSelectedCertificate] = useState<CertificateResponse | null>(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [activeTab, setActiveTab] = useState<"pending" | "approved" | "rejected">("pending");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
-  const { data, isLoading, refetch } = useGetCertificatesQuery({});
+  const { data, isLoading, refetch } = useGetCertificatesQuery({
+    status: activeTab,
+    page,
+    limit,
+  });
+
+  const { data: pendingMetaData } = useGetCertificatesQuery({ status: "pending", page: 1, limit: 1 });
+  const { data: approvedMetaData } = useGetCertificatesQuery({ status: "approved", page: 1, limit: 1 });
+  const { data: rejectedMetaData } = useGetCertificatesQuery({ status: "rejected", page: 1, limit: 1 });
+
   const [updateCertificate, { isLoading: isUpdating }] = useUpdateCertificateMutation();
 
   const certificates = data?.data || [];
+  const meta = data?.meta ?? { total: 0, page: 1, limit, totalPages: 1 };
+  const pendingCount = pendingMetaData?.meta?.total ?? 0;
+  const approvedCount = approvedMetaData?.meta?.total ?? 0;
+  const rejectedCount = rejectedMetaData?.meta?.total ?? 0;
+  const totalPages = meta.totalPages ?? 1;
 
   const pendingCertificates = certificates.filter((c) => c.status.toLowerCase() === 'pending');
   const approvedCertificates = certificates.filter((c) => normalizeStatus(c.status) === 'approved');
@@ -230,41 +247,76 @@ export default function CertificateManagementPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Pending</CardDescription>
-            <CardTitle className="text-3xl">{pendingCertificates.length}</CardTitle>
+            <CardTitle className="text-3xl">{pendingCount}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Approved</CardDescription>
-            <CardTitle className="text-3xl text-green-600">{approvedCertificates.length}</CardTitle>
+            <CardTitle className="text-3xl text-green-600">{approvedCount}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Rejected</CardDescription>
-            <CardTitle className="text-3xl text-red-600">{rejectedCertificates.length}</CardTitle>
+            <CardTitle className="text-3xl text-red-600">{rejectedCount}</CardTitle>
           </CardHeader>
         </Card>
       </div>
 
       {/* Certificate Lists */}
-      <Tabs defaultValue="pending" className="space-y-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => {
+          setActiveTab(value as "pending" | "approved" | "rejected");
+          setPage(1);
+        }}
+        className="space-y-4"
+      >
         <TabsList>
           <TabsTrigger value="pending">
-            Pending ({pendingCertificates.length})
+            Pending ({pendingCount})
           </TabsTrigger>
           <TabsTrigger value="approved">
-            Approved ({approvedCertificates.length})
+            Approved ({approvedCount})
           </TabsTrigger>
           <TabsTrigger value="rejected">
-            Rejected ({rejectedCertificates.length})
+            Rejected ({rejectedCount})
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending">
           <Card>
             <CardContent className="p-4">
-              <CertificateTable certificates={pendingCertificates} onViewDetails={openReviewDialog} />
+              <CertificateTable certificates={certificates} onViewDetails={openReviewDialog} />
+              <div className="mt-6 flex items-center justify-between gap-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {meta.total === 0 ? 0 : ((page - 1) * limit) + 1} to {Math.min(page * limit, meta.total)} of {meta.total} certificates
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((current) => Math.max(current - 1, 1))}
+                    disabled={meta.page <= 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-muted-foreground">
+                      Page {meta.page} of {totalPages}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((current) => Math.min(current + 1, totalPages))}
+                    disabled={meta.page >= totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -272,7 +324,35 @@ export default function CertificateManagementPage() {
         <TabsContent value="approved">
           <Card>
             <CardContent className="p-4">
-              <CertificateTable certificates={approvedCertificates} onViewDetails={openReviewDialog} />
+              <CertificateTable certificates={certificates} onViewDetails={openReviewDialog} />
+              <div className="mt-6 flex items-center justify-between gap-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {meta.total === 0 ? 0 : ((page - 1) * limit) + 1} to {Math.min(page * limit, meta.total)} of {meta.total} certificates
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((current) => Math.max(current - 1, 1))}
+                    disabled={meta.page <= 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-muted-foreground">
+                      Page {meta.page} of {totalPages}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((current) => Math.min(current + 1, totalPages))}
+                    disabled={meta.page >= totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -280,7 +360,35 @@ export default function CertificateManagementPage() {
         <TabsContent value="rejected">
           <Card>
             <CardContent className="p-4">
-              <CertificateTable certificates={rejectedCertificates} onViewDetails={openReviewDialog} />
+              <CertificateTable certificates={certificates} onViewDetails={openReviewDialog} />
+              <div className="mt-6 flex items-center justify-between gap-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {meta.total === 0 ? 0 : ((page - 1) * limit) + 1} to {Math.min(page * limit, meta.total)} of {meta.total} certificates
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((current) => Math.max(current - 1, 1))}
+                    disabled={meta.page <= 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-muted-foreground">
+                      Page {meta.page} of {totalPages}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((current) => Math.min(current + 1, totalPages))}
+                    disabled={meta.page >= totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

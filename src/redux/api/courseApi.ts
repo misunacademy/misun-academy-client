@@ -92,10 +92,16 @@ const courseApi = baseApi.injectEndpoints({
 
     // Get course by ID (public)
     // Returns the course object directly (transforms { data } -> data)
-    getCourseById: build.query<CourseResponse, string>({
-      query: (id) => ({
-        url: `/courses/${id}`,
-      }),
+    getCourseById: build.query<CourseResponse, string | { id: string; batchId?: string }>({
+      query: (arg) => {
+        const id = typeof arg === "string" ? arg : arg.id;
+        const batchId = typeof arg === "string" ? undefined : arg.batchId;
+
+        return {
+          url: `/courses/${id}`,
+          params: batchId ? { batchId } : undefined,
+        };
+      },
       transformResponse: (response: any) => response?.data,
       providesTags: ["Courses"],
     }),
@@ -230,6 +236,22 @@ const courseApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Courses"],
     }),
+
+    // Admin: assign one instructor to a course (or pass instructorId: null to unassign)
+    assignCourseInstructor: build.mutation<any, { courseId: string; instructorId: string | null }>({
+      query: ({ courseId, instructorId }) => ({
+        url: `/courses/${courseId}/instructor`,
+        method: "PATCH",
+        body: { instructorId },
+      }),
+      invalidatesTags: ["Courses", "Instructors"],
+    }),
+
+    // Admin: get all active instructor profiles for assignment UI
+    getAllInstructorProfiles: build.query<{ data: any[] }, void>({
+      query: () => ({ url: "/admin/instructors" }),
+      providesTags: ["Instructors"],
+    }),
   }),
 });
 
@@ -251,4 +273,6 @@ export const {
   useUpdateLessonMutation,
   useDeleteModuleMutation,
   useDeleteLessonMutation,
+  useAssignCourseInstructorMutation,
+  useGetAllInstructorProfilesQuery,
 } = courseApi;

@@ -41,7 +41,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCreateBatchMutation, useGetAllBatchesQuery, useUpdateBatchMutation, useDeleteBatchMutation } from '@/redux/features/batch/batchApi';
 import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { toast } from 'sonner';
-import { Loader2, Plus, X, Edit, Trash2 } from 'lucide-react';
+import { Loader2, X, Edit, Trash2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const BATCH_STATUSES = [
@@ -71,10 +71,14 @@ export default function BatchDashboard() {
     const [courseFilter, setCourseFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
     const router = useRouter();
     const { data: batches, isLoading, error, refetch } = useGetAllBatchesQuery({
         courseId: courseFilter === "all" ? undefined : courseFilter,
         status: statusFilter === "all" ? undefined : statusFilter,
+        page,
+        limit,
     });
     const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({ status: "published" });
     const [createBatch, { isLoading: isCreating }] = useCreateBatchMutation();
@@ -82,7 +86,7 @@ export default function BatchDashboard() {
     const [deleteBatch] = useDeleteBatchMutation();
 
     const courses = coursesData?.data || [];
-
+    console.log("batches", batches)
     const handleInputChange = (field: any, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
@@ -91,6 +95,11 @@ export default function BatchDashboard() {
         setFormData(INITIAL_FORM_STATE);
         setEditingBatchId(null);
         setShowForm(false);
+    };
+
+    // Reset to first page when filters change
+    const handleFilterChange = () => {
+        setPage(1);
     };
 
     const handleStatusChange = async (batchId: string, newStatus: string) => {
@@ -356,7 +365,7 @@ export default function BatchDashboard() {
                     <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center justify-end">
                         <div className="w-full md:w-64">
                             {/* <Label className="mb-1 block">Filter by Course</Label> */}
-                            <Select value={courseFilter} onValueChange={setCourseFilter}>
+                            <Select value={courseFilter} onValueChange={(val) => { setCourseFilter(val); handleFilterChange(); }}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="All Courses" />
                                 </SelectTrigger>
@@ -373,7 +382,7 @@ export default function BatchDashboard() {
 
                         <div className="w-full md:w-52">
                             {/* <Label className="mb-1 block">Filter by Status</Label> */}
-                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); handleFilterChange(); }}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="All Status" />
                                 </SelectTrigger>
@@ -400,7 +409,7 @@ export default function BatchDashboard() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                       
+
                                         <TableHead>Title</TableHead>
                                         <TableHead>Course</TableHead>
                                         <TableHead className="w-28">Price</TableHead>
@@ -416,7 +425,7 @@ export default function BatchDashboard() {
                                 <TableBody>
                                     {(batches?.data || []).map((batch: any) => (
                                         <TableRow key={batch._id}>
-                                           
+
                                             <TableCell className="font-medium">{batch.title}</TableCell>
                                             <TableCell>{batch.courseId?.title || 'N/A'}</TableCell>
                                             <TableCell>৳{batch.price}</TableCell>
@@ -470,6 +479,46 @@ export default function BatchDashboard() {
                         <div className="text-center py-12 text-muted-foreground">
                             <p className="text-lg">No batches found</p>
                             <p className="text-sm mt-2">Create your first batch to get started</p>
+                        </div>
+                    )}
+
+                    {/* Pagination Controls */}
+                    {(batches?.data && batches.data.length > 0) && (
+                        <div className="mt-6 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">
+                                    Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, batches?.meta?.total ?? 0)} of {batches?.meta?.total ?? 0} batches
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => setPage(Math.max(1, page - 1))}
+                                    disabled={page === 1 || isLoading}
+                                    className="h-9 w-9"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </Button>
+
+                                <div className="flex items-center gap-1">
+                                    <span className="text-sm text-muted-foreground">
+                                        Page {page} of {batches?.meta?.totalPages ?? 1}
+                                    </span>
+                                </div>
+
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => setPage(Math.min(batches?.meta?.totalPages ?? 1, page + 1))}
+                                    disabled={page === (batches?.meta?.totalPages ?? 1) || isLoading}
+                                    className="h-9 w-9"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </CardContent>

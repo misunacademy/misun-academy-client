@@ -28,6 +28,13 @@ const dashboardApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Dashboard"],
     }),
+
+    getInstructorDashboard: build.query<{ data: any }, void>({
+      query: () => ({
+        url: "/dashboard/instructor",
+      }),
+      providesTags: ["Dashboard"],
+    }),
   }),
 });
 
@@ -35,4 +42,5 @@ export const {
   useGetAdminDashboardQuery,
   useGetUserStatsQuery,
   useGetDashboardMetadataQuery,
+  useGetInstructorDashboardQuery,
 } = dashboardApi;

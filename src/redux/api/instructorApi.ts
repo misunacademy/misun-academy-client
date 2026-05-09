@@ -19,66 +19,172 @@ export interface InstructorProfileResponse {
   updatedAt: Date;
 }
 
+export interface InstructorModule {
+  _id: string;
+  courseId: string;
+  batchId?: string;
+  title: string;
+  description: string;
+  orderIndex: number;
+  estimatedDuration: string;
+  learningObjectives: string[];
+  status: 'draft' | 'published';
+  lessonCount: number;
+}
+
+export interface InstructorLesson {
+  _id: string;
+  moduleId: string;
+  title: string;
+  description?: string;
+  type: 'video' | 'reading' | 'quiz' | 'project';
+  orderIndex: number;
+  videoSource?: 'youtube' | 'googledrive';
+  videoId?: string;
+  videoUrl?: string;
+  videoDuration?: number;
+  content?: string;
+  isMandatory: boolean;
+  resources?: { title: string; type: 'link' | 'text'; url?: string; textContent?: string }[];
+}
+
+export interface InstructorCourse {
+  _id: string;
+  title: string;
+  slug?: string;
+  shortDescription?: string;
+  thumbnailImage?: string;
+  status?: string;
+  category?: string;
+  level?: string;
+  batches: {
+    _id: string;
+    title: string;
+    batchNumber: number;
+    status: string;
+    startDate: string;
+    endDate: string;
+    currentEnrollment: number;
+  }[];
+}
+
 const instructorApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
-    // Get instructor profile
+    // ── Profile ───────────────────────────────────────────────────────────────
     getInstructorProfile: build.query<{ data: InstructorProfileResponse }, void>({
-      query: () => ({
-        url: "/instructor/profile",
-      }),
+      query: () => ({ url: "/instructor/profile" }),
       providesTags: ["Instructors"],
     }),
 
-    // Update instructor profile
     updateInstructorProfile: build.mutation<any, Partial<InstructorProfileResponse>>({
-      query: (data) => ({
-        url: "/instructor/profile",
-        method: "PUT",
-        body: data,
-      }),
+      query: (data) => ({ url: "/instructor/profile", method: "PUT", body: data }),
       invalidatesTags: ["Instructors"],
     }),
 
-    // Get instructor dashboard
+    // ── Dashboard ─────────────────────────────────────────────────────────────
     getInstructorDashboard: build.query<{ data: any }, void>({
-      query: () => ({
-        url: "/instructor/dashboard",
-      }),
+      query: () => ({ url: "/instructor/dashboard" }),
       providesTags: ["Instructors"],
     }),
 
-    // Get assigned batches
+    // ── Batches ───────────────────────────────────────────────────────────────
     getAssignedBatches: build.query<{ data: any[] }, { status?: string }>({
-      query: (params) => ({
-        url: "/instructor/batches",
-        params,
-      }),
+      query: (params) => ({ url: "/instructor/batches", params }),
       providesTags: ["Batches", "Instructors"],
     }),
 
-    // Get batch students
     getBatchStudents: build.query<{ data: any[] }, string>({
-      query: (batchId) => ({
-        url: `/instructor/batches/${batchId}/students`,
-      }),
+      query: (batchId) => ({ url: `/instructor/batches/${batchId}/students` }),
       providesTags: ["Students", "Instructors"],
     }),
 
-    // Get pending submissions
+    getBatchStatistics: build.query<{ data: any }, string>({
+      query: (batchId) => ({ url: `/instructor/batches/${batchId}/statistics` }),
+      providesTags: ["Batches", "Instructors"],
+    }),
+
     getPendingSubmissions: build.query<{ data: any[] }, void>({
-      query: () => ({
-        url: "/instructor/submissions/pending",
-      }),
+      query: () => ({ url: "/instructor/submissions/pending" }),
       providesTags: ["Instructors"],
     }),
 
-    // Get batch statistics
-    getBatchStatistics: build.query<{ data: any }, string>({
-      query: (batchId) => ({
-        url: `/instructor/batches/${batchId}/statistics`,
+    // ── Assigned Courses ──────────────────────────────────────────────────────
+    getInstructorCourses: build.query<{ data: InstructorCourse[] }, void>({
+      query: () => ({ url: "/instructor/courses" }),
+      providesTags: ["Instructors", "Courses"],
+    }),
+
+    // ── Modules (instructor-scoped) ───────────────────────────────────────────
+    getInstructorCourseModules: build.query<{ data: InstructorModule[] }, { courseId: string; batchId: string }>({
+      query: ({ courseId, batchId }) => ({
+        url: `/instructor/courses/${courseId}/modules`,
+        params: { batchId },
       }),
-      providesTags: ["Batches", "Instructors"],
+      providesTags: ["Modules"],
+    }),
+
+    createInstructorModule: build.mutation<any, { courseId: string; batchId: string } & Partial<InstructorModule>>({
+      query: ({ courseId, batchId, ...data }) => ({
+        url: `/instructor/courses/${courseId}/modules`,
+        method: "POST",
+        params: { batchId },
+        body: data,
+      }),
+      invalidatesTags: ["Modules"],
+    }),
+
+    reorderInstructorModules: build.mutation<any, { courseId: string; batchId: string; moduleOrders: { moduleId: string; orderIndex: number }[] }>({
+      query: ({ courseId, batchId, moduleOrders }) => ({
+        url: `/instructor/courses/${courseId}/modules/reorder`,
+        method: "PUT",
+        params: { batchId },
+        body: { moduleOrders },
+      }),
+      invalidatesTags: ["Modules"],
+    }),
+
+    updateInstructorModule: build.mutation<any, { moduleId: string } & Partial<InstructorModule>>({
+      query: ({ moduleId, ...data }) => ({
+        url: `/instructor/modules/${moduleId}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Modules"],
+    }),
+
+    deleteInstructorModule: build.mutation<any, string>({
+      query: (moduleId) => ({ url: `/instructor/modules/${moduleId}`, method: "DELETE" }),
+      invalidatesTags: ["Modules", "Lessons"],
+    }),
+
+    // ── Lessons (instructor-scoped) ───────────────────────────────────────────
+    getInstructorModuleLessons: build.query<{ data: InstructorLesson[] }, string>({
+      query: (moduleId) => ({ url: `/instructor/modules/${moduleId}/lessons` }),
+      providesTags: ["Lessons"],
+    }),
+
+    createInstructorLesson: build.mutation<any, { moduleId: string } & Partial<InstructorLesson>>({
+      query: ({ moduleId, ...data }) => ({
+        url: `/instructor/modules/${moduleId}/lessons`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Lessons", "Modules"],
+    }),
+
+    updateInstructorLesson: build.mutation<any, { lessonId: string } & Partial<InstructorLesson>>({
+      query: ({ lessonId, ...data }) => ({
+        url: `/instructor/lessons/${lessonId}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Lessons"],
+    }),
+
+    deleteInstructorLesson: build.mutation<any, string>({
+      query: (lessonId) => ({ url: `/instructor/lessons/${lessonId}`, method: "DELETE" }),
+      invalidatesTags: ["Lessons", "Modules"],
     }),
   }),
 });
@@ -89,6 +195,16 @@ export const {
   useGetInstructorDashboardQuery,
   useGetAssignedBatchesQuery,
   useGetBatchStudentsQuery,
-  useGetPendingSubmissionsQuery,
   useGetBatchStatisticsQuery,
+  useGetPendingSubmissionsQuery,
+  useGetInstructorCoursesQuery,
+  useGetInstructorCourseModulesQuery,
+  useCreateInstructorModuleMutation,
+  useReorderInstructorModulesMutation,
+  useUpdateInstructorModuleMutation,
+  useDeleteInstructorModuleMutation,
+  useGetInstructorModuleLessonsQuery,
+  useCreateInstructorLessonMutation,
+  useUpdateInstructorLessonMutation,
+  useDeleteInstructorLessonMutation,
 } = instructorApi;

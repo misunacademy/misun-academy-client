@@ -1,4 +1,4 @@
-import PaymentTable from '@/components/module/dashboard/payment/PaymentTable';
+import PaymentTable from '@/components/module/dashboard/admin/payment/PaymentTable';
 
 const page = () => {
     return (

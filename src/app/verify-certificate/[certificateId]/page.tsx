@@ -280,7 +280,7 @@ export default function VerifyCertificatePage() {
                     letterSpacing: "0.01em",
                   }}
                 >
-                  Batch: {batchLabel}
+                  Batch: {batchLabel.split(' ')[1]}
                 </div>
               )}
               </div>

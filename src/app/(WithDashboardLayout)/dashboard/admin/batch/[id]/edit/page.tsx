@@ -1,4 +1,4 @@
-import BatchEdit from "@/components/module/dashboard/batch/Edit";
+import BatchEdit from "@/components/module/dashboard/admin/batch/Edit";
 
 
 const page = () => {
