@@ -45,7 +45,7 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
   const currentInstructorName: string = course?.instructorId?.name || "";
 
   const [search, setSearch] = useState("");
-  const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
+  const [selectedId, setSelectedId] = useState<string | null | undefined>(undefined);
 
   const effectiveId: string | null =
     selectedId !== undefined ? selectedId : currentInstructorId;
@@ -114,7 +114,8 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
               <Badge variant="secondary" className="gap-1">
                 {displayName}
                 <button
-                  onClick={() => setSelectedId(undefined)}
+                  type="button"
+                  onClick={() => setSelectedId(null)}
                   className="ml-1 hover:text-destructive"
                 >
                   <X className="w-3 h-3" />
@@ -154,7 +155,7 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
                   return (
                     <div
                       key={instId}
-                      onClick={() => setSelectedId(isSelected ? undefined : instId)}
+                      onClick={() => setSelectedId(isSelected ? null : instId)}
                       className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
                         isSelected
                           ? "bg-primary/10 border border-primary/30"
@@ -197,7 +198,7 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
             )}
             <Button
               onClick={handleSave}
-              disabled={isSaving || (!selectedId && !currentInstructorId)}
+              disabled={isSaving || effectiveId === currentInstructorId}
             >
               {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Save
