@@ -22,7 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChevronLeft, ChevronRight, GraduationCap, Loader2, Users, Layers } from "lucide-react";
 import {
     useGetInstructorCoursesQuery,
-    useGetBatchStudentsQuery,
+    useGetInstructorEnrolledStudentsQuery,
     type InstructorCourse,
 } from "@/redux/api/instructorApi";
 
@@ -58,6 +58,7 @@ export default function StudentsPage() {
     const courses: InstructorCourse[] = coursesData?.data || [];
 
 
+    const [selectedCourseId, setSelectedCourseId] = useState("all");
     const [selectedBatchId, setSelectedBatchId] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [search, setSearch] = useState("");
@@ -72,34 +73,38 @@ export default function StudentsPage() {
     }, [search]);
 
     // Reset batch when course changes
-    useEffect(() => { setSelectedBatchId("all"); setPageIndex(0); }, []);
+    useEffect(() => { setSelectedBatchId("all"); setPageIndex(0); }, [selectedCourseId]);
     useEffect(() => { setPageIndex(0); }, [statusFilter, debouncedSearch]);
 
     const courseBatches = useMemo(() => {
-        return courses.flatMap((course) =>
+        const targetCourses = selectedCourseId === "all" ? courses : courses.filter(c => c._id === selectedCourseId);
+        return targetCourses.flatMap((course) =>
             (course.batches || []).map((batch) => ({
                 ...batch,
                 courseId: course._id,
                 courseTitle: course.title,
             }))
         );
-    }, [courses]);
+    }, [courses, selectedCourseId]);
 
+    // RTK Query params for fetching students
+    const { data: studentsDataResponse, isLoading: studentsLoading, isError } = useGetInstructorEnrolledStudentsQuery({
+        page: pageIndex + 1,
+        limit: PAGE_SIZE,
+        search: debouncedSearch || undefined,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        courseId: selectedCourseId !== "all" ? selectedCourseId : undefined,
+        batchId: selectedBatchId !== "all" ? selectedBatchId : undefined,
+    });
 
-    // When a specific batch is selected use it; otherwise fall back to the first available batch.
-    // (Full multi-batch aggregation would require a dedicated server endpoint.)
-    const singleBatchId = selectedBatchId !== "all" ? selectedBatchId : (courseBatches[0]?._id ?? "");
-    const { data: batchStudentsData, isLoading: studentsLoading } = useGetBatchStudentsQuery(
-        singleBatchId,
-        { skip: !singleBatchId }
-    );
-
+    const studentsData = studentsDataResponse?.data || [];
+    const metaData = studentsDataResponse?.meta;
+    const totalStudentsData = metaData?.total || 0;
+    const totalPages = metaData?.totalPages || 1;
 
     // Build flat student list from fetched data + course/batch context
     const allStudents: StudentRow[] = useMemo(() => {
-        const raw: any[] = batchStudentsData?.data || [];
-        const batchMeta = courseBatches.find(b => b._id === singleBatchId);
-        return raw.map((enr: any) => ({
+        return studentsData.map((enr: any) => ({
             _id: enr._id || enr.userId?._id || Math.random().toString(),
             enrollmentId: enr.enrollmentId,
             name: enr.userId?.name || "Unknown",
@@ -108,26 +113,13 @@ export default function StudentsPage() {
             image: enr.userId?.image,
             status: enr.status || "—",
             enrolledAt: enr.enrolledAt || enr.createdAt || "",
-            batchTitle: batchMeta?.title || `Batch #${batchMeta?.batchNumber ?? ""}`,
-            courseTitle: batchMeta?.courseTitle || "",
+            batchTitle: enr.batchTitle || "—",
+            courseTitle: enr.courseTitle || "—",
         }));
-    }, [batchStudentsData, singleBatchId, courseBatches]);
-
-    // Client-side filter + pagination
-    const filtered = useMemo(() => {
-        return allStudents.filter(s => {
-            const q = debouncedSearch.toLowerCase();
-            const matchSearch = !q || s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q);
-            const matchStatus = statusFilter === "all" || s.status.toLowerCase() === statusFilter.toLowerCase();
-            return matchSearch && matchStatus;
-        });
-    }, [allStudents, debouncedSearch, statusFilter]);
-
-    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-    const pageData = filtered.slice(pageIndex * PAGE_SIZE, (pageIndex + 1) * PAGE_SIZE);
+    }, [studentsData]);
 
     // Stats
-    const totalStudents = courses.reduce(
+    const totalStudentsStats = courses.reduce(
         (sum, c) => sum + (c.batches || []).reduce((s, b) => s + (b.currentEnrollment || 0), 0), 0
     );
     const totalBatches = courses.reduce((sum, c) => sum + (c.batches || []).length, 0);
@@ -195,13 +187,11 @@ export default function StudentsPage() {
     ], []);
 
     const table = useReactTable({
-        data: pageData,
+        data: allStudents,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
         manualPagination: true,
-        manualFiltering: true,
         pageCount: totalPages,
         state: { pagination: { pageIndex, pageSize: PAGE_SIZE } },
     });
@@ -225,7 +215,7 @@ export default function StudentsPage() {
                     {[
                         // { icon: BookOpen, label: "My Courses", value: courses.length,  color: "bg-emerald-500" },
                         { icon: Layers, label: "Batches", value: totalBatches, color: "bg-blue-500" },
-                        { icon: Users, label: "Students", value: totalStudents, color: "bg-violet-500" },
+                        { icon: Users, label: "Students", value: totalStudentsStats, color: "bg-violet-500" },
                     ].map(({ icon: Icon, label, value, color }) => (
                         <Card key={label}>
                             <CardContent className="p-4 flex items-center gap-3">
@@ -250,41 +240,6 @@ export default function StudentsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
 
-                    {/* Course tabs */}
-                    {/* {coursesLoading ? (
-                        <div className="flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span className="text-sm text-muted-foreground">Loading courses…</span>
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            <p className="text-sm font-medium text-muted-foreground">Filter by course</p>
-                            <Tabs
-                                value={selectedCourseId}
-                                onValueChange={v => { setSelectedCourseId(v); setPageIndex(0); }}
-                            >
-                                <TabsList className="h-auto min-h-12 w-full justify-start gap-2 overflow-x-auto overflow-y-hidden rounded-xl border border-primary/20 bg-muted/40 p-1.5">
-                                    <TabsTrigger
-                                        value="all"
-                                        className="h-10 shrink-0 whitespace-nowrap rounded-lg border border-transparent px-4 py-2 text-sm font-semibold text-muted-foreground transition-all hover:bg-background/70 hover:text-foreground data-[state=active]:border-primary/70 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                                    >
-                                        All Courses
-                                    </TabsTrigger>
-                                    {courses.map(c => (
-                                        <TabsTrigger
-                                            key={c._id}
-                                            value={c._id}
-                                            className="h-10 shrink-0 whitespace-nowrap rounded-lg border border-transparent px-4 py-2 text-sm font-semibold text-muted-foreground transition-all hover:bg-background/70 hover:text-foreground data-[state=active]:border-primary/70 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                                        >
-                                            {c.title}
-                                        </TabsTrigger>
-                                    ))}
-                                </TabsList>
-                            </Tabs>
-                        </div>
-                    )} */}
-
-                    {/* Search + Filters */}
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <Input
                             placeholder="Search by name or email…"
@@ -335,10 +290,6 @@ export default function StudentsPage() {
                         <div className="flex items-center justify-center h-48">
                             <Loader2 className="w-8 h-8 animate-spin text-primary" />
                         </div>
-                    ) : !singleBatchId ? (
-                        <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
-                            Select a batch to view students.
-                        </div>
                     ) : (
                         <>
                             <Table>
@@ -384,7 +335,7 @@ export default function StudentsPage() {
                             {/* Pagination */}
                             <div className="flex items-center justify-between mt-4">
                                 <span className="text-sm text-muted-foreground">
-                                    Showing {pageData.length} of {filtered.length} student{filtered.length !== 1 ? "s" : ""}
+                                    Showing {allStudents.length} of {totalStudentsData} student{totalStudentsData !== 1 ? "s" : ""}
                                 </span>
                                 <div className="flex items-center gap-2">
                                     <Button

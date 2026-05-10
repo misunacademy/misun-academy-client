@@ -109,6 +109,11 @@ const instructorApi = baseApi.injectEndpoints({
       providesTags: ["Instructors"],
     }),
 
+    getInstructorEnrolledStudents: build.query<{ data: any[], meta: any }, Record<string, any>>({
+      query: (params) => ({ url: "/instructor/students", params }),
+      providesTags: ["Students", "Instructors"],
+    }),
+
     // ── Assigned Courses ──────────────────────────────────────────────────────
     getInstructorCourses: build.query<{ data: InstructorCourse[] }, void>({
       query: () => ({ url: "/instructor/courses" }),
@@ -198,6 +203,7 @@ export const {
   useGetBatchStatisticsQuery,
   useGetPendingSubmissionsQuery,
   useGetInstructorCoursesQuery,
+  useGetInstructorEnrolledStudentsQuery,
   useGetInstructorCourseModulesQuery,
   useCreateInstructorModuleMutation,
   useReorderInstructorModulesMutation,
