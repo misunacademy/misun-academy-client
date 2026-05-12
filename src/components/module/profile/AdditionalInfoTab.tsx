@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
-import { useUpdateUserProfileMutation } from "@/redux/features/profile/profileApi";
+import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

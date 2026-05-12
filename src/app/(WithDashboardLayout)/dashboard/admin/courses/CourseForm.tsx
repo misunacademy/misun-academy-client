@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "@/redux/features/course/courseApi";
+import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery } from "@/redux/api/courseApi";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { toast } from "sonner";
 import { Loader2, Book, Plus, X } from "lucide-react";

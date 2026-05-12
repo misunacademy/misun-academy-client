@@ -38,11 +38,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateBatchMutation, useGetAllBatchesQuery, useUpdateBatchMutation, useDeleteBatchMutation } from '@/redux/features/batch/batchApi';
+// import { useCreateBatchMutation, useGetAllBatchesQuery, useUpdateBatchMutation, useDeleteBatchMutation } from '@/redux/batchApi';
 import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { toast } from 'sonner';
 import { Loader2, X, Edit, Trash2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useCreateBatchMutation, useDeleteBatchMutation, useGetAllBatchesQuery, useUpdateBatchMutation } from '@/redux/api/batchApi';
 
 const BATCH_STATUSES = [
     { value: 'draft', label: 'Draft', className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100' },

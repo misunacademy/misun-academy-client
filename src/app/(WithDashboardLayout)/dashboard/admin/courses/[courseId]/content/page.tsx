@@ -14,14 +14,14 @@ import {
   useUpdateCourseModuleMutation,
   useDeleteCourseModuleMutation,
   useReorderModulesMutation
-} from "@/redux/features/module/moduleApi";
+} from "@/redux/api/moduleApi";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import {
   useGetModuleLessonsQuery,
   useCreateModuleLessonMutation,
   useUpdateModuleLessonMutation,
   useDeleteModuleLessonMutation
-} from "@/redux/features/lesson/lessonApi";
+} from "@/redux/api/lessonApi";
 import {
   Dialog,
   DialogContent,

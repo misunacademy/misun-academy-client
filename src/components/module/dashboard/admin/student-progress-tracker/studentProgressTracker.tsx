@@ -2,11 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
-
-import { useGetEnrolledStudentsQuery } from "@/redux/features/student/studentApi";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
-import type { EnrollmentResponse } from "@/redux/api/enrollmentApi";
+import { useGetAllEnrollmentsQuery, type EnrollmentResponse } from "@/redux/api/enrollmentApi";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -92,7 +90,7 @@ const StudentProgressTracker = () => {
 
     const batches = useMemo(() => batchesData?.data ?? [], [batchesData?.data]);
 
-    const { data, isLoading, isError } = useGetEnrolledStudentsQuery({
+    const { data, isLoading, isError } = useGetAllEnrollmentsQuery({
         page,
         limit,
         search: debouncedSearch || undefined,

@@ -146,7 +146,7 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
                         {
                             (userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor') &&
                             <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/${userRole}`} className="flex items-center">
+                                <Link href={`/dashboard/${(userRole==='superadmin' || userRole==='admin') ? 'admin' : `${userRole}`}`} className="flex items-center">
                                     <LayoutDashboard className="mr-2 h-4 w-4" />
                                     Dashboard
                                 </Link>

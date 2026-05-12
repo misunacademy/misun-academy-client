@@ -31,7 +31,7 @@ import {
     useUpdateRecordingMutation,
     useDeleteRecordingMutation,
     type Recording,
-} from "@/redux/features/recording/recordingApi";
+} from "@/redux/api/recordingApi";
 import {
     useGetInstructorCoursesQuery,
     type InstructorCourse,

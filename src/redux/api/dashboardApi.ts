@@ -35,6 +35,13 @@ const dashboardApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Dashboard"],
     }),
+    // Keep only student-specific endpoints here
+    getStudentDashboardData: build.query({
+      query: () => ({
+        url: "/dashboard/student",
+      }),
+      providesTags: ["Students"],
+    }),
   }),
 });
 
@@ -43,4 +50,5 @@ export const {
   useGetUserStatsQuery,
   useGetDashboardMetadataQuery,
   useGetInstructorDashboardQuery,
+  useGetStudentDashboardDataQuery,
 } = dashboardApi;

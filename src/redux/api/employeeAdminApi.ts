@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi';
-import type { Salary, LeaveRequest } from '../features/employee/employeeApi';
+import type { Salary, LeaveRequest } from './employeeApi';
 
 export interface Employee {
     _id: string;

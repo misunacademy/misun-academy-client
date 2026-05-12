@@ -15,7 +15,7 @@ import { authServerApi } from "@/lib/auth-server-api";
 import { useAuth } from "@/hooks/useAuth";
 import { useGetSettingsQuery, useUpdateSettingsMutation } from "@/redux/api/settingsApi";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
-import { useUpdateUserProfileMutation } from "@/redux/features/profile/profileApi";
+import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
 
 export default function AdminSettings() {
   const [saving, setSaving] = useState(false);

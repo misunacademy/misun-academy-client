@@ -19,11 +19,11 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateBatchMutation } from '@/redux/features/batch/batchApi';
 import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { toast } from 'sonner';
 import { ArrowBigLeft, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useCreateBatchMutation } from '@/redux/api/batchApi';
 
 const BATCH_STATUSES = [
     { value: 'draft', label: 'Draft', className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100' },

@@ -168,7 +168,7 @@ export default function MobileNavbar() {
                         {(userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor') ? (
                             <Link
                                 onClick={() => setIsOpen(!isOpen)}
-                                href={`/dashboard/${userRole}`}
+                                href={`/dashboard/${(userRole==='superadmin' || userRole==='admin') ? 'admin' : `${userRole}`}`}
                                 className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla"
                             >
                                 ড্যাশবোর্ড

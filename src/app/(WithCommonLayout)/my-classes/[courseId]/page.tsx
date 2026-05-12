@@ -29,7 +29,7 @@ import {
   useGetCourseByIdQuery,
   useGetCourseProgressQuery,
   useCompleteLessonMutation,
-} from "@/redux/features/course/courseApi";
+} from "@/redux/api/courseApi";
 import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
 import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
 import { toast } from "sonner";

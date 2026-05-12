@@ -3,9 +3,9 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Users, DollarSign, Calendar } from 'lucide-react';
-import { useGetMetadataQuery } from '@/redux/features/student/studentApi';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useGetDashboardMetadataQuery } from '@/redux/api/dashboardApi';
 
 // Dynamically import charts with no SSR to reduce initial bundle size
 const DashboardCharts = dynamic(
@@ -49,7 +49,7 @@ interface DashboardData {
 }
 
 export default function Dashboard() {
-    const { data, isLoading, error } = useGetMetadataQuery(undefined);
+    const { data, isLoading, error } = useGetDashboardMetadataQuery(undefined);
 
     if (isLoading) {
         return (

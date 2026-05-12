@@ -8,10 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { Download, TrendingUp, Users, DollarSign, BookOpen, Calendar, RefreshCw } from "lucide-react";
 
-import { useGetMetadataQuery } from "@/redux/features/student/studentApi";
+// import { useGetMetadataQuery } from "@/redux/api/studentApi";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { Loader2 } from "lucide-react";
 import { useState, useMemo } from "react";
+import { useGetDashboardMetadataQuery } from "@/redux/api/dashboardApi";
 
 type TimePeriod = '7days' | '30days' | '90days' | '1year';
 
@@ -20,7 +21,7 @@ export default function AdminReports() {
   const [selectedCourseId, setSelectedCourseId] = useState('all');
   const [isExporting, setIsExporting] = useState(false);
 
-  const { data: metadata, isLoading: metadataLoading, error: metadataError, refetch: refetchMetadata } = useGetMetadataQuery(
+  const { data: metadata, isLoading: metadataLoading, error: metadataError, refetch: refetchMetadata } = useGetDashboardMetadataQuery(
     selectedCourseId === 'all' ? undefined : { courseId: selectedCourseId }
   );
   const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({});

@@ -2,7 +2,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { useGetUserProfileQuery } from "@/redux/features/profile/profileApi";
+import { useGetUserProfileQuery } from "@/redux/api/profileApi";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
 import { useRef, useState, useEffect } from "react";

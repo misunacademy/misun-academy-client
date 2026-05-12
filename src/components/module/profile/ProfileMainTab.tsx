@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Edit, Loader2, User } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useUpdateUserProfileMutation } from "@/redux/features/profile/profileApi";
+import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";

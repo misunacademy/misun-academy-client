@@ -9,7 +9,7 @@ import { CheckCircle, Clock, ArrowLeft, Sparkles, Loader2, CreditCard, Smartphon
 import { toast } from "sonner";
 import Image from "next/image";
 import ManualPaymentForm from "./ManualPaymentForm";
-import { useEnrollStudentMutation, useEnrollStudentManualMutation } from "@/redux/features/student/studentApi";
+// import { useEnrollStudentManualMutation } from "@/redux/api/studentApi";
 import one from "@/assets/images/payments/one.png"
 import two from "@/assets/images/payments/two.png"
 import three from "@/assets/images/payments/three.png"
@@ -22,9 +22,9 @@ import nine from "@/assets/images/payments/nine.png"
 import ten from "@/assets/images/payments/ten.png"
 import phonepay from "@/assets/images/payments/phonepay.png"
 import { useRouter } from "next/navigation";
-import { useGetSettingsQuery } from "@/redux/api/settingsApi";
 import { useGetCourseBySlugQuery } from "@/redux/api/courseApi";
 import { useGetCurrentEnrollmentBatchQuery, useGetUpcomingBatchesQuery } from "@/redux/api/batchApi";
+import { useEnrollStudentManualMutation, useInitiateEnrollmentMutation } from "@/redux/api/enrollmentApi";
 
 
 interface PaymentError {
@@ -51,7 +51,7 @@ const EnrollmentCheckout = ({ courseSlug }: { courseSlug?: string } = {}) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [showTutorial, setShowTutorial] = useState(false);
     const [enrollmentData, setEnrollmentData] = useState<EnrollmentForm | null>(null);
-    const [enrollStudent] = useEnrollStudentMutation();
+    const [enrollStudent] = useInitiateEnrollmentMutation();
     const [enrollStudentManual] = useEnrollStudentManualMutation();
     const router = useRouter();
     // Initialize form first

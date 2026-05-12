@@ -28,8 +28,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useGetEnrolledStudentsQuery } from "@/redux/features/student/studentApi";
-import type { EnrollmentResponse } from "@/redux/api/enrollmentApi";
+import { useGetAllEnrollmentsQuery, type EnrollmentResponse } from "@/redux/api/enrollmentApi";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
@@ -66,7 +65,7 @@ const EnrolledStudentTable = () => {
     }, [search]);
 
     // RTK Query params for fetching students
-    const { data, isLoading, isError } = useGetEnrolledStudentsQuery({
+    const { data, isLoading, isError } = useGetAllEnrollmentsQuery({
         page,
         search: debouncedSearch || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined,

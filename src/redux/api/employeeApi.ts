@@ -1,4 +1,4 @@
-import { baseApi } from '../../api/baseApi';
+import { baseApi } from './baseApi';
 
 export interface Salary {
     _id: string;
