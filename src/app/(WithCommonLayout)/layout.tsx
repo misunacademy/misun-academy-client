@@ -1,15 +1,6 @@
 // import Footer from '@/components/layout/Footer';
-import Footer from '@/components/layout/Footer';
-import Navbar from '@/components/layout/Navbar';
-import PopupBannerModal from '@/components/shared/PopupBannerModal';
+import CommonLayoutShell from '@/components/layout/CommonLayoutShell';
 
 export default function layout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-1 grid-rows-[auto,1fr,auto] min-h-screen">
-      <PopupBannerModal />
-      <Navbar />
-      <main>{children}</main>
-      <Footer />
-    </div>
-  );
+  return <CommonLayoutShell>{children}</CommonLayoutShell>;
 }

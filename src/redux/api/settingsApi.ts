@@ -6,6 +6,9 @@ export interface SettingsResponse {
   popupEnabled?: boolean;
   popupImageUrl?: string;
   popupLink?: string;
+  maintenanceEnabled?: boolean;
+  maintenanceTitle?: string;
+  maintenanceMessage?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

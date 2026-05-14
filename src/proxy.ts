@@ -1,4 +1,3 @@
-// proxy.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getSessionCookie } from 'better-auth/cookies';
@@ -9,6 +8,20 @@ const PROTECTED_PATHS = [
     '/my-classes',
     '/profile',
 ] as const;
+
+const MAINTENANCE_ALLOWLIST_PREFIXES = [
+    '/maintenance',
+    '/dashboard',
+    '/auth',
+    '/api',
+] as const;
+
+const MAINTENANCE_ALLOWLIST_EXACT = new Set([
+    '/favicon.ico',
+    '/robots.txt',
+    '/sitemap.xml',
+    '/sitemap-0.xml',
+]);
 
 const BETTER_AUTH_COOKIE_KEYS = [
     'better-auth.session_token',
@@ -31,8 +44,58 @@ function hasBetterAuthSession(request: NextRequest): boolean {
     return false;
 }
 
-export function proxy(request: NextRequest) {
+function isMaintenanceAllowlisted(pathname: string) {
+    if (MAINTENANCE_ALLOWLIST_EXACT.has(pathname)) return true;
+    return MAINTENANCE_ALLOWLIST_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+async function maybeRedirectToMaintenance(request: NextRequest) {
     const { pathname } = request.nextUrl;
+
+    if (isMaintenanceAllowlisted(pathname)) {
+        return null;
+    }
+
+    const baseApiUrl = process.env.NEXT_PUBLIC_BASE_API_URL;
+    if (!baseApiUrl) {
+        return null;
+    }
+
+    try {
+        const response = await fetch(`${baseApiUrl}/settings`, {
+            headers: {
+                Accept: 'application/json',
+            },
+            cache: 'no-store',
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const payload = await response.json();
+        const maintenanceEnabled = payload?.data?.maintenanceEnabled === true;
+
+        if (maintenanceEnabled) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/maintenance';
+            url.search = '';
+            return NextResponse.redirect(url);
+        }
+    } catch {
+        return null;
+    }
+
+    return null;
+}
+
+export async function proxy(request: NextRequest) {
+    const { pathname } = request.nextUrl;
+    const maintenanceResponse = await maybeRedirectToMaintenance(request);
+    if (maintenanceResponse) {
+        return maintenanceResponse;
+    }
+
     const sessionCookie = hasBetterAuthSession(request);
 
     const isProtectedRoute = PROTECTED_PATHS.some((path) => pathname.startsWith(path));
@@ -41,14 +104,12 @@ export function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // Better Auth can keep auth cookies scoped to API domain in some deployments.
-    // In that case, edge middleware cannot see the cookie reliably on frontend host.
-    // Let client-side auth flow validate session via /auth/me to avoid redirect loops.
     return NextResponse.next();
 }
 
-// Match protected routes (use /path* pattern consistently)
+// Run on all public routes so maintenance mode can take effect.
 export const config = {
+    // matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
     matcher: [
         '/dashboard/:path*',
         '/checkout/:path*',

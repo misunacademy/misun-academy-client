@@ -223,7 +223,7 @@ export default function RecordingPage() {
     const [selectedRecording, setSelectedRecording] = useState<Recording | null>(null);
     const [playingRecording, setPlayingRecording] = useState<Recording | null>(null);
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(10);
+    const [limit] = useState(10);
 
     const [filters, setFilters] = useState<{
         courseId?: string;
