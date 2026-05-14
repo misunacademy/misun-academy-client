@@ -2,7 +2,7 @@
 "use client";
 
 import { use, useState } from "react";
-import CourseForm from "../CourseForm";
+import CourseForm from "../components/CourseForm";
 import {
   useAssignCourseInstructorMutation,
   useGetAllInstructorProfilesQuery,

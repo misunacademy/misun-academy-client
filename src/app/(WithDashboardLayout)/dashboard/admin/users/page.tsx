@@ -1,16 +1,10 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Label } from "@/components/ui/label";
-import { Users, Plus, Search, Edit, Trash2, UserCheck, UserX, ChevronRight, ChevronLeft, Download } from "lucide-react";
+
+import { Search, Download } from "lucide-react";
 import { useState, useEffect, FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { useGetAllUsersQuery, useCreateAdminMutation, useUpdateUserMutation, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
@@ -18,6 +12,13 @@ import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import type { BatchResponse } from "@/redux/api/batchApi";
 import type { UsersListResponse, UpdateUserRequest } from "@/redux/api/adminApi";
 import { toast } from 'sonner';
+import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
+import DeleteConfirmationDialog from "./components/DeleteConfirmationDialog";
+import EditingDialog from "./components/EditingDialog";
+import DashboardPageTableWithPagination from "@/components/layout/DashboardPageTableWithPagination";
+import TableRows from "./components/TableRows";
+import UsersStatsCards from "./components/UsersStatsCards";
+import CreateUserDialog from "./components/CreateUserDialog";
 
 interface User {
   _id: string;
@@ -185,7 +186,7 @@ export default function AdminUsers() {
     return batch.courseId.title;
   };
 
-  const getRoleBadgeVariant = (role: string) => {
+  const getRoleBadgeVariant = (role: string): "default" | "secondary" | "destructive" | "outline" => {
     const lr = role?.toLowerCase?.() ?? '';
     switch (lr) {
       case 'superadmin': return 'destructive';
@@ -234,6 +235,13 @@ export default function AdminUsers() {
     }
   };
 
+  const activeUsersCount = filteredUsers.filter((u) => u.status === "active").length;
+  const instructorCount = filteredUsers.filter((u) => u.role?.toLowerCase() === "instructor").length;
+  const adminCount = filteredUsers.filter((u) => {
+    const r = u.role?.toLowerCase?.() ?? "";
+    return r === "admin" || r === "superadmin";
+  }).length;
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -243,381 +251,130 @@ export default function AdminUsers() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header with Create Dialog */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground">Manage all users, roles, and permissions</p>
-        </div>
+    <DashboardPageContainer
+      heading="User Management"
+      subheading="Manage all users, roles, and permissions"
+      buttons={
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          onClick={handleExportExcel}
+          disabled={isExporting || isFetching || filteredUsers.length === 0}
+          className="flex items-center gap-2"
+        >
+          {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          Export Excel
+        </Button>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={handleExportExcel}
-            disabled={isExporting || isFetching || filteredUsers.length === 0}
-            className="flex items-center gap-2"
-          >
-            {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-            Export Excel
-          </Button>
-
-          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Add New User
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Add New User</DialogTitle>
-                <DialogDescription>
-                  Create a new user account with appropriate role and permissions.
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleCreateUser}>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">Name</Label>
-                    <Input id="name" name="name" placeholder="Enter your name..." className="col-span-3" required />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="email" className="text-right">Email</Label>
-                    <Input id="email" name="email" type="email" placeholder="Enter your email.." className="col-span-3" required />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="password" className="text-right">Password</Label>
-                    <Input id="password" name="password" type="password" placeholder="*****" className="col-span-3" required />
-                  </div>
-                  <p className="text-xs text-muted-foreground text-justify">
-                    <span className="text-red-500">Note:*</span>
-                    The new user will receive an email to verify their account. Please ensure the email address is correct. This user will set default role as &ldquo;learner&ldquo; and can be updated later as your desired.
-                  </p>
-                  {/* <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="role" className="text-right">Role</Label>
-                    <Select name="role" defaultValue="learner">
-                      <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="learner">Learner</SelectItem>
-                        <SelectItem value="instructor">Instructor</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="superadmin">Super Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div> */}
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
-                  <Button type="submit">Create User</Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+        {/* New user adding Dialog */}
+        <CreateUserDialog
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+          onSubmit={handleCreateUser}
+        />
       </div>
+      }
+      content={
+      <div>
+        {/* Edit User Dialog */}
+        <EditingDialog editUser={editUser} editDialogOpen={editDialogOpen} onOpenChange={setEditDialogOpen} handleUpdateUser={handleUpdateUser} />
 
-      {/* Edit Dialog - Controlled programmatically */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>
-              Update user information and permissions.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleUpdateUser}>
-            <input type="hidden" name="id" value={editUser?._id || ''} />
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-name" className="text-right">Name</Label>
-                <Input id="edit-name" name="name" defaultValue={editUser?.name || ''} className="col-span-3" />
+        {/* Stats Cards */}
+        <UsersStatsCards
+          total={total}
+          activeCount={activeUsersCount}
+          instructorCount={instructorCount}
+          adminCount={adminCount}
+        />
+
+
+        {/* User table */}
+        <DashboardPageTableWithPagination
+          heading="All Users"
+          subheading="View and manage all users in the system"
+          filters={
+            <>
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search users..."
+                  className="pl-9"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-email" className="text-right">Email</Label>
-                <Input id="edit-email" name="email" defaultValue={editUser?.email || ''} type="email" className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-role" className="text-right">Role</Label>
-                <Select name="role" defaultValue={editUser?.role || 'learner'}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="learner">Learner</SelectItem>
-                    <SelectItem value="instructor">Instructor</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="superadmin">Super Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="edit-status" className="text-right">Status</Label>
-                <Select name="status" defaultValue={editUser?.status || 'active'}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="suspended">Suspended</SelectItem>
-                    <SelectItem value="deleted">Deleted</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-              <Button type="submit">Update User</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="superadmin">Super Admin</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="instructor">Instructor</SelectItem>
+                  <SelectItem value="learner">Learner</SelectItem>
+                </SelectContent>
+              </Select>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{total}</div>
-            <p className="text-xs text-muted-foreground">Registered users</p>
-          </CardContent>
-        </Card>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                  <SelectItem value="deleted">Deleted</SelectItem>
+                </SelectContent>
+              </Select>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredUsers.filter(u => u.status === 'active').length}</div>
-            <p className="text-xs text-muted-foreground">Active accounts</p>
-          </CardContent>
-        </Card>
+              <Select value={batchFilter} onValueChange={setBatchFilter}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Batch" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Batches</SelectItem>
+                  {batches.map((b) => (
+                    <SelectItem key={b._id} value={b.title}>
+                      {getBatchCourseTitle(b) || "Unknown Course"} - <strong>{b.title}</strong> - {b.status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Instructors</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredUsers.filter(u => u.role?.toLowerCase() === 'instructor').length}</div>
-            <p className="text-xs text-muted-foreground">Teaching staff</p>
-          </CardContent>
-        </Card>
+              <Select value={enrolledFilter} onValueChange={setEnrolledFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Enrollment" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="enrolled">Enrolled</SelectItem>
+                  <SelectItem value="not-enrolled">Not Enrolled</SelectItem>
+                </SelectContent>
+              </Select>
+            </>
+          }
+          columns={["User", "Role", "Status", "Enrolled", "Join Date", "Actions"]}
+          data={filteredUsers}
+          renderRow={(user) => (
+            <TableRows user={user} getRoleBadgeVariant={getRoleBadgeVariant} setEditUser={setEditUser} setEditDialogOpen={setEditDialogOpen} handleToggleStatus={handleToggleStatus} setUserToDelete={setUserToDelete} setDeleteDialogOpen={setDeleteDialogOpen} />
+          )}
+          getRowKey={(user) => user._id}
+          isFetching={isFetching}
+          emptyState="No users found."
+          pagination={{
+            page,
+            totalPages,
+            total,
+            limit,
+            onPageChange: setPage,
+          }}
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Admins</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredUsers.filter(u => {
-              const r = u.role?.toLowerCase?.() ?? '';
-              return r === 'admin' || r === 'superadmin';
-            }).length}</div>
-            <p className="text-xs text-muted-foreground">System administrators</p>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Delete Confirmation Dialog */}
+        <DeleteConfirmationDialog deleteDialogOpen={deleteDialogOpen} setDeleteDialogOpen={setDeleteDialogOpen} handleDeleteUser={handleDeleteUser} setUserToDelete={setUserToDelete} />
+      </div>} />
 
-      {/* Users Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            All Users
-            {isFetching && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
-          </CardTitle>
-          <CardDescription>View and manage all users in the system</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search users..."
-                className="pl-9"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="superadmin">Super Admin</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="instructor">Instructor</SelectItem>
-                <SelectItem value="learner">Learner</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
-                <SelectItem value="deleted">Deleted</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Batch filter */}
-            <Select value={batchFilter} onValueChange={setBatchFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Batch" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Batches</SelectItem>
-                {batches.map((b) => (
-                  <SelectItem key={b._id} value={b.title}>  {getBatchCourseTitle(b) || "Unknown Course"} - <strong>{b.title}</strong> - {b.status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Enrolled filter */}
-            <Select value={enrolledFilter} onValueChange={setEnrolledFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Enrollment" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="enrolled">Enrolled</SelectItem>
-                <SelectItem value="not-enrolled">Not Enrolled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Enrolled</TableHead>
-                <TableHead>Join Date</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user._id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{user.name}</div>
-                        <div className="text-sm text-muted-foreground">{user.email}</div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getRoleBadgeVariant(user.role)}>
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={user.status === 'active' ? 'default' : user.status === 'suspended' ? 'secondary' : 'destructive'}>
-                      {user.status?.charAt(0).toUpperCase() + user.status?.slice(1)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {user.enrolledBatches && user.enrolledBatches.length > 0 ? (
-                      <div className="">
-                        {user.enrolledBatches.map((entry) => (
-                          <div key={`${user._id}-${entry}`} className="text-xs flex gap-1">
-                            <span className="">{entry?.split('-')[0].includes('English') ? 'English -' : 'Graphic -'}</span>
-                            <span className="">{entry?.split('-')[1]}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <Badge variant="outline">No</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditUser(user);
-                          setEditDialogOpen(true);
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      {/* <Button variant="ghost" size="sm">
-                        <Mail className="h-4 w-4" />
-                      </Button> */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleToggleStatus(user._id, user.status === 'active')}
-                      >
-                        {user.status !== 'active' ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setUserToDelete(user._id);
-                          setDeleteDialogOpen(true);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          <div className="flex items-center justify-between mt-4">
-            <div className="text-sm text-muted-foreground">
-              Showing {Math.min((page - 1) * limit + 1, total || 0)} - {Math.min(page * limit, total)} of {total} users
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>  <ChevronLeft className="h-4 w-4" /></Button>
-              <div className="px-2">Page {page} of {totalPages}</div>
-              <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}> <ChevronRight className="h-4 w-4" /></Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the user account
-              and remove their data from the system.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setUserToDelete(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete User
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
   );
 }
 

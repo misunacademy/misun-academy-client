@@ -1,13 +1,14 @@
 import StudentProgressTracker from "@/components/module/dashboard/admin/student-progress-tracker/studentProgressTracker";
+import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
 
 
 const StudentsProgressTrackerPage = () => {
     return (
-        <div>
-            <h1 className="text-2xl font-bold mb-4">Students Progress Tracker</h1>
-            <p className="text-gray-600 mb-6">Monitor and track the progress of students across various courses and modules.</p>
-            <StudentProgressTracker />
-        </div>
+        <DashboardPageContainer
+            heading="Students Progress Tracker"
+            subheading="Monitor and track the progress of students across various courses and modules."
+            content={<StudentProgressTracker />}
+        />
     );
 };
 
