@@ -1,4 +1,4 @@
-import StudentProgressTracker from "@/components/module/dashboard/admin/student-progress-tracker/studentProgressTracker";
+import StudentProgressTracker from "@/app/(WithDashboardLayout)/dashboard/admin/students-progress-tracker/components/studentProgressTracker";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
 
 

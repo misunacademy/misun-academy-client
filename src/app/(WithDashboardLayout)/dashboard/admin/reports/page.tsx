@@ -4,15 +4,17 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Download, TrendingUp, Users, DollarSign, BookOpen, Calendar, RefreshCw } from "lucide-react";
+import { Download, RefreshCw } from "lucide-react";
 
 // import { useGetMetadataQuery } from "@/redux/api/studentApi";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { Loader2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useGetDashboardMetadataQuery } from "@/redux/api/dashboardApi";
+import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
+import ReportKeymetricsCards from "./components/ReportKeymetricsCards";
+import DashboardPageTabs from "@/components/layout/DashboardPageTabs";
 
 type TimePeriod = '7days' | '30days' | '90days' | '1year';
 
@@ -185,12 +187,11 @@ export default function AdminReports() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Reports & Analytics</h1>
-          <p className="text-muted-foreground">Comprehensive insights into your academy&apos;s performance</p>
-        </div>
+
+    <DashboardPageContainer
+      heading="Reports & Analytics"
+      subheading="Comprehensive insights into your academy&apos;s performance"
+      buttons={
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
             <SelectTrigger className="w-44">
@@ -226,130 +227,103 @@ export default function AdminReports() {
             {isExporting ? 'Exporting...' : 'Export'}
           </Button>
         </div>
-      </div>
+      }
+      content={
+        <>
+          {/* Key Metrics */}
+          <ReportKeymetricsCards metadata={metadata} processedData={processedData} coursesLoading={coursesLoading} />
+          {/* Charts */}
+          <DashboardPageTabs
+            defaultValue="enrollment"
+            triggers={[
+              { value: "enrollment", label: "Enrollment Trends" },
+              { value: "revenue", label: "Revenue Analytics" },
+              { value: "courses", label: "Course Popularity" },
+            ]}
+            contents={[
+              {
+                value: "enrollment",
+                content: (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Enrollment Trends</CardTitle>
+                      <CardDescription>Student enrollment patterns over the selected period</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={processedData?.enrollmentData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" />
+                          <YAxis />
+                          <Tooltip />
+                          <Line type="monotone" dataKey="enrollments" stroke="#8884d8" strokeWidth={2} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                ),
+              },
+              {
+                value: "revenue",
+                content: (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Revenue Analytics</CardTitle>
+                      <CardDescription>Revenue breakdown and trends for the selected period</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={processedData?.revenueData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" />
+                          <YAxis />
+                          <Tooltip formatter={(value) => [`$${value}`, "Revenue"]} />
+                          <Bar dataKey="revenue" fill="#82ca9d" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                ),
+              },
+              {
+                value: "courses",
+                content: (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Course Popularity Distribution</CardTitle>
+                      <CardDescription>Most popular courses by enrollment numbers</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={processedData?.coursePopularityData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, value }) => `${name} (${value})`}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {processedData?.coursePopularityData.map((entry: any, index: number) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                ),
+              },
+            ]}
+          />
+        </>
+      }
+    />
 
-      {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${(metadata?.data?.totalIncome || 0).toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              Revenue from enrollments
-            </p>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Enrollments</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metadata?.data?.totalEnrolled || 0}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              Students enrolled
-            </p>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Courses</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{processedData?.activeCoursesCount}</div>
-            <p className="text-xs text-muted-foreground">
-              {coursesLoading ? 'Loading...' : 'Published courses'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts */}
-      <Tabs defaultValue="enrollment" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="enrollment">Enrollment Trends</TabsTrigger>
-          <TabsTrigger value="revenue">Revenue Analytics</TabsTrigger>
-          <TabsTrigger value="courses">Course Popularity</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="enrollment" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Enrollment Trends</CardTitle>
-              <CardDescription>Student enrollment patterns over the selected period</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={processedData?.enrollmentData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="enrollments" stroke="#8884d8" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="revenue" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Revenue Analytics</CardTitle>
-              <CardDescription>Revenue breakdown and trends for the selected period</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={processedData?.revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
-                  <Bar dataKey="revenue" fill="#82ca9d" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="courses" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Course Popularity Distribution</CardTitle>
-              <CardDescription>Most popular courses by enrollment numbers</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={processedData?.coursePopularityData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value }) => `${name} (${value})`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {processedData?.coursePopularityData.map((entry: any, index: number) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
   );
 }

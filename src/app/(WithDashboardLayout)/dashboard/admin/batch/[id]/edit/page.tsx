@@ -1,5 +1,5 @@
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
-import BatchEdit from "@/components/module/dashboard/admin/batch/Edit";
+import BatchEdit from "@/app/(WithDashboardLayout)/dashboard/admin/batch/components/Edit";
 
 
 const page = () => {

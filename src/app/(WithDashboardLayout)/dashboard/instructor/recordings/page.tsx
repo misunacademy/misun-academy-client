@@ -1,4 +1,5 @@
-import RecordingPage from "@/components/module/dashboard/instructor/recording/Recording";
+
+import RecordingPage from "@/app/(WithDashboardLayout)/dashboard/instructor/recordings/components/Recording";
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function Page() {

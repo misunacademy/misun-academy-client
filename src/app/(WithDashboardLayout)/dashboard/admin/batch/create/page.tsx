@@ -1,5 +1,5 @@
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
-import BatchCrate from "@/components/module/dashboard/admin/batch/Create";
+import BatchCrate from "@/app/(WithDashboardLayout)/dashboard/admin/batch/components/Create";
 
 
 const page = () => {

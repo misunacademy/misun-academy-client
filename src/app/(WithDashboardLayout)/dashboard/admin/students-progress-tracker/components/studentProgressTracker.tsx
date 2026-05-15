@@ -5,7 +5,6 @@ import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import { useGetAllEnrollmentsQuery, type EnrollmentResponse } from "@/redux/api/enrollmentApi";
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -65,7 +64,7 @@ const getProgressInfo = (enrollment: EnrollmentResponse) => {
 
 const StudentProgressTracker = () => {
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState<number>(10);
+    const [limit] = useState<number>(10);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [courseIdFilter, setCourseIdFilter] = useState("all");
@@ -177,18 +176,18 @@ const StudentProgressTracker = () => {
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>Course-wise Progress Overview</CardTitle>
-                    <CardDescription>
-                        Track student completion and learning momentum by course.
-                    </CardDescription>
+                    <CardTitle>Filters</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
+                <CardContent className=" flex justify-between items-center gap-4">
+                    <div className="flex-1 flex items-center">
                         <Input
+                        className="max-w-sm"
                             placeholder="Search by name, email or ID"
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                         />
+                    </div>
+                    <div className="flex items-center gap-3 flex-1">
 
                         <Select
                             value={courseIdFilter}

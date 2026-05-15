@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { CourseStats } from "@/components/module/dashboard/admin/course/CourseStats";
-import { CoursesTable } from "@/components/module/dashboard/admin/course/CoursesTable";
+import { CourseStats } from "@/app/(WithDashboardLayout)/dashboard/admin/courses/components/CourseStats";
+import { CoursesTable } from "@/app/(WithDashboardLayout)/dashboard/admin/courses/components/CoursesTable";
 import { Course } from "@/types/common";
 import { useGetAllCoursesQuery, useDeleteCourseMutation } from "@/redux/api/courseApi";
 import { toast } from "sonner";
@@ -52,6 +52,7 @@ export default function AdminCourses() {
       content={
         <>
           <CourseStats />
+          {/* <CourseFiltersCard /> */}
           <CoursesTable courses={courses} onEditCourse={handleEditCourse} onDeleteCourse={(id) => handleDeleteCourse(id)} />
         </>
       }

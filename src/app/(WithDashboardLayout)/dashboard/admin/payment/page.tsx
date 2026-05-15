@@ -1,5 +1,5 @@
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
-import PaymentTable from '@/components/module/dashboard/admin/payment/PaymentTable';
+import PaymentTable from '@/app/(WithDashboardLayout)/dashboard/admin/payment/components/PaymentTable';
 
 const page = () => {
     return (

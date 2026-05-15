@@ -1,4 +1,3 @@
-// import Footer from '@/components/layout/Footer';
 import CommonLayoutShell from '@/components/layout/CommonLayoutShell';
 
 export default function layout({ children }: { children: React.ReactNode }) {

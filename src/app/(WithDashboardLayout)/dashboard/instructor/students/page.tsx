@@ -1,4 +1,4 @@
-import StudentsPage from "@/components/module/dashboard/instructor/students/Students";
+import StudentsPage from "@/app/(WithDashboardLayout)/dashboard/instructor/students/components/Students";
 
 
 // ─── Main Page ────────────────────────────────────────────────────────────────

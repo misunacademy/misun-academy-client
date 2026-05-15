@@ -1,5 +1,5 @@
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
-import EnrolledStudentTable from '@/components/module/dashboard/admin/student/EnrolledStudent';
+import EnrolledStudentTable from '@/app/(WithDashboardLayout)/dashboard/admin/student/components/EnrolledStudent';
 
 const page = () => {
     return (

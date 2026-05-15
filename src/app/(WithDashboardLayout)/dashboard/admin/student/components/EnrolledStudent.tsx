@@ -18,22 +18,14 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useGetAllEnrollmentsQuery, type EnrollmentResponse } from "@/redux/api/enrollmentApi";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
+import StudentFiltersCard from "@/app/(WithDashboardLayout)/dashboard/admin/student/components/StudentFiltersCard";
 
 const EnrolledStudentTable = () => {
     const [page, setPage] = useState(1);
@@ -175,92 +167,35 @@ const EnrolledStudentTable = () => {
 
     return (
         <div className="space-y-6">
+       <StudentFiltersCard
+                        courses={courses}
+                        batches={batches}
+                        selectedCourseId={selectedCourseId}
+                        selectedBatchId={selectedBatchId}
+                        statusFilter={statusFilter}
+                        search={search}
+                        onSearchChange={setSearch}
+                        onCourseChange={(value) => {
+                            setSelectedCourseId(value);
+                            setPage(1);
+                        }}
+                        onBatchChange={(value) => {
+                            setSelectedBatchId(value);
+                            setPage(1);
+                        }}
+                        onStatusChange={(value) => {
+                            setStatusFilter(value);
+                            setPage(1);
+                        }}
+                    />
+
             <Card>
                 <CardHeader>
                     <CardTitle>All Students</CardTitle>
                     <CardDescription>View and manage all enrolled students</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="mb-4 space-y-2">
-                        <p className="text-sm font-medium text-muted-foreground">Filter by course</p>
-                        <Tabs
-                            value={selectedCourseId}
-                            onValueChange={(value) => {
-                                setSelectedCourseId(value);
-                                setPage(1);
-                            }}
-                        >
-                            <TabsList className="h-auto min-h-12 w-full justify-start gap-2 overflow-x-auto overflow-y-hidden rounded-xl border border-primary/20 bg-muted/40 p-1.5">
-                                <TabsTrigger
-                                    value="all"
-                                    className="h-10 shrink-0 whitespace-nowrap rounded-lg border border-transparent px-4 py-2 text-sm font-semibold text-muted-foreground transition-all hover:bg-background/70 hover:text-foreground data-[state=active]:border-primary/70 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                                >
-                                    All Courses
-                                </TabsTrigger>
-                                {courses.map((course) => (
-                                    <TabsTrigger
-                                        key={course._id}
-                                        value={course._id}
-                                        className="h-10 shrink-0 whitespace-nowrap rounded-lg border border-transparent px-4 py-2 text-sm font-semibold text-muted-foreground transition-all hover:bg-background/70 hover:text-foreground data-[state=active]:border-primary/70 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                                    >
-                                        {course.title}
-                                    </TabsTrigger>
-                                ))}
-                            </TabsList>
-                        </Tabs>
-                    </div>
-
-                    <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <Input
-                            placeholder="Search by ID, email or phone..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full sm:max-w-sm"
-                        />
-                        <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
-                            <Select
-                                value={selectedBatchId}
-                                onValueChange={(value) => {
-                                    setSelectedBatchId(value);
-                                    setPage(1);
-                                }}
-                            >
-                                <SelectTrigger className="w-full sm:w-[220px]">
-                                    <SelectValue placeholder="Filter by batch" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Batches</SelectItem>
-                                    {batches.map((batch: any) => (
-                                        <SelectItem key={batch._id} value={batch._id}>
-                                          {batch.courseId.title} - <strong>{batch.title}</strong> - {batch.status}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-
-                            <Select
-                                value={statusFilter}
-                                onValueChange={(value) => {
-                                    setStatusFilter(value);
-                                    setPage(1); // Reset to first page when filter changes
-                                }}
-                            >
-                                <SelectTrigger className="w-full sm:w-[180px]">
-                                    <SelectValue placeholder="Filter by status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="active">Active</SelectItem>
-                                    <SelectItem value="payment-pending">Payment Pending</SelectItem>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                    <SelectItem value="completed">Completed</SelectItem>
-                                    <SelectItem value="suspended">Suspended</SelectItem>
-                                    <SelectItem value="payment-failed">Payment Failed</SelectItem>
-                                    <SelectItem value="refunded">Refunded</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
+             
 
                     <Table>
                         <TableHeader>

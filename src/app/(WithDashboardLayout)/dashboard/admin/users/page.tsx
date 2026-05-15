@@ -1,10 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-import { Search, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import { useState, useEffect, FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { useGetAllUsersQuery, useCreateAdminMutation, useUpdateUserMutation, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
@@ -19,6 +16,7 @@ import DashboardPageTableWithPagination from "@/components/layout/DashboardPageT
 import TableRows from "./components/TableRows";
 import UsersStatsCards from "./components/UsersStatsCards";
 import CreateUserDialog from "./components/CreateUserDialog";
+import UsersFilters from "./components/UsersFilters";
 
 interface User {
   _id: string;
@@ -181,11 +179,6 @@ export default function AdminUsers() {
   const filteredUsers: User[] = (resp?.data as User[] | undefined) || [];
   const batches = (batchesData?.data as BatchResponse[] | undefined) || [];
 
-  const getBatchCourseTitle = (batch: BatchResponse) => {
-    if (typeof batch.courseId === "string") return undefined;
-    return batch.courseId.title;
-  };
-
   const getRoleBadgeVariant = (role: string): "default" | "secondary" | "destructive" | "outline" => {
     const lr = role?.toLowerCase?.() ?? '';
     switch (lr) {
@@ -255,125 +248,78 @@ export default function AdminUsers() {
       heading="User Management"
       subheading="Manage all users, roles, and permissions"
       buttons={
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          onClick={handleExportExcel}
-          disabled={isExporting || isFetching || filteredUsers.length === 0}
-          className="flex items-center gap-2"
-        >
-          {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-          Export Excel
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleExportExcel}
+            disabled={isExporting || isFetching || filteredUsers.length === 0}
+            className="flex items-center gap-2"
+          >
+            {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            Export Excel
+          </Button>
 
-        {/* New user adding Dialog */}
-        <CreateUserDialog
-          open={createDialogOpen}
-          onOpenChange={setCreateDialogOpen}
-          onSubmit={handleCreateUser}
-        />
-      </div>
+          {/* New user adding Dialog */}
+          <CreateUserDialog
+            open={createDialogOpen}
+            onOpenChange={setCreateDialogOpen}
+            onSubmit={handleCreateUser}
+          />
+        </div>
       }
       content={
-      <div>
-        {/* Edit User Dialog */}
-        <EditingDialog editUser={editUser} editDialogOpen={editDialogOpen} onOpenChange={setEditDialogOpen} handleUpdateUser={handleUpdateUser} />
+        <div>
+          {/* Edit User Dialog */}
+          <EditingDialog editUser={editUser} editDialogOpen={editDialogOpen} onOpenChange={setEditDialogOpen} handleUpdateUser={handleUpdateUser} />
 
-        {/* Stats Cards */}
-        <UsersStatsCards
-          total={total}
-          activeCount={activeUsersCount}
-          instructorCount={instructorCount}
-          adminCount={adminCount}
-        />
+          {/* Stats Cards */}
+          <UsersStatsCards
+            total={total}
+            activeCount={activeUsersCount}
+            instructorCount={instructorCount}
+            adminCount={adminCount}
+          />
 
 
-        {/* User table */}
-        <DashboardPageTableWithPagination
-          heading="All Users"
-          subheading="View and manage all users in the system"
-          filters={
-            <>
-              <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search users..."
-                  className="pl-9"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="superadmin">Super Admin</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="instructor">Instructor</SelectItem>
-                  <SelectItem value="learner">Learner</SelectItem>
-                </SelectContent>
-              </Select>
+          {/* User table */}
+          <DashboardPageTableWithPagination
+            heading="All Users"
+            subheading="View and manage all users in the system"
+            filters={
+              <UsersFilters
+                batches={batches}
+                search={searchTerm}
+                roleFilter={roleFilter}
+                statusFilter={statusFilter}
+                batchFilter={batchFilter}
+                enrolledFilter={enrolledFilter}
+                onSearchChange={setSearchTerm}
+                onRoleChange={setRoleFilter}
+                onStatusChange={setStatusFilter}
+                onBatchChange={setBatchFilter}
+                onEnrolledChange={setEnrolledFilter}
+              />
+            }
+            columns={["User", "Role", "Status", "Enrolled", "Join Date", "Actions"]}
+            data={filteredUsers}
+            renderRow={(user) => (
+              <TableRows user={user} getRoleBadgeVariant={getRoleBadgeVariant} setEditUser={setEditUser} setEditDialogOpen={setEditDialogOpen} handleToggleStatus={handleToggleStatus} setUserToDelete={setUserToDelete} setDeleteDialogOpen={setDeleteDialogOpen} />
+            )}
+            getRowKey={(user) => user._id}
+            isFetching={isFetching}
+            emptyState="No users found."
+            pagination={{
+              page,
+              totalPages,
+              total,
+              limit,
+              onPageChange: setPage,
+            }}
+          />
 
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="suspended">Suspended</SelectItem>
-                  <SelectItem value="deleted">Deleted</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={batchFilter} onValueChange={setBatchFilter}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Batch" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Batches</SelectItem>
-                  {batches.map((b) => (
-                    <SelectItem key={b._id} value={b.title}>
-                      {getBatchCourseTitle(b) || "Unknown Course"} - <strong>{b.title}</strong> - {b.status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={enrolledFilter} onValueChange={setEnrolledFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Enrollment" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="enrolled">Enrolled</SelectItem>
-                  <SelectItem value="not-enrolled">Not Enrolled</SelectItem>
-                </SelectContent>
-              </Select>
-            </>
-          }
-          columns={["User", "Role", "Status", "Enrolled", "Join Date", "Actions"]}
-          data={filteredUsers}
-          renderRow={(user) => (
-            <TableRows user={user} getRoleBadgeVariant={getRoleBadgeVariant} setEditUser={setEditUser} setEditDialogOpen={setEditDialogOpen} handleToggleStatus={handleToggleStatus} setUserToDelete={setUserToDelete} setDeleteDialogOpen={setDeleteDialogOpen} />
-          )}
-          getRowKey={(user) => user._id}
-          isFetching={isFetching}
-          emptyState="No users found."
-          pagination={{
-            page,
-            totalPages,
-            total,
-            limit,
-            onPageChange: setPage,
-          }}
-        />
-
-        {/* Delete Confirmation Dialog */}
-        <DeleteConfirmationDialog deleteDialogOpen={deleteDialogOpen} setDeleteDialogOpen={setDeleteDialogOpen} handleDeleteUser={handleDeleteUser} setUserToDelete={setUserToDelete} />
-      </div>} />
+          {/* Delete Confirmation Dialog */}
+          <DeleteConfirmationDialog deleteDialogOpen={deleteDialogOpen} setDeleteDialogOpen={setDeleteDialogOpen} handleDeleteUser={handleDeleteUser} setUserToDelete={setUserToDelete} />
+        </div>} />
 
   );
 }

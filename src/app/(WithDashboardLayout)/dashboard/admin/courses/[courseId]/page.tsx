@@ -215,7 +215,6 @@ export default function EditCoursePage({ params }: EditCoursePageProps) {
   return (
     <div>
       <CourseForm courseId={courseId} isNew={false} />
-      
     </div>
   );
 }

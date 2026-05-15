@@ -171,11 +171,11 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
       };
 
       form.reset(formData);
-      
+
       // Force update the level field explicitly
       setTimeout(() => {
-        form.setValue("level", normalizedLevel, { 
-          shouldDirty: false, 
+        form.setValue("level", normalizedLevel, {
+          shouldDirty: false,
           shouldValidate: true,
           shouldTouch: false
         });
@@ -279,7 +279,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
       }
       router.push("/dashboard/admin/courses");
     } catch (err: any) {
-        toast.error(err?.data?.message || err?.message || "Failed to save course");
+      toast.error(err?.data?.message || err?.message || "Failed to save course");
     }
   };
 
@@ -316,27 +316,32 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
   return (
     <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{isNew ? "Create Course" : "Edit Course"}</h1>
-          <p className="text-muted-foreground">Aligned with server course schema.</p>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={() => router.push('/dashboard/admin/courses')} className="mb-2">
+            ← Back to Courses
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">{isNew ? "Create Course" : "Edit Course"}</h1>
+            <p className="text-muted-foreground">Aligned with server course schema.</p>
+          </div>
         </div>
         <div className="flex gap-2 items-center ">
 
-        {!isNew && courseId && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push(`/dashboard/admin/courses/${courseId}/content`)}
-          >
-            <Book className="h-4 w-4 mr-2" />
-            Manage Content
-          </Button>
-        )}
-         {!isNew && courseId && (
-        <InstructorAssignDialog courseId={courseId} />
-      )}
+          {!isNew && courseId && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push(`/dashboard/admin/courses/${courseId}/content`)}
+            >
+              <Book className="h-4 w-4 mr-2" />
+              Manage Content
+            </Button>
+          )}
+          {!isNew && courseId && (
+            <InstructorAssignDialog courseId={courseId} />
+          )}
         </div>
-      
+
       </div>
 
       <Card>
@@ -491,7 +496,7 @@ Portfolio development and client presentation"
                 )}
               </div>
             </Field>
-   <Field label="Status">
+            <Field label="Status">
               <Select value={form.watch("status") as string}
                 onValueChange={(v) => form.setValue("status", v as any, { shouldDirty: true, shouldValidate: true })}>
                 <SelectTrigger>
@@ -556,8 +561,8 @@ Portfolio development and client presentation"
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
- 
-         
+
+
           </div>
 
           <Field label="Tags (comma separated)">

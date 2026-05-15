@@ -1,5 +1,5 @@
 "use client"
-import { AppSidebar } from "@/components/module/dashboard/app-sidebar"
+import { AppSidebar } from "@/app/(WithDashboardLayout)/dashboard/(components)/app-sidebar"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { Bell, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"

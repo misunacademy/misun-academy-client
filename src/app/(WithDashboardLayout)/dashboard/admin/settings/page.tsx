@@ -21,7 +21,6 @@ import DashboardPageTabs from "@/components/layout/DashboardPageTabs";
 
 export default function AdminSettings() {
   const [saving, setSaving] = useState(false);
-
   const [popupEnabled, setPopupEnabled] = useState(false);
   const [popupImageUrl, setPopupImageUrl] = useState("");
   const [popupLink, setPopupLink] = useState("");

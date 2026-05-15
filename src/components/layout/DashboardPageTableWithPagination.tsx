@@ -46,7 +46,8 @@ const DashboardPageTableWithPagination = <T,>({
   const columnCount = Math.max(columns.length, 1);
   const showLoading = isLoading || isFetching;
 
-  return (
+  return (<>
+    {filters && <div className="mb-6 flex flex-wrap items-center gap-4 w-full">{filters}</div>}
     <Card>
       {(heading || subheading || actions) && (
         <CardHeader>
@@ -66,8 +67,6 @@ const DashboardPageTableWithPagination = <T,>({
       )}
 
       <CardContent>
-        {filters && <div className="mb-6 flex flex-wrap items-center gap-4">{filters}</div>}
-
         <Table>
           <TableHeader>
             <TableRow>
@@ -132,6 +131,7 @@ const DashboardPageTableWithPagination = <T,>({
         )}
       </CardContent>
     </Card>
+  </>
   );
 };
 

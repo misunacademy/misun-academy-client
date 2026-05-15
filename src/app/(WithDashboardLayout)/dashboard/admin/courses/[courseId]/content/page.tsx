@@ -236,26 +236,29 @@ export default function CourseContentPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex justify-center gap-4 items-center">
           <Button variant="ghost" onClick={() => router.push('/dashboard/admin/courses')} className="mb-2">
             ← Back to Courses
           </Button>
+          <div className="">
           <h1 className="text-3xl font-bold">Course Content</h1>
           <p className="text-muted-foreground">Manage modules and lessons for this course</p>
+          </div>
         </div>
+        <div className="flex gap-2">
+        <Button variant="outline" onClick={() => setLegacyModalOpen(true)}>
+          Fix Legacy Modules
+        </Button>
         <Button onClick={handleCreateModule} disabled={!selectedBatchId}>
           <Plus className="h-4 w-4 mr-2" />
           Add Module
         </Button>
+        </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <Button variant="outline" onClick={() => setLegacyModalOpen(true)}>
-          Fix Legacy Modules
-        </Button>
-      </div>
 
-      <div className="flex items-center gap-3">
+
+      <div className="flex items-center gap-3 justify-end">
         <Label className="text-sm text-muted-foreground">Batch</Label>
         <Select value={selectedBatchId} onValueChange={setSelectedBatchId}>
           <SelectTrigger className="w-[260px]">
