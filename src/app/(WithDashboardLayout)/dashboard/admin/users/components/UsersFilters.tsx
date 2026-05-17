@@ -36,24 +36,23 @@ const UsersFilters = ({
     };
 
     return (
-            <Card className="w-full">
-                <CardHeader>
-                    <CardTitle>Filters</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Card className="w-full">
+            <CardHeader>
+                <CardTitle>Filters</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-                    <div className="relative flex-1 max-w-sm">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search users..."
-                            className="pl-9"
-                            value={search}
-                            onChange={(e) => onSearchChange(e.target.value)}
-                            aria-label="Search users"
-                        />
-                    </div>
-<div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
-
+                <div className="relative flex-1 max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search users..."
+                        className="pl-9"
+                        value={search}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        aria-label="Search users"
+                    />
+                </div>
+                <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
                     <Select value={roleFilter} onValueChange={onRoleChange}>
                         <SelectTrigger className="w-32">
                             <SelectValue placeholder="Role" />
@@ -63,6 +62,7 @@ const UsersFilters = ({
                             <SelectItem value="superadmin">Super Admin</SelectItem>
                             <SelectItem value="admin">Admin</SelectItem>
                             <SelectItem value="instructor">Instructor</SelectItem>
+                            <SelectItem value="employee">Employee</SelectItem>
                             <SelectItem value="learner">Learner</SelectItem>
                         </SelectContent>
                     </Select>
@@ -103,9 +103,9 @@ const UsersFilters = ({
                             <SelectItem value="not-enrolled">Not Enrolled</SelectItem>
                         </SelectContent>
                     </Select>
-</div>
-                </CardContent>
-            </Card>
+                </div>
+            </CardContent>
+        </Card>
     );
 };
 

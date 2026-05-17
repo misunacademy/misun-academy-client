@@ -165,7 +165,7 @@ export default function MobileNavbar() {
                             </Link>
 
                         }
-                        {(userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor') ? (
+                        {(userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor' || userRole === 'employee') ? (
                             <Link
                                 onClick={() => setIsOpen(!isOpen)}
                                 href={`/dashboard/${(userRole==='superadmin' || userRole==='admin') ? 'admin' : `${userRole}`}`}

@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 import { useGetAllUsersQuery, useCreateAdminMutation, useUpdateUserMutation, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import type { BatchResponse } from "@/redux/api/batchApi";
-import type { UsersListResponse, UpdateUserRequest } from "@/redux/api/adminApi";
+import type { GetAllUsersParams, UsersListResponse, UpdateUserRequest } from "@/redux/api/adminApi";
 import { toast } from 'sonner';
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
 import DeleteConfirmationDialog from "./components/DeleteConfirmationDialog";
@@ -72,7 +72,9 @@ export default function AdminUsers() {
   }, [debouncedSearch, roleFilter, statusFilter]);
 
   // Send role and status as lowercase strings to match server enum values
-  const roleParam = roleFilter === 'all' ? undefined : (roleFilter.toLowerCase() as 'learner' | 'instructor' | 'admin' | 'superadmin');
+  const roleParam: GetAllUsersParams['role'] = roleFilter === 'all'
+    ? undefined
+    : (roleFilter.toLowerCase() as GetAllUsersParams['role']);
   const statusParam = statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'suspended' | 'deleted');
 
   const { data, isLoading, isFetching } = useGetAllUsersQuery(
@@ -139,7 +141,7 @@ export default function AdminUsers() {
     const status = fd.get('status') as string;
     if (name) updateData.name = name;
     if (email) updateData.email = email;
-    if (role) updateData.role = role.toLowerCase() as 'learner' | 'instructor' | 'admin' | 'superadmin';
+    if (role) updateData.role = role.toLowerCase() as UpdateUserRequest['role'];
     if (status) updateData.status = status as 'active' | 'suspended' | 'deleted';
     try {
       await updateUserMutation({ id, data: updateData }).unwrap();

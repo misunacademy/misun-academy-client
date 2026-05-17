@@ -6,6 +6,8 @@ import { Loader2, Users, DollarSign, Calendar } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGetDashboardMetadataQuery } from '@/redux/api/dashboardApi';
+import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
+import { useAuth } from '@/hooks/useAuth';
 
 // Dynamically import charts with no SSR to reduce initial bundle size
 const DashboardCharts = dynamic(
@@ -49,6 +51,7 @@ interface DashboardData {
 }
 
 export default function Dashboard() {
+    const { user } = useAuth();
     const { data, isLoading, error } = useGetDashboardMetadataQuery(undefined);
 
     if (isLoading) {
@@ -81,10 +84,12 @@ export default function Dashboard() {
     const hasBatchData = dashboardData.batchWiseIncome.length > 0;
 
     return (
-        <div className="container mx-auto p-6 space-y-6">
-            <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
-
-            {/* Summary Cards */}
+        <DashboardPageContainer
+            heading={`Welcome back, ${user?.name?.split(' ')[0] || 'Admin'} 👋`}
+            subheading="Here's what's happening with your academy today."
+            content={
+                <div className="space-y-6">
+                    {/* Summary Cards */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -200,6 +205,8 @@ export default function Dashboard() {
                 hasCourseData={hasCourseData}
                 hasBatchData={hasBatchData}
             />
-        </div>
+                </div>
+            }
+        />
     );
 }

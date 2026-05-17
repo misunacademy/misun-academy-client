@@ -67,6 +67,7 @@ const EditingDialog = ({
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="learner">Learner</SelectItem>
+                                    <SelectItem value="employee">Employee</SelectItem>
                                     <SelectItem value="instructor">Instructor</SelectItem>
                                     <SelectItem value="admin">Admin</SelectItem>
                                     <SelectItem value="superadmin">Super Admin</SelectItem>

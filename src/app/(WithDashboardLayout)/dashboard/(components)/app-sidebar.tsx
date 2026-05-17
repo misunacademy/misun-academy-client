@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { BookOpen, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video, Search, CreditCard, ShieldCheck, ImageDown, TrendingUp, Globe, Mail, GraduationCap, LayoutDashboard } from "lucide-react";
+import { BookOpen, CalendarDays, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video, Search, CreditCard, ShieldCheck, ImageDown, TrendingUp, Globe, Mail, GraduationCap, LayoutDashboard } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from 'next/link';
 import {
@@ -97,20 +97,16 @@ const employeeItems = [
         title: "Dashboard",
         url: "/dashboard/employee",
         icon: Home,
-
-    }, {
-        title: "Salaries",
-        url: "/dashboard/employee/salaries",
-        icon: CreditCard,
-    }, {
-        title: "Leave Management",
-        url: "/dashboard/employee/leave",
-        icon: Users,
     },
     {
-        title: "Profile",
-        url: "/dashboard/employee/profile",
-        icon: User2,
+        title: "Leave Management",
+        url: "/dashboard/employee/leave",
+        icon: CalendarDays,
+    },
+    {
+        title: "Salary History",
+        url: "/dashboard/employee/salary-history",
+        icon: CreditCard,
     },
     {
         title: "Settings",
@@ -172,6 +168,11 @@ const adminItems = [
         title: "User Management",
         url: "/dashboard/admin/users",
         icon: Users,
+    },
+    {
+        title: "Employee Management",
+        url: "/dashboard/admin/employees",
+        icon: GraduationCap,
     },
     {
         title: "Students Progress Tracker",

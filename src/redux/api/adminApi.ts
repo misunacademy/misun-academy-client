@@ -15,7 +15,7 @@ export interface UserResponse {
   _id: string;
   name: string;
   email: string;
-  role: 'learner' | 'instructor' | 'admin' | 'superadmin';
+  role: 'learner' | 'instructor' | 'admin' | 'superadmin' | 'employee';
   status: 'active' | 'suspended' | 'deleted';
   image?: string;
   avatar?: string;
@@ -39,12 +39,12 @@ export interface UpdateUserRequest {
   name?: string;
   email?: string;
   phoneNumber?: string;
-  role?: 'learner' | 'instructor' | 'admin' | 'superadmin';
+  role?: 'learner' | 'instructor' | 'admin' | 'superadmin' | 'employee';
   status?: 'active' | 'suspended' | 'deleted';
 }
 
 export interface GetAllUsersParams {
-  role?: 'learner' | 'instructor' | 'admin' | 'superadmin';
+  role?: 'learner' | 'instructor' | 'admin' | 'superadmin' | 'employee';
   status?: 'active' | 'suspended' | 'deleted';
   search?: string;
   page?: number;
