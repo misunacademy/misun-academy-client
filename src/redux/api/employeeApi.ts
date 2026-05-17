@@ -34,9 +34,33 @@ export interface EmployeeDashboardData {
     recentSalaries: Salary[];
 }
 
+export interface EmployeeProfile {
+    _id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    address?: string;
+    image?: string;
+    avatar?: string;
+    whatsapp?: string | null;
+    bloodGroup?: string | null;
+    nidNumber?: string | null;
+    nidPhotoUrl?: string | null;
+}
+
 const employeeApi = baseApi.injectEndpoints({
     overrideExisting: true,
     endpoints: (build) => ({
+        // My profile (merged User + EmployeeProfile)
+        getMyEmployeeProfile: build.query<{ data: EmployeeProfile }, void>({
+            query: () => ({ url: '/employee/profile' }),
+            providesTags: ['Employees'],
+        }),
+        // Update my profile
+        updateMyEmployeeProfile: build.mutation<{ data: EmployeeProfile }, Partial<EmployeeProfile>>({
+            query: (body) => ({ url: '/employee/profile', method: 'PATCH', body }),
+            invalidatesTags: ['Employees'],
+        }),
         // Dashboard
         getEmployeeDashboardData: build.query<{ data: EmployeeDashboardData }, void>({
             query: () => ({ url: '/dashboard/employee' }),
@@ -48,7 +72,7 @@ const employeeApi = baseApi.injectEndpoints({
             providesTags: ['Employees'],
         }),
         // My leave requests
-        getMyLeaveRequests: build.query<{ data: { requests: LeaveRequest[]; total: number; totalPages: number; page: number } }, { page?: number; limit?: number }>({
+        getMyLeaveRequests: build.query<{ data: { requests: LeaveRequest[]; total: number; totalPages: number; page: number } }, { page?: number; limit?: number; status?: string }>({
             query: (params = {}) => ({ url: '/employee/leave', params }),
             providesTags: ['Employees'],
         }),
@@ -61,6 +85,8 @@ const employeeApi = baseApi.injectEndpoints({
 });
 
 export const {
+    useGetMyEmployeeProfileQuery,
+    useUpdateMyEmployeeProfileMutation,
     useGetEmployeeDashboardDataQuery,
     useGetMySalariesQuery,
     useGetMyLeaveRequestsQuery,
