@@ -4,7 +4,10 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog';
-import { Pencil, User, Mail, Phone, MapPin, Droplets, CreditCard, IdCard, Maximize2 } from 'lucide-react';
+import {
+    Pencil, User, Mail, Phone, MapPin, Droplets, CreditCard, IdCard, Maximize2,
+    CalendarDays, Briefcase, PencilRuler,
+} from 'lucide-react';
 import { InfoRow, CardIconHeader } from './shared';
 
 interface Props {
@@ -15,7 +18,11 @@ interface Props {
     bloodGroup: string;
     nidNumber: string;
     whatsapp: string;
-    nidPhotoUrl?: string | null;
+    dateOfBirth?: string;
+    designation?: string;
+    tshirtSize?: string;
+    nidPhotoFrontUrl?: string | null;
+    nidPhotoBackUrl?: string | null;
     /** Open the parent-controlled edit dialog */
     onEditClick: () => void;
 }
@@ -28,9 +35,59 @@ export function EmployeeInfoCard({
     bloodGroup,
     nidNumber,
     whatsapp,
-    nidPhotoUrl,
+    dateOfBirth,
+    designation,
+    tshirtSize,
+    nidPhotoFrontUrl,
+    nidPhotoBackUrl,
     onEditClick,
 }: Props) {
+    const dob = dateOfBirth ? new Date(dateOfBirth) : null;
+    const dobValue = dob && !Number.isNaN(dob.getTime())
+        ? dob.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        : undefined;
+    const designationValue = designation?.trim() || undefined;
+    const tshirtValue = tshirtSize?.trim() ? tshirtSize.trim().toUpperCase() : undefined;
+
+    const renderNidPhoto = (label: string, emptyText: string, url?: string | null) => (
+        <div className="flex-1">
+            <p className="text-xs text-gray-400 mb-1.5">{label}</p>
+            {url ? (
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <div className="relative group cursor-pointer">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={url}
+                                alt={label}
+                                className="rounded-lg border border-gray-200 w-full h-40 object-contain group-hover:opacity-90 transition-opacity"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-lg">
+                                <Button size="icon" variant="secondary" className="w-8 h-8 rounded-full shadow-sm pointer-events-none">
+                                    <Maximize2 className="w-4 h-4 text-gray-200" />
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl p-2 bg-transparent border-none shadow-none">
+                        <DialogTitle className="sr-only">{label}</DialogTitle>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={url}
+                            alt={`${label} full`}
+                            className="w-full h-auto max-h-[85vh] object-contain rounded-xl"
+                        />
+                    </DialogContent>
+                </Dialog>
+            ) : (
+                <div className="rounded-lg border-2 border-dashed border-gray-200 h-24 flex flex-col items-center justify-center gap-1.5 bg-gray-50 text-gray-400">
+                    <CreditCard className="w-6 h-6" />
+                    <p className="text-xs">{emptyText}</p>
+                </div>
+            )}
+        </div>
+    );
+
     return (
         <Card className="lg:col-span-3 shadow-sm border-0 ring-1 ring-gray-100 overflow-hidden">
             {/* ── Header ─────────────────────────────────────────────── */}
@@ -68,6 +125,9 @@ export function EmployeeInfoCard({
                     label="WhatsApp Number"
                     value={whatsapp || phone || <span className="italic text-gray-400 font-normal">Not provided</span>}
                 />
+                <InfoRow icon={CalendarDays} label="Date of Birth" value={dobValue} />
+                <InfoRow icon={Briefcase} label="Designation" value={designationValue} />
+                <InfoRow icon={PencilRuler} label="T-shirt Size" value={tshirtValue} />
                 <InfoRow
                     icon={Droplets}
                     label="Blood Group"
@@ -106,42 +166,9 @@ export function EmployeeInfoCard({
                             </div>
                         </div>
 
-                        {/* NID photo */}
-                        <div className="flex-1">
-                            <p className="text-xs text-gray-400 mb-1.5">NID Photo</p>
-                            {nidPhotoUrl ? (
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <div className="relative group cursor-pointer">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={nidPhotoUrl}
-                                                alt="NID"
-                                                className="rounded-lg border border-gray-200 w-full h-40 object-contain group-hover:opacity-90 transition-opacity"
-                                            />
-                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-lg">
-                                                <Button size="icon" variant="secondary" className="w-8 h-8 rounded-full shadow-sm pointer-events-none">
-                                                    <Maximize2 className="w-4 h-4 text-gray-200" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </DialogTrigger>
-                                    <DialogContent className="max-w-3xl p-2 bg-transparent border-none shadow-none">
-                                        <DialogTitle className="sr-only">NID Photo</DialogTitle>
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
-                                            src={nidPhotoUrl}
-                                            alt="NID Full"
-                                            className="w-full h-auto max-h-[85vh] object-contain rounded-xl"
-                                        />
-                                    </DialogContent>
-                                </Dialog>
-                            ) : (
-                                <div className="rounded-lg border-2 border-dashed border-gray-200 h-24 flex flex-col items-center justify-center gap-1.5 bg-gray-50 text-gray-400">
-                                    <CreditCard className="w-6 h-6" />
-                                    <p className="text-xs">NID photo not uploaded</p>
-                                </div>
-                            )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {renderNidPhoto('NID Front Photo', 'NID front photo not uploaded', nidPhotoFrontUrl)}
+                            {renderNidPhoto('NID Back Photo', 'NID back photo not uploaded', nidPhotoBackUrl)}
                         </div>
                     </div>
                 </div>

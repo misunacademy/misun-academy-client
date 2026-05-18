@@ -79,7 +79,7 @@ export function EmployeeListTab() {
 
                     </>
                 }
-                columns={['Employee', 'Email', 'Phone', 'Address', 'Status', 'Joined', 'Action']}
+                columns={['Employee', 'Email', 'Phone', 'Designation', 'Address', 'Status', 'Joined', 'Action']}
                 data={filtered}
                 getRowKey={(emp) => emp._id}
                 isLoading={isLoading}
@@ -103,6 +103,7 @@ export function EmployeeListTab() {
                         </TableCell>
                         <TableCell className="text-sm">{emp.email}</TableCell>
                         <TableCell className="text-sm">{emp.phone || '—'}</TableCell>
+                        <TableCell className="text-sm max-w-[160px] truncate">{emp.designation || '—'}</TableCell>
                         <TableCell className="text-sm max-w-[140px] truncate">{emp.address || '—'}</TableCell>
                         <TableCell>
                             <Badge variant={emp.status.toLowerCase() === 'active' ? 'default' : 'secondary'}>

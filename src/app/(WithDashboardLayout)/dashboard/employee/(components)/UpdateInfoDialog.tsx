@@ -17,7 +17,7 @@ import {
     SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
-    User, Mail, Phone, MapPin, Droplets, IdCard,
+    User, Mail, Phone, MapPin, Droplets, IdCard, CalendarDays, Briefcase, PencilRuler,
     Loader2, Pencil, Save, X, Upload, ImagePlus,
     CheckCircle2, Trash2, AlertCircle,
 } from 'lucide-react';
@@ -62,6 +62,8 @@ function FormField({
 
 // ─── NID Photo Upload Zone ────────────────────────────────────────────────────
 interface UploadZoneProps {
+    label: string;
+    inputId: string;
     currentUrl?: string | null;
     localFile: File | null;
     localPreview: string | null;
@@ -75,7 +77,7 @@ interface UploadZoneProps {
 }
 
 function NidUploadZone({
-    currentUrl, localFile, localPreview, isUploading, isDragging,
+    label, inputId, currentUrl, localFile, localPreview, isUploading, isDragging,
     onFileSelect, onClear, onDragEnter, onDragLeave, onDrop,
 }: UploadZoneProps) {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -93,13 +95,13 @@ function NidUploadZone({
 
     return (
         <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">NID Photo</Label>
+            <Label className="text-sm font-medium text-gray-700">{label}</Label>
 
             {/* ── Drop / click zone ─────────────────────────────── */}
             <div
                 role="button"
                 tabIndex={0}
-                aria-label="Upload NID photo"
+                aria-label={`Upload ${label}`}
                 onDragEnter={onDragEnter}
                 onDragLeave={onDragLeave}
                 onDragOver={(e) => e.preventDefault()}
@@ -122,7 +124,7 @@ function NidUploadZone({
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={displayUrl!}
-                            alt="NID preview"
+                            alt={`${label} preview`}
                             className="w-full h-full object-cover"
                         />
 
@@ -174,7 +176,7 @@ function NidUploadZone({
                         </div>
                         <div className="text-center">
                             <p className="text-sm font-semibold text-gray-600">
-                                {isDragging ? 'Drop your NID photo here' : 'Upload NID Photo'}
+                                {isDragging ? `Drop your ${label} here` : `Upload ${label}`}
                             </p>
                             <p className="text-xs text-gray-400 mt-1">
                                 Drag & drop, or <span className="text-emerald-600 font-medium underline">browse</span>
@@ -188,7 +190,7 @@ function NidUploadZone({
             {/* Hidden file input */}
             <input
                 ref={inputRef}
-                id="nid-photo-input"
+                id={inputId}
                 type="file"
                 accept="image/png,image/jpeg,image/webp,image/jpg"
                 className="hidden"
@@ -200,6 +202,7 @@ function NidUploadZone({
 
 // ─── Blood-group options ───────────────────────────────────────────────────────
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+const TSHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
 
@@ -211,7 +214,11 @@ export interface EmployeeExtendedInfo {
     bloodGroup: string;
     nidNumber: string;
     whatsapp: string;
-    nidPhotoUrl?: string | null;
+    dateOfBirth: string;
+    tshirtSize: string;
+    designation: string;
+    nidPhotoFrontUrl?: string | null;
+    nidPhotoBackUrl?: string | null;
 }
 
 interface Props {
@@ -229,34 +236,45 @@ export function UpdateInfoDialog({ open, onClose, current, onSaved }: Props) {
 
     const [saving,     setSaving]     = useState(false);
     const [uploading,  setUploading]  = useState(false);
-    const [isDragging, setIsDragging] = useState(false);
+    const [dragTarget, setDragTarget] = useState<'front' | 'back' | null>(null);
+    const [uploadingSide, setUploadingSide] = useState<'front' | 'back' | null>(null);
 
     // Form text fields
     const [form, setForm] = useState<EmployeeExtendedInfo>(current);
 
-    // NID photo local state
-    const [nidFile,    setNidFile]    = useState<File | null>(null);
-    const [nidPreview, setNidPreview] = useState<string | null>(null);
-    // When user clears an existing photo we track that intent
-    const [nidCleared, setNidCleared] = useState(false);
+    // NID photos local state
+    const [nidFrontFile,    setNidFrontFile]    = useState<File | null>(null);
+    const [nidFrontPreview, setNidFrontPreview] = useState<string | null>(null);
+    const [nidFrontCleared, setNidFrontCleared] = useState(false);
+
+    const [nidBackFile,    setNidBackFile]    = useState<File | null>(null);
+    const [nidBackPreview, setNidBackPreview] = useState<string | null>(null);
+    const [nidBackCleared, setNidBackCleared] = useState(false);
 
     // ── Reset on open ─────────────────────────────────────────────────────────
     const handleOpenChange = (nextOpen: boolean) => {
         if (nextOpen) {
             setForm(current);
-            setNidFile(null);
-            setNidPreview(null);
-            setNidCleared(false);
+            if (nidFrontPreview) URL.revokeObjectURL(nidFrontPreview);
+            if (nidBackPreview) URL.revokeObjectURL(nidBackPreview);
+            setNidFrontFile(null);
+            setNidFrontPreview(null);
+            setNidFrontCleared(false);
+            setNidBackFile(null);
+            setNidBackPreview(null);
+            setNidBackCleared(false);
+            setDragTarget(null);
+            setUploadingSide(null);
         }
         if (!nextOpen) onClose();
     };
 
-    const set = (key: keyof Omit<EmployeeExtendedInfo, 'nidPhotoUrl'>) =>
+    const set = (key: keyof Omit<EmployeeExtendedInfo, 'nidPhotoFrontUrl' | 'nidPhotoBackUrl'>) =>
         (e: React.ChangeEvent<HTMLInputElement>) =>
             setForm((f) => ({ ...f, [key]: e.target.value }));
 
     // ── File selection ────────────────────────────────────────────────────────
-    const applyFile = useCallback((file: File) => {
+    const applyFile = useCallback((file: File, side: 'front' | 'back') => {
         if (file.size > MAX_FILE_BYTES) {
             toast.error('File is too large. Maximum size is 5 MB.');
             return;
@@ -265,27 +283,46 @@ export function UpdateInfoDialog({ open, onClose, current, onSaved }: Props) {
             toast.error('Only image files are allowed.');
             return;
         }
-        setNidFile(file);
-        setNidCleared(false);
         const url = URL.createObjectURL(file);
-        setNidPreview(url);
+        if (side === 'front') {
+            setNidFrontFile(file);
+            setNidFrontCleared(false);
+            setNidFrontPreview(url);
+            return;
+        }
+        setNidBackFile(file);
+        setNidBackCleared(false);
+        setNidBackPreview(url);
     }, []);
 
-    const clearNidPhoto = () => {
-        setNidFile(null);
-        if (nidPreview) URL.revokeObjectURL(nidPreview);
-        setNidPreview(null);
-        setNidCleared(true);
+    const clearNidPhoto = (side: 'front' | 'back') => {
+        if (side === 'front') {
+            setNidFrontFile(null);
+            if (nidFrontPreview) URL.revokeObjectURL(nidFrontPreview);
+            setNidFrontPreview(null);
+            setNidFrontCleared(true);
+            return;
+        }
+        setNidBackFile(null);
+        if (nidBackPreview) URL.revokeObjectURL(nidBackPreview);
+        setNidBackPreview(null);
+        setNidBackCleared(true);
     };
 
     // ── Drag events ───────────────────────────────────────────────────────────
-    const onDragEnter = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
-    const onDragLeave = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); };
-    const onDrop      = (e: React.DragEvent) => {
+    const onDragEnter = (side: 'front' | 'back') => (e: React.DragEvent) => {
         e.preventDefault();
-        setIsDragging(false);
+        setDragTarget(side);
+    };
+    const onDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setDragTarget(null);
+    };
+    const onDrop = (side: 'front' | 'back') => (e: React.DragEvent) => {
+        e.preventDefault();
+        setDragTarget(null);
         const file = e.dataTransfer.files?.[0];
-        if (file) applyFile(file);
+        if (file) applyFile(file, side);
     };
 
     // ── Submit ────────────────────────────────────────────────────────────────
@@ -294,19 +331,34 @@ export function UpdateInfoDialog({ open, onClose, current, onSaved }: Props) {
         setSaving(true);
 
         try {
-            // 1) Upload new NID photo if one was selected
-            let resolvedNidUrl: string | null | undefined = form.nidPhotoUrl;
+            // 1) Upload new NID photos if selected
+            let resolvedFrontUrl: string | null | undefined = form.nidPhotoFrontUrl;
+            let resolvedBackUrl: string | null | undefined = form.nidPhotoBackUrl;
 
-            if (nidFile) {
-                setUploading(true);
+            if (nidFrontFile || nidBackFile) setUploading(true);
+
+            if (nidFrontFile) {
+                setUploadingSide('front');
                 const fd = new FormData();
-                fd.append('image', nidFile);
+                fd.append('image', nidFrontFile);
                 const res = await uploadImage(fd).unwrap();
-                resolvedNidUrl = res.data.url;
-                setUploading(false);
-            } else if (nidCleared) {
-                resolvedNidUrl = null;
+                resolvedFrontUrl = res.data.url;
+            } else if (nidFrontCleared) {
+                resolvedFrontUrl = null;
             }
+
+            if (nidBackFile) {
+                setUploadingSide('back');
+                const fd = new FormData();
+                fd.append('image', nidBackFile);
+                const res = await uploadImage(fd).unwrap();
+                resolvedBackUrl = res.data.url;
+            } else if (nidBackCleared) {
+                resolvedBackUrl = null;
+            }
+
+            setUploadingSide(null);
+            setUploading(false);
 
             // 2) Push name / phone / address to auth layer
             const authPayload: Record<string, unknown> = {};
@@ -331,17 +383,26 @@ export function UpdateInfoDialog({ open, onClose, current, onSaved }: Props) {
                 whatsapp:    form.whatsapp.trim(),
                 bloodGroup:  form.bloodGroup,
                 nidNumber:   form.nidNumber.trim(),
-                nidPhotoUrl: resolvedNidUrl ?? undefined,
+                dateOfBirth: form.dateOfBirth ? form.dateOfBirth : null,
+                tshirtSize:  form.tshirtSize.trim() || null,
+                designation: form.designation.trim() || null,
+                nidPhotoFrontUrl: resolvedFrontUrl,
+                nidPhotoBackUrl:  resolvedBackUrl,
             }).unwrap();
 
             // 4) Notify parent
-            onSaved({ ...form, nidPhotoUrl: resolvedNidUrl });
+            onSaved({
+                ...form,
+                nidPhotoFrontUrl: resolvedFrontUrl ?? null,
+                nidPhotoBackUrl: resolvedBackUrl ?? null,
+            });
             toast.success('Profile updated successfully!');
             onClose();
         } catch {
-            setUploading(false);
             toast.error('Something went wrong. Please try again.');
         } finally {
+            setUploadingSide(null);
+            setUploading(false);
             setSaving(false);
         }
     };
@@ -402,6 +463,56 @@ export function UpdateInfoDialog({ open, onClose, current, onSaved }: Props) {
                                 disabled
                                 tabIndex={-1}
                             />
+                        </div>
+                    </FormField>
+
+                    <FormField id="upd-dob" label="Date of Birth">
+                        <div className="relative">
+                            <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Input
+                                id="upd-dob"
+                                type="date"
+                                className="pl-9"
+                                value={form.dateOfBirth}
+                                onChange={set('dateOfBirth')}
+                                disabled={isBusy}
+                            />
+                        </div>
+                    </FormField>
+
+                    <FormField id="upd-designation" label="Designation" hint="Your current role or title.">
+                        <div className="relative">
+                            <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Input
+                                id="upd-designation"
+                                className="pl-9"
+                                value={form.designation}
+                                onChange={set('designation')}
+                                placeholder="e.g., Senior Designer"
+                                disabled={isBusy}
+                            />
+                        </div>
+                    </FormField>
+
+                    <FormField id="upd-tshirt" label="T-shirt Size">
+                        <div className="relative">
+                            <PencilRuler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10 pointer-events-none" />
+                            <Select
+                                value={form.tshirtSize || undefined}
+                                onValueChange={(v) => setForm((f) => ({ ...f, tshirtSize: v }))}
+                                disabled={isBusy}
+                            >
+                                <SelectTrigger id="upd-tshirt" className="pl-9">
+                                    <SelectValue placeholder="Select size" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {TSHIRT_SIZES.map((size) => (
+                                        <SelectItem key={size} value={size}>
+                                            {size}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </FormField>
 
@@ -499,25 +610,43 @@ export function UpdateInfoDialog({ open, onClose, current, onSaved }: Props) {
                         </div>
                     </FormField>
 
-                    {/* NID photo upload zone */}
-                    <NidUploadZone
-                        currentUrl={nidCleared ? null : (form.nidPhotoUrl ?? null)}
-                        localFile={nidFile}
-                        localPreview={nidPreview}
-                        isUploading={uploading}
-                        isDragging={isDragging}
-                        onFileSelect={applyFile}
-                        onClear={clearNidPhoto}
-                        onDragEnter={onDragEnter}
-                        onDragLeave={onDragLeave}
-                        onDrop={onDrop}
-                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <NidUploadZone
+                            label="NID Front Photo"
+                            inputId="nid-front-photo-input"
+                            currentUrl={nidFrontCleared ? null : (form.nidPhotoFrontUrl ?? null)}
+                            localFile={nidFrontFile}
+                            localPreview={nidFrontPreview}
+                            isUploading={uploadingSide === 'front'}
+                            isDragging={dragTarget === 'front'}
+                            onFileSelect={(file) => applyFile(file, 'front')}
+                            onClear={() => clearNidPhoto('front')}
+                            onDragEnter={onDragEnter('front')}
+                            onDragLeave={onDragLeave}
+                            onDrop={onDrop('front')}
+                        />
+
+                        <NidUploadZone
+                            label="NID Back Photo"
+                            inputId="nid-back-photo-input"
+                            currentUrl={nidBackCleared ? null : (form.nidPhotoBackUrl ?? null)}
+                            localFile={nidBackFile}
+                            localPreview={nidBackPreview}
+                            isUploading={uploadingSide === 'back'}
+                            isDragging={dragTarget === 'back'}
+                            onFileSelect={(file) => applyFile(file, 'back')}
+                            onClear={() => clearNidPhoto('back')}
+                            onDragEnter={onDragEnter('back')}
+                            onDragLeave={onDragLeave}
+                            onDrop={onDrop('back')}
+                        />
+                    </div>
 
                     {/* Upload progress hint */}
                     {uploading && (
                         <div className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-50 px-4 py-2.5 rounded-lg border border-emerald-100">
                             <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
-                            <span>Uploading NID photo, please wait…</span>
+                            <span>Uploading NID photos, please wait…</span>
                         </div>
                     )}
 

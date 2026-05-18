@@ -10,6 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -25,6 +26,7 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
+import { useAuth } from "@/hooks/useAuth";
 import {
   useGetInstructorCoursesQuery,
   useGetInstructorCourseModulesQuery,
@@ -569,6 +571,7 @@ function ModuleCard({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function InstructorDashboardPage() {
+  const { user } = useAuth();
   const { data: dashboardData, isLoading: dashLoading } = useGetInstructorDashboardQuery();
   const { data: coursesData, isLoading: coursesLoading } = useGetInstructorCoursesQuery();
 
@@ -596,6 +599,16 @@ export default function InstructorDashboardPage() {
   );
   const [orderedModules, setOrderedModules] = useState<InstructorModule[]>([]);
   const [reorderModules, { isLoading: reordering }] = useReorderInstructorModulesMutation();
+
+  const instructorRecord = dashData?.course?.instructorId as any;
+  const instructorName = instructorRecord?.name || user?.name || "";
+  const avatarUrl = instructorRecord?.image || instructorRecord?.avatar || user?.image || user?.avatar;
+  const initials = (instructorName || "Instructor")
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   useEffect(() => {
     setOrderedModules(modules);
@@ -638,11 +651,19 @@ export default function InstructorDashboardPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">
-          Welcome back{dashData?.course?.instructorId?.name ? `, ${(dashData.course.instructorId as any).name}` : ""}! 👋
-        </h1>
-        <p className="text-muted-foreground mt-1">Manage your course content and track student progress.</p>
+      <div className="flex items-center gap-4">
+        <Avatar className="h-12 w-12 ring-2 ring-primary/10">
+          {avatarUrl && <AvatarImage src={avatarUrl} alt={instructorName || "Instructor"} />}
+          <AvatarFallback className="text-sm font-bold bg-primary/10 text-primary">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <h1 className="text-3xl font-bold">
+            Welcome back{instructorName ? `, ${instructorName}` : ""}! 👋
+          </h1>
+          <p className="text-muted-foreground mt-1">Manage your course content and track student progress.</p>
+        </div>
       </div>
 
       {/* Stats */}

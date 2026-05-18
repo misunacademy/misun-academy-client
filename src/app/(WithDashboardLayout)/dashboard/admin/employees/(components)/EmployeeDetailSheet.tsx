@@ -7,13 +7,15 @@ import {
     SheetTitle,
     SheetDescription,
 } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
     Mail, Phone, MapPin, CalendarDays, Briefcase,
-    Droplets, CreditCard, IdCard, MessageCircle,
+    Droplets, CreditCard, IdCard, MessageCircle, PencilRuler, Maximize2,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface EmployeeListItem {
@@ -30,6 +32,11 @@ export interface EmployeeListItem {
     whatsapp?: string | null;
     bloodGroup?: string | null;
     nidNumber?: string | null;
+    dateOfBirth?: string | null;
+    tshirtSize?: string | null;
+    designation?: string | null;
+    nidPhotoFrontUrl?: string | null;
+    nidPhotoBackUrl?: string | null;
     nidPhotoUrl?: string | null;
 }
 
@@ -79,6 +86,12 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
         .slice(0, 2);
 
     const isActive = employee.status.toLowerCase() === 'active';
+    const dob = employee.dateOfBirth ? new Date(employee.dateOfBirth) : null;
+    const dobValue = dob && !Number.isNaN(dob.getTime())
+        ? dob.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        : null;
+    const nidFrontUrl = employee.nidPhotoFrontUrl ?? employee.nidPhotoUrl ?? null;
+    const nidBackUrl = employee.nidPhotoBackUrl ?? null;
 
     return (
         <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
@@ -97,9 +110,14 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                             <SheetTitle className="text-base font-bold truncate">
                                 {employee.name}
                             </SheetTitle>
-                            <SheetDescription className="text-xs capitalize mt-0.5">
-                                {employee.role}
-                            </SheetDescription>
+                            <div className="mt-0.5 flex flex-wrap items-center gap-2">
+                                <SheetDescription className="text-xs capitalize">
+                                    {employee.role}
+                                </SheetDescription>
+                                <Badge variant="outline" className="text-[10px] px-2 py-0.5">
+                                    {employee.designation || 'No designation'}
+                                </Badge>
+                            </div>
                             <Badge
                                 variant={isActive ? 'default' : 'secondary'}
                                 className="mt-1.5 text-xs"
@@ -117,10 +135,10 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                         Contact Information
                     </p>
 
-                    <InfoRow icon={Mail}           label="Email Address"  value={employee.email} />
-                    <InfoRow icon={Phone}          label="Phone Number"   value={employee.phone} />
-                    <InfoRow icon={MessageCircle}  label="WhatsApp"       value={employee.whatsapp} />
-                    <InfoRow icon={MapPin}         label="Address"        value={employee.address} />
+                    <InfoRow icon={Mail} label="Email Address" value={employee.email} />
+                    <InfoRow icon={Phone} label="Phone Number" value={employee.phone} />
+                    <InfoRow icon={MessageCircle} label="WhatsApp" value={employee.whatsapp} />
+                    <InfoRow icon={MapPin} label="Address" value={employee.address} />
 
                     <Separator className="!my-4" />
 
@@ -133,6 +151,21 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                         icon={Droplets}
                         label="Blood Group"
                         value={employee.bloodGroup}
+                    />
+                    <InfoRow
+                        icon={CalendarDays}
+                        label="Date of Birth"
+                        value={dobValue}
+                    />
+                    <InfoRow
+                        icon={Briefcase}
+                        label="Designation"
+                        value={employee.designation}
+                    />
+                    <InfoRow
+                        icon={PencilRuler}
+                        label="T-shirt Size"
+                        value={employee.tshirtSize}
                     />
                     <InfoRow
                         icon={CalendarDays}
@@ -152,24 +185,83 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
 
                     <InfoRow icon={IdCard} label="NID Number" value={employee.nidNumber} />
 
-                    {/* NID photo */}
-                    <div className="pt-1">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                            NID Photo
-                        </p>
-                        {employee.nidPhotoUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                                src={employee.nidPhotoUrl}
-                                alt="NID"
-                                className="w-full h-36 object-cover rounded-xl border"
-                            />
-                        ) : (
-                            <div className="w-full h-28 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/30">
-                                <CreditCard className="w-6 h-6" />
-                                <p className="text-xs">No NID photo uploaded</p>
-                            </div>
-                        )}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div>
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                                NID Front
+                            </p>
+                            {nidFrontUrl ? (
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <div className="relative group cursor-pointer">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={nidFrontUrl}
+                                                alt="NID Front"
+                                                className="w-full h-32 object-cover rounded-xl border group-hover:opacity-90 transition-opacity"
+                                            />
+                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-xl">
+                                                <Button size="icon" variant="secondary" className="w-8 h-8 rounded-full shadow-sm pointer-events-none">
+                                                    <Maximize2 className="w-4 h-4 text-gray-200" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-3xl p-2 bg-transparent border-none shadow-none">
+                                        <DialogTitle className="sr-only">NID Front Photo</DialogTitle>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={nidFrontUrl}
+                                            alt="NID Front Full"
+                                            className="w-full h-auto max-h-[85vh] object-contain rounded-xl"
+                                        />
+                                    </DialogContent>
+                                </Dialog>
+                            ) : (
+                                <div className="w-full h-28 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/30">
+                                    <CreditCard className="w-6 h-6" />
+                                    <p className="text-xs">No NID front photo</p>
+                                </div>
+                            )}
+                        </div>
+                        <div>
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                                NID Back
+                            </p>
+                            {nidBackUrl ? (
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <div className="relative group cursor-pointer">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={nidBackUrl}
+                                                alt="NID Back"
+                                                className="w-full h-32 object-cover rounded-xl border group-hover:opacity-90 transition-opacity"
+                                            />
+                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-xl">
+                                                <Button size="icon" variant="secondary" className="w-8 h-8 rounded-full shadow-sm pointer-events-none">
+                                                    <Maximize2 className="w-4 h-4 text-gray-200" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-3xl p-2 bg-transparent border-none shadow-none">
+                                        <DialogTitle className="sr-only">NID Back Photo</DialogTitle>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={nidBackUrl}
+                                            alt="NID Back Full"
+                                            className="w-full h-auto max-h-[85vh] object-contain rounded-xl"
+                                        />
+                                    </DialogContent>
+                                </Dialog>
+                            ) : (
+                                <div className="w-full h-28 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/30">
+                                    <CreditCard className="w-6 h-6" />
+                                    <p className="text-xs">No NID back photo</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                 </div>

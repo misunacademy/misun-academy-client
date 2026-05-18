@@ -131,6 +131,11 @@ const instructorItems = [
         url: "/dashboard/instructor/students",
         icon: User2,
     },
+        {
+        title: "Settings",
+        url: "/dashboard/instructor/settings",
+        icon: Settings,
+    },
 ];
 
 const adminItems = [

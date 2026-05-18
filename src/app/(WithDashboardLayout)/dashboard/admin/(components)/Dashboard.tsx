@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useGetDashboardMetadataQuery } from '@/redux/api/dashboardApi';
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
 import { useAuth } from '@/hooks/useAuth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 // Dynamically import charts with no SSR to reduce initial bundle size
 const DashboardCharts = dynamic(
@@ -82,11 +83,31 @@ export default function Dashboard() {
 
     const hasCourseData = dashboardData.courseWiseStats.length > 0;
     const hasBatchData = dashboardData.batchWiseIncome.length > 0;
+    const avatarUrl = user?.image || user?.avatar;
+    const initials = (user?.name || 'Admin')
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+    const firstName = user?.name?.split(' ')[0] || 'Admin';
 
     return (
         <DashboardPageContainer
-            heading={`Welcome back, ${user?.name?.split(' ')[0] || 'Admin'} 👋`}
-            subheading="Here's what's happening with your academy today."
+            heading={
+                <div className="flex items-center gap-4">
+                    <Avatar className="h-12 w-12 ring-2 ring-primary/10">
+                        {avatarUrl && <AvatarImage src={avatarUrl} alt={user?.name || 'Admin'} />}
+                        <AvatarFallback className="text-sm font-bold bg-primary/10 text-primary">
+                            {initials}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <h1 className="text-3xl font-bold">Welcome back, {firstName} 👋</h1>
+                        <p className="text-muted-foreground">Here is what is happening with your academy today.</p>
+                    </div>
+                </div>
+            }
             content={
                 <div className="space-y-6">
                     {/* Summary Cards */}

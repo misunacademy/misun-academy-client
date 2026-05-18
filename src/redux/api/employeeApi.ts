@@ -45,6 +45,11 @@ export interface EmployeeProfile {
     whatsapp?: string | null;
     bloodGroup?: string | null;
     nidNumber?: string | null;
+    dateOfBirth?: string | null;
+    tshirtSize?: string | null;
+    designation?: string | null;
+    nidPhotoFrontUrl?: string | null;
+    nidPhotoBackUrl?: string | null;
     nidPhotoUrl?: string | null;
 }
 

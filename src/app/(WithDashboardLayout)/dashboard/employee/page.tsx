@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useGetMySalariesQuery, useGetMyEmployeeProfileQuery } from '@/redux/api/employeeApi';
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-import { EmployeeHeroBanner } from './(components)/EmployeeHeroBanner';
 import { EmployeeStatCards } from './(components)/EmployeeStatCards';
 import { EmployeeInfoCard } from './(components)/EmployeeInfoCard';
 import { SalaryStructureCard } from './(components)/SalaryStructureCard';
@@ -49,7 +49,11 @@ const EmployeePage = () => {
         whatsapp: '',
         bloodGroup: '',
         nidNumber: '',
-        nidPhotoUrl: null,
+        dateOfBirth: '',
+        tshirtSize: '',
+        designation: '',
+        nidPhotoFrontUrl: null,
+        nidPhotoBackUrl: null,
     });
 
     // Sync from server profile once loaded
@@ -63,7 +67,11 @@ const EmployeePage = () => {
             whatsapp: p.whatsapp || '',
             bloodGroup: p.bloodGroup || '',
             nidNumber: p.nidNumber || '',
-            nidPhotoUrl: p.nidPhotoUrl ?? null,
+            dateOfBirth: p.dateOfBirth ? new Date(p.dateOfBirth).toISOString().slice(0, 10) : '',
+            tshirtSize: p.tshirtSize || '',
+            designation: p.designation || '',
+            nidPhotoFrontUrl: p.nidPhotoFrontUrl ?? p.nidPhotoUrl ?? null,
+            nidPhotoBackUrl: p.nidPhotoBackUrl ?? null,
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [serverProfile]);
@@ -77,7 +85,7 @@ const EmployeePage = () => {
 
     /* ── Derived values ────────────────────────────────────────────────────── */
     const email = user?.email || serverProfile?.data?.email || '';
-    const avatarUrl = user?.image || serverProfile?.data?.avatar;
+    const avatarUrl = user?.image || serverProfile?.data?.image || serverProfile?.data?.avatar;
 
     const salaries = salaryData?.data?.salaries ?? [];
     const latestSalary = salaries[0];
@@ -94,23 +102,36 @@ const EmployeePage = () => {
         .join('')
         .toUpperCase()
         .slice(0, 2);
+    const firstName = extInfo.name.trim().split(' ')[0] || 'Employee';
+    const designationLabel = extInfo.designation.trim() || 'Not provided';
 
     if (authLoading || profileLoading) return <DashboardLoader />;
 
     return (
         <DashboardPageContainer
-            heading={`Welcome back, ${extInfo.name.split(' ')[0]} 👋`}
-            subheading="View your profile, salary structure, and recent history"
+            heading={
+                <div className="flex items-center gap-4">
+                    <Avatar className="h-12 w-12 ring-2 ring-emerald-100">
+                        {avatarUrl && <AvatarImage src={avatarUrl} alt={extInfo.name} />}
+                        <AvatarFallback className="text-sm font-bold bg-emerald-50 text-emerald-700">
+                            {initials}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <h1 className="text-3xl font-bold">Welcome back, {firstName} 👋</h1>
+                            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full">
+                                {designationLabel}
+                            </span>
+                        </div>
+                        <p className="text-muted-foreground">
+                            View your profile, salary structure, and recent history
+                        </p>
+                    </div>
+                </div>
+            }
             content={
                 <div className="space-y-7 pb-10">
-                    {/* 1 ── Hero banner */}
-                    {/* <EmployeeHeroBanner
-                        name={extInfo.name}
-                        email={email}
-                        avatarUrl={avatarUrl}
-                        initials={initials}
-                        jobTitle={latestSalary?.jobTitle}
-                    /> */}
 
                     {/* 2 ── Stat cards */}
                     <EmployeeStatCards
@@ -132,7 +153,11 @@ const EmployeePage = () => {
                             whatsapp={extInfo.whatsapp}
                             bloodGroup={extInfo.bloodGroup}
                             nidNumber={extInfo.nidNumber}
-                            nidPhotoUrl={extInfo.nidPhotoUrl}
+                            dateOfBirth={extInfo.dateOfBirth}
+                            tshirtSize={extInfo.tshirtSize}
+                            designation={extInfo.designation}
+                            nidPhotoFrontUrl={extInfo.nidPhotoFrontUrl}
+                            nidPhotoBackUrl={extInfo.nidPhotoBackUrl}
                             onEditClick={() => setDialogOpen(true)}
                         />
 

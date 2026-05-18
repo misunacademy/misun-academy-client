@@ -11,6 +11,15 @@ export interface Employee {
     phone?: string;
     address?: string;
     createdAt: string;
+    whatsapp?: string | null;
+    bloodGroup?: string | null;
+    nidNumber?: string | null;
+    dateOfBirth?: string | null;
+    tshirtSize?: string | null;
+    designation?: string | null;
+    nidPhotoFrontUrl?: string | null;
+    nidPhotoBackUrl?: string | null;
+    nidPhotoUrl?: string | null;
 }
 
 export interface CreateSalaryRequest {
