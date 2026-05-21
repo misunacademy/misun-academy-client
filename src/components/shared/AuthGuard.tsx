@@ -39,18 +39,19 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
         // Check if user is accessing admin routes
         const isAdminRoute = pathname.startsWith('/dashboard/admin') || pathname.startsWith('/admin');
         const isInstructorRoute = pathname.startsWith('/dashboard/instructor') || pathname.startsWith('/instructor');
-
+        const isEmployeeRoute = pathname.startsWith('/dashboard/employee') || pathname.startsWith('/employee');
         const role = userRole?.toLowerCase() || 'learner'; //  Safe null check
         const hasAdminAccess = ['superadmin', 'admin'].includes(role);
         const hasInstructorAccess = role === 'instructor';
-        const hasDashboardAccess = hasAdminAccess || hasInstructorAccess || role === 'employee';
+        const hasEmployeeAccess = role === 'employee';
+        const hasDashboardAccess = hasAdminAccess || hasInstructorAccess || hasEmployeeAccess;
 
         // Redirect if user doesn't have access to the route
         if (isAdminRoute && !hasAdminAccess) {
             console.warn('[AuthGuard] Insufficient permissions for admin route');
             if (hasInstructorAccess) {
                 router.replace('/dashboard/instructor');
-            } else if (role === 'employee') {
+            } else if (hasEmployeeAccess) {
                 router.replace('/dashboard/employee');
             } else {
                 router.replace('/my-classes');
@@ -60,6 +61,11 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
 
         if (isInstructorRoute && !hasInstructorAccess && !hasAdminAccess) {
             console.warn('[AuthGuard] Insufficient permissions for instructor route');
+            router.replace('/my-classes');
+            return;
+        }
+        if (isEmployeeRoute && !hasEmployeeAccess && !hasAdminAccess) {
+            console.warn('[AuthGuard] Insufficient permissions for employee route');
             router.replace('/my-classes');
             return;
         }
@@ -83,6 +89,8 @@ export default function AuthGuard({ children, requiredRoles }: AuthGuardProps) {
                     router.replace('/dashboard/admin');
                 } else if (hasInstructorAccess) {
                     router.replace('/dashboard/instructor');
+                } else if (hasEmployeeAccess) {
+                    router.replace('/dashboard/employee');
                 } else {
                     router.replace('/my-classes');
                 }

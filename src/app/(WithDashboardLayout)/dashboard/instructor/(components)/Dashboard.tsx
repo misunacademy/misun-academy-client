@@ -44,6 +44,7 @@ import {
 } from "@/redux/api/instructorApi";
 import { useGetInstructorDashboardQuery } from "@/redux/api/dashboardApi";
 
+
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 function StatCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: any; color: string }) {
   return (
@@ -580,6 +581,7 @@ export default function InstructorDashboardPage() {
   const [deleteModule] = useDeleteInstructorModuleMutation();
 
   const dashData = dashboardData?.data;
+
   const course = (coursesData?.data?.[0]) as InstructorCourse | undefined;
   const courseId = course?._id || "";
   const [selectedBatchId, setSelectedBatchId] = useState<string>("");
