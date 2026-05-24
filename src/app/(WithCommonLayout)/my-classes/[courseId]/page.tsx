@@ -307,7 +307,7 @@ export default function CourseDetails() {
     ) || []
   ) || [];
 
-  const instructorName = typeof course.instructor === "string" ? course.instructor : course.instructor?.name || "Instructor";
+  const instructorName = typeof course?.instructor === "string" ? course?.instructor : "Instructor";
 
   return (
     <ProtectedRoute>
