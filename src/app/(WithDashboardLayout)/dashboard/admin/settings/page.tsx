@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Shield, Loader2, Camera, User, Eye, EyeOff, Wrench } from "lucide-react";
+import { Shield, Loader2, Camera, User, Users, Eye, EyeOff, Wrench } from "lucide-react";
 import { toast } from "sonner";
 import { authServerApi } from "@/lib/auth-server-api";
 import { useAuth } from "@/hooks/useAuth";
@@ -27,6 +27,10 @@ export default function AdminSettings() {
   const [maintenanceEnabled, setMaintenanceEnabled] = useState(false);
   const [maintenanceTitle, setMaintenanceTitle] = useState("");
   const [maintenanceMessage, setMaintenanceMessage] = useState("");
+  const [maFacebookGroupLink, setMaFacebookGroupLink] = useState("");
+  const [maWhatsappGroupLink, setMaWhatsappGroupLink] = useState("");
+  const [epFacebookGroupLink, setEpFacebookGroupLink] = useState("");
+  const [epWhatsappGroupLink, setEpWhatsappGroupLink] = useState("");
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -50,6 +54,10 @@ export default function AdminSettings() {
         maintenanceEnabled,
         maintenanceTitle,
         maintenanceMessage,
+        maFacebookGroupLink,
+        maWhatsappGroupLink,
+        epFacebookGroupLink,
+        epWhatsappGroupLink,
       }).unwrap();
       toast.success(`Popup ${value ? "enabled" : "disabled"}`);
     } catch (error) {
@@ -68,6 +76,10 @@ export default function AdminSettings() {
         maintenanceEnabled: value,
         maintenanceTitle,
         maintenanceMessage,
+        maFacebookGroupLink,
+        maWhatsappGroupLink,
+        epFacebookGroupLink,
+        epWhatsappGroupLink,
       }).unwrap();
       toast.success(`Maintenance mode ${value ? "enabled" : "disabled"}`);
     } catch (error) {
@@ -87,6 +99,10 @@ export default function AdminSettings() {
         maintenanceEnabled: false,
         maintenanceTitle: "",
         maintenanceMessage: "",
+        maFacebookGroupLink: "",
+        maWhatsappGroupLink: "",
+        epFacebookGroupLink: "",
+        epWhatsappGroupLink: "",
       })
         .unwrap()
         .catch((error) => {
@@ -102,6 +118,10 @@ export default function AdminSettings() {
     setMaintenanceEnabled(settings.maintenanceEnabled ?? false);
     setMaintenanceTitle(settings.maintenanceTitle ?? "");
     setMaintenanceMessage(settings.maintenanceMessage ?? "");
+    setMaFacebookGroupLink(settings.maFacebookGroupLink ?? "");
+    setMaWhatsappGroupLink(settings.maWhatsappGroupLink ?? "");
+    setEpFacebookGroupLink(settings.epFacebookGroupLink ?? "");
+    setEpWhatsappGroupLink(settings.epWhatsappGroupLink ?? "");
   }, [settingsData, hasSettings, updateSettings]);
 
   const profileFileInputRef = useRef<HTMLInputElement>(null);
@@ -141,6 +161,10 @@ export default function AdminSettings() {
         maintenanceEnabled,
         maintenanceTitle,
         maintenanceMessage,
+        maFacebookGroupLink,
+        maWhatsappGroupLink,
+        epFacebookGroupLink,
+        epWhatsappGroupLink,
       }).unwrap();
 
       toast.success("Settings saved successfully");
@@ -242,6 +266,7 @@ export default function AdminSettings() {
   const tabTriggers = [
     { value: "profile", label: "Profile" },
     { value: "maintenance", label: "Maintenance" },
+    { value: "community", label: "Community Links" },
     { value: "popup", label: "Popup Banner" },
   ];
 
@@ -426,6 +451,79 @@ export default function AdminSettings() {
                   rows={4}
                   onChange={(e) => setMaintenanceMessage(e.target.value)}
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end">
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Saving..." : "Save Settings"}
+            </Button>
+          </div>
+        </>
+      ),
+    },
+    {
+      value: "community",
+      content: (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Community Group Links
+              </CardTitle>
+              <CardDescription>Update these links when a new batch starts.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-3">
+                <p className="text-sm font-semibold">Misun Academy</p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="ma-facebook-group-link">Facebook group link</Label>
+                    <Input
+                      id="ma-facebook-group-link"
+                      value={maFacebookGroupLink}
+                      placeholder="https://www.facebook.com/groups/your-group"
+                      onChange={(e) => setMaFacebookGroupLink(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ma-whatsapp-group-link">WhatsApp group link</Label>
+                    <Input
+                      id="ma-whatsapp-group-link"
+                      value={maWhatsappGroupLink}
+                      placeholder="https://chat.whatsapp.com/your-invite-link"
+                      onChange={(e) => setMaWhatsappGroupLink(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-3">
+                <p className="text-sm font-semibold">Esun Point</p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="ep-facebook-group-link">Facebook group link</Label>
+                    <Input
+                      id="ep-facebook-group-link"
+                      value={epFacebookGroupLink}
+                      placeholder="https://www.facebook.com/groups/your-group"
+                      onChange={(e) => setEpFacebookGroupLink(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="ep-whatsapp-group-link">WhatsApp group link</Label>
+                    <Input
+                      id="ep-whatsapp-group-link"
+                      value={epWhatsappGroupLink}
+                      placeholder="https://chat.whatsapp.com/your-invite-link"
+                      onChange={(e) => setEpWhatsappGroupLink(e.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

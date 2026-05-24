@@ -5,6 +5,12 @@ export interface EnrollmentInitiateRequest {
   batchId: string;
 }
 
+export interface GrantAccessRequest {
+  email: string;
+  courseId: string;
+  batchId: string;
+}
+
 export interface EnrollmentResponse {
   _id: string;
   enrollmentId: string;
@@ -29,6 +35,7 @@ export interface EnrollmentResponse {
     };
   };
   status: 'pending' | 'payment-pending' | 'active' | 'completed' | 'suspended' | 'refunded' | 'payment-failed';
+  accessType?: 'standard' | 'special';
   enrolledAt?: Date;
   // Lifetime access - no expiry field
   paymentId?: string;
@@ -56,6 +63,30 @@ export interface EnrollmentResponse {
   isCertificateAvailable?: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface SpecialAccessEnrollment {
+  _id: string;
+  enrollmentId?: string;
+  status: string;
+  accessType?: 'standard' | 'special';
+  createdAt: string;
+  enrolledAt?: string;
+  userId?: {
+    _id: string;
+    name?: string;
+    email?: string;
+    status?: string;
+    studentId?: string;
+  };
+  batchId?: {
+    _id: string;
+    title?: string;
+    courseId?: {
+      _id: string;
+      title?: string;
+    } | string;
+  };
 }
 
 const enrollmentApi = baseApi.injectEndpoints({
@@ -111,6 +142,18 @@ const enrollmentApi = baseApi.injectEndpoints({
       providesTags: ["CourseEnrollments"],
     }),
 
+    // Admin: Get special access enrollments
+    getSpecialAccessEnrollments: build.query<
+      { data: SpecialAccessEnrollment[]; meta?: { total: number; page: number; limit: number; totalPages: number } },
+      { page?: number; limit?: number; search?: string } | void
+    >({
+      query: (params) => ({
+        url: "/enrollments/special-access",
+        params: params || undefined,
+      }),
+      providesTags: ["SpecialAccessEnrollments"],
+    }),
+
     // Admin: Update enrollment status
     // Server expects PUT, not PATCH
     updateEnrollmentStatus: build.mutation<any, { id: string; status: string }>({
@@ -131,6 +174,16 @@ const enrollmentApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["CourseEnrollments"],
     }),
+
+    // Admin: Grant course access to a student by email
+    grantAccessByEmail: build.mutation<any, GrantAccessRequest>({
+      query: (data) => ({
+        url: "/enrollments/grant-access",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["CourseEnrollments", "SpecialAccessEnrollments"],
+    }),
   }),
 });
 
@@ -140,6 +193,8 @@ export const {
   useGetMyEnrollmentsQuery,
   useGetEnrollmentDetailsQuery,
   useGetAllEnrollmentsQuery,
+  useGetSpecialAccessEnrollmentsQuery,
   useUpdateEnrollmentStatusMutation,
   useEnrollStudentManualMutation,
+  useGrantAccessByEmailMutation,
 } = enrollmentApi;

@@ -9,6 +9,10 @@ export interface SettingsResponse {
   maintenanceEnabled?: boolean;
   maintenanceTitle?: string;
   maintenanceMessage?: string;
+  maFacebookGroupLink?: string;
+  maWhatsappGroupLink?: string;
+  epFacebookGroupLink?: string;
+  epWhatsappGroupLink?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

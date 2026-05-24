@@ -7,17 +7,43 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
 import { toast } from "sonner";
 import { Recording, useGetStudentRecordingsQuery, useIncrementRecordingViewMutation } from "@/redux/api/recordingApi";
+import { useGetStudentDashboardDataQuery } from "@/redux/api/dashboardApi";
 
 export function LiveRecordingsTab() {
   const [playingRecording, setPlayingRecording] = useState<Recording | null>(null);
   const [selectedCourseKey, setSelectedCourseKey] = useState<string>("");
   const { data: recordings = [], isLoading, isError } = useGetStudentRecordingsQuery();
+  const { data: dashboardData, isLoading: isDashboardLoading } = useGetStudentDashboardDataQuery(undefined);
   const [incrementView] = useIncrementRecordingViewMutation();
+
+  const standardCourseIds = useMemo(() => {
+    const enrolledCourses = (dashboardData?.data?.enrolledCourses || []) as Array<{
+      accessType?: "standard" | "special";
+      courseId?: string;
+    }>;
+    return new Set(
+      enrolledCourses
+        .filter((course) => course.accessType !== "special")
+        .map((course) => course.courseId)
+        .filter(Boolean)
+    );
+  }, [dashboardData]);
+
+  const filteredRecordings = useMemo(() => {
+    if (standardCourseIds.size === 0) {
+      return [];
+    }
+
+    return recordings.filter((rec) => {
+      const courseId = typeof rec.courseId === "object" ? rec.courseId?._id : rec.courseId;
+      return Boolean(courseId) && standardCourseIds.has(courseId as string);
+    });
+  }, [recordings, standardCourseIds]);
 
   const courseGroups = useMemo(() => {
     const grouped: Record<string, { key: string; title: string; recordings: Recording[] }> = {};
 
-    recordings.forEach((rec) => {
+    filteredRecordings.forEach((rec) => {
       const courseObj = typeof rec.courseId === "object" ? rec.courseId : null;
       const key = courseObj?._id || (typeof rec.courseId === "string" ? rec.courseId : "live-class");
       const title = courseObj?.title || "Live Class";
@@ -36,7 +62,7 @@ export function LiveRecordingsTab() {
         ),
       }))
       .sort((a, b) => a.title.localeCompare(b.title));
-  }, [recordings]);
+  }, [filteredRecordings]);
 
   const resolvedCourseKey =
     courseGroups.some((group) => group.key === selectedCourseKey)
@@ -54,7 +80,7 @@ export function LiveRecordingsTab() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isDashboardLoading) {
     return (
       <div className="relative rounded-2xl border border-primary/20 bg-[#060f0a] overflow-hidden py-14 px-6 flex flex-col items-center justify-center gap-3 text-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -74,7 +100,7 @@ export function LiveRecordingsTab() {
     );
   }
 
-  if (recordings.length === 0) {
+  if (filteredRecordings.length === 0) {
     return (
       <div className="relative rounded-2xl border border-primary/20 bg-[#060f0a] overflow-hidden flex flex-col items-center justify-center py-20 gap-5 text-center px-6">
         {/* Dot grid */}

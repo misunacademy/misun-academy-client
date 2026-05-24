@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
   ArrowLeft,
@@ -34,6 +34,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useRouter } from 'next/navigation';
 
 /* -------------------------------------------------------------------------- */
 /*                                  Templates                                 */
@@ -61,7 +71,7 @@ type PosterTemplate = {
 };
 
 const TEMPLATES: Record<'graphic' | 'english', PosterTemplate[]> = {
-  "graphic":[
+  "graphic": [
 
     {
       id: 1,
@@ -100,46 +110,46 @@ const TEMPLATES: Record<'graphic' | 'english', PosterTemplate[]> = {
       },
     },
   ],
-  "english":[ {
-      id: 1,
-      name: 'Blue Neon Style',
-      src: '/posters/esun1.png',
-      config: {
-        canvasWidth: 1080,
-        canvasHeight: 1080,
-        photo: { x: 535, y: 578, radius: 155 },
-        name: { x: 540, y: 870, fontSize: 58, color: '#FFFFFF' },
-        batch: {
-          x: 540,
-          y: 936,
-          fontSize: 28,
-          color: '#000000',
-          bgColor: '#1e90ff',
-          minWidth: 220,
-          minHeight: 62,
-        },
+  "english": [{
+    id: 1,
+    name: 'Blue Neon Style',
+    src: '/posters/esun1.png',
+    config: {
+      canvasWidth: 1080,
+      canvasHeight: 1080,
+      photo: { x: 535, y: 578, radius: 155 },
+      name: { x: 540, y: 870, fontSize: 58, color: '#FFFFFF' },
+      batch: {
+        x: 540,
+        y: 936,
+        fontSize: 28,
+        color: '#000000',
+        bgColor: '#1e90ff',
+        minWidth: 220,
+        minHeight: 62,
       },
     },
-    {
-      id: 2,
-      name: 'Sky Ribbon Style',
-      src: '/posters/esun2.png',
-      config: {
-        canvasWidth: 1080,
-        canvasHeight: 1080,
-        photo: { x: 535, y: 578, radius: 155 },
-        name: { x: 540, y: 870, fontSize: 58, color: '#FFFFFF' },
-        batch: {
-          x: 540,
-          y: 936,
-          fontSize: 28,
-          color: '#000000',
-          bgColor: '#38bdf8',
-          minWidth: 220,
-          minHeight: 62,
-        },
+  },
+  {
+    id: 2,
+    name: 'Sky Ribbon Style',
+    src: '/posters/esun2.png',
+    config: {
+      canvasWidth: 1080,
+      canvasHeight: 1080,
+      photo: { x: 535, y: 578, radius: 155 },
+      name: { x: 540, y: 870, fontSize: 58, color: '#FFFFFF' },
+      batch: {
+        x: 540,
+        y: 936,
+        fontSize: 28,
+        color: '#000000',
+        bgColor: '#38bdf8',
+        minWidth: 220,
+        minHeight: 62,
       },
-    },]
+    },
+  },]
 };
 
 /* -------------------------------------------------------------------------- */
@@ -213,6 +223,7 @@ const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 function CongratulationsPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedEnrollmentId, setSelectedEnrollmentId] = useState<string | null>(null);
+  const router = useRouter();
   /* ------------------------------- User Data -------------------------------- */
 
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -222,10 +233,12 @@ function CongratulationsPage() {
   });
 
   const appCourseType = getCourseType(courseInfo?.title);
-  const allEnrollments = enrollmentsData?.data ?? [];
+  const allEnrollments = enrollmentsData?.data?.filter((e) => e.accessType !== 'special') ?? [];
   const activeEnrollments = allEnrollments.filter((e) => e.status === 'active');
   const sourceList = activeEnrollments.length > 0 ? activeEnrollments : allEnrollments;
   const enrollments = Array.isArray(sourceList) ? sourceList : [];
+  const hasNoActiveEnrollments = !isEnrollmentsLoading && activeEnrollments.length === 0;
+  const hasNoEnrollments = allEnrollments.length === 0;
 
   const latestEnrollment = (() => {
     if (selectedEnrollmentId) {
@@ -256,7 +269,8 @@ function CongratulationsPage() {
 
   /* ------------------------------- State ------------------------------------ */
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState(0);
-  
+  const [isNoActiveDialogDismissed, setIsNoActiveDialogDismissed] = useState(false);
+
   // Use user data as initial values, but allow editing
   // Track if user has manually edited to prevent overwriting their changes
   const [userNameState, setUserNameState] = useState<{ value: string; edited: boolean }>({
@@ -373,6 +387,11 @@ function CongratulationsPage() {
     .filter(Boolean);
 
   const resolvedTemplates = courseTemplates.length > 0 ? courseTemplates : activeTemplateGroup;
+  const showNoActiveDialog = hasNoActiveEnrollments && !isNoActiveDialogDismissed;
+  const noActiveDialogTitle = hasNoEnrollments ? 'No enrollments found' : 'No active enrollments';
+  const noActiveDialogDescription = hasNoEnrollments
+    ? 'We could not find any enrollments for your account yet. Please enroll to generate a poster.'
+    : 'We could not find any active enrollments. Showing your most recent enrollment instead so you can still download a poster.';
 
   /* ----------------------------- Image Upload ------------------------------- */
 
@@ -390,201 +409,200 @@ function CongratulationsPage() {
   };
 
   /* ---------------------------- Poster Generator ---------------------------- */
+  useEffect(() => {
+    const generatePoster = async () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
 
-  const generatePoster = useCallback(async () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+      const template =
+        resolvedTemplates[selectedTemplateIndex] ||
+        resolvedTemplates[0] ||
+        TEMPLATES.graphic[0];
+      const { config } = template;
 
-    const template =
-      resolvedTemplates[selectedTemplateIndex] ||
-      resolvedTemplates[0] ||
-      TEMPLATES.graphic[0];
-    const { config } = template;
+      const cssWidth = config.canvasWidth;
+      const cssHeight = config.canvasHeight;
+      const ratio = (typeof window !== 'undefined' && window.devicePixelRatio) ? window.devicePixelRatio : 1;
 
-    const cssWidth = config.canvasWidth;
-    const cssHeight = config.canvasHeight;
-    const ratio = (typeof window !== 'undefined' && window.devicePixelRatio) ? window.devicePixelRatio : 1;
+      // Use high-DPI canvas scaling so the poster is crisp on retina screens
+      canvas.width = Math.round(cssWidth * ratio);
+      canvas.height = Math.round(cssHeight * ratio);
+      // Make the canvas responsive so it fits inside the parent preview container
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      // Prevent upscaling beyond the designed size
+      canvas.style.maxWidth = `${cssWidth}px`;
 
-    // Use high-DPI canvas scaling so the poster is crisp on retina screens
-    canvas.width = Math.round(cssWidth * ratio);
-    canvas.height = Math.round(cssHeight * ratio);
-    // Make the canvas responsive so it fits inside the parent preview container
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    // Prevent upscaling beyond the designed size
-    canvas.style.maxWidth = `${cssWidth}px`;
+      // Reset and scale the drawing context so subsequent drawing uses CSS pixel coordinates
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(ratio, ratio);
+      ctx.clearRect(0, 0, cssWidth, cssHeight);
 
-    // Reset and scale the drawing context so subsequent drawing uses CSS pixel coordinates
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.scale(ratio, ratio);
-    ctx.clearRect(0, 0, cssWidth, cssHeight);
-
-    /* Background */
-    const bg = new window.Image();
-    bg.src = template.src;
-    bg.crossOrigin = 'anonymous';
-
-    await new Promise<void>((resolve) => {
-      bg.onload = () => {
-        // Draw background using object-cover behavior (center-crop) so it doesn't stretch
-        const sw = (bg.naturalWidth as number) || (bg.width as number);
-        const sh = (bg.naturalHeight as number) || (bg.height as number);
-        const srcAspect = sw / sh;
-        const destAspect = cssWidth / cssHeight;
-
-        let sx = 0;
-        let sy = 0;
-        let sWidth = sw;
-        let sHeight = sh;
-
-        if (srcAspect > destAspect) {
-          // source is wider than destination; crop left/right
-          sHeight = sh;
-          sWidth = Math.round(sh * destAspect);
-          sx = Math.round((sw - sWidth) / 2);
-        } else {
-          // source is taller than destination; crop top/bottom
-          sWidth = sw;
-          sHeight = Math.round(sw / destAspect);
-          sy = Math.round((sh - sHeight) / 2);
-        }
-
-        ctx.drawImage(bg, sx, sy, sWidth, sHeight, 0, 0, cssWidth, cssHeight);
-        resolve();
-      };
-      bg.onerror = () => {
-        // If background fails to load, just fill with a neutral color so poster still renders
-        ctx.fillStyle = '#f8fafc';
-        ctx.fillRect(0, 0, cssWidth, cssHeight);
-        resolve();
-      };
-    });
-
-    /* User Image */
-    if (userImage) {
-      const img = new window.Image();
-      img.src = userImage;
-      img.crossOrigin = 'anonymous';
+      /* Background */
+      const bg = new window.Image();
+      bg.src = template.src;
+      bg.crossOrigin = 'anonymous';
 
       await new Promise<void>((resolve) => {
-        img.onload = () => {
-          const { x, y, radius } = config.photo;
+        bg.onload = () => {
+          // Draw background using object-cover behavior (center-crop) so it doesn't stretch
+          const sw = (bg.naturalWidth as number) || (bg.width as number);
+          const sh = (bg.naturalHeight as number) || (bg.height as number);
+          const srcAspect = sw / sh;
+          const destAspect = cssWidth / cssHeight;
 
-          // Crop the source image to a square, but allow panning and zoom using imageOffset and imageZoom
-          const sw = (img.naturalWidth as number) || (img.width as number);
-          const sh = (img.naturalHeight as number) || (img.height as number);
-          const baseSize = Math.min(sw, sh);
+          let sx = 0;
+          let sy = 0;
+          let sWidth = sw;
+          let sHeight = sh;
 
-          const z = clamp(Number(imageZoom) || 1, MIN_ZOOM, MAX_ZOOM);
-
-          // Two modes:
-          // - z >= 1: zoom-in (crop a smaller area from the source and scale to fill the circle)
-          // - z < 1: zoom-out (use the base square crop and draw it scaled down into the circle so the subject appears smaller)
-          let sSize = baseSize;
-          if (z >= 1) {
-            sSize = Math.max(1, Math.round(baseSize / z));
-          }
-
-          // Max allowed shifts in source coordinates given the current crop size
-          const maxShiftX = Math.max(0, (sw - sSize) / 2);
-          const maxShiftY = Math.max(0, (sh - sSize) / 2);
-
-          // Compute center point in source using normalized offsets [-1..1]
-          const centerX = sw / 2 + imageOffset.x * maxShiftX;
-          const centerY = sh / 2 + imageOffset.y * maxShiftY;
-
-          let sx = Math.round(centerX - sSize / 2);
-          let sy = Math.round(centerY - sSize / 2);
-
-          // Clamp to valid source rect
-          sx = Math.max(0, Math.min(sx, sw - sSize));
-          sy = Math.max(0, Math.min(sy, sh - sSize));
-
-          const dx = Math.round(x - radius);
-          const dy = Math.round(y - radius);
-          const dSize = radius * 2;
-
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(x, y, radius, 0, Math.PI * 2);
-          ctx.clip();
-
-          if (z >= 1) {
-            // Zoom-in: draw cropped area to fully fill the circle
-            ctx.drawImage(img, sx, sy, sSize, sSize, dx, dy, dSize, dSize);
+          if (srcAspect > destAspect) {
+            // source is wider than destination; crop left/right
+            sHeight = sh;
+            sWidth = Math.round(sh * destAspect);
+            sx = Math.round((sw - sWidth) / 2);
           } else {
-            // Zoom-out: draw the full/base crop but scaled down so the subject appears smaller
-            const destSize = Math.round(dSize * z);
-            const destX = Math.round(x - destSize / 2);
-            const destY = Math.round(y - destSize / 2);
-            ctx.drawImage(img, sx, sy, sSize, sSize, destX, destY, destSize, destSize);
+            // source is taller than destination; crop top/bottom
+            sWidth = sw;
+            sHeight = Math.round(sw / destAspect);
+            sy = Math.round((sh - sHeight) / 2);
           }
 
-          ctx.restore();
-
-          ctx.beginPath();
-          ctx.arc(x, y, radius, 0, Math.PI * 2);
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 8;
-          ctx.stroke();
-
+          ctx.drawImage(bg, sx, sy, sWidth, sHeight, 0, 0, cssWidth, cssHeight);
           resolve();
         };
-        img.onerror = () => {
-          // If image fails to load for some reason, don't block poster generation
+        bg.onerror = () => {
+          // If background fails to load, just fill with a neutral color so poster still renders
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(0, 0, cssWidth, cssHeight);
           resolve();
         };
       });
-    }
 
-    /* Name */
-    if (userName) {
-      const { x, y, fontSize, color } = config.name;
-      ctx.font = `bold ${fontSize}px Arial`;
-      ctx.fillStyle = color;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(userName, x, y);
-    }
+      /* User Image */
+      if (userImage) {
+        const img = new window.Image();
+        img.src = userImage;
+        img.crossOrigin = 'anonymous';
 
-    /* Batch */
-    if (batchNo) {
-      const { x, y, fontSize, color, bgColor, minWidth, minHeight } = config.batch;
-      ctx.font = `bold ${fontSize}px Arial`;
+        await new Promise<void>((resolve) => {
+          img.onload = () => {
+            const { x, y, radius } = config.photo;
 
-      const text = batchNo.toUpperCase();
-      const metrics = ctx.measureText(text);
+            // Crop the source image to a square, but allow panning and zoom using imageOffset and imageZoom
+            const sw = (img.naturalWidth as number) || (img.width as number);
+            const sh = (img.naturalHeight as number) || (img.height as number);
+            const baseSize = Math.min(sw, sh);
 
-      const paddingX = 30;
-      const paddingY = 12;
-      const width = Math.max(metrics.width + paddingX * 2, minWidth ?? 0);
-      const height = Math.max(fontSize + paddingY * 2, minHeight ?? 0);
+            const z = clamp(Number(imageZoom) || 1, MIN_ZOOM, MAX_ZOOM);
 
-      ctx.fillStyle = bgColor;
-      drawRoundedRect(
-        ctx,
-        x - width / 2,
-        y - height / 2,
-        width,
-        height,
-        height / 2
-      );
-      ctx.fill();
+            // Two modes:
+            // - z >= 1: zoom-in (crop a smaller area from the source and scale to fill the circle)
+            // - z < 1: zoom-out (use the base square crop and draw it scaled down into the circle so the subject appears smaller)
+            let sSize = baseSize;
+            if (z >= 1) {
+              sSize = Math.max(1, Math.round(baseSize / z));
+            }
 
-      ctx.fillStyle = color;
-      ctx.fillText(text, x, y + 2);
-    }
-  }, [selectedTemplateIndex, userImage, userName, batchNo, imageOffset, imageZoom, resolvedTemplates]);
+            // Max allowed shifts in source coordinates given the current crop size
+            const maxShiftX = Math.max(0, (sw - sSize) / 2);
+            const maxShiftY = Math.max(0, (sh - sSize) / 2);
 
-  /* ---------------------------- Auto Regenerate ----------------------------- */
+            // Compute center point in source using normalized offsets [-1..1]
+            const centerX = sw / 2 + imageOffset.x * maxShiftX;
+            const centerY = sh / 2 + imageOffset.y * maxShiftY;
 
-  useEffect(() => {
-    const timer = setTimeout(generatePoster, 100);
+            let sx = Math.round(centerX - sSize / 2);
+            let sy = Math.round(centerY - sSize / 2);
+
+            // Clamp to valid source rect
+            sx = Math.max(0, Math.min(sx, sw - sSize));
+            sy = Math.max(0, Math.min(sy, sh - sSize));
+
+            const dx = Math.round(x - radius);
+            const dy = Math.round(y - radius);
+            const dSize = radius * 2;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.clip();
+
+            if (z >= 1) {
+              // Zoom-in: draw cropped area to fully fill the circle
+              ctx.drawImage(img, sx, sy, sSize, sSize, dx, dy, dSize, dSize);
+            } else {
+              // Zoom-out: draw the full/base crop but scaled down so the subject appears smaller
+              const destSize = Math.round(dSize * z);
+              const destX = Math.round(x - destSize / 2);
+              const destY = Math.round(y - destSize / 2);
+              ctx.drawImage(img, sx, sy, sSize, sSize, destX, destY, destSize, destSize);
+            }
+
+            ctx.restore();
+
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 8;
+            ctx.stroke();
+
+            resolve();
+          };
+          img.onerror = () => {
+            // If image fails to load for some reason, don't block poster generation
+            resolve();
+          };
+        });
+      }
+
+      /* Name */
+      if (userName) {
+        const { x, y, fontSize, color } = config.name;
+        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.fillStyle = color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(userName, x, y);
+      }
+
+      /* Batch */
+      if (batchNo) {
+        const { x, y, fontSize, color, bgColor, minWidth, minHeight } = config.batch;
+        ctx.font = `bold ${fontSize}px Arial`;
+
+        const text = batchNo.toUpperCase();
+        const metrics = ctx.measureText(text);
+
+        const paddingX = 30;
+        const paddingY = 12;
+        const width = Math.max(metrics.width + paddingX * 2, minWidth ?? 0);
+        const height = Math.max(fontSize + paddingY * 2, minHeight ?? 0);
+
+        ctx.fillStyle = bgColor;
+        drawRoundedRect(
+          ctx,
+          x - width / 2,
+          y - height / 2,
+          width,
+          height,
+          height / 2
+        );
+        ctx.fill();
+
+        ctx.fillStyle = color;
+        ctx.fillText(text, x, y + 2);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      void generatePoster();
+    }, 100);
     return () => clearTimeout(timer);
-  }, [generatePoster]);
+  }, [selectedTemplateIndex, userImage, userName, batchNo, imageOffset, imageZoom, resolvedTemplates]);
 
   /* ---------------------------- Actions ------------------------------------- */
 
@@ -642,6 +660,27 @@ function CongratulationsPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#040a07]">
+      <AlertDialog
+        open={showNoActiveDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsNoActiveDialogDismissed(true);
+            router.push('/');
+          }
+        }}
+      >
+        <AlertDialogContent className="bg-[#0a1610] text-white border border-white/10">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{noActiveDialogTitle}</AlertDialogTitle>
+            <AlertDialogDescription className="text-white/70">
+              {noActiveDialogDescription}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="bg-green-600 hover:bg-green-700">Got it</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div
         className="absolute inset-0 opacity-[0.10] pointer-events-none"
         style={{
@@ -654,7 +693,7 @@ function CongratulationsPage() {
       <div className="absolute bottom-0 left-[8%] w-[300px] h-[200px] bg-primary/6 rounded-full blur-[90px] pointer-events-none" />
 
       <div className="container relative z-10 mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
 
           {/* Welcome Card */}
           <Card className="mb-8 border-primary/20 bg-[#0a1610]/90 shadow-[0_0_50px_hsl(156_70%_42%/0.08)]">

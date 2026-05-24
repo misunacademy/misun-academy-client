@@ -82,6 +82,12 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
                                             <span className={`px-3 py-1 rounded-full text-xs font-medium border capitalize ${getStatusStyle(enrollment.status)}`}>
                                                 {getStatusLabel(enrollment?.status)}
                                             </span>
+                                            {
+                                                enrollment?.accessType && enrollment?.accessType === 'special' &&
+                                                (<span className={`px-3 py-1 rounded-full text-xs font-medium border capitalize ${getStatusStyle(enrollment?.accessType)}`}>
+                                                    {getStatusLabel(enrollment?.accessType)}
+                                                </span>)
+                                            }
                                         </div>
                                         <h3 className="text-white font-medium text-lg leading-tight">
                                             {typeof enrollment?.batchId?.courseId === 'object' && enrollment?.batchId?.courseId?.title ? (

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { BookOpen, CalendarDays, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video, Search, CreditCard, ShieldCheck, ImageDown, TrendingUp, Globe, Mail, GraduationCap, LayoutDashboard } from "lucide-react";
+import { BookOpen, CalendarDays, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video, Search, CreditCard, ShieldCheck, ImageDown, TrendingUp, Globe, Mail, GraduationCap, LayoutDashboard, KeyRound } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from 'next/link';
 import {
@@ -163,6 +163,11 @@ const adminItems = [
         title: "Student Management",
         url: "/dashboard/admin/student",
         icon: User2,
+    },
+    {
+        title: "Grant Course Access",
+        url: "/dashboard/admin/grant-access",
+        icon: KeyRound,
     },
     {
         title: "Payment Management",

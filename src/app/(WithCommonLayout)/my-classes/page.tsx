@@ -8,6 +8,7 @@ import {
   Video,
   GraduationCap,
   Sparkles,
+  KeyRound,
   Loader2,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,6 +18,7 @@ import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { CoursesTab } from "./components/CoursesTab";
 import { LiveRecordingsTab } from "./components/LiveRecordingsTab";
+import { SpecialAccessTab } from "./components/SpecialAccessTab";
 import { EnrolledCourse } from "./types";
 import { useGetStudentDashboardDataQuery } from "@/redux/api/dashboardApi";
 
@@ -33,8 +35,13 @@ const MyClassesPage = () => {
     error,
   } = useGetStudentDashboardDataQuery(undefined);
 
-  const enrolledCourses: EnrolledCourse[] =
-    dashboardData?.data?.enrolledCourses || [];
+  const allCourses: EnrolledCourse[] = dashboardData?.data?.enrolledCourses || [];
+  const enrolledCourses = allCourses.filter(
+    (course) => course.accessType !== "special"
+  );
+  const specialAccessCourses = allCourses.filter(
+    (course) => course.accessType === "special"
+  );
 
   if (dashboardLoading) {
     return (
@@ -191,7 +198,6 @@ const MyClassesPage = () => {
                       </span>
                     )}
                   </TabsTrigger>
-
                   <TabsTrigger
                     value="recordings"
                     className="
@@ -206,6 +212,28 @@ const MyClassesPage = () => {
                     <span className="hidden sm:inline">Live Class Recordings</span>
                     <span className="sm:hidden">Recordings</span>
                   </TabsTrigger>
+
+                  <TabsTrigger
+                    value="special-access"
+                    className="
+                    shrink-0 whitespace-nowrap flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-none border-b-2 border-transparent
+                    text-xs sm:text-sm font-semibold text-white/40
+                    data-[state=active]:border-primary data-[state=active]:text-primary
+                    data-[state=active]:bg-transparent data-[state=active]:shadow-none
+                    hover:text-white/70 transition-all duration-200
+                  "
+                  >
+                    <KeyRound className="w-4 h-4" />
+                    <span className="hidden sm:inline">Special Access</span>
+                    <span className="sm:hidden">Special</span>
+                    {specialAccessCourses.length > 0 && (
+                      <span className="ml-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-primary/20 text-primary border border-primary/30">
+                        {specialAccessCourses.length}
+                      </span>
+                    )}
+                  </TabsTrigger>
+
+
                 </TabsList>
               </div>
             </div>
@@ -216,6 +244,10 @@ const MyClassesPage = () => {
 
             <TabsContent value="recordings" className="mt-0">
               <LiveRecordingsTab />
+            </TabsContent>
+            
+            <TabsContent value="special-access" className="mt-0">
+              <SpecialAccessTab courses={specialAccessCourses} />
             </TabsContent>
           </Tabs>
         </div>

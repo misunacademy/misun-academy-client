@@ -51,11 +51,12 @@ export default function MyClassesCertificatesPage() {
 
   const requestableEnrollments = enrollments.filter((enrollment) => {
     const enrollmentId = enrollment._id;
-    const completed = enrollment.status === "completed" || enrollment.status === "active";
+    const completed = (enrollment.status === "completed" || enrollment.status === "active") && enrollment.accessType !=="special";
     const missingCertificate = !certificateByEnrollment.has(enrollmentId);
     const certificateAllowed = enrollment.isCertificateAvailable !== false;
     return completed && missingCertificate && certificateAllowed;
   });
+
 
   const pendingCount = certificates.filter((c) => normalizeStatus(c.status) === "pending").length;
   const approvedCount = certificates.filter((c) => normalizeStatus(c.status) === "approved").length;

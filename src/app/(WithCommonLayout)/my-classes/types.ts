@@ -11,4 +11,5 @@ export interface EnrolledCourse {
   enrolledAt: string;
   status: string;
   isCertificateAvailable?: boolean;
+  accessType?: "standard" | "special";
 }

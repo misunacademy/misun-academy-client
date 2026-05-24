@@ -77,7 +77,8 @@ export const baseApi = createApi({
         'Modules',
         'Lessons',
         'Settings',
-        'Employees'
+        'Employees',
+        'SpecialAccessEnrollments'
     ],
     endpoints: () => ({}),
 });

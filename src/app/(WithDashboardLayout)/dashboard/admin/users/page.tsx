@@ -187,6 +187,7 @@ export default function AdminUsers() {
       case 'superadmin': return 'destructive';
       case 'admin': return 'default';
       case 'instructor': return 'secondary';
+      case 'employee': return 'outline';
       case 'learner': return 'outline';
       default: return 'outline';
     }

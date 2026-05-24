@@ -769,7 +769,7 @@ export default function CourseDetails() {
             </DarkCard>
 
             {/* Complete Course card */}
-            {isBatchCompleted && (
+            {/* {isBatchCompleted && (
               <DarkCard className="p-5">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/6 via-transparent to-transparent pointer-events-none" />
                 {(!isBatchCompleted || !hasCompletedCourse) ? (
@@ -800,7 +800,7 @@ export default function CourseDetails() {
                   </div>
                 )}
               </DarkCard>
-            )}
+            )} */}
           </div>
         </div>
       </div>
