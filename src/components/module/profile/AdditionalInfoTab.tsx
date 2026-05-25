@@ -18,7 +18,7 @@ interface FormValues {
     dateOfBirth?: string;
     address?: string;
     linkedinUrl?: string;
-    education: {
+    education?: {
         degree: string;
         institution: string;
         passingYear: string;
@@ -37,7 +37,9 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
             dateOfBirth: profile?.dateOfBirth ? new Date(profile.dateOfBirth).toISOString().split('T')[0] : "",
             address: profile?.address || "",
             linkedinUrl: profile?.linkedinUrl || "",
-            education: profile?.education && profile.education.length > 0 ? profile.education : [{ degree: "", institution: "", passingYear: "", result: "" }],
+            education: profile?.education && profile.education.length > 0 ? profile.education : [
+                { degree: "", institution: "", passingYear: "", result: "" }
+            ],
         }
     });
 
@@ -51,6 +53,11 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
             const payload = { ...data };
             if (payload.dateOfBirth) {
                 payload.dateOfBirth = new Date(payload.dateOfBirth).toISOString();
+            }
+            if (payload.education) {
+                if (payload.education.length > 0 && payload.education[0].degree === "" && payload.education[0].institution === "" && payload.education[0].passingYear === "") {
+                    payload.education = [];
+                }
             }
             // education array stays as-is
 
@@ -128,27 +135,27 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
                                     <h3 className="text-primary font-medium mb-4">Education #{index + 1}</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-white/70 text-sm">Degree / Qualification *</label>
+                                            <label className="text-white/70 text-sm">Degree / Qualification </label>
                                             <Input
-                                                {...register(`education.${index}.degree`, { required: "Degree is required" })}
+                                                {...register(`education.${index}.degree`)}
                                                 placeholder="e.g. B.Sc in Computer Science"
                                                 className="bg-primary/5 border-primary/20 text-white"
                                             />
                                             {errors.education?.[index]?.degree && <p className="text-red-400 text-xs mt-1">{errors.education[index]?.degree?.message}</p>}
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-white/70 text-sm">Institution *</label>
+                                            <label className="text-white/70 text-sm">Institution </label>
                                             <Input
-                                                {...register(`education.${index}.institution`, { required: "Institution is required" })}
+                                                {...register(`education.${index}.institution`)}
                                                 placeholder="e.g. University of Dhaka"
                                                 className="bg-primary/5 border-primary/20 text-white"
                                             />
                                             {errors.education?.[index]?.institution && <p className="text-red-400 text-xs mt-1">{errors.education[index]?.institution?.message}</p>}
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-white/70 text-sm">Passing Year *</label>
+                                            <label className="text-white/70 text-sm">Passing Year </label>
                                             <Input
-                                                {...register(`education.${index}.passingYear`, { required: "Passing year is required" })}
+                                                {...register(`education.${index}.passingYear`)}
                                                 placeholder="e.g. 2023"
                                                 className="bg-primary/5 border-primary/20 text-white"
                                             />

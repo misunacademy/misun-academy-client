@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import { Edit, Loader2, User } from "lucide-react";
+import { Edit, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,7 +14,7 @@ interface ProfileMainTabProps {
     user: any;
     studentId: string;
     phone: string;
-    whatsapp: string;
+    wpnumber: string;
     sessions: any[];
     handleRevokeSession: (token: string) => void;
     refetch: () => void;
@@ -24,7 +25,7 @@ export function ProfileMainTab({
     user,
     studentId,
     phone,
-    whatsapp,
+    wpnumber,
     sessions,
     handleRevokeSession,
     refetch
@@ -35,18 +36,18 @@ export function ProfileMainTab({
 
     const { register, handleSubmit } = useForm({
         defaultValues: {
-            name: user.name || "",
-            phone: profile?.phone || user.phone || "",
-            whatsapp: profile?.whatsapp || profile?.phone || "",
+            name: profile?.user?.name || "",
+            phone: profile?.user?.phone || "",
+            wpnumber: profile?.wpnumber || "",
         }
     });
 
     const onSubmit = async (data: any) => {
         try {
-            // Update the profile data (phone, whatsapp)
+            // Update the profile data (phone, wpnumber)
             await updateProfile({
                 phone: data.phone,
-                whatsapp: data.whatsapp,
+                wpnumber: data.wpnumber,
             }).unwrap();
 
             // Check if name changed to update the auth user
@@ -95,7 +96,7 @@ export function ProfileMainTab({
                         <div className="space-y-2">
                             <label className="text-white/70 text-sm">Email <span className="text-xs text-white/30">(Cannot be changed)</span></label>
                             <Input
-                                value={user.email}
+                                value={profile?.user?.email}
                                 disabled
                                 className="bg-white/5 border-white/10 text-white/50 cursor-not-allowed"
                             />
@@ -111,7 +112,7 @@ export function ProfileMainTab({
                         <div className="space-y-2">
                             <label className="text-white/70 text-sm">WhatsApp Number</label>
                             <Input
-                                {...register("whatsapp")}
+                                {...register("wpnumber")}
                                 className="bg-primary/5 border-primary/20 text-white"
                                 placeholder="e.g. +8801XXXXXXXXX"
                             />
@@ -147,7 +148,7 @@ export function ProfileMainTab({
                     </div>
                     <div>
                         <p className="text-white/40 text-sm mb-1.5">WhatsApp Number</p>
-                        <p className="text-white font-medium text-[15px]">{whatsapp}</p>
+                        <p className="text-white font-medium text-[15px]">{wpnumber}</p>
                     </div>
                 </div>
             )}

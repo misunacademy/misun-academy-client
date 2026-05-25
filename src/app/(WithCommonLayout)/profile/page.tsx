@@ -140,8 +140,8 @@ export default function StudentProfile() {
     }
 
     const studentId = (user as any)?.studentId || profile?.user?.studentId || "N/A";
-    const phone = profile?.phone || user.phone || "Not provided";
-    const whatsapp = profile?.whatsapp || profile?.phone || "Not provided";
+    const phone = profile?.user?.phone || "Not provided";
+    const wpnumber = profile?.wpnumber || "Not provided";
 
     // Dynamically update completion status for NAV_ITEMS
     const updatedNavItems = NAV_ITEMS.map(item => {
@@ -270,7 +270,7 @@ export default function StudentProfile() {
                             user={user}
                             studentId={studentId}
                             phone={phone}
-                            whatsapp={whatsapp}
+                            wpnumber={wpnumber}
                             sessions={sessions}
                             handleRevokeSession={handleRevokeSession}
                             refetch={refetch}

@@ -43,9 +43,9 @@ const EmployeePage = () => {
 
     /* ── Extended info state — seeded from server profile ──────────────────── */
     const [extInfo, setExtInfo] = useState<EmployeeExtendedInfo>({
-        name: user?.name || 'Employee',
-        phone: user?.phone || '',
-        address: user?.address || '',
+        name: '',
+        phone: '',
+        address: '',
         whatsapp: '',
         bloodGroup: '',
         nidNumber: '',
@@ -61,9 +61,9 @@ const EmployeePage = () => {
         if (!serverProfile?.data) return;
         const p = serverProfile.data;
         setExtInfo({
-            name: p.name || user?.name || 'Employee',
-            phone: p.phone || user?.phone || '',
-            address: p.address || user?.address || '',
+            name: p.name || '',
+            phone: p.phone || '',
+            address: p.address || '',
             whatsapp: p.whatsapp || '',
             bloodGroup: p.bloodGroup || '',
             nidNumber: p.nidNumber || '',
@@ -76,6 +76,7 @@ const EmployeePage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [serverProfile]);
 
+
     /* ── Dialog state ────────────────────────────────────────────────────────── */
     const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -84,8 +85,8 @@ const EmployeePage = () => {
     };
 
     /* ── Derived values ────────────────────────────────────────────────────── */
-    const email = user?.email || serverProfile?.data?.email || '';
-    const avatarUrl = user?.image || serverProfile?.data?.image || serverProfile?.data?.avatar;
+    const email =  serverProfile?.data?.email || '';
+    const avatarUrl = serverProfile?.data?.image || undefined;
 
     const salaries = salaryData?.data?.salaries ?? [];
     const latestSalary = salaries[0];
