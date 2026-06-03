@@ -1,34 +1,66 @@
 'use client';
 
 import { useState } from 'react';
+import { skipToken } from '@reduxjs/toolkit/query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Mail, Send, Users, UserPlus, Loader2 } from 'lucide-react';
-import { useSendEnrollmentReminderMutation, useSendNewsUpdateMutation } from '@/redux/api/adminApi';
+import { Mail, Send, Users, UserPlus, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import {
+  useSendBatchIncompleteReminderMutation,
+  useSendBatchProgressReminderMutation,
+  useSendEnrollmentReminderMutation,
+  useSendNewsUpdateMutation,
+} from '@/redux/api/adminApi';
+import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
+import { useGetAllBatchesQuery } from '@/redux/api/batchApi';
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
 import DashboardPageTabs from '@/components/layout/DashboardPageTabs';
 
 export default function AdminEmailsPage() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [runningCourseId, setRunningCourseId] = useState('');
+  const [runningBatchId, setRunningBatchId] = useState('');
+  const [completedCourseId, setCompletedCourseId] = useState('');
+  const [completedBatchId, setCompletedBatchId] = useState('');
 
   const [sendEnrollmentReminder, { isLoading: isSendingReminder }] = useSendEnrollmentReminderMutation();
   const [sendNewsUpdate, { isLoading: isSendingNews }] = useSendNewsUpdateMutation();
+  const [sendBatchProgressReminder, { isLoading: isSendingBatchProgress }] = useSendBatchProgressReminderMutation();
+  const [sendBatchIncompleteReminder, { isLoading: isSendingBatchIncomplete }] = useSendBatchIncompleteReminderMutation();
+
+  const { data: coursesData } = useGetAllCoursesQuery({});
+  const courses = coursesData?.data ?? [];
+
+  const { data: runningBatchesData } = useGetAllBatchesQuery(
+    runningCourseId ? { courseId: runningCourseId } : skipToken
+  );
+  const runningBatches = runningBatchesData?.data ?? [];
+
+  const { data: completedBatchesData } = useGetAllBatchesQuery(
+    completedCourseId ? { courseId: completedCourseId } : skipToken
+  );
+  const completedBatches = completedBatchesData?.data ?? [];
+
+  const withReadableDescription = (text: string) => (
+    <span className="text-foreground/50">{text}</span>
+  );
 
   const handleSendEnrollmentReminder = async () => {
     try {
       const result = await sendEnrollmentReminder().unwrap();
       toast.success(result.message || `Enrollment reminders sent to ${result.data.count} users!`, {
-        description: 'Emails have been queued and will be sent shortly.',
+        description: withReadableDescription('Emails have been queued and will be sent shortly.'),
       });
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
       toast.error('Failed to send enrollment reminders', {
-        description: err?.data?.message || 'Please try again later.',
+        description: withReadableDescription(err?.data?.message || 'Please try again later.'),
       });
     }
   };
@@ -44,7 +76,7 @@ export default function AdminEmailsPage() {
     try {
       const result = await sendNewsUpdate({ subject, message }).unwrap();
       toast.success(result.message || `News update sent to ${result.data.count} enrolled students!`, {
-        description: 'Emails have been queued and will be sent shortly.',
+        description: withReadableDescription('Emails have been queued and will be sent shortly.'),
       });
       // Clear form
       setSubject('');
@@ -52,7 +84,49 @@ export default function AdminEmailsPage() {
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
       toast.error('Failed to send news update', {
-        description: err?.data?.message || 'Please try again later.',
+        description: withReadableDescription(err?.data?.message || 'Please try again later.'),
+      });
+    }
+  };
+
+  const handleSendBatchProgressReminder = async () => {
+    if (!runningCourseId || !runningBatchId) {
+      toast.error('Validation Error', {
+        description: 'Please select both a course and a batch.',
+      });
+      return;
+    }
+
+    try {
+      const result = await sendBatchProgressReminder({ courseId: runningCourseId, batchId: runningBatchId }).unwrap();
+      toast.success(result.message || `Batch progress reminders sent to ${result.data.count} students!`, {
+        description: withReadableDescription('Emails have been queued and will be sent shortly.'),
+      });
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error('Failed to send batch progress reminders', {
+        description: withReadableDescription(err?.data?.message || 'Please try again later.'),
+      });
+    }
+  };
+
+  const handleSendBatchIncompleteReminder = async () => {
+    if (!completedCourseId || !completedBatchId) {
+      toast.error('Validation Error', {
+        description: 'Please select both a course and a batch.',
+      });
+      return;
+    }
+
+    try {
+      const result = await sendBatchIncompleteReminder({ courseId: completedCourseId, batchId: completedBatchId }).unwrap();
+      toast.success(result.message || `Completion reminders sent to ${result.data.count} students!`, {
+        description: withReadableDescription('Emails have been queued and will be sent shortly.'),
+      });
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error('Failed to send completion reminders', {
+        description: withReadableDescription(err?.data?.message || 'Please try again later.'),
       });
     }
   };
@@ -69,6 +143,8 @@ export default function AdminEmailsPage() {
             triggers={[
               { value: 'enrollment-reminder', label: 'Enrollment Reminders' },
               { value: 'news-updates', label: 'News & Updates' },
+              { value: 'batch-progress', label: 'Batch Progress' },
+              { value: 'batch-incomplete', label: 'Batch Completion' },
             ]}
             contents={[
               {
@@ -192,7 +268,182 @@ export default function AdminEmailsPage() {
                     </Button>
                   </CardContent>
                 </Card>
-              }]} />
+              }, {
+                value: 'batch-progress',
+                content: <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-amber-100 dark:bg-amber-900/20 rounded-lg">
+                        <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <div>
+                        <CardTitle>Running Batch Progress Reminder</CardTitle>
+                        <CardDescription className="mt-1">
+                          Send reminders to students below 50% progress in a running batch
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Course *</Label>
+                      <Select
+                        value={runningCourseId || undefined}
+                        onValueChange={(value) => {
+                          setRunningCourseId(value);
+                          setRunningBatchId('');
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select course" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {courses.map((course) => (
+                            <SelectItem key={course._id} value={course._id}>
+                              {course.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Batch *</Label>
+                      <Select
+                        value={runningBatchId || undefined}
+                        onValueChange={(value) => setRunningBatchId(value)}
+                        disabled={!runningCourseId}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={runningCourseId ? 'Select batch' : 'Select course first'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {runningBatches.map((batch) => (
+                            <SelectItem key={batch._id} value={batch._id}>
+                              {batch.title} ({batch.status})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                      <h4 className="font-medium text-sm">Criteria:</h4>
+                      <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                        <li>Batch must be running</li>
+                        <li>Student progress below 50%</li>
+                        <li>Only verified and active users</li>
+                      </ul>
+                    </div>
+
+                    <Button
+                      className="w-full"
+                      onClick={handleSendBatchProgressReminder}
+                      disabled={isSendingBatchProgress || !runningCourseId || !runningBatchId}
+                    >
+                      {isSendingBatchProgress ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="mr-2 h-4 w-4" />
+                          Send Progress Reminders
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              }, {
+                value: 'batch-incomplete',
+                content: <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 bg-emerald-100 dark:bg-emerald-900/20 rounded-lg">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <div>
+                        <CardTitle>Completed Batch Incomplete Reminder</CardTitle>
+                        <CardDescription className="mt-1">
+                          Send reminders to students who did not finish a completed batch
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Course *</Label>
+                      <Select
+                        value={completedCourseId || undefined}
+                        onValueChange={(value) => {
+                          setCompletedCourseId(value);
+                          setCompletedBatchId('');
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select course" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {courses.map((course) => (
+                            <SelectItem key={course._id} value={course._id}>
+                              {course.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Batch *</Label>
+                      <Select
+                        value={completedBatchId || undefined}
+                        onValueChange={(value) => setCompletedBatchId(value)}
+                        disabled={!completedCourseId}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={completedCourseId ? 'Select batch' : 'Select course first'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {completedBatches.map((batch) => (
+                            <SelectItem key={batch._id} value={batch._id}>
+                              {batch.title} ({batch.status})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                      <h4 className="font-medium text-sm">Criteria:</h4>
+                      <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                        <li>Batch must be completed</li>
+                        <li>Progress below 100% or no learning progress</li>
+                        <li>Only verified and active users</li>
+                      </ul>
+                    </div>
+
+                    <Button
+                      className="w-full"
+                      onClick={handleSendBatchIncompleteReminder}
+                      disabled={isSendingBatchIncomplete || !completedCourseId || !completedBatchId}
+                    >
+                      {isSendingBatchIncomplete ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="mr-2 h-4 w-4" />
+                          Send Completion Reminders
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              }]}
+          />
 
 
           {/* Information Card */}

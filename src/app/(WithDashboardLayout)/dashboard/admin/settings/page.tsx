@@ -112,6 +112,7 @@ export default function AdminSettings() {
     }
 
     const settings = settingsData.data;
+
     setPopupEnabled(settings.popupEnabled ?? false);
     setPopupImageUrl(settings.popupImageUrl ?? "");
     setPopupLink(settings.popupLink ?? "");

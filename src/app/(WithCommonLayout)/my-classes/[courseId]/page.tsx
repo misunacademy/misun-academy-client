@@ -23,7 +23,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
 import {
   useGetCourseByIdQuery,
@@ -32,6 +32,7 @@ import {
 } from "@/redux/api/courseApi";
 import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
 import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
+
 import { toast } from "sonner";
 import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
 
@@ -133,6 +134,7 @@ function OutlineBtn({
 
 export default function CourseDetails() {
   const params = useParams<{ courseId: string }>();
+  const searchParams = useSearchParams();
   const courseId = params.courseId;
 
   type Lesson = {
@@ -156,9 +158,13 @@ export default function CourseDetails() {
   const [showCongratulations, setShowCongratulations] = useState(true);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
 
-  const { data: enrollments } = useGetEnrollmentsQuery();
-  const enrollment = enrollments?.data?.find((e: any) => e.batchId?.courseId?._id === courseId);
-  const batchId = enrollment?.batchId?._id as string | undefined;
+
+  const batchIdFromUrl = searchParams.get("batchId") ?? undefined;
+  const { data: enrollments } = useGetEnrollmentsQuery(undefined, { skip: !!batchIdFromUrl });
+  const fallbackBatchId = batchIdFromUrl
+    ? undefined
+    : (enrollments?.data?.find((e: any) => e.batchId?.courseId?._id === courseId)?.batchId?._id as string | undefined);
+  const batchId = batchIdFromUrl ?? fallbackBatchId;
 
   const { data: course, isLoading: courseLoading } = useGetCourseByIdQuery({ id: courseId, batchId });
   const { data: progressData, isLoading: progressLoading, refetch: refetchProgress } = useGetCourseProgressQuery(courseId);

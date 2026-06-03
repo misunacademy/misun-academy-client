@@ -134,7 +134,9 @@ export function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
 
             <div className="flex items-center gap-2 sm:ml-auto">
               {enrollment.courseId ? (
-                <Link href={`/my-classes/${enrollment.courseId}`}>
+                <Link
+                  href={`/my-classes/${enrollment.courseId}${enrollment.batchId ? `?batchId=${enrollment.batchId}` : ""}`}
+                >
                   <button className="group/btn inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm
                     bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white
                     shadow-[0_0_14px_hsl(156_70%_42%/0.35)] hover:shadow-[0_0_22px_hsl(156_70%_42%/0.55)]

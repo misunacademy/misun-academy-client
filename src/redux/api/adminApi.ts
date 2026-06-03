@@ -95,6 +95,11 @@ export interface SendNewsUpdateRequest {
   message: string;
 }
 
+export interface SendBatchReminderRequest {
+  courseId: string;
+  batchId: string;
+}
+
 // ============================================================================
 // ADMIN API ENDPOINTS
 // ============================================================================
@@ -221,6 +226,32 @@ const adminApi = baseApi.injectEndpoints({
         body: data,
       }),
     }),
+
+    /**
+     * Send running batch progress reminder (progress < 50%)
+     * POST /api/v1/admin/send-batch-progress-reminder
+     * Requires: ADMIN or SUPERADMIN
+     */
+    sendBatchProgressReminder: build.mutation<EmailCountResponse, SendBatchReminderRequest>({
+      query: (data) => ({
+        url: "/admin/send-batch-progress-reminder",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    /**
+     * Send completed batch incomplete reminder (progress < 100% or no progress)
+     * POST /api/v1/admin/send-batch-incomplete-reminder
+     * Requires: ADMIN or SUPERADMIN
+     */
+    sendBatchIncompleteReminder: build.mutation<EmailCountResponse, SendBatchReminderRequest>({
+      query: (data) => ({
+        url: "/admin/send-batch-incomplete-reminder",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -235,6 +266,8 @@ export const {
   useAdminLoginMutation,
   useSendEnrollmentReminderMutation,
   useSendNewsUpdateMutation,
+  useSendBatchProgressReminderMutation,
+  useSendBatchIncompleteReminderMutation,
 } = adminApi;
 
 export default adminApi;
