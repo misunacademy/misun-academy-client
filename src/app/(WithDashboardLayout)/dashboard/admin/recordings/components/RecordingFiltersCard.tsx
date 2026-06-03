@@ -31,7 +31,7 @@ const RecordingFiltersCard = ({
       <CardHeader>
         <CardTitle>Filters</CardTitle>
       </CardHeader>
-      <CardContent className="flex gap-4">
+      <CardContent className="flex gap-4 justify-end items-center">
         <Select
           value={filters.courseId || "all"}
           onValueChange={(value) => {

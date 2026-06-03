@@ -46,7 +46,7 @@ interface DashboardData {
     totalEnrolled: number;
     batchWiseEnrolled: { batchId: string; totalEnrolled: number }[];
     courseWiseStats: { courseId: string; courseTitle: string; courseSlug: string; totalIncome: number; totalEnrollments: number }[];
-    batchWiseIncome: { batchId: string; batchTitle: string; batchNumber: string; totalIncome: number; totalEnrollments: number }[];
+    batchWiseIncome: { batchId: string; batchTitle: string; courseTitle?: string; batchNumber: string; totalIncome: number; totalEnrollments: number }[];
     totalIncome: number;
     dayWiseStats: { date: string; totalIncome: number; totalEnrollment: number }[];
 }
