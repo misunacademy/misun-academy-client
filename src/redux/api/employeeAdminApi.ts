@@ -33,6 +33,16 @@ export interface CreateSalaryRequest {
     paymentDate?: string;
 }
 
+export interface UpdateSalaryRequest {
+    jobTitle?: string;
+    month?: string;
+    year?: number;
+    amount?: number;
+    bonus?: number;
+    paymentDate?: string;
+    status?: 'Paid' | 'Pending';
+}
+
 const employeeAdminApi = baseApi.injectEndpoints({
     overrideExisting: true,
     endpoints: (build) => ({
@@ -56,6 +66,16 @@ const employeeAdminApi = baseApi.injectEndpoints({
             query: ({ id, status }) => ({ url: `/employee/admin/salaries/${id}/status`, method: 'PATCH', body: { status } }),
             invalidatesTags: ['Employees'],
         }),
+        // Update salary record (full update)
+        updateSalary: build.mutation<{ data: Salary }, { id: string } & UpdateSalaryRequest>({
+            query: ({ id, ...body }) => ({ url: `/employee/admin/salaries/${id}`, method: 'PUT', body }),
+            invalidatesTags: ['Employees'],
+        }),
+        // Delete salary record
+        deleteSalary: build.mutation<{ data: Salary }, string>({
+            query: (id) => ({ url: `/employee/admin/salaries/${id}`, method: 'DELETE' }),
+            invalidatesTags: ['Employees'],
+        }),
         // Get all leave requests (admin)
         getAllLeaveRequestsAdmin: build.query<{ data: { requests: LeaveRequest[]; total: number; totalPages: number; page: number } }, { page?: number; limit?: number; status?: string }>({
             query: (params = {}) => ({ url: '/employee/admin/leave', params }),
@@ -74,6 +94,8 @@ export const {
     useGetAllSalariesAdminQuery,
     useAddSalaryMutation,
     useUpdateSalaryStatusMutation,
+    useUpdateSalaryMutation,
+    useDeleteSalaryMutation,
     useGetAllLeaveRequestsAdminQuery,
     useUpdateLeaveStatusMutation,
 } = employeeAdminApi;

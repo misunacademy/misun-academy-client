@@ -185,6 +185,9 @@ export function LiveRecordingsTab() {
                     })}
                     {rec.duration ? ` • ${rec.duration} min` : ""}
                   </p>
+                  <span className="text-xs text-white/30 mt-1 font-semibold">
+                    {typeof rec.batchId === "object" ? rec.batchId?.title : ""}
+                  </span>
                 </div>
                 <button
                   onClick={() => handlePlayRecording(rec)}

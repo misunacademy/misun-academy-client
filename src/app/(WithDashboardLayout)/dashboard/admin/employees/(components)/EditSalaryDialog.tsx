@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useGetAllEmployeesQuery } from '@/redux/api/employeeAdminApi';
-import { useAddSalaryMutation } from '@/redux/api/employeeAdminApi';
+import { useUpdateSalaryMutation } from '@/redux/api/employeeAdminApi';
 import { toast } from 'sonner';
 import {
     Dialog, DialogContent, DialogHeader,
@@ -15,11 +14,23 @@ import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Save, X, User, Briefcase, DollarSign, Gift, Calendar } from 'lucide-react';
+import { Loader2, Save, X, Briefcase, DollarSign, Gift, Calendar } from 'lucide-react';
+import type { Salary } from '@/redux/api/employeeApi';
 
 const MONTHS = [
-    'January','February','March','April','May','June',
-    'July','August','September','October','November','December',
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+const JOB_TITLES = [
+    'Instructor',
+    'Senior Visualizer',
+    'Visualizer',
+    'Video Editor',
+    'Design And Social Media Coordinator',
+    'Web Developer',
+    'Marketing Executive',
+    'Community Growth Manager',
 ];
 
 const currentYear = new Date().getFullYear();
@@ -27,70 +38,60 @@ const YEARS = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
 interface Props {
     open: boolean;
+    salary: Salary | null;
     onClose: () => void;
 }
 
-export function AddSalaryDialog({ open, onClose }: Props) {
-    const [addSalary, { isLoading }] = useAddSalaryMutation();
-    const { data: empData } = useGetAllEmployeesQuery({ limit: 100 });
-    const employees = empData?.data?.employees ?? [];
+const getInitialForm = (salary: Salary | null) => ({
+    jobTitle:    salary?.jobTitle ?? '',
+    month:       salary?.month ?? MONTHS[new Date().getMonth()],
+    year:        salary?.year ?? currentYear,
+    amount:      salary ? String(salary.amount) : '',
+    bonus:       salary?.bonus ? String(salary.bonus) : '',
+    paymentDate: salary?.paymentDate
+        ? new Date(salary.paymentDate).toISOString().split('T')[0]
+        : '',
+    status:      (salary?.status ?? 'Pending') as 'Paid' | 'Pending',
+});
 
-    const [form, setForm] = useState({
-        employeeId:   '',
-        employeeName: '',
-        jobTitle:     '',
-        month:        MONTHS[new Date().getMonth()],
-        year:         currentYear,
-        amount:       '',
-        bonus:        '',
-        paymentDate:  '',
-    });
+export function EditSalaryDialog({ open, salary, onClose }: Props) {
+    const [updateSalary, { isLoading }] = useUpdateSalaryMutation();
+
+    // Lazy initializer — runs once on mount (key prop in parent forces remount per record)
+    const [form, setForm] = useState(() => getInitialForm(salary));
 
     const set = (key: keyof typeof form) =>
         (e: React.ChangeEvent<HTMLInputElement>) =>
             setForm((f) => ({ ...f, [key]: e.target.value }));
 
-    const handleEmployeeSelect = (id: string) => {
-        const emp = employees.find((e) => e._id === id);
-        setForm((f) => ({
-            ...f,
-            employeeId:   id,
-            employeeName: emp?.name ?? '',
-        }));
-    };
-
-    const reset = () => setForm({
-        employeeId: '', employeeName: '', jobTitle: '',
-        month: MONTHS[new Date().getMonth()], year: currentYear,
-        amount: '', bonus: '', paymentDate: '',
-    });
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!form.employeeId) { toast.error('Please select an employee.'); return; }
-        if (!form.amount || isNaN(Number(form.amount))) { toast.error('Enter a valid salary amount.'); return; }
+        if (!salary) return;
+        if (!form.amount || isNaN(Number(form.amount))) {
+            toast.error('Enter a valid salary amount.');
+            return;
+        }
 
         try {
-            await addSalary({
-                employeeId:   form.employeeId,
-                employeeName: form.employeeName,
-                jobTitle:     form.jobTitle,
-                month:        form.month,
-                year:         form.year,
-                amount:       Number(form.amount),
-                bonus:        form.bonus ? Number(form.bonus) : undefined,
-                paymentDate:  form.paymentDate || undefined,
+            await updateSalary({
+                id:          salary._id,
+                jobTitle:    form.jobTitle,
+                month:       form.month,
+                year:        form.year,
+                amount:      Number(form.amount),
+                bonus:       form.bonus ? Number(form.bonus) : undefined,
+                paymentDate: form.paymentDate || undefined,
+                status:      form.status,
             }).unwrap();
-            toast.success('Salary record created!');
-            reset();
+            toast.success('Salary record updated!');
             onClose();
         } catch {
-            toast.error('Failed to create salary record.');
+            toast.error('Failed to update salary record.');
         }
     };
 
     return (
-        <Dialog open={open} onOpenChange={(o) => { if (!o) { reset(); onClose(); } }}>
+        <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
             <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto p-0 gap-0">
                 {/* Header */}
                 <DialogHeader className="px-6 pt-6 pb-4 border-b sticky top-0 z-10 bg-background">
@@ -99,36 +100,15 @@ export function AddSalaryDialog({ open, onClose }: Props) {
                             <DollarSign className="w-4 h-4 text-white" />
                         </div>
                         <div>
-                            <DialogTitle className="text-base font-bold">
-                                Add Salary Record
-                            </DialogTitle>
+                            <DialogTitle className="text-base font-bold">Edit Salary Record</DialogTitle>
                             <DialogDescription className="text-xs mt-0.5">
-                                Create a new payroll entry for an employee.
+                                Update payroll details for <span className="font-semibold">{salary?.employeeName}</span>.
                             </DialogDescription>
                         </div>
                     </div>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
-                    {/* Employee */}
-                    <div className="space-y-1.5">
-                        <Label className="text-sm font-medium flex items-center gap-1.5">
-                            <User className="w-3.5 h-3.5" /> Employee
-                        </Label>
-                        <Select value={form.employeeId} onValueChange={handleEmployeeSelect} disabled={isLoading}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select employee…" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-52">
-                                {employees.map((emp) => (
-                                    <SelectItem key={emp._id} value={emp._id}>
-                                        {emp.name} — <span className="text-muted-foreground text-xs">{emp.email}</span>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
                     {/* Job Title */}
                     <div className="space-y-1.5">
                         <Label className="text-sm font-medium flex items-center gap-1.5">
@@ -138,25 +118,13 @@ export function AddSalaryDialog({ open, onClose }: Props) {
                             value={form.jobTitle}
                             onValueChange={(v) => setForm((f) => ({ ...f, jobTitle: v }))}
                             disabled={isLoading}
-                            required
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Select job title…" />
                             </SelectTrigger>
                             <SelectContent>
-                                {[
-                                    "Instructor",
-                                    "Senior Visualizer",
-                                    "Visualizer",
-                                    "Video Editor",
-                                    "Design And Social Media Coordinator",
-                                    "Web Developer",
-                                    "Marketing Executive",
-                                    "Community Growth Manager",
-                                ].map((title) => (
-                                    <SelectItem key={title} value={title}>
-                                        {title}
-                                    </SelectItem>
+                                {JOB_TITLES.map((title) => (
+                                    <SelectItem key={title} value={title}>{title}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -228,6 +196,22 @@ export function AddSalaryDialog({ open, onClose }: Props) {
                         />
                     </div>
 
+                    {/* Status */}
+                    <div className="space-y-1.5">
+                        <Label className="text-sm font-medium">Status</Label>
+                        <Select
+                            value={form.status}
+                            onValueChange={(v) => setForm((f) => ({ ...f, status: v as 'Paid' | 'Pending' }))}
+                            disabled={isLoading}
+                        >
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Paid">Paid</SelectItem>
+                                <SelectItem value="Pending">Pending</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                     {/* Payment Date */}
                     <div className="space-y-1.5">
                         <Label className="text-sm font-medium flex items-center gap-1.5">
@@ -258,21 +242,19 @@ export function AddSalaryDialog({ open, onClose }: Props) {
                             )}
                             <div className="flex justify-between border-t pt-1.5 font-bold">
                                 <span>Total Payable</span>
-                                <span>
-                                    ৳ {(Number(form.amount) + Number(form.bonus || 0)).toLocaleString()}
-                                </span>
+                                <span>৳ {(Number(form.amount) + Number(form.bonus || 0)).toLocaleString()}</span>
                             </div>
                         </div>
                     )}
 
                     {/* Actions */}
                     <div className="flex justify-end gap-3 pt-2 border-t">
-                        <Button type="button" variant="outline" onClick={() => { reset(); onClose(); }} disabled={isLoading} className="gap-2">
+                        <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="gap-2">
                             <X className="w-4 h-4" /> Cancel
                         </Button>
                         <Button type="submit" disabled={isLoading} className="gap-2 min-w-[130px]">
                             {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                            {isLoading ? 'Saving…' : 'Create Record'}
+                            {isLoading ? 'Saving…' : 'Save Changes'}
                         </Button>
                     </div>
                 </form>
