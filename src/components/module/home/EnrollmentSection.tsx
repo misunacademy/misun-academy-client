@@ -68,24 +68,7 @@ function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
 
                     {/* ── Course identity row ── */}
                     <div className="flex items-start gap-4">
-                        {/* Thumbnail */}
-                        {/* <div className="relative flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border border-primary/20
-                            shadow-[0_0_14px_hsl(156_70%_42%/0.15)] group-hover:border-primary/40 transition-colors">
-                            {course.thumbnailImage ? (
-                                <Image
-                                    src={course.thumbnailImage}
-                                    alt={course.title}
-                                    fill
-                                    className="object-cover"
-                                    sizes="64px"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-primary/10">
-                                    <BookOpen size={24} className="text-primary/60" />
-                                </div>
-                            )}
-                        </div> */}
-
+                       
                         {/* Title + batch badge */}
                         <div className="flex-1 min-w-0">
                             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
@@ -95,15 +78,6 @@ function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
                                     ব্যাচ-{String(batch?.title?.split(' ')[1])?.padStart(2, '0')}
                                 </span>
                             </div>
-                            {/* <h3 className="text-white font-bold text-lg leading-tight font-bangla line-clamp-2
-                                group-hover:text-primary/90 transition-colors">
-                                {course.title}
-                            </h3> */}
-                            {/* {course.shortDescription && (
-                                <p className="text-white/45 text-xs mt-1 leading-relaxed font-bangla line-clamp-2">
-                                    {course.shortDescription}
-                                </p>
-                            )} */}
                         </div>
                     </div>
 

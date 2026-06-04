@@ -280,7 +280,7 @@ export default function StudentProfile() {
                     {activeTab === "enrollment-poster" && <EnrollmentPosterTab />}
                     {activeTab === "certification" && <CertificationTab />}
                     {activeTab === "enrollments" && <EnrollmentsTab profile={profile} />}
-                    {activeTab === "payment-history" && <PaymentHistoryTab profile={profile} />}
+                    {activeTab === "payment-history" && <PaymentHistoryTab />}
                     {activeTab === "settings" && <SettingsTab profile={profile} />}
                 </div>
             </div>
