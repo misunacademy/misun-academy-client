@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Mail, Phone, MapPin, Briefcase, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useGetUserProfileQuery, useUpdateUserProfileMutation } from "@/redux/features/profile/profileApi";
+import { useGetUserProfileQuery, useUpdateUserProfileMutation } from "@/redux/api/profileApi";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { toast } from "sonner";
 import * as React from "react";

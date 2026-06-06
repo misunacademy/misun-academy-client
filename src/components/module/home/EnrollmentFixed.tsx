@@ -8,8 +8,87 @@ import { useGetCourseBySlugQuery } from '@/redux/api/courseApi';
 import { BatchResponse, useGetCurrentEnrollmentBatchQuery } from '@/redux/api/batchApi';
 import { formatDate } from './EnrollmentSection';
 
-export default function EnrollmentFixed() {
+type EnrollmentFixedContentProps = {
+    batch: BatchResponse;
+    onScrollToEnroll: (e: MouseEvent<HTMLAnchorElement>) => void;
+};
+
+function EnrollmentFixedContent({ batch, onScrollToEnroll }: EnrollmentFixedContentProps) {
     const [isOpen, setIsOpen] = useState(true);
+
+    const safeFormatDate = (date?: Date | string | null) => {
+        if (!date) return 'তথ্য পাওয়া যায়নি';
+
+        try {
+            return formatDate(date);
+        } catch {
+            return 'তথ্য পাওয়া যায়নি';
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className=''>
+            <div
+                className="
+        fixed bottom-5 left-5 
+        bg-[#07120d]/95 border border-primary/20 
+        shadow-[0_12px_30px_hsl(156_70%_42%/0.18)] rounded-md 
+        p-4 max-w-xs 
+        font-bangla text-white/80 
+        text-sm font-medium
+        z-50
+      "
+                style={{ backdropFilter: 'blur(6px)' }}
+            >
+                <button
+                    type="button"
+                    aria-label="পপআপ বন্ধ করুন"
+                    onClick={() => setIsOpen(false)}
+                    className="absolute -top-2 -right-2 grid h-6 w-6 place-items-center rounded-full border border-primary/30 bg-[#0b1d14] text-white/70 shadow-md transition hover:scale-105 hover:text-white"
+                >
+                    <X size={14} />
+                </button>
+
+                <div className="flex items-center gap-2 mb-2">
+                    <CalendarCheck size={20} className="text-green-600" />
+                    <p>
+                        এনরোলমেন্ট শুরু: <span className="text-primary font-semibold">{safeFormatDate(batch.enrollmentStartDate)}</span>
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <CalendarX size={20} className="text-red-600" />
+                    <p>
+                        এনরোলমেন্ট শেষ: <span className="text-primary font-semibold">{safeFormatDate(batch.enrollmentEndDate)}</span>
+                    </p>
+                </div>
+                <Link
+                    href="#enroll-now"
+                    onClick={onScrollToEnroll}
+                    aria-label="এনরোলমেন্ট করুন"
+                    className="fixed left-[260px] bottom-[17px] z-50 group"
+                >
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400/55 via-cyan-400/45 to-blue-500/55 blur-lg group-hover:blur-xl transition-all duration-300" />
+                    <span className="absolute inset-[-7px] rounded-full border border-cyan-200/60 animate-ping" />
+                    <span className="absolute inset-[-10px] rounded-full border border-dashed border-white/35 animate-[spin_7s_linear_infinite]" />
+                    <span className="absolute -top-1 -right-0.5 h-2.5 w-2.5 rounded-full bg-amber-300 shadow-[0_0_14px_rgba(251,191,36,0.95)] animate-pulse" />
+
+                    <span className="relative grid h-11 w-11 place-items-center rounded-full border border-white/45 bg-gradient-to-br from-emerald-500 via-cyan-500 to-blue-600 text-white shadow-[0_12px_30px_rgba(6,182,212,0.52)] ring-1 ring-white/15 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-0.5 group-hover:rotate-6">
+                        <span className="absolute inset-[3px] rounded-full bg-gradient-to-br from-white/28 via-white/10 to-transparent" />
+                        <Rocket className="relative h-4.5 w-4.5 animate-bounce" />
+                    </span>
+
+                    <span className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-full border border-cyan-200/40 bg-slate-900/85 px-2 py-0.5 text-[9px] font-semibold tracking-[0.16em] text-cyan-100 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0.5">
+                        ENROLL
+                    </span>
+                </Link>
+            </div>
+        </div>
+    );
+}
+
+export default function EnrollmentFixed() {
     const scrollToEnrollSection = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
 
@@ -72,18 +151,6 @@ export default function EnrollmentFixed() {
     const batch = useMemo(() => (gdCurrentRes?.data ?? null) as BatchResponse | null, [gdCurrentRes]);
     const hasApiError = gdCourseError || gdCurrentError;
 
-    const safeFormatDate = (date?: Date | string | null) => {
-        if (!date) return 'তথ্য পাওয়া যায়নি';
-
-        try {
-            return formatDate(date);
-        } catch {
-            return 'তথ্য পাওয়া যায়নি';
-        }
-    };
-
-    if (!isOpen) return null;
-
     if (gdCourseLoading || gdCurrentLoading) {
         return (
             <div
@@ -102,75 +169,14 @@ export default function EnrollmentFixed() {
             </div>
         );
     }
+
+    if (hasApiError || !batch) return null;
+
     return (
-        <div className=''>
-            <div
-                className="
-        fixed bottom-5 left-5 
-        bg-[#07120d]/95 border border-primary/20 
-        shadow-[0_12px_30px_hsl(156_70%_42%/0.18)] rounded-md 
-        p-4 max-w-xs 
-        font-bangla text-white/80 
-        text-sm font-medium
-        z-50
-      "
-                style={{ backdropFilter: 'blur(6px)' }}
-            >
-                <button
-                    type="button"
-                    aria-label="পপআপ বন্ধ করুন"
-                    onClick={() => setIsOpen(false)}
-                    className="absolute -top-2 -right-2 grid h-6 w-6 place-items-center rounded-full border border-primary/30 bg-[#0b1d14] text-white/70 shadow-md transition hover:scale-105 hover:text-white"
-                >
-                    <X size={14} />
-                </button>
-
-                {hasApiError || !batch ? (
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                            <CalendarX size={20} className="text-red-600" />
-                            <p>এনরোলমেন্ট তথ্য এখন পাওয়া যাচ্ছে না</p>
-                        </div>
-                        <p className="text-xs text-white/70">অনুগ্রহ করে কিছুক্ষণ পরে আবার চেষ্টা করুন</p>
-                    </div>
-                ) : (
-                    <>
-                        <div className="flex items-center gap-2 mb-2">
-                            <CalendarCheck size={20} className="text-green-600" />
-                            <p>
-                                এনরোলমেন্ট শুরু: <span className="text-primary font-semibold">{safeFormatDate(batch.enrollmentStartDate)}</span>
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <CalendarX size={20} className="text-red-600" />
-                            <p>
-                                এনরোলমেন্ট শেষ: <span className="text-primary font-semibold">{safeFormatDate(batch.enrollmentEndDate)}</span>
-                            </p>
-                        </div><Link
-                href="#enroll-now"
-                    onClick={scrollToEnrollSection}
-                aria-label="এনরোলমেন্ট করুন"
-                className="fixed left-[260px] bottom-[17px] z-50 group"
-            >
-                <span className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400/55 via-cyan-400/45 to-blue-500/55 blur-lg group-hover:blur-xl transition-all duration-300" />
-                <span className="absolute inset-[-7px] rounded-full border border-cyan-200/60 animate-ping" />
-                <span className="absolute inset-[-10px] rounded-full border border-dashed border-white/35 animate-[spin_7s_linear_infinite]" />
-                <span className="absolute -top-1 -right-0.5 h-2.5 w-2.5 rounded-full bg-amber-300 shadow-[0_0_14px_rgba(251,191,36,0.95)] animate-pulse" />
-
-                <span className="relative grid h-11 w-11 place-items-center rounded-full border border-white/45 bg-gradient-to-br from-emerald-500 via-cyan-500 to-blue-600 text-white shadow-[0_12px_30px_rgba(6,182,212,0.52)] ring-1 ring-white/15 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-0.5 group-hover:rotate-6">
-                    <span className="absolute inset-[3px] rounded-full bg-gradient-to-br from-white/28 via-white/10 to-transparent" />
-                    <Rocket className="relative h-4.5 w-4.5 animate-bounce" />
-                </span>
-
-                <span className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-full border border-cyan-200/40 bg-slate-900/85 px-2 py-0.5 text-[9px] font-semibold tracking-[0.16em] text-cyan-100 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0.5">
-                    ENROLL
-                </span>
-            </Link>
-                    </>
-                )}
-            </div>
-
-            
-        </div>
+        <EnrollmentFixedContent
+            key={batch._id ?? 'batch'}
+            batch={batch}
+            onScrollToEnroll={scrollToEnrollSection}
+        />
     );
 }

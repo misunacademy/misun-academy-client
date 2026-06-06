@@ -1,30 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2, CheckCircle, XCircle, Clock, Eye } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useGetCertificatesQuery, useUpdateCertificateMutation, type CertificateResponse } from "@/redux/api/certificateApi";
 import { toast } from "sonner";
+import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
+import DashboardPageTableWithPagination from "@/components/layout/DashboardPageTableWithPagination";
+import DashboardPageTabs from "@/components/layout/DashboardPageTabs";
+import CertificateTableRow from "./components/CertificateTableRow";
+import CertificateStatsCards from "./components/CertificateStatsCards";
+import CertificateReviewDialog from "./components/CertificateReviewDialog";
 
 const normalizeStatus = (status: string) => {
   const value = status.toLowerCase();
@@ -47,97 +33,32 @@ const getCourseTitle = (cert: CertificateResponse) =>
 const getBatchTitle = (cert: CertificateResponse) =>
   cert.batch?.title || (cert.batchId as unknown as { title?: string })?.title || "N/A";
 
-// Move CertificateTable outside component
-const CertificateTable = ({ certificates, onViewDetails }: { certificates: CertificateResponse[]; onViewDetails: (cert: CertificateResponse) => void }) => {
-  const getStatusBadge = (status: string) => {
-    switch (normalizeStatus(status)) {
-      case 'approved':
-        return (
-          <Badge variant="default" className="flex items-center gap-1 w-fit">
-            <CheckCircle className="h-3 w-3" />
-            Approved
-          </Badge>
-        );
-      case 'pending':
-        return (
-          <Badge variant="secondary" className="flex items-center gap-1 w-fit">
-            <Clock className="h-3 w-3" />
-            Pending
-          </Badge>
-        );
-      case 'rejected':
-        return (
-          <Badge variant="destructive" className="flex items-center gap-1 w-fit">
-            <XCircle className="h-3 w-3" />
-            Rejected
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Student</TableHead>
-          <TableHead>Course</TableHead>
-          <TableHead>Batch</TableHead>
-          <TableHead>Application Date</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {certificates.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={6} className="text-center text-muted-foreground">
-              No data found
-            </TableCell>
-          </TableRow>
-        ) : (
-          certificates.map((cert) => (
-            <TableRow key={cert._id}>
-              <TableCell className="font-medium">
-                {getStudentName(cert)}
-                <div className="text-xs text-muted-foreground">{getStudentEmail(cert)}</div>
-              </TableCell>
-              <TableCell>{getCourseTitle(cert)}</TableCell>
-              <TableCell>{getBatchTitle(cert)}</TableCell>
-              <TableCell>{new Date(cert.createdAt).toLocaleDateString('en-US')}</TableCell>
-              <TableCell>{getStatusBadge(cert.status)}</TableCell>
-              <TableCell>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onViewDetails(cert)}
-                >
-                  <Eye className="h-4 w-4 mr-1" />
-                  Details
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))
-        )}
-      </TableBody>
-    </Table>
-  );
-};
-
 export default function CertificateManagementPage() {
   const [selectedCertificate, setSelectedCertificate] = useState<CertificateResponse | null>(null);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [activeTab, setActiveTab] = useState<"pending" | "approved" | "rejected">("pending");
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
 
-  const { data, isLoading, refetch } = useGetCertificatesQuery({});
+  const { data, isLoading, isFetching, refetch } = useGetCertificatesQuery({
+    status: activeTab,
+    page,
+    limit,
+  });
+
+  const { data: pendingMetaData } = useGetCertificatesQuery({ status: "pending", page: 1, limit: 1 });
+  const { data: approvedMetaData } = useGetCertificatesQuery({ status: "approved", page: 1, limit: 1 });
+  const { data: rejectedMetaData } = useGetCertificatesQuery({ status: "rejected", page: 1, limit: 1 });
+
   const [updateCertificate, { isLoading: isUpdating }] = useUpdateCertificateMutation();
 
   const certificates = data?.data || [];
-
-  const pendingCertificates = certificates.filter((c) => c.status.toLowerCase() === 'pending');
-  const approvedCertificates = certificates.filter((c) => normalizeStatus(c.status) === 'approved');
-  const rejectedCertificates = certificates.filter((c) => normalizeStatus(c.status) === 'rejected');
+  const meta = data?.meta ?? { total: 0, page: 1, limit, totalPages: 1 };
+  const pendingCount = pendingMetaData?.meta?.total ?? 0;
+  const approvedCount = approvedMetaData?.meta?.total ?? 0;
+  const rejectedCount = rejectedMetaData?.meta?.total ?? 0;
+  const totalPages = meta.totalPages ?? 1;
 
   const handleApprove = async (certificateId: string) => {
     try {
@@ -210,6 +131,51 @@ export default function CertificateManagementPage() {
     }
   };
 
+  const renderCertificateRow = (cert: CertificateResponse) => (
+    <CertificateTableRow
+      certificate={cert}
+      getStudentName={getStudentName}
+      getStudentEmail={getStudentEmail}
+      getCourseTitle={getCourseTitle}
+      getBatchTitle={getBatchTitle}
+      getStatusBadge={getStatusBadge}
+      onViewDetails={openReviewDialog}
+    />
+  );
+
+  const tableColumns = ["Student", "Course", "Batch", "Application Date", "Status", "Actions"];
+  const tablePagination = {
+    page,
+    totalPages,
+    total: meta.total,
+    limit,
+    onPageChange: setPage,
+  };
+
+  const tableContent = (
+    <DashboardPageTableWithPagination
+      columns={tableColumns}
+      data={certificates}
+      renderRow={renderCertificateRow}
+      getRowKey={(cert) => cert._id}
+      isFetching={isFetching}
+      emptyState="No certificates found."
+      pagination={tablePagination}
+    />
+  );
+
+  const tabTriggers = [
+    { value: "pending", label: `Pending (${pendingCount})` },
+    { value: "approved", label: `Approved (${approvedCount})` },
+    { value: "rejected", label: `Rejected (${rejectedCount})` },
+  ];
+
+  const tabContents = [
+    { value: "pending", content: tableContent },
+    { value: "approved", content: tableContent },
+    { value: "rejected", content: tableContent },
+  ];
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -219,168 +185,50 @@ export default function CertificateManagementPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Certificate Approval</h1>
-        <p className="text-muted-foreground">Review student certificate applications</p>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Pending</CardDescription>
-            <CardTitle className="text-3xl">{pendingCertificates.length}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Approved</CardDescription>
-            <CardTitle className="text-3xl text-green-600">{approvedCertificates.length}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Rejected</CardDescription>
-            <CardTitle className="text-3xl text-red-600">{rejectedCertificates.length}</CardTitle>
-          </CardHeader>
-        </Card>
-      </div>
+    <DashboardPageContainer
+      heading="Certificate Approval"
+      subheading="Review student certificate applications"
+      content={
+        <>
+          {/* Stats Cards */}
+          <CertificateStatsCards
+            pendingCount={pendingCount}
+            approvedCount={approvedCount}
+            rejectedCount={rejectedCount}
+          />
 
-      {/* Certificate Lists */}
-      <Tabs defaultValue="pending" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="pending">
-            Pending ({pendingCertificates.length})
-          </TabsTrigger>
-          <TabsTrigger value="approved">
-            Approved ({approvedCertificates.length})
-          </TabsTrigger>
-          <TabsTrigger value="rejected">
-            Rejected ({rejectedCertificates.length})
-          </TabsTrigger>
-        </TabsList>
+          {/* Certificate Lists */}
+          <DashboardPageTabs
+            value={activeTab}
+            onValueChange={(value) => {
+              setActiveTab(value as "pending" | "approved" | "rejected");
+              setPage(1);
+            }}
+            triggers={tabTriggers}
+            contents={tabContents}
+          />
 
-        <TabsContent value="pending">
-          <Card>
-            <CardContent className="p-4">
-              <CertificateTable certificates={pendingCertificates} onViewDetails={openReviewDialog} />
-            </CardContent>
-          </Card>
-        </TabsContent>
+          {/* Review Dialog */}
+          <CertificateReviewDialog
+            open={reviewDialogOpen}
+            onOpenChange={setReviewDialogOpen}
+            certificate={selectedCertificate}
+            rejectionReason={rejectionReason}
+            onRejectionReasonChange={setRejectionReason}
+            onReject={handleReject}
+            onApprove={handleApprove}
+            isUpdating={isUpdating}
+            getStudentName={getStudentName}
+            getStudentEmail={getStudentEmail}
+            getCourseTitle={getCourseTitle}
+            getBatchTitle={getBatchTitle}
+            getStatusBadge={getStatusBadge}
+            normalizeStatus={normalizeStatus}
+          />
+        </>
+      }
+    />
 
-        <TabsContent value="approved">
-          <Card>
-            <CardContent className="p-4">
-              <CertificateTable certificates={approvedCertificates} onViewDetails={openReviewDialog} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="rejected">
-          <Card>
-            <CardContent className="p-4">
-              <CertificateTable certificates={rejectedCertificates} onViewDetails={openReviewDialog} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* Review Dialog */}
-      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Certificate Review</DialogTitle>
-            <DialogDescription>
-              Verify student information and approve or reject certificate
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedCertificate && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Student</p>
-                  <p className="font-medium">{getStudentName(selectedCertificate)}</p>
-                  <p className="text-xs text-muted-foreground">{getStudentEmail(selectedCertificate)}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Course</p>
-                  <p className="font-medium">{getCourseTitle(selectedCertificate)}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Batch</p>
-                  <p className="font-medium">{getBatchTitle(selectedCertificate)}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Course Completed</p>
-                  <p className="font-medium">{selectedCertificate.completionPercentage ?? 0}%</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Application Date</p>
-                  <p className="font-medium">
-                    {new Date(selectedCertificate.createdAt).toLocaleDateString('en-US')}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Current Status</p>
-                  {getStatusBadge(selectedCertificate.status)}
-                </div>
-              </div>
-
-              {selectedCertificate.status.toLowerCase() === 'pending' && (
-                <>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Rejection Reason (if applicable)</label>
-                    <Textarea
-                      placeholder="Enter reason to inform the student..."
-                      value={rejectionReason}
-                      onChange={(e) => setRejectionReason(e.target.value)}
-                      rows={3}
-                    />
-                  </div>
-
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setReviewDialogOpen(false)}
-                      disabled={isUpdating}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => handleReject(selectedCertificate._id)}
-                      disabled={isUpdating}
-                    >
-                      <XCircle className="h-4 w-4 mr-1" />
-                      Reject
-                    </Button>
-                    <Button
-                      onClick={() => handleApprove(selectedCertificate._id)}
-                      disabled={isUpdating}
-                    >
-                      {isUpdating ? (
-                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      ) : (
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                      )}
-                      Approve
-                    </Button>
-                  </DialogFooter>
-                </>
-              )}
-
-              {normalizeStatus(selectedCertificate.status) === 'rejected' && (
-                <div className="p-3 bg-red-50 rounded-md border border-red-200">
-                  <p className="text-sm font-medium text-red-800 mb-1">Rejection Reason:</p>
-                  <p className="text-sm text-red-700">{selectedCertificate.rejectionReason || selectedCertificate.revokedReason || 'No reason specified'}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
   );
 }

@@ -14,6 +14,7 @@ export interface AuthUser extends BaseUser {
   phone?: string;
   address?: string;
   avatar?: string;
+  enrolledCourses?: string[]; // Array of course IDs the user is enrolled in
 }
 
 // Helper type for session with typed user

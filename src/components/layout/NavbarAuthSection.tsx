@@ -16,6 +16,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User, LogOut, UserCircle, Sparkles, LayoutDashboard } from 'lucide-react';
+import { FaCertificate, FaRegFileAlt } from 'react-icons/fa';
 
 export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
     const { user, signOut } = useAuth();
@@ -23,19 +24,20 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
     const safeUser = hydrated ? user : null;
     const userRole = (safeUser as AuthUser | null)?.role;
     const canSeeClasses = !!userRole && userRole.toLowerCase() === 'learner';
-
+    const isEnrolled = (safeUser?.enrolledCourses?.length ?? 0) > 0;
     const handleLogout = async () => {
         const result = await signOut();
         if (result.success) {
             router.push('/');
         }
     };
+
     const handleEnrollClick = () => {
         import('@/lib/metaPixel').then(({ track }) =>
             track('InitiateCheckout', {
                 content_name: 'Graphic Design Course',
                 content_type: 'course',
-                value: 4000,
+                value: 4800,
                 currency: 'BDT',
             })
         );
@@ -122,9 +124,29 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
                             </Link>
                         </DropdownMenuItem>
                         {
-                           ( userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor') &&
+                            userRole === 'learner' && canSeeClasses && isEnrolled &&
                             <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/${userRole}`} className="flex items-center">
+                                <Link href="/enrollment-posters" className="">
+                                    <FaRegFileAlt className="mr-2 h-4 w-4" />
+                                    Your Enrollment Posters
+                                </Link>
+                            </DropdownMenuItem>
+
+                        }
+                        {
+                            userRole === 'learner' && canSeeClasses && isEnrolled &&
+                            <DropdownMenuItem asChild>
+                                <Link href="/my-classes/certificates" className="">
+                                    <FaCertificate className="mr-2 h-4 w-4" />
+                                    Certificates
+                                </Link>
+                            </DropdownMenuItem>
+
+                        }
+                        {
+                            (userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor' || userRole === 'employee') &&
+                            <DropdownMenuItem asChild>
+                                <Link href={`/dashboard/${(userRole==='superadmin' || userRole==='admin') ? 'admin' : `${userRole}`}`} className="flex items-center">
                                     <LayoutDashboard className="mr-2 h-4 w-4" />
                                     Dashboard
                                 </Link>

@@ -2,11 +2,8 @@
 import { Loader2, CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useGetMyPaymentsQuery } from "@/redux/api/paymentApi";
 
-interface PaymentHistoryTabProps {
-    profile?: any;
-}
 
-export function PaymentHistoryTab({ profile }: PaymentHistoryTabProps) {
+export function PaymentHistoryTab() {
     const { data, isLoading, error } = useGetMyPaymentsQuery();
 
     const payments = data?.data || [];
@@ -121,7 +118,7 @@ export function PaymentHistoryTab({ profile }: PaymentHistoryTabProps) {
                                     <div>
                                         <p className="text-white/40 text-xs mb-1">Amount</p>
                                         <p className="font-semibold text-primary text-lg">
-                                            {payment.currency === 'BDT' || !payment.currency ? <span className="text-primary/70 text-sm">৳</span> : payment.currency}{" "}
+                                            {payment.method !== 'PhonePay'? <span className="text-primary/70 text-sm">৳</span> : <span className="text-primary/70 text-sm">₹</span>}{" "}
                                             {payment.amount?.toLocaleString()}
                                         </p>
                                     </div>

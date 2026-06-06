@@ -152,7 +152,7 @@ export function YoutubePrivatePlayer({ url, className }: YoutubePrivatePlayerPro
       setQualityLevel('auto')
     }
   }, [])
-
+  
   useEffect(() => {
     if (!videoId) return
 

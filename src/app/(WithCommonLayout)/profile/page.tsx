@@ -2,7 +2,7 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { useGetUserProfileQuery } from "@/redux/features/profile/profileApi";
+import { useGetUserProfileQuery } from "@/redux/api/profileApi";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
 import { useRef, useState, useEffect } from "react";
@@ -140,8 +140,8 @@ export default function StudentProfile() {
     }
 
     const studentId = (user as any)?.studentId || profile?.user?.studentId || "N/A";
-    const phone = profile?.phone || user.phone || "Not provided";
-    const whatsapp = profile?.whatsapp || profile?.phone || "Not provided";
+    const phone = profile?.user?.phone || "Not provided";
+    const wpnumber = profile?.wpnumber || "Not provided";
 
     // Dynamically update completion status for NAV_ITEMS
     const updatedNavItems = NAV_ITEMS.map(item => {
@@ -229,7 +229,8 @@ export default function StudentProfile() {
                         <div className="w-full border-t border-dashed border-white/10 my-2" />
 
                         {/* Navigation Menu */}
-                        <div className="w-full flex flex-col gap-1 mt-4">
+                        <div className="w-full mt-4">
+                            <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-1 lg:overflow-visible">
                             {updatedNavItems.map((item) => {
                                 const Icon = item.icon;
                                 const isActive = activeTab === item.id;
@@ -237,14 +238,14 @@ export default function StudentProfile() {
                                     <button
                                         key={item.id}
                                         onClick={() => setActiveTab(item.id)}
-                                        className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${isActive ? 'bg-primary/10 border border-primary/20 text-primary shadow-[0_0_15px_hsl(156_70%_42%/0.1)]' : 'text-white/60 hover:bg-white/5 hover:text-white/90 border border-transparent'
+                                        className={`min-w-[170px] shrink-0 flex items-center justify-between p-3 rounded-xl transition-all lg:w-full lg:min-w-0 ${isActive ? 'bg-primary/10 border border-primary/20 text-primary shadow-[0_0_15px_hsl(156_70%_42%/0.1)]' : 'text-white/60 hover:bg-white/5 hover:text-white/90 border border-transparent'
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isActive ? 'bg-primary/20 text-primary' : ''}`}>
                                                 <Icon className="w-4 h-4" />
                                             </div>
-                                            <span className={`text-sm ${isActive ? 'font-medium text-primary' : ''}`}>{item.label}</span>
+                                            <span className={`whitespace-nowrap text-sm ${isActive ? 'font-medium text-primary' : ''}`}>{item.label}</span>
                                         </div>
                                         {item.completed ? (
                                             <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center shadow-[0_0_8px_hsl(156_70%_42%/0.5)]">
@@ -258,6 +259,7 @@ export default function StudentProfile() {
                                     </button>
                                 );
                             })}
+                            </div>
                         </div>
                     </div>
 
@@ -268,7 +270,7 @@ export default function StudentProfile() {
                             user={user}
                             studentId={studentId}
                             phone={phone}
-                            whatsapp={whatsapp}
+                            wpnumber={wpnumber}
                             sessions={sessions}
                             handleRevokeSession={handleRevokeSession}
                             refetch={refetch}
@@ -278,7 +280,7 @@ export default function StudentProfile() {
                     {activeTab === "enrollment-poster" && <EnrollmentPosterTab />}
                     {activeTab === "certification" && <CertificationTab />}
                     {activeTab === "enrollments" && <EnrollmentsTab profile={profile} />}
-                    {activeTab === "payment-history" && <PaymentHistoryTab profile={profile} />}
+                    {activeTab === "payment-history" && <PaymentHistoryTab />}
                     {activeTab === "settings" && <SettingsTab profile={profile} />}
                 </div>
             </div>

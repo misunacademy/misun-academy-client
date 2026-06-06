@@ -21,11 +21,26 @@ const dashboardApi = baseApi.injectEndpoints({
     }),
 
     // Get dashboard metadata (legacy - 60 days stats)
-    getDashboardMetadata: build.query<{ data: any }, void>({
-      query: () => ({
+    getDashboardMetadata: build.query<{ data: any }, { courseId?: string } | void>({
+      query: (params) => ({
         url: "/dashboard/metadata",
+        params: params || undefined,
       }),
       providesTags: ["Dashboard"],
+    }),
+
+    getInstructorDashboard: build.query<{ data: any }, void>({
+      query: () => ({
+        url: "/dashboard/instructor",
+      }),
+      providesTags: ["Dashboard"],
+    }),
+    // Keep only student-specific endpoints here
+    getStudentDashboardData: build.query({
+      query: () => ({
+        url: "/dashboard/student",
+      }),
+      providesTags: ["Students"],
     }),
   }),
 });
@@ -34,4 +49,6 @@ export const {
   useGetAdminDashboardQuery,
   useGetUserStatsQuery,
   useGetDashboardMetadataQuery,
+  useGetInstructorDashboardQuery,
+  useGetStudentDashboardDataQuery,
 } = dashboardApi;

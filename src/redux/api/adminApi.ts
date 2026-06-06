@@ -15,7 +15,7 @@ export interface UserResponse {
   _id: string;
   name: string;
   email: string;
-  role: 'learner' | 'instructor' | 'admin' | 'superadmin';
+  role: 'learner' | 'instructor' | 'admin' | 'superadmin' | 'employee';
   status: 'active' | 'suspended' | 'deleted';
   image?: string;
   avatar?: string;
@@ -39,12 +39,12 @@ export interface UpdateUserRequest {
   name?: string;
   email?: string;
   phoneNumber?: string;
-  role?: 'learner' | 'instructor' | 'admin' | 'superadmin';
+  role?: 'learner' | 'instructor' | 'admin' | 'superadmin' | 'employee';
   status?: 'active' | 'suspended' | 'deleted';
 }
 
 export interface GetAllUsersParams {
-  role?: 'learner' | 'instructor' | 'admin' | 'superadmin';
+  role?: 'learner' | 'instructor' | 'admin' | 'superadmin' | 'employee';
   status?: 'active' | 'suspended' | 'deleted';
   search?: string;
   page?: number;
@@ -93,6 +93,11 @@ export interface EmailCountResponse {
 export interface SendNewsUpdateRequest {
   subject: string;
   message: string;
+}
+
+export interface SendBatchReminderRequest {
+  courseId: string;
+  batchId: string;
 }
 
 // ============================================================================
@@ -221,6 +226,32 @@ const adminApi = baseApi.injectEndpoints({
         body: data,
       }),
     }),
+
+    /**
+     * Send running batch progress reminder (progress < 50%)
+     * POST /api/v1/admin/send-batch-progress-reminder
+     * Requires: ADMIN or SUPERADMIN
+     */
+    sendBatchProgressReminder: build.mutation<EmailCountResponse, SendBatchReminderRequest>({
+      query: (data) => ({
+        url: "/admin/send-batch-progress-reminder",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    /**
+     * Send completed batch incomplete reminder (progress < 100% or no progress)
+     * POST /api/v1/admin/send-batch-incomplete-reminder
+     * Requires: ADMIN or SUPERADMIN
+     */
+    sendBatchIncompleteReminder: build.mutation<EmailCountResponse, SendBatchReminderRequest>({
+      query: (data) => ({
+        url: "/admin/send-batch-incomplete-reminder",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -235,6 +266,8 @@ export const {
   useAdminLoginMutation,
   useSendEnrollmentReminderMutation,
   useSendNewsUpdateMutation,
+  useSendBatchProgressReminderMutation,
+  useSendBatchIncompleteReminderMutation,
 } = adminApi;
 
 export default adminApi;

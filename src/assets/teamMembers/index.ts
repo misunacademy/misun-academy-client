@@ -6,3 +6,4 @@ export { default as neyemur } from './neyemur.jpg';
 export { default as nur } from './nur.jpg';
 export { default as nur_2 } from './nur_2.jpg';
 export { default as puspita } from './puspita.jpg';
+export { default as sakin } from './sakin.jpeg';

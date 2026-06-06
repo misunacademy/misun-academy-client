@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Edit, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useUpdateUserProfileMutation } from "@/redux/features/profile/profileApi";
+import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

@@ -60,7 +60,7 @@ const paymentApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Get all payments (supports search, pagination, filtering)
-    getAllPayments: build.query<{ data: PaymentResponse[]; meta?: { total: number; page: number; limit: number; totalPages: number } }, { status?: string; page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string }>({
+    getAllPayments: build.query<{ data: PaymentResponse[]; meta?: { total: number; page: number; limit: number; totalPages: number } }, { status?: string; page?: number; limit?: number; search?: string; courseId?: string; batchId?: string; sortBy?: string; sortOrder?: string }>({
       query: (params) => {
         let cleaned = params
           ? Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== null))

@@ -26,15 +26,15 @@ const NavbarAuthSection = dynamic(() => import('./NavbarAuthSection'), {
 export default function Navbar() {
   const [isHydrated, setIsHydrated] = useState(false); // ensure SSR/CSR markup match
   const navbarRef = useRef<HTMLDivElement>(null);
-  
 
-  
+
+
   useEffect(() => {
     // Defer to next paint to avoid synchronous setState warning
     const id = requestAnimationFrame(() => setIsHydrated(true));
     return () => cancelAnimationFrame(id);
   }, []);
-  
+
 
   // Use a safe user value that matches the server render until hydration completes
   return (
@@ -80,25 +80,10 @@ export default function Navbar() {
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-glow group-hover:w-full transition-all duration-300 ease-out" />
                 </Link>
               ))}
-            
-              <NavbarAuthSection hydrated={isHydrated} />
-              {/* <div className='flex items-end justify-end space-x-4'>
-                <Link href={"/checkout"}>
-                  <Button variant="creative" className='w-full sm:w-auto px-6 py-2 h-auto text-sm' onClick={() => {
-                    // Use helper to ensure event is queued even if pixel isn't loaded yet
-                    import('@/lib/metaPixel').then(({ track }) => track('InitiateCheckout', {
-                      content_name: 'Graphic Design Course',
-                      content_type: 'course',
-                      value: 4000,
-                      currency: 'BDT',
-                    }));
-                  }}>এনরোল করুন</Button>
-                </Link>
-              </div> */}
 
+              <NavbarAuthSection hydrated={isHydrated} />
             </div>
             <div className="md:hidden px-3">
-              {/* <PhoneNavbar /> */}
               <MobileNavbar />
             </div>
           </div>

@@ -1,17 +1,14 @@
-import BatchEdit from "@/components/module/dashboard/batch/Edit";
+import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
+import BatchEdit from "@/app/(WithDashboardLayout)/dashboard/admin/batch/components/Edit";
 
 
 const page = () => {
     return (
-        <div className="container mx-auto p-6 space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold">Batch Management</h1>
-                    <p className="text-muted-foreground">Create and manage course batches</p>
-                </div>
-            </div>
-            <BatchEdit />
-        </div>
+        <DashboardPageContainer
+            heading="Batch Management"
+            subheading="Create and manage course batches"
+            content={<BatchEdit />} />
+
     );
 };
 

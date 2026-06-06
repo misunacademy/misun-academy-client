@@ -1,0 +1,74 @@
+import { baseApi } from "./baseApi";
+
+const moduleApi = baseApi.injectEndpoints({
+    endpoints: (builder) => ({
+        getCourseModules: builder.query({
+            query: ({ courseId, batchId }) => ({
+                url: `/admin/modules/courses/${courseId}/modules`,
+                method: "GET",
+                params: { batchId },
+            }),
+            providesTags: ["Modules"],
+        }),
+        getModuleById: builder.query({
+            query: (moduleId) => ({
+                url: `/admin/modules/modules/${moduleId}`,
+                method: "GET",
+            }),
+            providesTags: ["Modules"],
+        }),
+        getUnassignedCourseModules: builder.query({
+            query: (courseId) => ({
+                url: `/admin/modules/courses/${courseId}/modules/unassigned`,
+                method: "GET",
+            }),
+            providesTags: ["Modules"],
+        }),
+        // Admin: Create module 
+        createCourseModule: builder.mutation({
+            query: ({ courseId, batchId, ...data }) => ({
+                url: `/admin/modules/courses/${courseId}/modules`,
+                method: "POST",
+                params: { batchId },
+                body: data,
+            }),
+            invalidatesTags: ["Modules"],
+        }),
+        // Admin: Update module 
+        updateCourseModule: builder.mutation({
+            query: ({ moduleId, ...data }) => ({
+                url: `/admin/modules/modules/${moduleId}`,
+                method: "PUT",
+                body: data,
+            }),
+            invalidatesTags: ["Modules"],
+        }),
+        // Admin: Delete module 
+        deleteCourseModule: builder.mutation({
+            query: (moduleId) => ({
+                url: `/admin/modules/modules/${moduleId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Modules"],
+        }),
+        reorderModules: builder.mutation({
+            query: ({ courseId, batchId, moduleOrders }) => ({
+                url: `/admin/modules/courses/${courseId}/modules/reorder`,
+                method: "PUT",
+                params: { batchId },
+                body: { moduleOrders },
+            }),
+            invalidatesTags: ["Modules"],
+        }),
+    }),
+});
+
+export const {
+    useGetCourseModulesQuery,
+    useGetModuleByIdQuery,
+    useGetUnassignedCourseModulesQuery,
+    useCreateCourseModuleMutation,
+    useUpdateCourseModuleMutation,
+    useDeleteCourseModuleMutation,
+    useReorderModulesMutation,
+} = moduleApi;

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Camera, Shield, Loader2, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
-import { useUpdateUserProfileMutation } from "@/redux/features/profile/profileApi";
+import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
 import { toast } from "sonner";
 import { authServerApi } from "@/lib/auth-server-api";
 import Image from "next/image";

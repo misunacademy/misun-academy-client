@@ -4,22 +4,28 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Download, TrendingUp, Users, DollarSign, BookOpen, Calendar, RefreshCw } from "lucide-react";
+import { Download, RefreshCw } from "lucide-react";
 
-import { useGetMetadataQuery } from "@/redux/features/student/studentApi";
+// import { useGetMetadataQuery } from "@/redux/api/studentApi";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { Loader2 } from "lucide-react";
 import { useState, useMemo } from "react";
+import { useGetDashboardMetadataQuery } from "@/redux/api/dashboardApi";
+import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
+import ReportKeymetricsCards from "./components/ReportKeymetricsCards";
+import DashboardPageTabs from "@/components/layout/DashboardPageTabs";
 
 type TimePeriod = '7days' | '30days' | '90days' | '1year';
 
 export default function AdminReports() {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30days');
+  const [selectedCourseId, setSelectedCourseId] = useState('all');
   const [isExporting, setIsExporting] = useState(false);
 
-  const { data: metadata, isLoading: metadataLoading, error: metadataError, refetch: refetchMetadata } = useGetMetadataQuery(undefined);
+  const { data: metadata, isLoading: metadataLoading, error: metadataError, refetch: refetchMetadata } = useGetDashboardMetadataQuery(
+    selectedCourseId === 'all' ? undefined : { courseId: selectedCourseId }
+  );
   const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({});
 
   const isLoading = metadataLoading || coursesLoading;
@@ -49,9 +55,11 @@ export default function AdminReports() {
     });
 
 
-    // Get active courses count (check `status` field returned by API)
+    // Get active courses count (for selected course, this becomes either 1 or 0)
     const activeCourses = coursesData?.data?.filter((course: any) => (course.status || '').toLowerCase() === 'published') || [];
-    const activeCoursesCount = activeCourses.length;
+    const activeCoursesCount = selectedCourseId === 'all'
+      ? activeCourses.length
+      : activeCourses.filter((course: any) => course._id === selectedCourseId).length;
 
     // Format data for charts
     const enrollmentData = filteredDayWiseStats.map((stat: any) => ({
@@ -81,7 +89,13 @@ export default function AdminReports() {
       courseWiseStats: data.courseWiseStats || [],
       batchWiseIncome: data.batchWiseIncome || []
     };
-  }, [metadata, coursesData, selectedPeriod]);
+  }, [metadata, coursesData, selectedPeriod, selectedCourseId]);
+
+  const selectedCourseTitle = useMemo(() => {
+    if (selectedCourseId === 'all') return 'All Courses';
+    const found = (coursesData?.data || []).find((course: any) => course._id === selectedCourseId);
+    return found?.title || 'Selected Course';
+  }, [coursesData, selectedCourseId]);
 
   if (isLoading) {
     return (
@@ -107,6 +121,7 @@ export default function AdminReports() {
       // Create export data
       const exportData = {
         period: selectedPeriod,
+        course: selectedCourseTitle,
         generatedAt: new Date().toISOString(),
         summary: {
           totalRevenue: metadata?.data?.totalIncome || 0,
@@ -143,6 +158,7 @@ export default function AdminReports() {
   const generateCSV = (data: any) => {
     let csv = 'Academy Reports\n';
     csv += `Period: ${data.period}\n`;
+    csv += `Course: ${data.course}\n`;
     csv += `Generated: ${data.generatedAt}\n\n`;
 
     // Summary
@@ -171,15 +187,28 @@ export default function AdminReports() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Reports & Analytics</h1>
-          <p className="text-muted-foreground">Comprehensive insights into your academy&apos;s performance</p>
-        </div>
-        <div className="flex items-center gap-2">
+
+    <DashboardPageContainer
+      heading="Reports & Analytics"
+      subheading="Comprehensive insights into your academy&apos;s performance"
+      buttons={
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
+            <SelectTrigger className="w-44">
+              <SelectValue placeholder="Course" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Courses</SelectItem>
+              {(coursesData?.data || []).map((course: any) => (
+                <SelectItem key={course._id} value={course._id}>
+                  {course.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Select value={selectedPeriod} onValueChange={(value: TimePeriod) => setSelectedPeriod(value)}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -198,130 +227,103 @@ export default function AdminReports() {
             {isExporting ? 'Exporting...' : 'Export'}
           </Button>
         </div>
-      </div>
+      }
+      content={
+        <>
+          {/* Key Metrics */}
+          <ReportKeymetricsCards metadata={metadata} processedData={processedData} coursesLoading={coursesLoading} />
+          {/* Charts */}
+          <DashboardPageTabs
+            defaultValue="enrollment"
+            triggers={[
+              { value: "enrollment", label: "Enrollment Trends" },
+              { value: "revenue", label: "Revenue Analytics" },
+              { value: "courses", label: "Course Popularity" },
+            ]}
+            contents={[
+              {
+                value: "enrollment",
+                content: (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Enrollment Trends</CardTitle>
+                      <CardDescription>Student enrollment patterns over the selected period</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={processedData?.enrollmentData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" />
+                          <YAxis />
+                          <Tooltip />
+                          <Line type="monotone" dataKey="enrollments" stroke="#8884d8" strokeWidth={2} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                ),
+              },
+              {
+                value: "revenue",
+                content: (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Revenue Analytics</CardTitle>
+                      <CardDescription>Revenue breakdown and trends for the selected period</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={processedData?.revenueData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" />
+                          <YAxis />
+                          <Tooltip formatter={(value) => [`$${value}`, "Revenue"]} />
+                          <Bar dataKey="revenue" fill="#82ca9d" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                ),
+              },
+              {
+                value: "courses",
+                content: (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Course Popularity Distribution</CardTitle>
+                      <CardDescription>Most popular courses by enrollment numbers</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={processedData?.coursePopularityData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, value }) => `${name} (${value})`}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {processedData?.coursePopularityData.map((entry: any, index: number) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                ),
+              },
+            ]}
+          />
+        </>
+      }
+    />
 
-      {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${(metadata?.data?.totalIncome || 0).toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              Revenue from enrollments
-            </p>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Enrollments</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{metadata?.data?.totalEnrolled || 0}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
-              Students enrolled
-            </p>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Courses</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{processedData?.activeCoursesCount}</div>
-            <p className="text-xs text-muted-foreground">
-              {coursesLoading ? 'Loading...' : 'Published courses'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts */}
-      <Tabs defaultValue="enrollment" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="enrollment">Enrollment Trends</TabsTrigger>
-          <TabsTrigger value="revenue">Revenue Analytics</TabsTrigger>
-          <TabsTrigger value="courses">Course Popularity</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="enrollment" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Enrollment Trends</CardTitle>
-              <CardDescription>Student enrollment patterns over the selected period</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={processedData?.enrollmentData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="enrollments" stroke="#8884d8" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="revenue" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Revenue Analytics</CardTitle>
-              <CardDescription>Revenue breakdown and trends for the selected period</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={processedData?.revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
-                  <Bar dataKey="revenue" fill="#82ca9d" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="courses" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Course Popularity Distribution</CardTitle>
-              <CardDescription>Most popular courses by enrollment numbers</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={processedData?.coursePopularityData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value }) => `${name} (${value})`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {processedData?.coursePopularityData.map((entry: any, index: number) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
   );
 }

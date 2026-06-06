@@ -3,11 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { CourseStats } from "@/components/module/dashboard/admin/CourseStats";
-import { CoursesTable } from "@/components/module/dashboard/admin/CoursesTable";
+import { CourseStats } from "@/app/(WithDashboardLayout)/dashboard/admin/courses/components/CourseStats";
+import { CoursesTable } from "@/app/(WithDashboardLayout)/dashboard/admin/courses/components/CoursesTable";
 import { Course } from "@/types/common";
 import { useGetAllCoursesQuery, useDeleteCourseMutation } from "@/redux/api/courseApi";
 import { toast } from "sonner";
+import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
 
 
 
@@ -40,23 +41,22 @@ export default function AdminCourses() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Courses Management</h1>
-          <p className="text-muted-foreground">Manage all courses and their content</p>
-        </div>
-        <Button className="flex items-center gap-2" onClick={handleAddNewCourse}>
-          <Plus className="h-4 w-4" />
-          Add New Course
-        </Button>
-      </div>
 
-      <CourseStats />
+    <DashboardPageContainer
+      heading="Courses Management"
+      subheading="Manage all courses and their content"
+      buttons={<Button className="flex items-center gap-2" onClick={handleAddNewCourse}>
+        <Plus className="h-4 w-4" />
+        Add New Course
+      </Button>}
+      content={
+        <>
+          <CourseStats />
+          {/* <CourseFiltersCard /> */}
+          <CoursesTable courses={courses} onEditCourse={handleEditCourse} onDeleteCourse={(id) => handleDeleteCourse(id)} />
+        </>
+      }
+    />
 
-      <CoursesTable courses={courses} onEditCourse={handleEditCourse} onDeleteCourse={(id) => handleDeleteCourse(id)} />
-
-    
-    </div>
   );
 }

@@ -75,9 +75,9 @@ const AuthPage = () => {
             if (userRole === 'admin' || userRole === 'superadmin') {
                 router.replace('/dashboard/admin');
             } else if (userRole === 'employee') {
-                router.replace('/dashboard/admin');
+                router.replace('/dashboard/employee');
             } else if (userRole === 'instructor') {
-                router.replace('/dashboard/admin');
+                router.replace('/dashboard/instructor');
             } else {
                 router.replace('/my-classes');
             }

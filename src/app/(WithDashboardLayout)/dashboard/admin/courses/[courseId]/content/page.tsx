@@ -1,24 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Book, Video, FileText, ChevronDown, ChevronRight, Edit, Trash2, GripVertical } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Plus, Book} from "lucide-react";
 import { 
   useGetCourseModulesQuery, 
-  useCreateCourseModuleMutation, 
+  useGetUnassignedCourseModulesQuery,
   useUpdateCourseModuleMutation,
-  useDeleteCourseModuleMutation 
-} from "@/redux/features/module/moduleApi";
-import {
-  useGetModuleLessonsQuery,
-  useCreateModuleLessonMutation,
-  useUpdateModuleLessonMutation,
-  useDeleteModuleLessonMutation
-} from "@/redux/features/lesson/lessonApi";
+  useDeleteCourseModuleMutation,
+  useReorderModulesMutation
+} from "@/redux/api/moduleApi";
+import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import {
   Dialog,
   DialogContent,
@@ -28,17 +23,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
+import ModuleCard from "./components/ModuleCard";
+import ModuleFormDialog from "./components/ModuleFormDialog";
+import LessonFormDialog from "./components/LessonFormDialog";
 
 interface Module {
   _id: string;
   courseId: string;
+  batchId?: string;
   title: string;
   description: string;
   orderIndex: number;
@@ -69,6 +66,18 @@ interface Lesson {
   }[];
 }
 
+interface Batch {
+  _id: string;
+  title: string;
+  batchNumber: number;
+  status: string;
+}
+
+interface CourseOption {
+  _id: string;
+  title: string;
+}
+
 export default function CourseContentPage() {
   const params = useParams<{ courseId: string }>();
   const router = useRouter();
@@ -79,14 +88,77 @@ export default function CourseContentPage() {
   const [lessonDialog, setLessonDialog] = useState<{ open: boolean; mode: 'create' | 'edit'; moduleId?: string; data?: Lesson }>({ open: false, mode: 'create' });
   const [deleteModuleDialogOpen, setDeleteModuleDialogOpen] = useState(false);
   const [moduleToDelete, setModuleToDelete] = useState<string | null>(null);
+  const [selectedBatchId, setSelectedBatchId] = useState<string>("");
+  const [legacyModalOpen, setLegacyModalOpen] = useState(false);
+  const [legacyCourseId, setLegacyCourseId] = useState<string>(courseId);
+  const [legacyAssignments, setLegacyAssignments] = useState<Record<string, string>>({});
+  const [updatingLegacyId, setUpdatingLegacyId] = useState<string | null>(null);
+  const [orderedModules, setOrderedModules] = useState<Module[]>([]);
 
-  const { data: modulesData, isLoading, refetch } = useGetCourseModulesQuery(courseId);
-  const [createModule] = useCreateCourseModuleMutation();
+  const { data: batchesData } = useGetAllBatchesQuery({ courseId });
+  const batches = useMemo(
+    () => (batchesData?.data || []) as Batch[],
+    [batchesData?.data]
+  );
+
+  const { data: coursesData } = useGetAllCoursesQuery({});
+  const courses = useMemo(
+    () => (coursesData?.data || []) as CourseOption[],
+    [coursesData?.data]
+  );
+
+  const { data: legacyBatchesData } = useGetAllBatchesQuery(
+    { courseId: legacyCourseId },
+    { skip: !legacyCourseId }
+  );
+  const legacyBatches = useMemo(
+    () => (legacyBatchesData?.data || []) as Batch[],
+    [legacyBatchesData?.data]
+  );
+
+  const {
+    data: unassignedData,
+    isLoading: unassignedLoading,
+    refetch: refetchUnassigned,
+  } = useGetUnassignedCourseModulesQuery(legacyCourseId, { skip: !legacyCourseId });
+  const unassignedModules = useMemo(
+    () => (unassignedData?.data || []) as Module[],
+    [unassignedData?.data]
+  );
+
+  useEffect(() => {
+    if (batches.length === 0) return;
+    if (!selectedBatchId || !batches.some((batch) => batch._id === selectedBatchId)) {
+      setSelectedBatchId(batches[0]._id);
+    }
+  }, [batches, selectedBatchId]);
+
+  useEffect(() => {
+    if (!legacyCourseId && courseId) {
+      setLegacyCourseId(courseId);
+    }
+  }, [courseId, legacyCourseId]);
+
+  useEffect(() => {
+    setLegacyAssignments({});
+  }, [legacyCourseId]);
+
+  const { data: modulesData, isLoading, refetch } = useGetCourseModulesQuery(
+    { courseId, batchId: selectedBatchId },
+    { skip: !selectedBatchId }
+  );
   const [updateModule] = useUpdateCourseModuleMutation();
   const [deleteModule] = useDeleteCourseModuleMutation();
+  const [reorderModules, { isLoading: reordering }] = useReorderModulesMutation();
 
-  const modules = (modulesData?.data || []) as Module[];
+  const modules = useMemo(
+    () => (modulesData?.data || []) as Module[],
+    [modulesData?.data]
+  );
 
+  useEffect(() => {
+    setOrderedModules(modules);
+  }, [modules]);
   const toggleModule = (moduleId: string) => {
     setExpandedModules(prev => {
       const newSet = new Set(prev);
@@ -131,6 +203,28 @@ export default function CourseContentPage() {
     setLessonDialog({ open: true, mode: 'edit', data: lesson });
   };
 
+  const handleMoveModule = async (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= orderedModules.length) return;
+
+    const next = [...orderedModules];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+    setOrderedModules(next);
+
+    const moduleOrders = next.map((module, index) => ({
+      moduleId: module._id,
+      orderIndex: index,
+    }));
+
+    try {
+      await reorderModules({ courseId, batchId: selectedBatchId, moduleOrders }).unwrap();
+      toast.success('Module order updated');
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to reorder modules');
+      setOrderedModules(modules);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -142,20 +236,52 @@ export default function CourseContentPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex justify-center gap-4 items-center">
           <Button variant="ghost" onClick={() => router.push('/dashboard/admin/courses')} className="mb-2">
             ← Back to Courses
           </Button>
+          <div className="">
           <h1 className="text-3xl font-bold">Course Content</h1>
           <p className="text-muted-foreground">Manage modules and lessons for this course</p>
+          </div>
         </div>
-        <Button onClick={handleCreateModule}>
+        <div className="flex gap-2">
+        <Button variant="outline" onClick={() => setLegacyModalOpen(true)}>
+          Fix Legacy Modules
+        </Button>
+        <Button onClick={handleCreateModule} disabled={!selectedBatchId}>
           <Plus className="h-4 w-4 mr-2" />
           Add Module
         </Button>
+        </div>
       </div>
 
-      {modules.length === 0 ? (
+
+
+      <div className="flex items-center gap-3 justify-end">
+        <Label className="text-sm text-muted-foreground">Batch</Label>
+        <Select value={selectedBatchId} onValueChange={setSelectedBatchId}>
+          <SelectTrigger className="w-[260px]">
+            <SelectValue placeholder="Select a batch" />
+          </SelectTrigger>
+          <SelectContent>
+            {batches.map((batch) => (
+              <SelectItem key={batch._id} value={batch._id}>
+                {batch.title} - {batch.status}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {!selectedBatchId ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Book className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">Select a batch to manage modules.</p>
+          </CardContent>
+        </Card>
+      ) : orderedModules.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Book className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -168,11 +294,14 @@ export default function CourseContentPage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {modules.map((module, index) => (
+          {orderedModules.map((module, index) => (
             <ModuleCard
               key={module._id}
               module={module}
-              index={index}
+              position={index + 1}
+              canMoveUp={index > 0}
+              canMoveDown={index < orderedModules.length - 1}
+              reordering={reordering}
               expanded={expandedModules.has(module._id)}
               onToggle={() => toggleModule(module._id)}
               onEdit={() => handleEditModule(module)}
@@ -180,6 +309,8 @@ export default function CourseContentPage() {
                 setModuleToDelete(module._id);
                 setDeleteModuleDialogOpen(true);
               }}
+              onMoveUp={() => handleMoveModule(index, index - 1)}
+              onMoveDown={() => handleMoveModule(index, index + 1)}
               onAddLesson={() => handleCreateLesson(module._id)}
               onEditLesson={handleEditLesson}
             />
@@ -194,6 +325,9 @@ export default function CourseContentPage() {
           mode={moduleDialog.mode}
           data={moduleDialog.data}
           courseId={courseId}
+          batchId={selectedBatchId}
+          batches={batches}
+          onBatchChange={setSelectedBatchId}
           onClose={() => setModuleDialog({ open: false, mode: 'create' })}
           onSuccess={() => {
             refetch();
@@ -217,6 +351,112 @@ export default function CourseContentPage() {
         />
       )}
 
+      <Dialog open={legacyModalOpen} onOpenChange={setLegacyModalOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Assign Batch to Legacy Modules</DialogTitle>
+            <DialogDescription>
+              Modules created before batch support can be assigned here.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Label>Course</Label>
+              <Select value={legacyCourseId} onValueChange={setLegacyCourseId}>
+                <SelectTrigger className="w-[320px]">
+                  <SelectValue placeholder="Select a course" />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses.map((course) => (
+                    <SelectItem key={course._id} value={course._id}>
+                      {course.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {unassignedLoading ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            ) : unassignedModules.length === 0 ? (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <p className="text-sm text-muted-foreground">No unassigned modules for this course.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {unassignedModules.map((module) => {
+                  const assignedBatchId = legacyAssignments[module._id] || "";
+                  return (
+                    <div key={module._id} className="flex flex-col gap-3 rounded-lg border p-3 md:flex-row md:items-center md:justify-between">
+                      <div className="min-w-0">
+                        <p className="font-medium">{module.title}</p>
+                        <p className="text-xs text-muted-foreground">Order {module.orderIndex}</p>
+                      </div>
+                      <div className="flex flex-1 items-center gap-2 md:justify-end">
+                        <Select
+                          value={assignedBatchId}
+                          onValueChange={(value) =>
+                            setLegacyAssignments((prev) => ({ ...prev, [module._id]: value }))
+                          }
+                          disabled={legacyBatches.length === 0}
+                        >
+                          <SelectTrigger className="w-[240px]">
+                            <SelectValue placeholder="Select batch" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {legacyBatches.map((batch) => (
+                              <SelectItem key={batch._id} value={batch._id}>
+                                {batch.title} · #{batch.batchNumber} · {batch.status}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          size="sm"
+                          disabled={!assignedBatchId || updatingLegacyId === module._id}
+                          onClick={async () => {
+                            if (!assignedBatchId) return;
+                            try {
+                              setUpdatingLegacyId(module._id);
+                              await updateModule({ moduleId: module._id, batchId: assignedBatchId } as any).unwrap();
+                              toast.success('Module batch assigned');
+                              setLegacyAssignments((prev) => {
+                                const next = { ...prev };
+                                delete next[module._id];
+                                return next;
+                              });
+                              await refetchUnassigned();
+                              refetch();
+                            } catch (error: any) {
+                              toast.error(error?.data?.message || 'Failed to assign batch');
+                            } finally {
+                              setUpdatingLegacyId(null);
+                            }
+                          }}
+                        >
+                          {updatingLegacyId === module._id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            'Assign'
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLegacyModalOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Module Confirmation Dialog */}
       <AlertDialog open={deleteModuleDialogOpen} onOpenChange={setDeleteModuleDialogOpen}>
         <AlertDialogContent>
@@ -239,530 +479,7 @@ export default function CourseContentPage() {
   );
 }
 
-function ModuleCard({ module, index, expanded, onToggle, onEdit, onDelete, onAddLesson, onEditLesson }: {
-  module: Module;
-  index: number;
-  expanded: boolean;
-  onToggle: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
-  onAddLesson: () => void;
-  onEditLesson: (lesson: Lesson) => void;
-}) {
-  const { data: lessonsData } = useGetModuleLessonsQuery(module._id, { skip: !expanded });
-  const [deleteLesson] = useDeleteModuleLessonMutation();
-  const lessons = (lessonsData?.data || []) as Lesson[];
-  const [deleteLessonDialogOpen, setDeleteLessonDialogOpen] = useState(false);
-  const [lessonToDelete, setLessonToDelete] = useState<string | null>(null);
 
-  const handleDeleteLesson = async () => {
-    if (!lessonToDelete) return;
-    
-    try {
-      await deleteLesson(lessonToDelete).unwrap();
-      toast.success('Lesson deleted successfully');
-      setDeleteLessonDialogOpen(false);
-      setLessonToDelete(null);
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Failed to delete lesson');
-      setDeleteLessonDialogOpen(false);
-      setLessonToDelete(null);
-    }
-  };
 
-  return (
-    <Card>
-      <CardHeader className="cursor-pointer hover:bg-muted/50" onClick={onToggle}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 flex-1">
-            <GripVertical className="h-5 w-5 text-muted-foreground" />
-            {expanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <CardTitle className="text-lg">
-                  Module {index + 1}: {module.title}
-                </CardTitle>
-                <Badge variant={module.status === 'published' ? 'default' : 'secondary'}>
-                  {module.status}
-                </Badge>
-              </div>
-              <CardDescription className="mt-1">
-                {module.description} • {module.lessonCount} lessons • {module.estimatedDuration}
-              </CardDescription>
-            </div>
-          </div>
-          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-            <Button variant="ghost" size="sm" onClick={onEdit}>
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onDelete}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
 
-      {expanded && (
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium">Lessons</h4>
-              <Button variant="outline" size="sm" onClick={onAddLesson}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Lesson
-              </Button>
-            </div>
-            
-            {lessons.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No lessons yet</p>
-            ) : (
-              <div className="space-y-2">
-                {lessons.map((lesson, lessonIndex) => (
-                  <div
-                    key={lesson._id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <GripVertical className="h-4 w-4 text-muted-foreground" />
-                      {lesson.type === 'video' && <Video className="h-4 w-4" />}
-                      {lesson.type === 'reading' && <FileText className="h-4 w-4" />}
-                      <div>
-                        <p className="font-medium text-sm">
-                          Lesson {lessonIndex + 1}: {lesson.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {lesson.type} {lesson.videoDuration ? `• ${Math.round(lesson.videoDuration / 60)} min` : ''}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {lesson.isMandatory && <Badge variant="outline" className="text-xs">Required</Badge>}
-                      <Button variant="ghost" size="sm" onClick={() => onEditLesson(lesson)}>
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => {
-                        setLessonToDelete(lesson._id);
-                        setDeleteLessonDialogOpen(true);
-                      }}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </CardContent>
-      )}
 
-      {/* Delete Lesson Confirmation Dialog */}
-      <AlertDialog open={deleteLessonDialogOpen} onOpenChange={setDeleteLessonDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Lesson?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the lesson
-              from this module.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setLessonToDelete(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteLesson} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete Lesson
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </Card>
-  );
-}
-
-function ModuleFormDialog({ open, mode, data, courseId, onClose, onSuccess }: {
-  open: boolean;
-  mode: 'create' | 'edit';
-  data?: Module;
-  courseId: string;
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-  const [createModule, { isLoading: creating }] = useCreateCourseModuleMutation();
-  const [updateModule, { isLoading: updating }] = useUpdateCourseModuleMutation();
-
-  const [formData, setFormData] = useState({
-    title: data?.title || '',
-    description: data?.description || '',
-    estimatedDuration: data?.estimatedDuration || '',
-    status: data?.status || 'draft',
-    learningObjectives: data?.learningObjectives?.join('\n') || '',
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const payload = {
-      ...formData,
-      learningObjectives: formData.learningObjectives.split('\n').filter(Boolean),
-    };
-
-    try {
-      if (mode === 'create') {
-        await createModule({ courseId, ...payload }).unwrap();
-        toast.success('Module created successfully');
-      } else {
-        await updateModule({ moduleId: data!._id, ...payload }).unwrap();
-        toast.success('Module updated successfully');
-      }
-      onSuccess();
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Operation failed');
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{mode === 'create' ? 'Create New Module' : 'Edit Module'}</DialogTitle>
-          <DialogDescription>
-            {mode === 'create' ? 'Add a new module to organize course content' : 'Update module information'}
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label>Module Title *</Label>
-            <Input
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="Introduction to Adobe Photoshop"
-              required
-            />
-          </div>
-          <div>
-            <Label>Description *</Label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Learn essential Photoshop tools and techniques for professional graphic design work..."
-              required
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Estimated Duration *</Label>
-              <Input
-                value={formData.estimatedDuration}
-                onChange={(e) => setFormData({ ...formData, estimatedDuration: e.target.value })}
-                placeholder="2 weeks"
-                required
-              />
-            </div>
-            <div>
-              <Label>Status</Label>
-              <Select value={formData.status} onValueChange={(value: any) => setFormData({ ...formData, status: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div>
-            <Label>Learning Objectives (one per line)</Label>
-            <Textarea
-              value={formData.learningObjectives}
-              onChange={(e) => setFormData({ ...formData, learningObjectives: e.target.value })}
-              placeholder="Master Photoshop selection tools and layers
-Create professional photo manipulations
-Apply advanced masking and compositing techniques
-Design graphics for web and print media"
-              rows={4}
-            />
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={creating || updating}>
-              {(creating || updating) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {mode === 'create' ? 'Create Module' : 'Update Module'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function LessonFormDialog({ open, mode, moduleId, data, onClose, onSuccess }: {
-  open: boolean;
-  mode: 'create' | 'edit';
-  moduleId?: string;
-  data?: Lesson;
-  onClose: () => void;
-  onSuccess: () => void;
-}) {
-  const [createLesson, { isLoading: creating }] = useCreateModuleLessonMutation();
-  const [updateLesson, { isLoading: updating }] = useUpdateModuleLessonMutation();
-
-  const [formData, setFormData] = useState({
-    title: data?.title || '',
-    description: data?.description || '',
-    type: data?.type || 'video',
-    videoSource: data?.videoSource || 'youtube',
-    videoId: data?.videoId || '',
-    videoUrl: data?.videoUrl || '',
-    videoDuration: data?.videoDuration || 0,
-    content: data?.content || '',
-    isMandatory: data?.isMandatory ?? true,
-    resources: data?.resources || [],
-  });
-
-  const handleAddResource = () => {
-    setFormData({
-      ...formData,
-      resources: [...formData.resources, { title: '', type: 'link', url: '', textContent: '' }]
-    });
-  };
-
-  const handleUpdateResource = (index: number, field: string, value: string) => {
-    const updatedResources = [...formData.resources];
-    updatedResources[index] = { ...updatedResources[index], [field]: value };
-    setFormData({ ...formData, resources: updatedResources });
-  };
-
-  const handleRemoveResource = (index: number) => {
-    setFormData({
-      ...formData,
-      resources: formData.resources.filter((_, i) => i !== index)
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      if (mode === 'create') {
-        await createLesson({ moduleId: moduleId!, ...formData }).unwrap();
-        toast.success('Lesson created successfully');
-      } else {
-        await updateLesson({ lessonId: data!._id, ...formData }).unwrap();
-        toast.success('Lesson updated successfully');
-      }
-      onSuccess();
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Operation failed');
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{mode === 'create' ? 'Create New Lesson' : 'Edit Lesson'}</DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label>Lesson Title *</Label>
-            <Input
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="Photoshop Interface and Basic Tools"
-              required
-            />
-          </div>
-          <div>
-            <Label>Description</Label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Master the Photoshop workspace, learn essential tools, and create your first design project..."
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Type *</Label>
-              <Select value={formData.type} onValueChange={(value: any) => setFormData({ ...formData, type: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="video">Video</SelectItem>
-                  <SelectItem value="reading">Reading</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center space-x-2 mt-8">
-              <Switch
-                checked={formData.isMandatory}
-                onCheckedChange={(checked) => setFormData({ ...formData, isMandatory: checked })}
-              />
-              <Label>Mandatory</Label>
-            </div>
-          </div>
-
-          {formData.type === 'video' && (
-            <>
-              <div>
-                <Label>Video Source</Label>
-                <Select value={formData.videoSource} onValueChange={(value: any) => setFormData({ ...formData, videoSource: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="youtube">YouTube</SelectItem>
-                  <SelectItem value="googledrive">Google Drive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>{formData.videoSource === 'youtube' ? 'YouTube Video ID' : 'Google Drive File ID'} *</Label>
-                <Input
-                  value={formData.videoId}
-                  onChange={(e) => setFormData({ ...formData, videoId: e.target.value })}
-                  placeholder={formData.videoSource === 'youtube' ? 'dQw4w9WgXcQ' : '1a2b3c4d5e6f7g8h9i0j'}
-                />
-                {formData.videoSource === 'youtube' && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    YouTube URL: https://www.youtube.com/watch?v=<strong>VIDEO_ID</strong>
-                  </p>
-                )}
-                {formData.videoSource === 'googledrive' && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Google Drive URL: https://drive.google.com/file/d/<strong>FILE_ID</strong>/view
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label>Duration (seconds)</Label>
-                <Input
-                  type="number"
-                  value={formData.videoDuration}
-                  onChange={(e) => setFormData({ ...formData, videoDuration: parseInt(e.target.value) })}
-                  placeholder="300"
-                />
-              </div>
-            </>
-          )}
-
-          {(formData.type === 'reading' || formData.type === 'project') && (
-            <div>
-              <Label>Content</Label>
-              <Textarea
-                value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                placeholder="## Photoshop Tools Overview
-
-### Essential Tools for Graphic Designers
-
-**Selection Tools:**
-- Marquee tools for geometric selections
-- Lasso tools for freeform selections
-- Magic Wand for color-based selections
-
-**Image Editing:**
-- Clone Stamp for content removal
-- Healing Brush for photo retouching
-- Content-Aware Fill for intelligent removal
-
-### Practice Exercise
-Create a composite image using at least 3 different selection techniques..."
-                rows={8}
-              />
-            </div>
-          )}
-
-          {/* Resources Section */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label>Resources</Label>
-              <Button type="button" variant="outline" size="sm" onClick={handleAddResource}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Resource
-              </Button>
-            </div>
-            {formData.resources.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No resources added yet</p>
-            ) : (
-              <div className="space-y-3">
-                {formData.resources.map((resource, index) => (
-                  <Card key={index} className="p-3">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium">Resource {index + 1}</Label>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveResource(index)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <div>
-                        <Label className="text-xs">Title *</Label>
-                        <Input
-                          value={resource.title}
-                          onChange={(e) => handleUpdateResource(index, 'title', e.target.value)}
-                          placeholder="Resource title"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs">Type *</Label>
-                        <Select
-                          value={resource.type}
-                          onValueChange={(value) => handleUpdateResource(index, 'type', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="link">Link</SelectItem>
-                            <SelectItem value="text">Text</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {resource.type === 'link' && (
-                        <div>
-                          <Label className="text-xs">URL *</Label>
-                          <Input
-                            value={resource.url}
-                            onChange={(e) => handleUpdateResource(index, 'url', e.target.value)}
-                            placeholder="https://example.com"
-                            type="url"
-                            required
-                          />
-                        </div>
-                      )}
-                      {resource.type === 'text' && (
-                        <div>
-                          <Label className="text-xs">Text Content *</Label>
-                          <Textarea
-                            value={resource.textContent}
-                            onChange={(e) => handleUpdateResource(index, 'textContent', e.target.value)}
-                            placeholder="Enter text content here..."
-                            rows={3}
-                            required
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={creating || updating}>
-              {(creating || updating) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {mode === 'create' ? 'Create Lesson' : 'Update Lesson'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
