@@ -116,10 +116,15 @@ const courseApi = baseApi.injectEndpoints({
 
     // Get course progress for the current user
     // Server route: GET /course-enrollment/:courseId/progress
-    getCourseProgress: build.query<{ data: any }, string>({
-      query: (courseId) => ({
-        url: `/course-enrollment/${courseId}/progress`,
-      }),
+    getCourseProgress: build.query<{ data: any }, string | { courseId: string; batchId?: string }>({
+      query: (arg) => {
+        const courseId = typeof arg === "string" ? arg : arg.courseId;
+        const batchId = typeof arg === "string" ? undefined : arg.batchId;
+        return {
+          url: `/course-enrollment/${courseId}/progress`,
+          params: batchId ? { batchId } : undefined,
+        };
+      },
       providesTags: ["CourseEnrollments", "Progress"],
     }),
 

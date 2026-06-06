@@ -7,9 +7,10 @@ import { useGetCourseProgressQuery } from "@/redux/api/courseApi";
 import { EnrolledCourse } from "../types";
 
 export function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
-  const { data: progressData } = useGetCourseProgressQuery(enrollment.courseId, {
-    skip: !enrollment.courseId,
-  });
+  const { data: progressData } = useGetCourseProgressQuery(
+    { courseId: enrollment.courseId, batchId: enrollment.batchId },
+    { skip: !enrollment.courseId }
+  );
 
   const isActive = enrollment.status === "active";
   const isCompleted = enrollment.status === "completed";
