@@ -167,7 +167,10 @@ export default function CourseDetails() {
   const batchId = batchIdFromUrl ?? fallbackBatchId;
 
   const { data: course, isLoading: courseLoading } = useGetCourseByIdQuery({ id: courseId, batchId });
-  const { data: progressData, isLoading: progressLoading, refetch: refetchProgress } = useGetCourseProgressQuery(courseId);
+  const { data: progressData, isLoading: progressLoading, refetch: refetchProgress } = useGetCourseProgressQuery(
+    { courseId, batchId },
+    { skip: !courseId }
+  );
   const progress: CourseProgress | undefined = progressData?.data;
   const [completeLesson] = useCompleteLessonMutation();
 
