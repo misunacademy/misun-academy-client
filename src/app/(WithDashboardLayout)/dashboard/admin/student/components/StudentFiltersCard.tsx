@@ -29,6 +29,14 @@ const StudentFiltersCard = ({
     onBatchChange,
     onStatusChange,
 }: StudentFiltersCardProps) => {
+    const getBatchCourseTitle = (batch: BatchResponse) => {
+        if (!batch.courseId) return "";
+        if (typeof batch.courseId === "string") {
+            return courses.find((course) => course._id === batch.courseId)?.title || "";
+        }
+        return batch.courseId.title;
+    };
+
     return (
         <Card>
             <CardHeader>
@@ -71,7 +79,7 @@ const StudentFiltersCard = ({
                                 <SelectItem value="all">All Batches</SelectItem>
                                 {batches.map((batch) => (
                                     <SelectItem key={batch._id} value={batch._id}>
-                                        {typeof batch.courseId === "string" ? batch.courseId : batch.courseId?.title} - <strong>{batch.title}</strong> - {batch.status}
+                                        {getBatchCourseTitle(batch)} - <strong>{batch.title}</strong> - {batch.status}
                                     </SelectItem>
                                 ))}
                             </SelectContent>

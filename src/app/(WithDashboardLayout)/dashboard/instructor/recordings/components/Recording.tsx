@@ -106,8 +106,8 @@ export default function RecordingPage() {
   const openEditDialog = (recording: Recording) => {
     setSelectedRecording(recording);
     setFormData({
-      courseId: typeof recording.courseId === "string" ? recording.courseId : recording.courseId._id,
-      batchId: typeof recording.batchId === "string" ? recording.batchId : recording.batchId._id,
+      courseId: !recording.courseId ? "" : typeof recording.courseId === "string" ? recording.courseId : recording.courseId._id,
+      batchId: !recording.batchId ? "" : typeof recording.batchId === "string" ? recording.batchId : recording.batchId._id,
       title: recording.title,
       description: recording.description || "",
       sessionDate: recording.sessionDate.split("T")[0],

@@ -80,7 +80,11 @@ export default function BatchEdit() {
             price: batch.data.price?.toString() || '',
             manualPaymentPrice: batch.data.manualPaymentPrice?.toString() || '',
             status: (batch.data.status as BatchStatus) || 'draft',
-            selectedCourse: (batch.data.courseId as any)._id || '',
+            selectedCourse: typeof batch.data.courseId === 'object' && batch.data.courseId !== null
+                ? (batch.data.courseId as any)._id || ''
+                : typeof batch.data.courseId === 'string'
+                ? batch.data.courseId
+                : '',
             startDate: batch.data.startDate
                 ? new Date(batch.data.startDate).toISOString().split('T')[0]
                 : '',
@@ -190,7 +194,11 @@ export default function BatchEdit() {
                             <Label htmlFor="course">Course *</Label>
                             <Select
                                 value={formData.selectedCourse}
-                                defaultValue={(batch.data.courseId as any).title}
+                                defaultValue={
+                                    typeof batch.data.courseId === 'object' && batch.data.courseId !== null
+                                        ? (batch.data.courseId as any).title
+                                        : undefined
+                                }
                                 onValueChange={(val) => handleInputChange('selectedCourse', val)}
                                 required
                             >

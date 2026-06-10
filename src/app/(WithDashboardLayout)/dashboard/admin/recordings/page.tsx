@@ -165,12 +165,15 @@ export default function RecordingsPage() {
     return rec.videoUrl ?? "";
   };
 
-  const getBatchCourseId = (batch: Batch) =>
-    typeof batch.courseId === "string" ? batch.courseId : batch.courseId._id;
+  const getBatchCourseId = (batch: Batch) => {
+    if (!batch.courseId) return "";
+    return typeof batch.courseId === "string" ? batch.courseId : batch.courseId._id;
+  };
 
   const getBatchCourseTitle = (batch: Batch) => {
+    if (!batch.courseId) return "";
     if (typeof batch.courseId === "string") {
-      return courses.find((course: Course) => course._id === batch.courseId)?.title;
+      return courses.find((course: Course) => course._id === batch.courseId)?.title || "";
     }
     return batch.courseId.title;
   };

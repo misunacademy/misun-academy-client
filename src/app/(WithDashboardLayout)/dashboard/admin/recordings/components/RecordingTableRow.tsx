@@ -36,10 +36,10 @@ const RecordingTableRow = ({
       <TableCell>
         <div className="text-sm">
           <p className="font-medium">
-            {typeof recording.courseId === "object" ? recording.courseId.title : "N/A"}
+            {typeof recording.courseId === "object" && recording.courseId !== null ? recording.courseId.title : "N/A"}
           </p>
           <p className="text-muted-foreground">
-            {typeof recording.batchId === "object" ? recording.batchId.title : "N/A"}
+            {typeof recording.batchId === "object" && recording.batchId !== null ? recording.batchId.title : "N/A"}
           </p>
         </div>
       </TableCell>

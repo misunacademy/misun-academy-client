@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
-import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
+import { BatchResponse, useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import { useGetAllEnrollmentsQuery, type EnrollmentResponse } from "@/redux/api/enrollmentApi";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -82,6 +82,14 @@ const StudentProgressTracker = () => {
 
     const { data: coursesData } = useGetAllCoursesQuery({});
     const courses = coursesData?.data ?? [];
+
+    const getBatchCourseTitle = (batch: BatchResponse) => {
+        if (!batch.courseId) return "";
+        if (typeof batch.courseId === "string") {
+            return courses.find((course) => course._id === batch.courseId)?.title || "";
+        }
+        return batch.courseId.title || "";
+    };
 
     const { data: batchesData } = useGetAllBatchesQuery({
         courseId: courseIdFilter !== "all" ? courseIdFilter : undefined,
@@ -224,7 +232,7 @@ const StudentProgressTracker = () => {
                                 <SelectItem value="all">All Batches</SelectItem>
                                 {batches.map((batch) => (
                                     <SelectItem key={batch._id} value={batch._id}>
-                                        {typeof (batch.courseId) === 'string' ? " " : `${batch.courseId.title}`}  - <strong>{batch.title}</strong> - {batch.status}
+                                        {getBatchCourseTitle(batch)}  - <strong>{batch.title}</strong> - {batch.status}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
