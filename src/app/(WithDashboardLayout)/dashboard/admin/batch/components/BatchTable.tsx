@@ -78,7 +78,7 @@ const BatchTable = ({
         <>
           <TableCell className="font-medium">{batch.title}</TableCell>
           <TableCell>
-            {typeof batch.courseId === "string" ? "N/A" : batch.courseId?.title || "N/A"}
+            {typeof batch.courseId === "object" && batch.courseId !== null ? batch.courseId.title : "N/A"}
           </TableCell>
           <TableCell>৳{batch.price}</TableCell>
           <TableCell>{getStatusBadge(batch.status)}</TableCell>

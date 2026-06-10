@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { BookOpen, CalendarDays, ChevronUp, FileText, Home, Award, User2, Settings, Group, DollarSign, Users, LogOut, Video, Search, CreditCard, ShieldCheck, ImageDown, TrendingUp, Globe, Mail, GraduationCap, LayoutDashboard, KeyRound } from "lucide-react";
+import { BookOpen, CalendarDays, ChevronUp, FileText, Home, User2, Settings, Group, DollarSign, Users, LogOut, Video, CreditCard, ShieldCheck, TrendingUp, Mail, GraduationCap, LayoutDashboard, KeyRound } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from 'next/link';
 import {
@@ -22,76 +22,10 @@ import {
 
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
-import { useEnrollment } from "@/hooks/useEnrollment";
 import { Role } from "@/types/common";
 
 
-// Base menu items for all students (enrolled or not)
-const baseStudentItems = [
-    {
-        title: "Dashboard",
-        url: "/dashboard/student",
-        icon: Home,
-    },
-    {
-        title: "Browse Courses",
-        url: "/dashboard/student/browse",
-        icon: Search,
-    },
-];
 
-// Menu items only for enrolled students
-const enrolledOnlyItems = [
-    {
-        title: "My Courses",
-        url: "/dashboard/student/courses",
-        icon: BookOpen,
-        requiresEnrollment: true,
-    },
-    // {
-    //     title: "Progress Tracking",
-    //     url: "/dashboard/student/progress",
-    //     icon: TrendingUp,
-    //     requiresEnrollment: true,
-    // },
-    {
-        title: "Live Class Recordings",
-        url: "/dashboard/student/recordings",
-        icon: Video,
-        requiresEnrollment: true,
-    },
-    {
-        title: "Enrollment Poster",
-        url: "/dashboard/student/enrollment-poster",
-        icon: ImageDown,
-        requiresEnrollment: true,
-    },
-    {
-        title: "Certificates",
-        url: "/dashboard/student/certificates",
-        icon: Award,
-        requiresEnrollment: true,
-    },
-];
-
-// Bottom menu items for all students
-const bottomStudentItems = [
-    {
-        title: "Payment History",
-        url: "/dashboard/student/payments",
-        icon: CreditCard,
-    },
-    {
-        title: "Profile",
-        url: "/dashboard/student/profile",
-        icon: User2,
-    },
-    {
-        title: "Settings",
-        url: "/dashboard/student/settings",
-        icon: Settings,
-    },
-];
 const employeeItems = [
     {
         title: "Dashboard",
@@ -219,7 +153,6 @@ const adminItems = [
 export function AppSidebar() {
     const pathname = usePathname();
     const { user } = useAuth();
-    const { hasEnrollments } = useEnrollment();
 
     // Determine if we're in admin or student dashboard based on user role
     // Handle both uppercase (API) and lowercase (enum) role values
@@ -231,16 +164,11 @@ export function AppSidebar() {
         Role.ADMIN.toLowerCase(),
     ].includes(userRole);
     const isEmployee = userRole === Role.EMPLOYEE.toLowerCase();
-    // Build student menu based on enrollment status
-    const studentItems = (isAdmin || isInstructor) ? [] : [
-        ...baseStudentItems,
-        ...(hasEnrollments ? enrolledOnlyItems : []),
-        ...bottomStudentItems,
-    ];
 
-    const items = isAdmin ? adminItems : isInstructor ? instructorItems : isEmployee ? employeeItems : studentItems;
 
-    const panelText = isAdmin ? 'Admin Panel' : isInstructor ? 'Instructor Panel' : isEmployee ? 'Employee Panel' : 'Student Panel';
+    const items = !user ? [] : isAdmin ? adminItems : isInstructor ? instructorItems : isEmployee ? employeeItems : [];
+
+    const panelText = !user ? 'Loading...' : isAdmin ? 'Admin Panel' : isInstructor ? 'Instructor Panel' : isEmployee ? 'Employee Panel' : 'Student Panel';
 
     const router = useRouter();
     const { signOut } = useAuth();

@@ -31,7 +31,7 @@ const UsersFilters = ({
     onEnrolledChange,
 }: UsersFiltersProps) => {
     const getBatchCourseTitle = (batch: BatchResponse) => {
-        if (typeof batch.courseId === "string") return undefined;
+        if (!batch.courseId || typeof batch.courseId === "string") return undefined;
         return batch.courseId.title;
     };
 

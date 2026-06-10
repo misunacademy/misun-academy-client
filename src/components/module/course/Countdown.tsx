@@ -91,7 +91,7 @@ const Countdown = ({ batch: batchProp, courseSlug }: CountdownProps = {}) => {
   const effectiveSlug = useMemo(() => {
     if (courseSlug) return courseSlug;
     // batch.courseId may be object with slug
-    if (batch && typeof batch.courseId === 'object' && (batch.courseId as any).slug) {
+    if (batch && typeof batch.courseId === 'object' && batch.courseId !== null && (batch.courseId as any)?.slug) {
       return (batch.courseId as any).slug as string;
     }
     return undefined;
