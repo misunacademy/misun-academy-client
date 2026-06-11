@@ -5,9 +5,10 @@ import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { IUserProfile, IEducationItem } from "@/types/common";
 
 interface EducationTabProps {
-    profile: any;
+    profile: IUserProfile | null | undefined;
     refetch: () => void;
 }
 
@@ -26,7 +27,7 @@ export function EducationTab({ profile, refetch }: EducationTabProps) {
 
     const { register, control, handleSubmit, formState: { errors } } = useForm<EducationFormValues>({
         defaultValues: {
-            education: profile?.education?.length > 0 ? profile.education : [{ degree: "", institution: "", passingYear: "", result: "" }]
+            education: profile?.education && profile.education.length > 0 ? profile.education : [{ degree: "", institution: "", passingYear: "", result: "" }]
         }
     });
 
@@ -35,14 +36,15 @@ export function EducationTab({ profile, refetch }: EducationTabProps) {
         name: "education"
     });
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: EducationFormValues) => {
         try {
             await updateProfile(data).unwrap();
             toast.success("Education history updated successfully");
             setIsEditing(false);
             refetch();
-        } catch (error: any) {
-            toast.error(error?.data?.message || "Failed to update education");
+        } catch (error) {
+            const err = error as { data?: { message?: string } };
+            toast.error(err?.data?.message || "Failed to update education");
         }
     };
 
@@ -139,7 +141,7 @@ export function EducationTab({ profile, refetch }: EducationTabProps) {
             ) : (
                 <div className="relative z-10 grid gap-6 max-w-3xl">
                     {profile?.education && profile.education.length > 0 ? (
-                        profile.education.map((edu: any, index: number) => (
+                        profile.education.map((edu: IEducationItem, index: number) => (
                             <div key={index} className="flex gap-4 p-5 rounded-xl border border-primary/10 bg-primary/5 hover:bg-primary/10 transition-colors">
                                 <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
                                     <GraduationCap className="w-6 h-6 text-primary" />

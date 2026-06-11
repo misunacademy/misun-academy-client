@@ -224,6 +224,7 @@ const AboutUs = () => {
                                                         src={member.image}
                                                         alt={member.name}
                                                         fill
+                                                        sizes="144px"
                                                         className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-110"
                                                     />
                                                 </div>

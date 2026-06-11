@@ -5,17 +5,25 @@ import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { IUserProfile } from "@/types/common";
 
 interface JobProfileTabProps {
-    profile: any;
+    profile: IUserProfile | null | undefined;
     refetch: () => void;
+}
+
+interface JobProfileFormValues {
+    currentJob?: string;
+    company?: string;
+    industry?: string;
+    experience?: string;
 }
 
 export function JobProfileTab({ profile, refetch }: JobProfileTabProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [updateProfile, { isLoading }] = useUpdateUserProfileMutation();
 
-    const { register, handleSubmit, setValue, watch } = useForm({
+    const { register, handleSubmit, setValue, watch } = useForm<JobProfileFormValues>({
         defaultValues: {
             currentJob: profile?.currentJob || "",
             company: profile?.company || "",
@@ -24,14 +32,15 @@ export function JobProfileTab({ profile, refetch }: JobProfileTabProps) {
         }
     });
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: JobProfileFormValues) => {
         try {
             await updateProfile(data).unwrap();
             toast.success("Job profile updated successfully");
             setIsEditing(false);
             refetch();
-        } catch (error: any) {
-            toast.error(error?.data?.message || "Failed to update job profile");
+        } catch (error) {
+            const err = error as { data?: { message?: string } };
+            toast.error(err?.data?.message || "Failed to update job profile");
         }
     };
 
@@ -78,6 +87,7 @@ export function JobProfileTab({ profile, refetch }: JobProfileTabProps) {
                     <div className="space-y-2">
                         <label className="text-white/70 text-sm">Total Experience</label>
                         <Select
+                            // eslint-disable-next-line react-hooks/incompatible-library
                             value={watch('experience') || ''}
                             onValueChange={(value) => setValue('experience', value)}
                         >

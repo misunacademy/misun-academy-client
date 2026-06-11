@@ -583,7 +583,7 @@ export default function AdminSettings() {
                 <div className="rounded border p-2">
                   <p className="text-sm text-muted-foreground">Preview</p>
                   <div className="relative h-44 w-full">
-                    <Image src={popupImageUrl} alt="Popup preview" fill className="object-contain" unoptimized />
+                    <Image src={popupImageUrl} alt="Popup preview" fill sizes="(max-width: 768px) 100vw, 400px" className="object-contain" unoptimized />
                   </div>
                 </div>
               ) : null}

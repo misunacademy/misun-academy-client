@@ -30,7 +30,6 @@ const ManualPaymentForm = ({
     onBack,
     onPaymentComplete,
     manualAmount,
-    manualCurrency,
     batch
 }: ManualPaymentFormProps) => {
     const form = useForm<PaymentForm>({
@@ -53,7 +52,6 @@ const ManualPaymentForm = ({
         onPaymentComplete(data);
     };
 
-    const displayCurrency = manualCurrency || paymentInfo.currency || 'BDT';
     const displayAmount = typeof manualAmount === 'number' ? manualAmount : paymentInfo.amount;
     const dynamicInstructions = paymentInfo.instructions.map((instruction) => {
         if (instruction.toLowerCase().includes('enter the exact amount')) {

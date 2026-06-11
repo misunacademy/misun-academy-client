@@ -15,8 +15,10 @@ export default function NotFoundPage() {
         const p = window.location.href;
         const r = document.referrer || '';
 
-        setPath(p);
-        setReferrer(r);
+        setTimeout(() => {
+            setPath(p);
+            setReferrer(r);
+        }, 0);
 
         console.warn('[NotFound] Rendered for path:', p, 'referrer:', r);
 

@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import {
   BookOpen, Users, Layers, Plus, ChevronDown, ChevronRight,
   Edit, Trash2, Video, FileText, Loader2, GripVertical, Book, ArrowUp, ArrowDown,
@@ -696,8 +697,7 @@ export default function InstructorDashboardPage() {
         <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
           <CardContent className="p-5 flex items-center gap-4">
             {course.thumbnailImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={course.thumbnailImage} alt={course.title} className="w-20 h-20 rounded-lg object-cover shrink-0" />
+              <Image src={course.thumbnailImage} alt={course.title} width={80} height={80} className="w-20 h-20 rounded-lg object-cover shrink-0" unoptimized />
             ) : (
               <div className="w-20 h-20 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
                 <BookOpen className="w-8 h-8 text-primary" />

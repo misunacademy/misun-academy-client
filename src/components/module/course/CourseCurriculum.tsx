@@ -3,8 +3,6 @@
 import { useState, useMemo } from "react";
 import { Trophy, Clock, Layers, Zap, Users } from "lucide-react";
 import { courseCurriculum } from "@/data/courseCurriculum";
-import Image from "next/image";
-import element3DBottomLeft from "@/assets/3d-elements/47581666_4-[Converted].png";
 
 // ── per-course accent config ────────────────────────────────────────────────
 const COURSE_CONFIG = [

@@ -106,13 +106,6 @@ const EnrollmentCheckout = ({ courseSlug }: { courseSlug?: string } = {}) => {
 
     const isDataLoading = (!!courseSlug && (courseLoading || (!!courseData && batchLoading)));
 
-    const selectedCourseSlug =
-        (typeof featuredCourseId?.slug === 'string' && featuredCourseId.slug) ||
-        (typeof (featuredBatchId as any)?.courseId?.slug === 'string' ? (featuredBatchId as any).courseId.slug : '') ||
-        courseSlug ||
-        '';
-
-    const isEnglishCourse = /english/i.test(selectedCourseSlug);
     const manualPaymentAmount =
         typeof featuredBatchId?.manualPaymentPrice === 'number'
             ? featuredBatchId.manualPaymentPrice

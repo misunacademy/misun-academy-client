@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
+import Image from 'next/image';
 import { useState, useRef } from 'react';
 import { useUploadSingleImageMutation } from '@/redux/api/uploadApi';
 import { toast } from 'sonner';
@@ -112,10 +113,13 @@ export function ImageUploader() {
               Preview
             </label>
             <div className="relative w-full h-64 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-              <img
+              <Image
                 src={preview}
                 alt="Preview"
-                className="w-full h-full object-contain"
+                fill
+                sizes="(max-width: 768px) 100vw, 500px"
+                className="object-contain"
+                unoptimized
               />
             </div>
           </div>
@@ -217,10 +221,13 @@ export function ImageUploader() {
               <span className="font-medium text-gray-700 dark:text-gray-300 block mb-2">
                 Uploaded Image:
               </span>
-              <img
+              <Image
                 src={uploadedImage.url}
                 alt="Uploaded"
+                width={500}
+                height={384}
                 className="w-full max-h-96 object-contain bg-gray-100 dark:bg-gray-700 rounded"
+                unoptimized
               />
             </div>
           </div>

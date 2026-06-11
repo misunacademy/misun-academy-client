@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
+import Image from 'next/image';
 import { useState, useRef } from 'react';
 import { useUploadWithDataMutation } from '@/redux/api/uploadApi';
 import { toast } from 'sonner';
@@ -130,10 +131,13 @@ export function ImageUploadWithData() {
                 Preview
               </label>
               <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-                <img
+                <Image
                   src={preview}
                   alt="Preview"
-                  className="w-full h-full object-contain"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 400px"
+                  className="object-contain"
+                  unoptimized
                 />
               </div>
             </div>
@@ -266,11 +270,14 @@ export function ImageUploadWithData() {
 
             <div className="space-y-4">
               {/* Uploaded Image */}
-              <div>
-                <img
+              <div className="relative w-full max-h-96">
+                <Image
                   src={uploadedResult.image.url}
                   alt={uploadedResult.metadata.title}
-                  className="w-full max-h-96 object-contain bg-gray-100 dark:bg-gray-700 rounded"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 400px"
+                  className="object-contain bg-gray-100 dark:bg-gray-700 rounded"
+                  unoptimized
                 />
               </div>
 

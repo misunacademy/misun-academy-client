@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUploadSingleImageMutation } from '@/redux/api/uploadApi';
@@ -121,11 +122,13 @@ function NidUploadZone({
                 {hasImage ? (
                     /* ── Preview ─────────────────────────────────────── */
                     <div className="relative w-full h-40 group">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                             src={displayUrl!}
                             alt={`${label} preview`}
-                            className="w-full h-full object-cover"
+                            fill
+                            sizes="400px"
+                            className="object-cover"
+                            unoptimized
                         />
 
                         {/* Overlay on hover */}

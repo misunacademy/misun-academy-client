@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useGetMySalariesQuery, useGetMyEmployeeProfileQuery } from '@/redux/api/employeeApi';
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
@@ -30,7 +30,7 @@ function DashboardLoader() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 const EmployeePage = () => {
-    const { user, isLoading: authLoading } = useAuth();
+    const { isLoading: authLoading } = useAuth();
 
     /* ── Server profile (extended fields) ─────────────────────────────────── */
     const { data: serverProfile, isLoading: profileLoading } = useGetMyEmployeeProfileQuery();
@@ -41,48 +41,23 @@ const EmployeePage = () => {
         limit: 12,
     });
 
-    /* ── Extended info state — seeded from server profile ──────────────────── */
-    const [extInfo, setExtInfo] = useState<EmployeeExtendedInfo>({
-        name: '',
-        phone: '',
-        address: '',
-        whatsapp: '',
-        bloodGroup: '',
-        nidNumber: '',
-        dateOfBirth: '',
-        tshirtSize: '',
-        designation: '',
-        nidPhotoFrontUrl: null,
-        nidPhotoBackUrl: null,
-    });
-
-    // Sync from server profile once loaded
-    useEffect(() => {
-        if (!serverProfile?.data) return;
-        const p = serverProfile.data;
-        setExtInfo({
-            name: p.name || '',
-            phone: p.phone || '',
-            address: p.address || '',
-            whatsapp: p.whatsapp || '',
-            bloodGroup: p.bloodGroup || '',
-            nidNumber: p.nidNumber || '',
-            dateOfBirth: p.dateOfBirth ? new Date(p.dateOfBirth).toISOString().slice(0, 10) : '',
-            tshirtSize: p.tshirtSize || '',
-            designation: p.designation || '',
-            nidPhotoFrontUrl: p.nidPhotoFrontUrl ?? p.nidPhotoUrl ?? null,
-            nidPhotoBackUrl: p.nidPhotoBackUrl ?? null,
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [serverProfile]);
-
+    const p = serverProfile?.data;
+    const extInfo: EmployeeExtendedInfo = {
+        name: p?.name || '',
+        phone: p?.phone || '',
+        address: p?.address || '',
+        whatsapp: p?.whatsapp || '',
+        bloodGroup: p?.bloodGroup || '',
+        nidNumber: p?.nidNumber || '',
+        dateOfBirth: p?.dateOfBirth ? new Date(p.dateOfBirth).toISOString().slice(0, 10) : '',
+        tshirtSize: p?.tshirtSize || '',
+        designation: p?.designation || '',
+        nidPhotoFrontUrl: p?.nidPhotoFrontUrl ?? p?.nidPhotoUrl ?? null,
+        nidPhotoBackUrl: p?.nidPhotoBackUrl ?? null,
+    };
 
     /* ── Dialog state ────────────────────────────────────────────────────────── */
     const [dialogOpen, setDialogOpen] = useState(false);
-
-    const handleSaved = (updated: EmployeeExtendedInfo) => {
-        setExtInfo(updated);
-    };
 
     /* ── Derived values ────────────────────────────────────────────────────── */
     const email =  serverProfile?.data?.email || '';
@@ -181,7 +156,7 @@ const EmployeePage = () => {
                         open={dialogOpen}
                         onClose={() => setDialogOpen(false)}
                         current={extInfo}
-                        onSaved={handleSaved}
+                        onSaved={() => {}}
                     />
                 </div>
             }

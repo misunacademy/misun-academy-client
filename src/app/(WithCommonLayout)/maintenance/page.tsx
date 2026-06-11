@@ -1,6 +1,7 @@
 "use client";
 
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
+import Image from "next/image";
 import { Wrench, Clock } from "lucide-react";
 
 const FALLBACK_TITLE = "We’ll Be Back Soon";
@@ -55,10 +56,12 @@ export default function MaintenancePage() {
 					{/* Rotating conic border */}
 					<span className="absolute inset-[-100%] animate-[spin_8s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%/0.8)_100%)]" />
 					<div className="relative rounded-2xl bg-[#060f0a] p-1">
-						{/* eslint-disable-next-line @next/next/no-img-element */}
-						<img 
-							src="/maintenance_art.png" 
-							alt="System Maintenance Illustration" 
+						<Image
+							src="/maintenance_art.png"
+							alt="System Maintenance Illustration"
+							width={192}
+							height={192}
+							loading="eager"
 							className="w-40 h-40 md:w-48 md:h-48 object-cover rounded-xl animate-float"
 						/>
 					</div>

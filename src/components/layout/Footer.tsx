@@ -87,6 +87,7 @@ export default function Footer() {
               alt="Misun Academy"
               width={120}
               height={120}
+              loading="eager"
               className="h-10 w-auto"
             />
             <div className="mt-2 h-0.5 w-20 bg-gradient-to-r from-primary/60 to-transparent rounded-full" />

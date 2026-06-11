@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
           action_source: "website",
           user_data: {
             em: hashedEmail ? [hashedEmail] : undefined,
-            client_ip_address: req.headers.get("x-forwarded-for") || (req as any).ip,
+            client_ip_address: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || undefined,
             client_user_agent: req.headers.get("user-agent"),
           },
           custom_data: {

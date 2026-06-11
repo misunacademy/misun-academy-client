@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
+import Image from 'next/image';
 import { useState, useRef } from 'react';
 import { useUploadMultipleImagesMutation, useDeleteImageMutation } from '@/redux/api/uploadApi';
 import { toast } from 'sonner';
@@ -142,10 +143,13 @@ export function MultiImageUploader() {
                   key={index}
                   className="relative w-full h-32 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden"
                 >
-                  <img
+                  <Image
                     src={preview}
                     alt={`Preview ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 50vw, 200px"
+                    className="object-cover"
+                    unoptimized
                   />
                 </div>
               ))}
@@ -215,10 +219,13 @@ export function MultiImageUploader() {
                 >
                   {/* Image */}
                   <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden mb-3">
-                    <img
+                    <Image
                       src={image.url}
                       alt={image.fileName}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 400px"
+                      className="object-cover"
+                      unoptimized
                     />
                   </div>
 

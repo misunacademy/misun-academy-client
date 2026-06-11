@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,9 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, ShieldCheck, FileCheck, Clock, Ban, ExternalLink, Send, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
-import { useGetMyCertificatesQuery, useLazyVerifyCertificateQuery, useRequestCertificateMutation, type CertificateResponse } from "@/redux/api/certificateApi";
+import { useGetMyCertificatesQuery, useRequestCertificateMutation, type CertificateResponse } from "@/redux/api/certificateApi";
 import { useGetEnrollmentsQuery, type EnrollmentResponse } from "@/redux/api/enrollmentApi";
-import { downloadCertificatePdf } from "@/lib/certificateDownload";
+// import { downloadCertificatePdf } from "@/lib/certificateDownload";
 
 const normalizeStatus = (status?: string) => {
   const value = (status || "").toLowerCase();
@@ -39,8 +38,8 @@ export default function MyClassesCertificatesPage() {
   const { data, isLoading, refetch } = useGetMyCertificatesQuery();
   const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useGetEnrollmentsQuery();
   const [requestCertificate, { isLoading: isRequesting }] = useRequestCertificateMutation();
-  const [verifyCertificate] = useLazyVerifyCertificateQuery();
-  const [downloadingCertificateId, setDownloadingCertificateId] = useState<string | null>(null);
+  // const [verifyCertificate] = useLazyVerifyCertificateQuery();
+  // const [downloadingCertificateId, setDownloadingCertificateId] = useState<string | null>(null);
 
   const certificates = data?.data || [];
   const enrollments = (enrollmentsData?.data || []) as (EnrollmentResponse & { isCertificateAvailable?: boolean })[];

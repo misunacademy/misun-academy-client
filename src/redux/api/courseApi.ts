@@ -70,7 +70,7 @@ const courseApi = baseApi.injectEndpoints({
     getAllCourses: build.query<{ data: CourseResponse[] }, { status?: string; category?: string; level?: string }>({
       query: (params) => {
         let cleaned = params
-          ? Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== null))
+          ? Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== null))
           : undefined;
         if (cleaned && Object.keys(cleaned).length === 0) cleaned = undefined;
         return {

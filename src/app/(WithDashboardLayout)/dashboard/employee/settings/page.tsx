@@ -10,7 +10,6 @@ import { Shield, Loader2, Camera, User, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { authServerApi } from "@/lib/auth-server-api";
 import { useAuth } from "@/hooks/useAuth";
-import { useGetSettingsQuery, useUpdateSettingsMutation } from "@/redux/api/settingsApi";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";

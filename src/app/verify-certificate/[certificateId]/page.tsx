@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -196,20 +197,15 @@ export default function VerifyCertificatePage() {
                 fontFamily: clash,
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src="/certificate-template/misun%20academy%20certificate.svg"
                 alt="MISUN Academy certificate template"
                 crossOrigin="anonymous"
                 onLoad={() => setIsTemplateLoaded(true)}
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  userSelect: "none",
-                }}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                style={{ objectFit: "cover", userSelect: "none" }}
+                unoptimized
               />
 
               <div
