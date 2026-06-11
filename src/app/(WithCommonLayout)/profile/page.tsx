@@ -19,13 +19,9 @@ import { authServerApi } from "@/lib/auth-server-api";
 import { ProfileMainTab } from "@/components/module/profile/ProfileMainTab";
 import { AdditionalInfoTab } from "@/components/module/profile/AdditionalInfoTab";
 import { EnrollmentsTab } from "@/components/module/profile/EnrollmentsTab";
-import {
-    CertificationTab
-} from "@/components/module/profile/PlaceholderTabs";
 import { FaMoneyBill } from "react-icons/fa";
 import { PaymentHistoryTab } from "@/components/module/profile/PaymentHistoryTab";
 import { SettingsTab } from "@/components/module/profile/SettingsTab";
-import EnrollmentPosterTab from "@/components/module/profile/EnrollmentPosterTab";
 
 // Navigation items matching the screenshot
 const NAV_ITEMS = [
@@ -277,8 +273,6 @@ export default function StudentProfile() {
                         />
                     )}
                     {activeTab === "additional" && <AdditionalInfoTab profile={profile} refetch={refetch} />}
-                    {activeTab === "enrollment-poster" && <EnrollmentPosterTab />}
-                    {activeTab === "certification" && <CertificationTab />}
                     {activeTab === "enrollments" && <EnrollmentsTab profile={profile} />}
                     {activeTab === "payment-history" && <PaymentHistoryTab />}
                     {activeTab === "settings" && <SettingsTab profile={profile} />}
