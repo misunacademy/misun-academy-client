@@ -154,7 +154,7 @@ export default function CourseDetails() {
   const [currentModuleIndex, setCurrentModuleIndex] = useState(0);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [showCookingMessage, setShowCookingMessage] = useState(false);
-  const [hasCompletedCourse, setHasCompletedCourse] = useState(false);
+  const hasCompletedCourse = false;
   const [showCongratulations, setShowCongratulations] = useState(true);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
 
@@ -294,11 +294,7 @@ export default function CourseDetails() {
     }
   };
 
-  const handleCompleteCourse = () => {
-    setHasCompletedCourse(true);
-    setShowCongratulations(true);
-    toast.success("Course completed successfully! 🎉");
-  };
+
 
   const totalLessons = curriculum?.reduce((t, m) => t + (m.lessons?.length || 0), 0) || 0;
   const completedLessonsCount = progress?.completedLessons?.length || 0;

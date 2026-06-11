@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import {
     Sheet,
     SheetContent,
@@ -193,13 +194,15 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                             {nidFrontUrl ? (
                                 <Dialog>
                                     <DialogTrigger asChild>
-                                        <div className="relative group cursor-pointer">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={nidFrontUrl}
-                                                alt="NID Front"
-                                                className="w-full h-32 object-cover rounded-xl border group-hover:opacity-90 transition-opacity"
-                                            />
+                                            <div className="relative group cursor-pointer h-32">
+                                                <Image
+                                                    src={nidFrontUrl}
+                                                    alt="NID Front"
+                                                    fill
+                                                    sizes="400px"
+                                                    className="object-cover rounded-xl border group-hover:opacity-90 transition-opacity"
+                                                    unoptimized
+                                                />
                                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-xl">
                                                 <Button size="icon" variant="secondary" className="w-8 h-8 rounded-full shadow-sm pointer-events-none">
                                                     <Maximize2 className="w-4 h-4 text-gray-200" />
@@ -209,11 +212,13 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                                     </DialogTrigger>
                                     <DialogContent className="max-w-3xl p-2 bg-transparent border-none shadow-none">
                                         <DialogTitle className="sr-only">NID Front Photo</DialogTitle>
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
+                                        <Image
                                             src={nidFrontUrl}
                                             alt="NID Front Full"
+                                            width={800}
+                                            height={600}
                                             className="w-full h-auto max-h-[85vh] object-contain rounded-xl"
+                                            unoptimized
                                         />
                                     </DialogContent>
                                 </Dialog>
@@ -231,12 +236,14 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                             {nidBackUrl ? (
                                 <Dialog>
                                     <DialogTrigger asChild>
-                                        <div className="relative group cursor-pointer">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
+                                        <div className="relative group cursor-pointer h-32">
+                                            <Image
                                                 src={nidBackUrl}
                                                 alt="NID Back"
-                                                className="w-full h-32 object-cover rounded-xl border group-hover:opacity-90 transition-opacity"
+                                                fill
+                                                sizes="400px"
+                                                className="object-cover rounded-xl border group-hover:opacity-90 transition-opacity"
+                                                unoptimized
                                             />
                                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-xl">
                                                 <Button size="icon" variant="secondary" className="w-8 h-8 rounded-full shadow-sm pointer-events-none">
@@ -247,11 +254,13 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                                     </DialogTrigger>
                                     <DialogContent className="max-w-3xl p-2 bg-transparent border-none shadow-none">
                                         <DialogTitle className="sr-only">NID Back Photo</DialogTitle>
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
+                                        <Image
                                             src={nidBackUrl}
                                             alt="NID Back Full"
+                                            width={800}
+                                            height={600}
                                             className="w-full h-auto max-h-[85vh] object-contain rounded-xl"
+                                            unoptimized
                                         />
                                     </DialogContent>
                                 </Dialog>

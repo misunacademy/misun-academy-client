@@ -10,6 +10,7 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 import Link from 'next/link';
 import { studentFeedbacks } from '@/constants/studentFeedbacks';
 import { FadeIn } from '../../ui/FadeIn';
@@ -36,21 +37,15 @@ const successStories: SuccessStory[] = [
 
 export default function Feedback() {
   const [api, setApi] = useState<CarouselApi>();
-  const [selectedIndex, setSelectedIndex] = useState(0);
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!api) return;
 
-    const onSelect = () => {
-      setSelectedIndex(api.selectedScrollSnap());
-    };
-
-    api.on('select', onSelect);
-    onSelect();
+    api.on('select', () => {});
 
     return () => {
-      api.off('select', onSelect);
+      api.off('select', () => {});
     };
   }, [api]);
 
@@ -157,13 +152,16 @@ export default function Feedback() {
                       ) : (
                         <div
                           onClick={() => setPlayingVideoId(story.videoId)}
-                          className="w-full h-full cursor-pointer group"
+                          className="relative w-full h-full cursor-pointer group"
                         >
                           {/* YouTube Thumbnail */}
-                          <img
+                          <Image
                             src={`https://i.ytimg.com/vi/${story.videoId}/mqdefault.jpg`}
                             alt="Success story thumbnail"
-                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            fill
+                            sizes="(max-width: 768px) 100vw, 640px"
+                            className="object-cover transition-transform duration-500 group-hover:scale-110"
+                            unoptimized
                           />
                           {/* Hover Overlay */}
                           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />

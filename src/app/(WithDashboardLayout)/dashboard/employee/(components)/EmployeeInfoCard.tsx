@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -55,12 +56,14 @@ export function EmployeeInfoCard({
             {url ? (
                 <Dialog>
                     <DialogTrigger asChild>
-                        <div className="relative group cursor-pointer">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
+                        <div className="relative group cursor-pointer h-40">
+                            <Image
                                 src={url}
                                 alt={label}
-                                className="rounded-lg border border-gray-200 w-full h-40 object-contain group-hover:opacity-90 transition-opacity"
+                                fill
+                                sizes="400px"
+                                className="object-contain rounded-lg border border-gray-200 group-hover:opacity-90 transition-opacity"
+                                unoptimized
                             />
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-lg">
                                 <Button size="icon" variant="secondary" className="w-8 h-8 rounded-full shadow-sm pointer-events-none">
@@ -71,11 +74,13 @@ export function EmployeeInfoCard({
                     </DialogTrigger>
                     <DialogContent className="max-w-3xl p-2 bg-transparent border-none shadow-none">
                         <DialogTitle className="sr-only">{label}</DialogTitle>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                             src={url}
                             alt={`${label} full`}
+                            width={800}
+                            height={600}
                             className="w-full h-auto max-h-[85vh] object-contain rounded-xl"
+                            unoptimized
                         />
                     </DialogContent>
                 </Dialog>

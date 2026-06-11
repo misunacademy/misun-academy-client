@@ -15,7 +15,8 @@ interface SettingsTabProps {
     profile?: any;
 }
 
-export function SettingsTab({ profile }: SettingsTabProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function SettingsTab(_props: SettingsTabProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // API hooks
@@ -203,7 +204,7 @@ export function SettingsTab({ profile }: SettingsTabProps) {
                         <div className="relative w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-primary via-primary-glow to-primary shadow-[0_0_20px_hsl(156_70%_42%/0.4)] flex-shrink-0">
                             <div className="w-full h-full rounded-full border-4 border-[#060f0a] overflow-hidden bg-[#0a1510] relative flex items-center justify-center">
                                 {user.image ? (
-                                    <Image src={user.image} alt={user.name!} fill className="object-cover" />
+                                    <Image src={user.image} alt={user.name!} fill sizes="96px" className="object-cover" />
                                 ) : (
                                     <div className="text-2xl font-bold text-white/50">
                                         {userInitials}

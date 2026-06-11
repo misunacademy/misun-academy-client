@@ -4,30 +4,36 @@ import { useForm } from "react-hook-form";
 import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { IUserProfile } from "@/types/common";
 
 interface AddressTabProps {
-    profile: any;
+    profile: IUserProfile | null | undefined;
     refetch: () => void;
+}
+
+interface AddressFormValues {
+    address: string;
 }
 
 export function AddressTab({ profile, refetch }: AddressTabProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [updateProfile, { isLoading }] = useUpdateUserProfileMutation();
 
-    const { register, handleSubmit } = useForm({
+    const { register, handleSubmit } = useForm<AddressFormValues>({
         defaultValues: {
             address: profile?.address || "",
         }
     });
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: AddressFormValues) => {
         try {
             await updateProfile(data).unwrap();
             toast.success("Address updated successfully");
             setIsEditing(false);
             refetch();
-        } catch (error: any) {
-            toast.error(error?.data?.message || "Failed to update address");
+        } catch (error) {
+            const err = error as { data?: { message?: string } };
+            toast.error(err?.data?.message || "Failed to update address");
         }
     };
 

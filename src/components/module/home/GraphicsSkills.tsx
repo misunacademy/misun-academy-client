@@ -1,10 +1,9 @@
-﻿"use client"
+"use client"
 
 import { motion } from "framer-motion"
 import { FaTools, FaProjectDiagram, FaUserTie } from "react-icons/fa"
 import Image, { StaticImageData } from 'next/image';
 import { IllustratorImg, PhotoshopImg } from '@/assets/images';
-import WorkspaceIllustration from '@/assets/3d-elements/graphic-design-workplace-illustration.png';
 import {
     Tooltip,
     TooltipContent,

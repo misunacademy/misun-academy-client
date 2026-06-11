@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import {
     CalendarDays, CheckCircle2, XCircle,
-    Clock, Plus, Loader2,
+    Clock, Plus,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import DashboardPageTableWithPagination from '@/components/layout/DashboardPageTableWithPagination';
@@ -73,7 +73,6 @@ const LeavePage = () => {
     const allRequests = allData?.data?.requests ?? [];
     const pending     = allRequests.filter((r) => r.status === 'Pending').length;
     const approved    = allRequests.filter((r) => r.status === 'Approved').length;
-    const rejected    = allRequests.filter((r) => r.status === 'Rejected').length;
     const totalDaysApproved = allRequests
         .filter((r) => r.status === 'Approved')
         .reduce((acc, r) => acc + daysBetween(r.from, r.to), 0);

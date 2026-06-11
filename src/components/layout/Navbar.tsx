@@ -51,6 +51,7 @@ export default function Navbar() {
               alt="Misun Academy"
               width={100}
               height={100}
+              loading="eager"
               className="h-8 w-auto pl-4 md:pl-0"
             />
             {/* <h1 className="text-2xl font-bold text-primary">Misun Academy</h1> */}

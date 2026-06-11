@@ -44,12 +44,12 @@ export default function PopupBannerModal() {
         {popupLink ? (
           <a href={popupLink} target="_blank" rel="noreferrer" onClick={close}>
             <div className="relative h-[80vh] w-full">
-              <Image src={popupImageUrl} alt="Popup banner" fill className="object-cover" unoptimized />
+              <Image src={popupImageUrl} alt="Popup banner" fill sizes="100vw" className="object-cover" unoptimized />
             </div>
           </a>
         ) : (
           <div className="relative h-[80vh]  w-full">
-            <Image src={popupImageUrl} alt="Popup banner" fill className="object-cover" unoptimized />
+            <Image src={popupImageUrl} alt="Popup banner" fill sizes="100vw" className="object-cover" unoptimized />
           </div>
         )}
       </div>

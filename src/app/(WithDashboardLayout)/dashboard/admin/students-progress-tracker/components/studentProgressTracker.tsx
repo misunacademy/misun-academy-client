@@ -113,7 +113,7 @@ const StudentProgressTracker = () => {
     );
     const totalPages = Math.max(meta.totalPages || 1, 1);
 
-    const courseWiseSummary = useMemo(() => {
+    /* const courseWiseSummary = useMemo(() => {
         const grouped: Record<
             string,
             {
@@ -162,7 +162,7 @@ const StudentProgressTracker = () => {
                     : 0,
             }))
             .sort((a, b) => a.courseTitle.localeCompare(b.courseTitle));
-    }, [enrollments]);
+    }, [enrollments]); */
 
     if (isLoading) {
         return (

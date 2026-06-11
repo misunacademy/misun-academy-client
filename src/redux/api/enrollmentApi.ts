@@ -131,7 +131,7 @@ const enrollmentApi = baseApi.injectEndpoints({
     getAllEnrollments: build.query<{ data: EnrollmentResponse[]; meta?: { total: number; page: number; limit: number; totalPages: number } }, { status?: string; page?: number; limit?: number; search?: string; courseId?: string; batchId?: string; sortBy?: string; sortOrder?: string }>({
       query: (params) => {
         let cleaned = params
-          ? Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== null))
+          ? Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== null))
           : undefined;
         if (cleaned && Object.keys(cleaned).length === 0) cleaned = undefined;
         return {

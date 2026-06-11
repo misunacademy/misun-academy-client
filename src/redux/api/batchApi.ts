@@ -45,7 +45,7 @@ const batchApi = baseApi.injectEndpoints({
     getAllBatches: build.query<{ data: BatchResponse[]; meta?: { total: number; page: number; limit: number; totalPages: number } }, { courseId?: string; status?: string; isPublished?: boolean; page?: number; limit?: number }>({
       query: (params) => {
         let cleaned = params
-          ? Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== null))
+          ? Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== null))
           : undefined;
         if (cleaned && Object.keys(cleaned).length === 0) cleaned = undefined;
         return {

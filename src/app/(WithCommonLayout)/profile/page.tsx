@@ -184,7 +184,7 @@ export default function StudentProfile() {
                             <div className="w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-primary via-primary-glow to-primary shadow-[0_0_20px_hsl(156_70%_42%/0.4)]">
                                 <div className="w-full h-full rounded-full border-4 border-[#060f0a] overflow-hidden bg-[#0a1510] relative">
                                     {user.image ? (
-                                        <Image src={user.image} alt={user.name!} fill className="object-cover" />
+                                        <Image src={user.image} alt={user.name!} fill sizes="112px" className="object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-3xl font-bold bg-[#2A2A35] text-white/50">
                                             {user.name?.charAt(0)?.toUpperCase()}
