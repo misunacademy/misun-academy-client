@@ -79,8 +79,8 @@ export default function TermsAndConditionsPage() {
                         </div>
                         <div className="flex items-center gap-3 flex-wrap">
                             <span className="text-white/45 text-sm">📩 যোগাযোগ:</span>
-                            <a href="mailto:team@misun-academy.com" className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 text-primary/90 text-sm font-medium hover:bg-primary/20 hover:border-primary/40 transition-all">
-                                team@misun-academy.com
+                            <a href="mailto:misunacademybd@gmail.com" className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 text-primary/90 text-sm font-medium hover:bg-primary/20 hover:border-primary/40 transition-all">
+                                misunacademybd@gmail.com
                             </a>
                         </div>
                         <p className="mt-5 text-primary/70 font-semibold text-sm">— Team MISUN Academy</p>

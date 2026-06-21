@@ -1,9 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Paperclip, Smile, SendHorizontal } from "lucide-react";
+import {
+  X,
+  SendHorizontal,
+  BookOpen,
+  HelpCircle,
+  CreditCard,
+} from "lucide-react";
 
 interface Message {
   id: string;
@@ -12,14 +18,44 @@ interface Message {
   time: string;
 }
 
+interface ChatApiResponse {
+  reply: string;
+  usage: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  };
+}
+
+const QUICK_ACTIONS = [
+  {
+    label: "কোর্স সমূহ",
+    icon: BookOpen,
+    prompt: "আপনাদের কি কি কোর্স আছে?",
+  },
+  {
+    label: "পেমেন্ট",
+    icon: CreditCard,
+    prompt: "পেমেন্ট কিভাবে করব? SSLCommerz সম্পর্কে বলুন।",
+  },
+  {
+    label: "সাহায্য",
+    icon: HelpCircle,
+    prompt: "আমার সাহায্য প্রয়োজন",
+  },
+];
+
 export default function FloatingChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "init-1",
       sender: "bot",
-      text: "Hello! How can I help you with your technical setup today?",
-      time: "10:24 AM",
+      text: "স্বাগতম! আমি Aura, Misun Academy-এর আপনার AI সহায়ক। কিভাবে আপনাকে সাহায্য করতে পারি?",
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     },
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -28,74 +64,108 @@ export default function FloatingChat() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to the bottom of the chat list
-  useEffect(() => {
+  const scrollToBottom = useCallback(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, isTyping]);
+  }, []);
 
-  // Show a notification badge after 3 seconds if the chat is not open
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping, scrollToBottom]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!isOpen) {
         setShowNotification(true);
       }
-    }, 4000);
+    }, 5000);
     return () => clearTimeout(timer);
   }, [isOpen]);
 
-  const getBotResponse = (userInput: string): string => {
-    const text = userInput.toLowerCase();
-    if (text.includes("api") || text.includes("key") || text.includes("token") || text.includes("403")) {
-      return "A 403 error typically means your API integration key is unauthorized, lacks scope, or has expired. Please check your credentials in your dashboard API settings or generate a new key.";
-    }
-    if (text.includes("course") || text.includes("class") || text.includes("learn") || text.includes("graphics")) {
-      return "We offer premium courses in Web Development, UI/UX Design, Graphics, and other digital skills. Let me know if you would like me to link you to our course catalog!";
-    }
-    if (text.includes("price") || text.includes("cost") || text.includes("payment") || text.includes("bkash") || text.includes("nagad")) {
-      return "You can pay using bKash, Nagad, Rocket, or major credit/debit cards. The checkout page will list all options. Do you have a specific billing question?";
-    }
-    if (text.includes("support") || text.includes("help") || text.includes("admin")) {
-      return "If you need human assistance, I can open a support ticket for you. Please type your email address and describe your issue so our technical support engineers can reach out!";
-    }
-    if (text.includes("hello") || text.includes("hi") || text.includes("hey")) {
-      return "Hello there! Let me know if you are experiencing any technical issues or need help navigating the platform.";
-    }
-    return "Thank you for reaching out! A tech support representative is reviewing your query and will respond shortly. Is there anything else you'd like to add?";
-  };
+  const sendMessage = useCallback(
+    async (text: string) => {
+      if (!text.trim()) return;
+
+      const timeNow = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      const userMsg: Message = {
+        id: `msg-${Date.now()}`,
+        sender: "user",
+        text: text.trim(),
+        time: timeNow,
+      };
+
+      setMessages((prev) => [...prev, userMsg]);
+      setInputValue("");
+      setIsTyping(true);
+
+      try {
+        const conversation = [
+          ...messages.slice(1).map((m) => ({
+            role: m.sender === "user" ? ("user" as const) : ("assistant" as const),
+            content: m.text,
+          })),
+          { role: "user" as const, content: text.trim() },
+        ];
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_API_URL}/chat`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ messages: conversation }),
+          }
+        );
+
+        if (!res.ok) throw new Error("API request failed");
+
+        const json = await res.json();
+        const data: ChatApiResponse = json.data;
+
+        const botMsg: Message = {
+          id: `msg-${Date.now() + 1}`,
+          sender: "bot",
+          text:
+            data.reply ||
+            "দুঃখিত, এই মুহূর্তে উত্তর দিতে পারছি না। পরে আবার চেষ্টা করুন।",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+
+        setMessages((prev) => [...prev, botMsg]);
+      } catch {
+        const fallbackMsg: Message = {
+          id: `msg-${Date.now() + 1}`,
+          sender: "bot",
+          text: "দুঃখিত, একটি প্রযুক্তিগত সমস্যা হয়েছে। অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+        setMessages((prev) => [...prev, fallbackMsg]);
+      } finally {
+        setIsTyping(false);
+      }
+    },
+    [messages]
+  );
 
   const handleSend = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!inputValue.trim()) return;
+    sendMessage(inputValue);
+  };
 
-    const userMessageText = inputValue.trim();
-    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    // User Message
-    const userMsg: Message = {
-      id: `msg-${Date.now()}`,
-      sender: "user",
-      text: userMessageText,
-      time: timeNow,
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
-    setInputValue("");
-    setIsTyping(true);
-
-    // Bot Typing and Response Simulation
-    setTimeout(() => {
-      const responseText = getBotResponse(userMessageText);
-      const botMsg: Message = {
-        id: `msg-${Date.now() + 1}`,
-        sender: "bot",
-        text: responseText,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, botMsg]);
-      setIsTyping(false);
-    }, 1500);
+  const handleQuickAction = (prompt: string) => {
+    setInputValue(prompt);
+    setTimeout(() => sendMessage(prompt), 100);
   };
 
   const handleToggle = () => {
@@ -106,7 +176,7 @@ export default function FloatingChat() {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4 w-[350px] sm:w-[400px]">
+    <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4 w-[370px] sm:w-[400px]">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -114,7 +184,7 @@ export default function FloatingChat() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 50 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="w-full h-[550px] sm:h-[600px] flex flex-col rounded-2xl bg-[#0b1326]/90 backdrop-blur-xl border border-white/10 shadow-[0_0_25px_rgba(34,197,94,0.15)] overflow-hidden"
+            className="w-full h-[580px] sm:h-[620px] flex flex-col rounded-2xl bg-[#0b1326]/90 backdrop-blur-xl border border-white/10 shadow-[0_0_30px_rgba(34,197,94,0.12)] overflow-hidden"
           >
             {/* Header */}
             <header className="flex justify-between items-center px-4 py-3 w-full bg-[#171f33]/70 backdrop-blur-xl border-b border-white/10">
@@ -122,8 +192,8 @@ export default function FloatingChat() {
                 <div className="relative">
                   <div className="w-10 h-10 rounded-full border border-[#4be277]/20 relative overflow-hidden">
                     <Image
-                      src="/images/chat-avatar.png"
-                      alt="Tech Support Agent Avatar"
+                      src="/images/chat-bubble-icon-white.png"
+                      alt="Aura Assistant Avatar"
                       fill
                       sizes="40px"
                       className="object-cover"
@@ -132,8 +202,12 @@ export default function FloatingChat() {
                   <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#4be277] border-2 border-[#0b1326] rounded-full shadow-[0_0_8px_rgba(75,226,119,0.8)]"></div>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-white tracking-wide">Tech Support</h3>
-                  <p className="text-[11px] text-[#4be277] font-medium">Online</p>
+                  <h3 className="text-sm font-semibold text-white tracking-wide">
+                    Aura Assistant
+                  </h3>
+                  <p className="text-[11px] text-[#4be277] font-medium">
+                    অনলাইন
+                  </p>
                 </div>
               </div>
               <button
@@ -146,20 +220,55 @@ export default function FloatingChat() {
 
             {/* Message Area */}
             <div className="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar bg-gradient-to-b from-transparent to-[#0b1326]/50">
-              <div className="flex flex-col items-center py-2">
-                <span className="px-3 py-1 bg-white/5 rounded-full text-[9px] uppercase tracking-widest text-[#bccbb9]/50 font-semibold">
-                  Today
-                </span>
-              </div>
+              {messages.length === 1 && (
+                <div className="flex flex-col items-center py-3 px-2">
+                  <p className="text-[12px] text-[#bccbb9]/50 text-center leading-relaxed">
+                    নিচের যেকোনো অপশনে ক্লিক করে দ্রুত উত্তর পান
+                  </p>
+                </div>
+              )}
+
+              {messages.length === 1 && (
+                <div className="flex flex-wrap gap-2 justify-center pb-2">
+                  {QUICK_ACTIONS.map((action) => {
+                    const Icon = action.icon;
+                    return (
+                      <button
+                        key={action.label}
+                        onClick={() => handleQuickAction(action.prompt)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#171f33]/70 border border-white/10 text-[12px] text-[#bccbb9] hover:text-[#4be277] hover:border-[#4be277]/30 transition-all duration-200"
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        {action.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex gap-3 max-w-[85%] ${
+                  className={`flex gap-3 max-w-[88%] ${
                     msg.sender === "user" ? "ml-auto flex-row-reverse" : ""
                   }`}
                 >
-                  <div className={`flex flex-col space-y-1 ${msg.sender === "user" ? "items-end" : "items-start"}`}>
+                  {msg.sender === "bot" && (
+                    <div className="w-8 h-8 rounded-full border border-[#4be277]/20 relative overflow-hidden flex-shrink-0 mt-0.5">
+                      <Image
+                        src="/images/chat-avatar.png"
+                        alt="Aura"
+                        fill
+                        sizes="32px"
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                  <div
+                    className={`flex flex-col space-y-1 ${
+                      msg.sender === "user" ? "items-end" : "items-start"
+                    }`}
+                  >
                     <div
                       className={`p-3.5 rounded-2xl text-[14px] leading-relaxed ${
                         msg.sender === "user"
@@ -169,14 +278,24 @@ export default function FloatingChat() {
                     >
                       {msg.text}
                     </div>
-                    <span className="text-[9px] text-[#bccbb9]/40 px-1">{msg.time}</span>
+                    <span className="text-[9px] text-[#bccbb9]/40 px-1">
+                      {msg.time}
+                    </span>
                   </div>
                 </div>
               ))}
 
-              {/* Typing Indicator */}
               {isTyping && (
                 <div className="flex gap-3 max-w-[85%]">
+                  <div className="w-8 h-8 rounded-full border border-[#4be277]/20 relative overflow-hidden flex-shrink-0">
+                    <Image
+                      src="/images/chat-avatar.png"
+                      alt="Aura"
+                      fill
+                      sizes="32px"
+                      className="object-cover"
+                    />
+                  </div>
                   <div className="bg-[#171f33]/90 border border-white/5 px-4 py-3 rounded-2xl rounded-tl-none flex items-center gap-1.5 opacity-80">
                     <span className="w-1.5 h-1.5 bg-[#4be277] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                     <span className="w-1.5 h-1.5 bg-[#4be277] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
@@ -190,32 +309,21 @@ export default function FloatingChat() {
             {/* Input Field */}
             <form
               onSubmit={handleSend}
-              className="p-4 bg-[#171f33]/30 border-t border-white/5 flex gap-2 items-center"
+              className="p-3 bg-[#171f33]/30 border-t border-white/5 flex gap-2 items-center"
             >
               <div className="flex-grow bg-[#171f33]/70 backdrop-blur-xl border border-white/5 rounded-xl flex items-center gap-2 px-3 py-1 focus-within:ring-1 focus-within:ring-[#4be277]/40 focus-within:shadow-[0_0_12px_rgba(75,226,119,0.1)] transition-all duration-300">
-                <button
-                  type="button"
-                  className="p-1.5 text-[#bccbb9] hover:text-[#4be277] transition-colors"
-                >
-                  <Paperclip className="w-4 h-4" />
-                </button>
                 <input
                   type="text"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Type your message..."
+                  placeholder="বাংলায় আপনার প্রশ্ন লিখুন..."
                   className="bg-transparent border-none focus:ring-0 flex-grow text-[#dae2fd] text-[14px] py-2.5 outline-none placeholder-[#bccbb9]/40"
                 />
-                <button
-                  type="button"
-                  className="p-1.5 text-[#bccbb9] hover:text-[#4be277] transition-colors"
-                >
-                  <Smile className="w-4 h-4" />
-                </button>
               </div>
               <button
                 type="submit"
-                className="w-10 h-10 rounded-xl bg-[#4be277] text-[#002109] flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.4)] hover:scale-105 active:scale-95 transition-all duration-200"
+                disabled={!inputValue.trim()}
+                className="w-10 h-10 rounded-xl bg-[#4be277] text-[#002109] flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.4)] hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <SendHorizontal className="w-5 h-5 stroke-[2.5]" />
               </button>
@@ -227,37 +335,67 @@ export default function FloatingChat() {
       {/* Floating Chat Icon Toggle Button */}
       <button
         onClick={handleToggle}
-        className="relative group focus:outline-none"
-        aria-label="Toggle chat support"
+        className="fab-btn relative group outline-none cursor-pointer"
+        aria-label="Aura Assistant চালু করুন"
       >
-        {/* Glow behind the icon */}
-        <div className="absolute -inset-1.5 bg-[#4be277]/20 blur-lg group-hover:bg-[#4be277]/35 rounded-full transition-all duration-300"></div>
+        {/* Outer glow ring — expands outward on pulse */}
+        <div className="absolute -inset-1 rounded-full fab-pulse-glow pointer-events-none"></div>
 
         {/* Notification badge */}
         {showNotification && !isOpen && (
-          <span className="absolute top-1.5 right-1.5 z-20 flex h-4 w-4">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4be277] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-[#4be277] text-[9px] font-bold text-[#002109] items-center justify-center">
+          <span className="absolute -top-1 -right-1 z-20 flex h-5 w-5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22c55e] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-5 w-5 bg-[#22c55e] text-[9px] font-bold text-white items-center justify-center">
               1
             </span>
           </span>
         )}
 
-        {/* 3D Chat Bubble Image with float/hover effects */}
-        <div className="w-16 h-16 sm:w-20 sm:h-20 relative z-10 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer hover:-rotate-3 animate-pulse">
+        {/* Dark navy circle with green border ring */}
+        <div className="w-16 h-16 rounded-full bg-[#111b2e] border-2 border-[#15803d] shadow-[0_0_8px_rgba(21,128,61,0.2)] flex items-center justify-center overflow-hidden relative z-10 group-hover:scale-105 transition-transform duration-300">
           <Image
-            src="/images/chat-bubble-icon.png"
-            alt="Chat Support Indicator Icon"
+            src="/images/chat-bubble-icon-white.png"
+            alt="Aura Assistant চালু করুন"
             fill
-            sizes="(max-width: 640px) 64px, 80px"
+            sizes="64px"
             priority
-            className="object-contain"
+            className="object-cover p-1 rounded-full"
           />
         </div>
       </button>
 
-      {/* Simple style overrides for custom scrollbar */}
+      {/* Styles */}
       <style jsx global>{`
+        .fab-btn {
+          animation: fabFloat 3s ease-in-out infinite;
+        }
+        @keyframes fabFloat {
+          0% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+          100% {
+            transform: translateY(0px);
+          }
+        }
+        .fab-btn:hover {
+          animation-play-state: paused;
+        }
+        .fab-pulse-glow {
+          animation: fabPulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          border-radius: 9999px;
+        }
+        @keyframes fabPulseGlow {
+          0%,
+          100% {
+            box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.35);
+          }
+          50% {
+            box-shadow: 0 0 0 10px rgba(21, 128, 61, 0);
+          }
+        }
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
         }
@@ -269,7 +407,7 @@ export default function FloatingChat() {
           border-radius: 9999px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(75, 226, 119, 0.3);
+          background: rgba(34, 197, 94, 0.3);
         }
       `}</style>
     </div>

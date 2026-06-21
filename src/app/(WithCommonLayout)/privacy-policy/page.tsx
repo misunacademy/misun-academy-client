@@ -49,8 +49,8 @@ export default function PrivacyPolicyPage() {
 
                     <p className="text-white/75 border-l-2 border-primary/40 pl-4">
                         অনুগ্রহ করে আমাদের এই গোপনীয়তা নীতিমালাটি মনোযোগ দিয়ে পড়ুন। কোনো প্রশ্ন বা উদ্বেগ থাকলে, অনুগ্রহ করে যোগাযোগ করুন —{" "}
-                        <a href="mailto:team@misun-academy.com" className="text-primary/80 hover:text-primary underline underline-offset-2 transition-colors">
-                            team@misun-academy.com
+                        <a href="mailto:misunacademybd@gmail.com" className="text-primary/80 hover:text-primary underline underline-offset-2 transition-colors">
+                            misunacademybd@gmail.com
                         </a>
                         ।
                     </p>
@@ -103,8 +103,8 @@ export default function PrivacyPolicyPage() {
                         <h2 className="text-xl font-semibold text-white/90 mb-3 flex items-center gap-2"><span className="w-1 h-5 rounded-full bg-primary/70 inline-block"></span> যোগাযোগ করুন</h2>
                         <p>
                             যদি আপনার কোনো প্রশ্ন, মতামত বা অভিযোগ থাকে, তাহলে অনুগ্রহ করে আমাদের ইমেইল করুন —{" "}
-                            <a href="mailto:team@misun-academy.com" className="text-primary/80 hover:text-primary underline underline-offset-2 transition-colors">
-                                team@misun-academy.com
+                            <a href="mailto:misunacademybd@gmail.com" className="text-primary/80 hover:text-primary underline underline-offset-2 transition-colors">
+                                misunacademybd@gmail.com
                             </a>
                             ।
                         </p>

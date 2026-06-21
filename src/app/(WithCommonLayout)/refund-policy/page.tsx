@@ -59,8 +59,8 @@ export default function RefundPolicyPage() {
                         </ul>
                         <p className="mt-4">
                             ইমেইল পাঠাতে ব্যবহার করুন:{" "}
-                            <a href="mailto:team@misun-academy.com" className="text-primary/80 hover:text-primary underline underline-offset-2 transition-colors">
-                                team@misun-academy.com
+                            <a href="mailto:misunacademybd@gmail.com" className="text-primary/80 hover:text-primary underline underline-offset-2 transition-colors">
+                                misunacademybd@gmail.com
                             </a>
                         </p>
                     </div>
@@ -79,8 +79,8 @@ export default function RefundPolicyPage() {
                         <p className="text-white/80 font-semibold">আপনার সন্তুষ্টি আমাদের কাছে গুরুত্বপূর্ণ। তাই দয়া করে সিদ্ধান্ত নেওয়ার আগে কোর্স সম্পর্কে বিস্তারিত জেনে নিন এবং রিফান্ডের সময়সীমা মাথায় রাখুন।</p>
                         <p className="mt-3">
                             📩 যোগাযোগের জন্য ইমেইল করুন:{" "}
-                            <a href="mailto:team@misun-academy.com" className="text-primary/80 hover:text-primary underline underline-offset-2 transition-colors">
-                                team@misun-academy.com
+                            <a href="mailto:misunacademybd@gmail.com" className="text-primary/80 hover:text-primary underline underline-offset-2 transition-colors">
+                                misunacademybd@gmail.com
                             </a>
                         </p>
                         <p className="mt-4 text-primary/70 font-semibold">— Team MISUN Academy</p>
