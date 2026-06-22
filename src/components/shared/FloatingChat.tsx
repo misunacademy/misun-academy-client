@@ -185,13 +185,13 @@ export default function FloatingChat() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 50 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="w-full h-[580px] sm:h-[620px] flex flex-col rounded-2xl bg-[#0b1326]/90 backdrop-blur-xl border border-white/10 shadow-[0_0_30px_rgba(34,197,94,0.12)] overflow-hidden"
+            className="w-full h-[580px] sm:h-[620px] flex flex-col rounded-2xl bg-[#0b1326]/90 backdrop-blur-xl border border-white/10 shadow-[0_0_30px_hsl(var(--primary)/0.12)] overflow-hidden"
           >
             {/* Header */}
             <header className="flex justify-between items-center px-4 py-3 w-full bg-[#171f33]/70 backdrop-blur-xl border-b border-white/10">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full border border-[#4be277]/20 relative overflow-hidden">
+                  <div className="w-10 h-10 rounded-full border border-primary/20 relative overflow-hidden">
                     <Image
                       src="/images/chat-bubble-icon-white.png"
                       alt="Aura Assistant Avatar"
@@ -200,20 +200,20 @@ export default function FloatingChat() {
                       className="object-cover"
                     />
                   </div>
-                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#4be277] border-2 border-[#0b1326] rounded-full shadow-[0_0_8px_rgba(75,226,119,0.8)]"></div>
+                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-primary border-2 border-[#0b1326] rounded-full shadow-[0_0_8px_hsl(var(--primary)/0.8)]"></div>
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-white tracking-wide">
                     Aura Assistant
                   </h3>
-                  <p className="text-[11px] text-[#4be277] font-medium">
+                  <p className="text-[11px] text-primary font-medium">
                     অনলাইন
                   </p>
                 </div>
               </div>
               <button
                 onClick={handleToggle}
-                className="text-[#bccbb9] hover:text-[#4be277] hover:bg-white/5 p-1.5 rounded-full transition-all duration-200"
+                className="text-[#bccbb9] hover:text-primary hover:bg-white/5 p-1.5 rounded-full transition-all duration-200"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -237,7 +237,7 @@ export default function FloatingChat() {
                       <button
                         key={action.label}
                         onClick={() => handleQuickAction(action.prompt)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#171f33]/70 border border-white/10 text-[12px] text-[#bccbb9] hover:text-[#4be277] hover:border-[#4be277]/30 transition-all duration-200"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#171f33]/70 border border-white/10 text-[12px] text-[#bccbb9] hover:text-primary hover:border-primary/30 transition-all duration-200"
                       >
                         <Icon className="w-3.5 h-3.5" />
                         {action.label}
@@ -255,9 +255,9 @@ export default function FloatingChat() {
                   }`}
                 >
                   {msg.sender === "bot" && (
-                    <div className="w-8 h-8 rounded-full border border-[#4be277]/20 relative overflow-hidden flex-shrink-0 mt-0.5">
+                    <div className="w-8 h-8 rounded-full border border-primary/20 relative overflow-hidden flex-shrink-0 mt-0.5">
                       <Image
-                        src="/images/chat-avatar.png"
+                       src="/images/chat-bubble-icon-white.png"
                         alt="Aura"
                         fill
                         sizes="32px"
@@ -273,7 +273,7 @@ export default function FloatingChat() {
                     <div
                       className={`p-3.5 rounded-2xl text-[14px] leading-relaxed ${
                         msg.sender === "user"
-                          ? "bg-[#4be277] text-[#002109] font-medium rounded-tr-none shadow-[0_0_10px_rgba(75,226,119,0.25)]"
+                          ? "bg-primary text-primary-foreground font-medium rounded-tr-none shadow-[0_0_10px_hsl(var(--primary)/0.25)]"
                           : "bg-[#171f33]/90 text-[#dae2fd] border border-white/5 rounded-tl-none"
                       }`}
                     >
@@ -305,7 +305,7 @@ export default function FloatingChat() {
 
               {isTyping && (
                 <div className="flex gap-3 max-w-[85%]">
-                  <div className="w-8 h-8 rounded-full border border-[#4be277]/20 relative overflow-hidden flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full border border-primary/20 relative overflow-hidden flex-shrink-0">
                     <Image
                       src="/images/chat-avatar.png"
                       alt="Aura"
@@ -315,9 +315,9 @@ export default function FloatingChat() {
                     />
                   </div>
                   <div className="bg-[#171f33]/90 border border-white/5 px-4 py-3 rounded-2xl rounded-tl-none flex items-center gap-1.5 opacity-80">
-                    <span className="w-1.5 h-1.5 bg-[#4be277] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                    <span className="w-1.5 h-1.5 bg-[#4be277] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                    <span className="w-1.5 h-1.5 bg-[#4be277] rounded-full animate-bounce"></span>
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce"></span>
                   </div>
                 </div>
               )}
@@ -329,7 +329,7 @@ export default function FloatingChat() {
               onSubmit={handleSend}
               className="p-3 bg-[#171f33]/30 border-t border-white/5 flex gap-2 items-center"
             >
-              <div className="flex-grow bg-[#171f33]/70 backdrop-blur-xl border border-white/5 rounded-xl flex items-center gap-2 px-3 py-1 focus-within:ring-1 focus-within:ring-[#4be277]/40 focus-within:shadow-[0_0_12px_rgba(75,226,119,0.1)] transition-all duration-300">
+              <div className="flex-grow bg-[#171f33]/70 backdrop-blur-xl border border-white/5 rounded-xl flex items-center gap-2 px-3 py-1 focus-within:ring-1 focus-within:ring-primary/40 focus-within:shadow-[0_0_12px_hsl(var(--primary)/0.1)] transition-all duration-300">
                 <input
                   type="text"
                   value={inputValue}
@@ -341,7 +341,7 @@ export default function FloatingChat() {
               <button
                 type="submit"
                 disabled={!inputValue.trim()}
-                className="w-10 h-10 rounded-xl bg-[#4be277] text-[#002109] flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.4)] hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-[0_0_15px_hsl(var(--primary)/0.4)] hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <SendHorizontal className="w-5 h-5 stroke-[2.5]" />
               </button>
@@ -362,15 +362,15 @@ export default function FloatingChat() {
         {/* Notification badge */}
         {showNotification && !isOpen && (
           <span className="absolute -top-1 -right-1 z-20 flex h-5 w-5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22c55e] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-5 w-5 bg-[#22c55e] text-[9px] font-bold text-white items-center justify-center">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-5 w-5 bg-primary text-[9px] font-bold text-white items-center justify-center">
               1
             </span>
           </span>
         )}
 
         {/* Dark navy circle with green border ring */}
-        <div className="w-16 h-16 rounded-full bg-[#111b2e] border-2 border-[#15803d] shadow-[0_0_8px_rgba(21,128,61,0.2)] flex items-center justify-center overflow-hidden relative z-10 group-hover:scale-105 transition-transform duration-300">
+        <div className="w-16 h-16 rounded-full bg-[#111b2e] border-2 border-primary shadow-[0_0_8px_hsl(var(--primary)/0.2)] flex items-center justify-center overflow-hidden relative z-10 group-hover:scale-105 transition-transform duration-300">
           <Image
             src="/images/chat-bubble-icon-white.png"
             alt="Aura Assistant চালু করুন"
@@ -408,10 +408,10 @@ export default function FloatingChat() {
         @keyframes fabPulseGlow {
           0%,
           100% {
-            box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.35);
+            box-shadow: 0 0 0 0 hsl(var(--primary) / 0.35);
           }
           50% {
-            box-shadow: 0 0 0 10px rgba(21, 128, 61, 0);
+            box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
           }
         }
         .custom-scrollbar::-webkit-scrollbar {
@@ -425,7 +425,7 @@ export default function FloatingChat() {
           border-radius: 9999px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(34, 197, 94, 0.3);
+          background: hsl(var(--primary) / 0.3);
         }
       `}</style>
     </div>

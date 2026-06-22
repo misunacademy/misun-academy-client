@@ -76,7 +76,7 @@ export default function Footer() {
       <div className="absolute bottom-10 right-0 w-64 h-64 bg-primary/6 rounded-full blur-3xl pointer-events-none z-[1]" />
 
       {/* Main grid */}
-      <Container className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-10 py-16 px-6 md:px-0 max-w-7xl mx-auto">
+      <Container className="relative grid grid-cols-1 md:grid-cols-3 gap-10 py-16 px-6 md:px-0 max-w-7xl mx-auto">
 
         {/* ── Column 1: Brand + Contact ── */}
         <div className="order-1 col-start-1 col-span-1 row-start-1 space-y-6">
@@ -158,7 +158,7 @@ export default function Footer() {
             <div className="h-0.5 w-12 bg-gradient-to-r from-primary/60 to-transparent rounded-full mb-5" />
 
             {/* Social icons */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 ">
               <Link
                 href="https://www.facebook.com/misunacademy"
                 target="_blank"
