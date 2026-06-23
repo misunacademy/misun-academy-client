@@ -52,7 +52,7 @@ export default function FloatingChat() {
     {
       id: "init-1",
       sender: "bot",
-      text: "স্বাগতম! আমি Aura, Misun Academy-এর আপনার AI সহায়ক। কিভাবে আপনাকে সাহায্য করতে পারি?",
+      text: "স্বাগতম! আমি Sun, Misun Academy-এর আপনার AI সহায়ক। কিভাবে আপনাকে সাহায্য করতে পারি?",
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
@@ -63,7 +63,14 @@ export default function FloatingChat() {
   const [isTyping, setIsTyping] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
 
+  // Ref always holds the latest messages — prevents stale closures in sendMessage
+  const messagesRef = useRef<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Keep ref in sync so sendMessage always reads fresh history
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   const scrollToBottom = useCallback(() => {
     if (messagesEndRef.current) {
@@ -100,18 +107,22 @@ export default function FloatingChat() {
         time: timeNow,
       };
 
+      // Build the full conversation history BEFORE updating state
+      // (messagesRef.current always has the latest committed messages)
+      const conversation = [
+        ...messagesRef.current.slice(1).map((m) => ({
+          role:
+            m.sender === "user" ? ("user" as const) : ("assistant" as const),
+          content: m.text,
+        })),
+        { role: "user" as const, content: text.trim() },
+      ];
+
       setMessages((prev) => [...prev, userMsg]);
       setInputValue("");
       setIsTyping(true);
 
       try {
-        const conversation = [
-          ...messages.slice(1).map((m) => ({
-            role: m.sender === "user" ? ("user" as const) : ("assistant" as const),
-            content: m.text,
-          })),
-          { role: "user" as const, content: text.trim() },
-        ];
 
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_BASE_API_URL}/chat`,
@@ -120,7 +131,7 @@ export default function FloatingChat() {
             headers: { "Content-Type": "application/json" },
             credentials: "include",
             body: JSON.stringify({ messages: conversation }),
-          }
+          },
         );
 
         if (!res.ok) throw new Error("API request failed");
@@ -156,7 +167,8 @@ export default function FloatingChat() {
         setIsTyping(false);
       }
     },
-    [messages]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   const handleSend = (e?: React.FormEvent) => {
@@ -194,7 +206,7 @@ export default function FloatingChat() {
                   <div className="w-10 h-10 rounded-full border border-primary/20 relative overflow-hidden">
                     <Image
                       src="/images/chat-bubble-icon-white.png"
-                      alt="Aura Assistant Avatar"
+                      alt="Sun Assistant Avatar"
                       fill
                       sizes="40px"
                       className="object-cover"
@@ -204,11 +216,9 @@ export default function FloatingChat() {
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-white tracking-wide">
-                    Aura Assistant
+                    Sun Assistant
                   </h3>
-                  <p className="text-[11px] text-primary font-medium">
-                    অনলাইন
-                  </p>
+                  <p className="text-[11px] text-primary font-medium">অনলাইন</p>
                 </div>
               </div>
               <button
@@ -257,8 +267,8 @@ export default function FloatingChat() {
                   {msg.sender === "bot" && (
                     <div className="w-8 h-8 rounded-full border border-primary/20 relative overflow-hidden flex-shrink-0 mt-0.5">
                       <Image
-                       src="/images/chat-bubble-icon-white.png"
-                        alt="Aura"
+                        src="/images/chat-bubble-icon-white.png"
+                        alt="Sun"
                         fill
                         sizes="32px"
                         className="object-cover"
@@ -280,14 +290,42 @@ export default function FloatingChat() {
                       {msg.sender === "bot" ? (
                         <ReactMarkdown
                           components={{
-                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                            strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
-                            ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
-                            ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
-                            li: ({ children }) => <li className="text-[14px] leading-relaxed">{children}</li>,
-                            h3: ({ children }) => <h3 className="text-sm font-semibold text-white mt-3 mb-1">{children}</h3>,
-                            hr: () => <div className="my-3 border-t border-white/10" />,
-                            code: ({ children }) => <code className="bg-white/5 px-1.5 py-0.5 rounded text-sm">{children}</code>,
+                            p: ({ children }) => (
+                              <p className="mb-2 last:mb-0">{children}</p>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="font-semibold text-white">
+                                {children}
+                              </strong>
+                            ),
+                            ul: ({ children }) => (
+                              <ul className="list-disc pl-4 mb-2 space-y-1">
+                                {children}
+                              </ul>
+                            ),
+                            ol: ({ children }) => (
+                              <ol className="list-decimal pl-4 mb-2 space-y-1">
+                                {children}
+                              </ol>
+                            ),
+                            li: ({ children }) => (
+                              <li className="text-[14px] leading-relaxed">
+                                {children}
+                              </li>
+                            ),
+                            h3: ({ children }) => (
+                              <h3 className="text-sm font-semibold text-white mt-3 mb-1">
+                                {children}
+                              </h3>
+                            ),
+                            hr: () => (
+                              <div className="my-3 border-t border-white/10" />
+                            ),
+                            code: ({ children }) => (
+                              <code className="bg-white/5 px-1.5 py-0.5 rounded text-sm">
+                                {children}
+                              </code>
+                            ),
                           }}
                         >
                           {msg.text.replace(/\n/g, "  \n")}
@@ -308,7 +346,7 @@ export default function FloatingChat() {
                   <div className="w-8 h-8 rounded-full border border-primary/20 relative overflow-hidden flex-shrink-0">
                     <Image
                       src="/images/chat-avatar.png"
-                      alt="Aura"
+                      alt="Sun"
                       fill
                       sizes="32px"
                       className="object-cover"
@@ -354,7 +392,7 @@ export default function FloatingChat() {
       <button
         onClick={handleToggle}
         className="fab-btn relative group outline-none cursor-pointer"
-        aria-label="Aura Assistant চালু করুন"
+        aria-label="Sun Assistant চালু করুন"
       >
         {/* Outer glow ring — expands outward on pulse */}
         <div className="absolute -inset-1 rounded-full fab-pulse-glow pointer-events-none"></div>
@@ -373,7 +411,7 @@ export default function FloatingChat() {
         <div className="w-16 h-16 rounded-full bg-[#111b2e] border-2 border-primary shadow-[0_0_8px_hsl(var(--primary)/0.2)] flex items-center justify-center overflow-hidden relative z-10 group-hover:scale-105 transition-transform duration-300">
           <Image
             src="/images/chat-bubble-icon-white.png"
-            alt="Aura Assistant চালু করুন"
+            alt="Sun Assistant চালু করুন"
             fill
             sizes="64px"
             priority
