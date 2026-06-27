@@ -5,7 +5,7 @@ import Providers from '@/providers/Providers';
 import MetaPixelPageViewTracker from '@/components/analytics/MetaPixelPageViewTracker';
 import type { Metadata } from 'next';
 import { Hind_Siliguri, Mona_Sans } from 'next/font/google';
-import FloatingChat from '@/components/shared/FloatingChat';
+// import FloatingChat from '@/components/shared/FloatingChat';
 import BackToTop from '@/components/shared/BackToTop';
 import './globals.css';
 
@@ -82,7 +82,7 @@ export default function RootLayout({
           <Analytics />
 
           {/* Global Tech Support Chat widget */}
-          <FloatingChat />
+          {/* <FloatingChat /> */}
 
           {/* Global Back to Top Button */}
           <BackToTop variant="glass-glow" />

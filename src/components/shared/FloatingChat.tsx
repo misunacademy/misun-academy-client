@@ -345,7 +345,7 @@ export default function FloatingChat() {
                 <div className="flex gap-3 max-w-[85%]">
                   <div className="w-8 h-8 rounded-full border border-primary/20 relative overflow-hidden flex-shrink-0">
                     <Image
-                      src="/images/chat-avatar.png"
+                      src="/images/chat-bubble-icon-white.png"
                       alt="Sun"
                       fill
                       sizes="32px"
