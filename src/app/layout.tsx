@@ -5,6 +5,8 @@ import Providers from '@/providers/Providers';
 import MetaPixelPageViewTracker from '@/components/analytics/MetaPixelPageViewTracker';
 import type { Metadata } from 'next';
 import { Hind_Siliguri, Mona_Sans } from 'next/font/google';
+// import FloatingChat from '@/components/shared/FloatingChat';
+import BackToTop from '@/components/shared/BackToTop';
 import './globals.css';
 
 const monaSans = Mona_Sans({
@@ -78,6 +80,12 @@ export default function RootLayout({
 
           {/* Vercel Analytics (optional) */}
           <Analytics />
+
+          {/* Global Tech Support Chat widget */}
+          {/* <FloatingChat /> */}
+
+          {/* Global Back to Top Button */}
+          <BackToTop variant="glass-glow" />
 
           {children}
         </Providers>
