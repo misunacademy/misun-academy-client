@@ -62,7 +62,7 @@ export interface UsersListResponse {
   success: true;
   message: string;
   data: UserResponse[];
-  pagination?: {
+  meta?: {
     total: number;
     page: number;
     limit: number;

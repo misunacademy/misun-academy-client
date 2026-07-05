@@ -167,7 +167,6 @@ export default function FloatingChat() {
         setIsTyping(false);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 

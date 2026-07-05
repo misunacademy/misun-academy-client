@@ -99,8 +99,8 @@ export default function AdminUsers() {
   // Update total & totalPages when server response changes (support both `pagination` and legacy `meta` shapes)
   useEffect(() => {
     const legacyMeta = (data as unknown as { meta?: { total?: number; totalPages?: number } })?.meta;
-    setTotal(resp?.pagination?.total ?? legacyMeta?.total ?? 0);
-    setTotalPages(resp?.pagination?.totalPages ?? legacyMeta?.totalPages ?? 1);
+    setTotal(resp?.meta?.total ?? legacyMeta?.total ?? 0);
+    setTotalPages(resp?.meta?.totalPages ?? legacyMeta?.totalPages ?? 1);
   }, [resp, data]);
 
   // If current page becomes empty (e.g., after delete), go back one page
@@ -200,24 +200,46 @@ export default function AdminUsers() {
       return;
     }
 
+    const toastId = toast.loading('Preparing to export users...');
     try {
       setIsExporting(true);
 
-      const response = await triggerExportQuery({
-        page: 1,
-        limit: 999999, // Fetch all records
-        role: roleParam,
-        status: statusParam,
-        search: debouncedSearch || undefined,
-        batch: batchFilter === 'all' ? undefined : batchFilter,
-        enrolled: enrolledFilter === 'all' ? undefined : (enrolledFilter === 'enrolled' ? 'true' : 'false'),
-      }).unwrap();
+      let allUsers: User[] = [];
+      const CHUNK_SIZE = 500;
+      let currentPage = 1;
+      let hasMore = true;
 
-      const allUsers = (response?.data as User[]) || [];
+      while (hasMore) {
+        toast.loading(`Fetching users page ${currentPage}...`, { id: toastId });
+        const response = await triggerExportQuery({
+          page: currentPage,
+          limit: CHUNK_SIZE,
+          role: roleParam,
+          status: statusParam,
+          search: debouncedSearch || undefined,
+          batch: batchFilter === 'all' ? undefined : batchFilter,
+          enrolled: enrolledFilter === 'all' ? undefined : (enrolledFilter === 'enrolled' ? 'true' : 'false'),
+        }).unwrap();
+
+        const fetched = (response?.data as User[]) || [];
+        allUsers = allUsers.concat(fetched);
+
+        const pagination = response?.meta;
+        const totalPages = pagination?.totalPages || 1;
+
+        if (fetched.length < CHUNK_SIZE || currentPage >= totalPages) {
+          hasMore = false;
+        } else {
+          currentPage++;
+        }
+      }
+
       if (allUsers.length === 0) {
-        toast.error('No user data available to export');
+        toast.error('No user data available to export', { id: toastId });
         return;
       }
+
+      toast.loading(`Generating Excel spreadsheet for ${allUsers.length} users...`, { id: toastId });
 
       const XLSX = await import('xlsx');
       const rows = allUsers.map((user, index) => ({
@@ -239,10 +261,10 @@ export default function AdminUsers() {
       const timestamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
       XLSX.writeFile(workbook, `users-${timestamp}.xlsx`);
 
-      toast.success('Excel sheet exported successfully');
+      toast.success('Excel sheet exported successfully', { id: toastId });
     } catch (error) {
       console.error('Excel export failed:', error);
-      toast.error('Failed to export Excel sheet');
+      toast.error('Failed to export Excel sheet', { id: toastId });
     } finally {
       setIsExporting(false);
     }
