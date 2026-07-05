@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { useState, useEffect, FormEvent } from "react";
 import { Loader2 } from "lucide-react";
-import { useGetAllUsersQuery, useCreateAdminMutation, useUpdateUserMutation, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
+import { useGetAllUsersQuery, useLazyGetAllUsersQuery, useCreateAdminMutation, useUpdateUserMutation, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import type { BatchResponse } from "@/redux/api/batchApi";
 import type { GetAllUsersParams, UsersListResponse, UpdateUserRequest } from "@/redux/api/adminApi";
@@ -59,6 +59,7 @@ export default function AdminUsers() {
   const [updateUserMutation] = useUpdateUserMutation();
   const [deleteUserMutation] = useDeleteUserMutation();
   const [updateUserStatusMutation] = useUpdateUserStatusMutation();
+  const [triggerExportQuery] = useLazyGetAllUsersQuery();
 
   // Debounce search input to avoid excessive requests
   useEffect(() => {
@@ -202,8 +203,24 @@ export default function AdminUsers() {
     try {
       setIsExporting(true);
 
+      const response = await triggerExportQuery({
+        page: 1,
+        limit: 999999, // Fetch all records
+        role: roleParam,
+        status: statusParam,
+        search: debouncedSearch || undefined,
+        batch: batchFilter === 'all' ? undefined : batchFilter,
+        enrolled: enrolledFilter === 'all' ? undefined : (enrolledFilter === 'enrolled' ? 'true' : 'false'),
+      }).unwrap();
+
+      const allUsers = (response?.data as User[]) || [];
+      if (allUsers.length === 0) {
+        toast.error('No user data available to export');
+        return;
+      }
+
       const XLSX = await import('xlsx');
-      const rows = filteredUsers.map((user, index) => ({
+      const rows = allUsers.map((user, index) => ({
         'SL': index + 1,
         'Name': user.name,
         'Email': user.email,

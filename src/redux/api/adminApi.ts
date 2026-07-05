@@ -258,6 +258,7 @@ const adminApi = baseApi.injectEndpoints({
 // Export hooks
 export const {
   useGetAllUsersQuery,
+  useLazyGetAllUsersQuery,
   useGetUserByIdQuery,
   useCreateAdminMutation,
   useUpdateUserMutation,
