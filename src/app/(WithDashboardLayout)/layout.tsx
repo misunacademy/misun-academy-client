@@ -1,18 +1,11 @@
 "use client"
 import { AppSidebar } from "@/app/(WithDashboardLayout)/dashboard/(components)/app-sidebar"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { Bell, ExternalLink } from "lucide-react"
+import { ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import AuthGuard from "@/components/shared/AuthGuard"
+import NotificationBell from "@/components/shared/NotificationBell"
 import { usePathname } from "next/navigation"
 
 
@@ -90,46 +83,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         </div>
 
                         <div className="flex items-center gap-4">
-                            {/* Search */}
-                            {/* <div className="relative hidden md:block">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search courses, certificates..."
-                                className="pl-9 w-64"
-                            />
-                        </div> */}
-
-                            {/* Notifications */}
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="relative">
-                                        <Bell className="h-4 w-4" />
-                                        <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs flex items-center justify-center text-white">0</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-80">
-                                    <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem>
-                                        <div className="flex flex-col space-y-1">
-                                            <p className="text-sm font-medium">This features is Coming soon</p>
-                                            <p className="text-xs text-muted-foreground">Please stay tuned for updates.</p>
-                                        </div>
-                                    </DropdownMenuItem>
-                                    {/* <DropdownMenuItem>
-                                    <div className="flex flex-col space-y-1">
-                                        <p className="text-sm font-medium">Certificate earned</p>
-                                        <p className="text-xs text-muted-foreground">Congratulations on completing JavaScript Basics</p>
-                                    </div>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <div className="flex flex-col space-y-1">
-                                        <p className="text-sm font-medium">Assignment due</p>
-                                        <p className="text-xs text-muted-foreground">Web Development project due in 2 days</p>
-                                    </div>
-                                </DropdownMenuItem> */}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <NotificationBell />
 
                             {/* View Site Button */}
                             <Button variant="outline" size="sm" asChild>

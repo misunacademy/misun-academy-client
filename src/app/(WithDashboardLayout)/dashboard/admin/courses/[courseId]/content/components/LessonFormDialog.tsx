@@ -25,6 +25,7 @@ interface Lesson {
     videoDuration?: number;
     content?: string;
     isMandatory: boolean;
+    isPublished?: boolean;
     resources?: {
         title: string;
         type: 'link' | 'text';
@@ -54,6 +55,7 @@ const LessonFormDialog = ({ open, mode, moduleId, data, onClose, onSuccess }: {
         videoDuration: data?.videoDuration || 0,
         content: data?.content || '',
         isMandatory: data?.isMandatory ?? true,
+        isPublished: data?.isPublished ?? true,
         resources: data?.resources || [],
     });
 
@@ -137,6 +139,13 @@ const LessonFormDialog = ({ open, mode, moduleId, data, onClose, onSuccess }: {
                                 onCheckedChange={(checked) => setFormData({ ...formData, isMandatory: checked })}
                             />
                             <Label>Mandatory</Label>
+                        </div>
+                        <div className="flex items-center space-x-2 mt-8">
+                            <Switch
+                                checked={formData.isPublished}
+                                onCheckedChange={(checked) => setFormData({ ...formData, isPublished: checked })}
+                            />
+                            <Label>Published</Label>
                         </div>
                     </div>
 

@@ -35,6 +35,7 @@ interface Lesson {
   videoDuration?: number;
   content?: string;
   isMandatory: boolean;
+  isPublished?: boolean;
   resources?: {
     title: string;
     type: 'link' | 'text';
@@ -167,6 +168,9 @@ const ModuleCard = ({
                     </div>
                     <div className="flex items-center gap-2">
                       {lesson.isMandatory && <Badge variant="outline" className="text-xs">Required</Badge>}
+                      <Badge variant={lesson.isPublished ? 'default' : 'secondary'} className="text-xs">
+                        {lesson.isPublished ? 'Published' : 'Draft'}
+                      </Badge>
                       <Button variant="ghost" size="sm" onClick={() => onEditLesson(lesson)}>
                         <Edit className="h-3 w-3" />
                       </Button>

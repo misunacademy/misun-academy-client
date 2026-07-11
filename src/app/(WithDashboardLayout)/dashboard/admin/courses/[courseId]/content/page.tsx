@@ -58,6 +58,7 @@ interface Lesson {
   videoDuration?: number;
   content?: string;
   isMandatory: boolean;
+  isPublished?: boolean;
   resources?: {
     title: string;
     type: 'link' | 'text';

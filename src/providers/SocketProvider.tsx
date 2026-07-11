@@ -1,0 +1,178 @@
+"use client";
+
+import { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
+import { io, Socket } from "socket.io-client";
+import { useAuth } from "@/hooks/useAuth";
+import { useMarkAllAsReadMutation } from "@/redux/api/notificationApi";
+
+interface NotificationEvent {
+  _id: string;
+  userId: string;
+  type: string;
+  title: string;
+  message: string;
+  link?: string;
+  read: boolean;
+  createdAt: string;
+}
+
+interface SocketContextValue {
+  isConnected: boolean;
+  unreadCount: number;
+  recentNotifications: NotificationEvent[];
+  setUnreadCount: (count: number) => void;
+  addNotification: (notification: NotificationEvent) => void;
+  clearRecent: () => void;
+  markAllRead: () => void;
+  markSingleRead: (id: string) => void;
+}
+
+const SocketContext = createContext<SocketContextValue>({
+  isConnected: false,
+  unreadCount: 0,
+  recentNotifications: [],
+  setUnreadCount: () => {},
+  addNotification: () => {},
+  clearRecent: () => {},
+  markAllRead: () => {},
+  markSingleRead: () => {},
+});
+
+export const useSocketContext = () => useContext(SocketContext);
+
+export default function SocketProvider({ children }: { children: React.ReactNode }) {
+  const { user, isAuthenticated } = useAuth();
+  const socketRef = useRef<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [recentNotifications, setRecentNotifications] = useState<NotificationEvent[]>([]);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [markAllAsRead] = useMarkAllAsReadMutation();
+
+  const baseApiUrl = process.env.NEXT_PUBLIC_BASE_API_URL;
+
+  const getBaseUrl = useCallback(() => {
+    if (!baseApiUrl) return undefined;
+    try {
+      const url = new URL(baseApiUrl);
+      return `${url.protocol}//${url.host}`;
+    } catch {
+      return baseApiUrl.replace('/api/v1/auth', '').replace('/api/v1', '');
+    }
+  }, [baseApiUrl]);
+
+  const fetchUnreadCount = useCallback(async () => {
+    if (!baseApiUrl) return;
+    try {
+      const res = await fetch(`${baseApiUrl}/notifications/unread-count`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setUnreadCount(json.data?.count ?? 0);
+      }
+    } catch {
+    }
+  }, [baseApiUrl]);
+
+  const fetchRecentNotifications = useCallback(async () => {
+    if (!baseApiUrl) return;
+    try {
+      const res = await fetch(`${baseApiUrl}/notifications?limit=10`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) setRecentNotifications(json.data);
+      }
+    } catch {
+    }
+  }, [baseApiUrl]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      if (socketRef.current) {
+        // Disconnecting fires the socket's own 'disconnect' handler,
+        // which updates isConnected(false) — no synchronous setState needed here.
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      return;
+    }
+
+    const baseUrl = getBaseUrl();
+    if (!baseUrl) return;
+
+    const socket = io(baseUrl, {
+      withCredentials: true,
+      transports: ['websocket', 'polling'],
+    });
+
+    socket.on('connect', () => {
+      setIsConnected(true);
+      // Fetch initial state from the server inside the connect callback
+      // (a subscription callback) instead of synchronously in the effect body.
+      fetchUnreadCount();
+      fetchRecentNotifications();
+    });
+
+    socket.on('disconnect', () => {
+      setIsConnected(false);
+    });
+
+    socket.on('notification', (data: NotificationEvent) => {
+      setRecentNotifications((prev) => [data, ...prev].slice(0, 10));
+      setUnreadCount((prev) => prev + 1);
+    });
+
+    socketRef.current = socket;
+
+    if (pollingRef.current) clearInterval(pollingRef.current);
+    pollingRef.current = setInterval(() => {
+      fetchUnreadCount();
+    }, 30000);
+
+    return () => {
+      socket.disconnect();
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [isAuthenticated, user?.id, getBaseUrl, fetchUnreadCount, fetchRecentNotifications]);
+
+  const addNotification = useCallback((notification: NotificationEvent) => {
+    setRecentNotifications((prev) => [notification, ...prev].slice(0, 10));
+    setUnreadCount((prev) => prev + 1);
+  }, []);
+
+  const clearRecent = useCallback(() => {
+    setRecentNotifications([]);
+  }, []);
+
+  const markAllRead = useCallback(() => {
+    markAllAsRead();
+    setUnreadCount(0);
+  }, [markAllAsRead]);
+
+  const markSingleRead = useCallback((id: string) => {
+    setRecentNotifications((prev) =>
+      prev.map((n) => (n._id === id ? { ...n, read: true } : n))
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+  }, []);
+
+  return (
+    <SocketContext.Provider
+      value={{
+        isConnected,
+        unreadCount,
+        recentNotifications,
+        setUnreadCount,
+        addNotification,
+        clearRecent,
+        markAllRead,
+        markSingleRead,
+      }}
+    >
+      {children}
+    </SocketContext.Provider>
+  );
+}

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
+import NotificationBell from "@/components/shared/NotificationBell";
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
@@ -120,6 +121,9 @@ const MyClassesPage = () => {
               }}
             />
             <div className="relative rounded-2xl bg-[#060f0a] border border-primary/10 p-6 sm:p-8 overflow-hidden">
+              <div className="absolute top-3 right-3 z-50">
+                <NotificationBell />
+              </div>
               {/* Inner glow */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/6 via-transparent to-transparent pointer-events-none" />
 

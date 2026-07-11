@@ -25,6 +25,7 @@ import {
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import ProtectedRoute from "@/components/shared/ProtectedRoute";
+import NotificationBell from "@/components/shared/NotificationBell";
 import {
   useGetCourseByIdQuery,
   useGetCourseProgressQuery,
@@ -331,7 +332,6 @@ export default function CourseDetails() {
       <div className="absolute top-[20%] -right-16 w-[200px] h-[220px] bg-primary/4 rounded-full blur-[60px] pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-
         {/* ── Top Header ── */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <Link href="/my-classes">
@@ -344,6 +344,7 @@ export default function CourseDetails() {
             <h1 className="text-2xl sm:text-3xl font-bold text-white leading-snug truncate">{course.title}</h1>
             <p className="text-sm text-white/40 mt-0.5">by {instructorName}</p>
           </div>
+          <NotificationBell />
         </div>
 
         {/* ── Progress Banner ── */}
