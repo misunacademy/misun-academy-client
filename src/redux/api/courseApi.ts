@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "./baseApi";
 
 export interface CourseResponse {
@@ -14,17 +13,17 @@ export interface CourseResponse {
   level?: 'beginner' | 'intermediate' | 'advanced';
   status?: 'draft' | 'published' | 'archived';
   price?: number;
-  duration?: any; // could be number or an object with weeks/hours
-  durationEstimate?: any;
+  duration?: unknown;
+  durationEstimate?: unknown;
   totalModules?: number;
   totalLessons?: number;
   learningOutcomes?: string[];
   prerequisites?: string[];
-  instructor?: any; // string or populated instructor object
+  instructor?: unknown;
   instructorId?: string;
   features?: string[];
   highlights?: string[];
-  curriculum?: any[]; // modules + lessons - flexible shape
+  curriculum?: unknown[];
   targetAudience?: string;
   tags?: string[];
   featured?: boolean;
@@ -102,7 +101,7 @@ const courseApi = baseApi.injectEndpoints({
           params: batchId ? { batchId } : undefined,
         };
       },
-      transformResponse: (response: any) => response?.data,
+      transformResponse: (response: { data: CourseResponse }) => response.data,
       providesTags: ["Courses"],
     }),
 
@@ -116,7 +115,7 @@ const courseApi = baseApi.injectEndpoints({
 
     // Get course progress for the current user
     // Server route: GET /course-enrollment/:courseId/progress
-    getCourseProgress: build.query<{ data: any }, string | { courseId: string; batchId?: string }>({
+    getCourseProgress: build.query<{ data: unknown }, string | { courseId: string; batchId?: string }>({
       query: (arg) => {
         const courseId = typeof arg === "string" ? arg : arg.courseId;
         const batchId = typeof arg === "string" ? undefined : arg.batchId;
@@ -125,22 +124,22 @@ const courseApi = baseApi.injectEndpoints({
           params: batchId ? { batchId } : undefined,
         };
       },
-      providesTags: ["CourseEnrollments", "Progress"],
+      providesTags: ["CourseEnrollments"],
     }),
 
     // Complete a lesson for the current user's enrollment
     // Server route: POST /course-enrollment/:courseId/complete-lesson
-    completeLesson: build.mutation<any, { courseId: string; moduleId: string; lessonId: string }>({
+    completeLesson: build.mutation<unknown, { courseId: string; moduleId: string; lessonId: string }>({
       query: ({ courseId, moduleId, lessonId }) => ({
         url: `/course-enrollment/${courseId}/complete-lesson`,
         method: "POST",
         body: { moduleId, lessonId },
       }),
-      invalidatesTags: ["CourseEnrollments", "Progress"],
+      invalidatesTags: ["CourseEnrollments"],
     }),
 
     // Admin: Create course
-    createCourse: build.mutation<any, Partial<CourseResponse>>({
+    createCourse: build.mutation<unknown, Partial<CourseResponse>>({
       query: (data) => ({
         url: "/courses",
         method: "POST",
@@ -150,7 +149,7 @@ const courseApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Update course
-    updateCourse: build.mutation<any, { id: string; data: Partial<CourseResponse> }>({
+    updateCourse: build.mutation<unknown, { id: string; data: Partial<CourseResponse> }>({
       query: ({ id, data }) => ({
         url: `/courses/${id}`,
         method: "PUT",
@@ -160,7 +159,7 @@ const courseApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Delete course
-    deleteCourse: build.mutation<any, string>({
+    deleteCourse: build.mutation<unknown, string>({
       query: (id) => ({
         url: `/courses/${id}`,
         method: "DELETE",
@@ -185,7 +184,7 @@ const courseApi = baseApi.injectEndpoints({
     }),
 
     // Create module
-    createModule: build.mutation<any, Partial<ModuleResponse>>({
+    createModule: build.mutation<unknown, Partial<ModuleResponse>>({
       query: (data) => ({
         url: "/content/modules",
         method: "POST",
@@ -195,7 +194,7 @@ const courseApi = baseApi.injectEndpoints({
     }),
 
     // Create lesson
-    createLesson: build.mutation<any, Partial<LessonResponse>>({
+    createLesson: build.mutation<unknown, Partial<LessonResponse>>({
       query: (data) => ({
         url: "/content/lessons",
         method: "POST",
@@ -205,7 +204,7 @@ const courseApi = baseApi.injectEndpoints({
     }),
 
     // Update module
-    updateModule: build.mutation<any, { id: string; data: Partial<ModuleResponse> }>({
+    updateModule: build.mutation<unknown, { id: string; data: Partial<ModuleResponse> }>({
       query: ({ id, data }) => ({
         url: `/content/modules/${id}`,
         method: "PUT",
@@ -215,7 +214,7 @@ const courseApi = baseApi.injectEndpoints({
     }),
 
     // Update lesson
-    updateLesson: build.mutation<any, { id: string; data: Partial<LessonResponse> }>({
+    updateLesson: build.mutation<unknown, { id: string; data: Partial<LessonResponse> }>({
       query: ({ id, data }) => ({
         url: `/content/lessons/${id}`,
         method: "PUT",
@@ -225,7 +224,7 @@ const courseApi = baseApi.injectEndpoints({
     }),
 
     // Delete module
-    deleteModule: build.mutation<any, string>({
+    deleteModule: build.mutation<unknown, string>({
       query: (id) => ({
         url: `/content/modules/${id}`,
         method: "DELETE",
@@ -234,7 +233,7 @@ const courseApi = baseApi.injectEndpoints({
     }),
 
     // Delete lesson
-    deleteLesson: build.mutation<any, string>({
+    deleteLesson: build.mutation<unknown, string>({
       query: (id) => ({
         url: `/content/lessons/${id}`,
         method: "DELETE",
@@ -243,7 +242,7 @@ const courseApi = baseApi.injectEndpoints({
     }),
 
     // Admin: assign one instructor to a course (or pass instructorId: null to unassign)
-    assignCourseInstructor: build.mutation<any, { courseId: string; instructorId: string | null }>({
+    assignCourseInstructor: build.mutation<unknown, { courseId: string; instructorId: string | null }>({
       query: ({ courseId, instructorId }) => ({
         url: `/courses/${courseId}/instructor`,
         method: "PATCH",
@@ -253,7 +252,7 @@ const courseApi = baseApi.injectEndpoints({
     }),
 
     // Admin: get all active instructor profiles for assignment UI
-    getAllInstructorProfiles: build.query<{ data: any[] }, { unassignedOnly?: boolean } | void>({
+    getAllInstructorProfiles: build.query<{ data: unknown[] }, { unassignedOnly?: boolean } | void>({
       query: (params) =>
         params
           ? { url: "/admin/instructors", params }

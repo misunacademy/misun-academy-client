@@ -3,6 +3,7 @@ import HeroSection from '@/components/module/home/HeroSection';
 import HomeDeferredSections from '@/components/module/home/HomeDeferredSections';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import { generateMetadata } from '@/lib/generateMetadata';
+import PageBackground from '@/components/shared/PageBackground';
 
 export const metadata = generateMetadata({
   title: 'কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স | MISUN Academy',
@@ -37,24 +38,11 @@ export const metadata = generateMetadata({
 
 export default function page() {
   return (
-    <div className="relative overflow-hidden bg-[#040a07]">
-      <div
-        className="absolute inset-0 opacity-[0.10] pointer-events-none"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)',
-          backgroundSize: '34px 34px',
-        }}
-      />
-      <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[620px] h-[280px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-[8%] w-[300px] h-[200px] bg-primary/6 rounded-full blur-[90px] pointer-events-none" />
-
+    <PageBackground gradient="bg-surface-darker" dotOpacity="opacity-[0.10]" dotSize="34px">
       <BreadcrumbJsonLd />
-      <div className="relative z-10">
-        <HeroSection />
-        <HomeDeferredSections />
-        <EnrollmentFixed />
-      </div>
-    </div>
+      <HeroSection />
+      <HomeDeferredSections />
+      <EnrollmentFixed />
+    </PageBackground>
   );
 }

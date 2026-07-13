@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useMemo, useEffect } from "react";
 import {
@@ -73,26 +72,31 @@ const EnrolledStudentTable = () => {
             {
                 accessorKey: "studentId",
                 header: "Student ID",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 cell: ({ row }) =>( row.original as any).studentId || row.original.userId || 'N/A',
             },
             {
                 accessorKey: "name",
                 header: "Name",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 cell: ({ row }) => ( (row.original as any).student?.name ) || (row.original.userId as string) || 'N/A',
             },
             {
                 accessorKey: "email",
                 header: "Email",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 cell: ({ row }) => ( (row.original as any).student?.email ) || 'N/A',
             },
             {
                 accessorKey: "phone",
                 header: "Phone",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 cell: ({ row }) => ( (row.original as any).student?.phone ) || 'N/A',
             },
             {
                 accessorKey: "address",
                 header: "Address",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 cell: ({ row }) => ( (row.original as any).student?.address ) || 'N/A',
             },
             {

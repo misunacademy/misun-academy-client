@@ -84,7 +84,8 @@ const GrantCourseAccessPage = () => {
         batchId,
       }).unwrap();
 
-      toast.success(result?.message || "Access granted successfully.");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      toast.success((result as any)?.message || "Access granted successfully.");
       setEmail("");
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };

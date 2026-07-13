@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useMemo, useState, type MouseEvent } from 'react';
@@ -139,6 +138,7 @@ export default function EnrollmentFixed() {
         isLoading: gdCourseLoading,
         isError: gdCourseError,
     } = useGetCourseBySlugQuery('complete-graphic-design-with-freelancing');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const gdCourseId = (gdCourseData?.data as any)?._id;
     const {
         data: gdCurrentRes,

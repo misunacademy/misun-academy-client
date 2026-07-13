@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { FormEvent, useState } from "react";
@@ -55,6 +54,7 @@ export default function BatchDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [batchToDelete, setBatchToDelete] = useState<any>(null);
   const [courseFilter, setCourseFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -77,7 +77,7 @@ export default function BatchDashboard() {
 
   const courses = coursesData?.data || [];
 
-  const handleInputChange = (field: any, value: any) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -99,6 +99,7 @@ export default function BatchDashboard() {
       toast.success(`Status updated to ${newStatus}`);
       await refetch();
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       toast.error((error as any)?.data?.message || "Failed to update status");
     }
   };
@@ -132,11 +133,13 @@ export default function BatchDashboard() {
         toast.success("Batch created successfully");
       }
       resetForm();
-    } catch (err: any) {
-      toast.error(err?.data?.message || (editingBatchId ? "Failed to update batch" : "Failed to create batch"));
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+      toast.error(error?.data?.message || (editingBatchId ? "Failed to update batch" : "Failed to create batch"));
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDeleteClick = (batch: any) => {
     setBatchToDelete(batch);
     setDeleteDialogOpen(true);
@@ -150,8 +153,9 @@ export default function BatchDashboard() {
       toast.success("Batch deleted successfully");
       setDeleteDialogOpen(false);
       setBatchToDelete(null);
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to delete batch");
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+      toast.error(error?.data?.message || "Failed to delete batch");
     }
   };
 
@@ -199,7 +203,7 @@ export default function BatchDashboard() {
                         <Loader2 className="w-4 h-4 animate-spin" />
                       </div>
                     ) : courses.length > 0 ? (
-                      courses.map((course: any) => (
+                      courses.map((course) => (
                         <SelectItem key={course._id} value={course._id}>
                           {course.title}
                         </SelectItem>

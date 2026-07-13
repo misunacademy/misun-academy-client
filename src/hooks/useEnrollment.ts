@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useAuth } from '@/hooks/useAuth';
 import { useGetEnrollmentsQuery } from '@/redux/api/enrollmentApi';
 
@@ -49,12 +48,16 @@ export function useEnrollment(): EnrollmentStatus {
 
   const enrollments = data?.data || [];
   const activeEnrollments = enrollments.filter(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (enrollment: any) => enrollment.status === 'active'
   );
 
   return {
     hasEnrollments: activeEnrollments.length > 0,
-    enrolledBatchIds: activeEnrollments.map((e: any) => e.batchId),
+    enrolledBatchIds: activeEnrollments.map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (e: any) => e.batchId
+    ),
     isLoading: false,
     error: null,
   };

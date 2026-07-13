@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 // Validation schemas
 const loginSchema = z.object({
     email: z.string().email("অনুগ্রহ করে সঠিক ইমেইল ঠিকানা দিন"),
@@ -125,9 +126,9 @@ const LoginForm = (
                     </div>
 
                     <div className={`relative p-[2px] rounded-xl overflow-hidden ${loginForm.formState.isSubmitting ? 'opacity-60' : ''}`}>
-                        <span className="absolute inset-[-100%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_35%,hsl(156_100%_60%)_50%,transparent_65%)]" />
+                        <AnimatedBorder variant="accent" speed="2s" />
                         <button type="submit" disabled={loginForm.formState.isSubmitting}
-                            className="relative w-full bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41] transition-all duration-300 text-white font-bold py-3.5 rounded-xl text-base disabled:cursor-not-allowed disabled:bg-primary/50 disabled:hover:bg-primary/50">
+                            className="relative w-full bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep transition-all duration-300 text-white font-bold py-3.5 rounded-xl text-base disabled:cursor-not-allowed disabled:bg-primary/50 disabled:hover:bg-primary/50">
                             {loginForm.formState.isSubmitting ? "লগইন হচ্ছে..." : "লগইন করুন"}
                         </button>
                     </div>

@@ -14,7 +14,7 @@ export const TestimonialCard = ({ name, batch, studentId, testimonial, postLink,
     return (
         <div
             className="group relative overflow-hidden rounded-2xl
-                bg-[#060f0a] border border-primary/15
+                bg-surface border border-primary/15
                 p-6 flex flex-col self-start
                 transition-all duration-300 hover:-translate-y-1
                 hover:border-primary/40 hover:shadow-[0_8px_32px_hsl(156_70%_42%/0.18)]

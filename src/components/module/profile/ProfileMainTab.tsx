@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Edit, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -10,11 +9,14 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
 interface ProfileMainTabProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     profile: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     user: any;
     studentId: string;
     phone: string;
     wpnumber: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sessions: any[];
     handleRevokeSession: (token: string) => void;
     refetch: () => void;
@@ -42,6 +44,7 @@ export function ProfileMainTab({
         }
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const onSubmit = async (data: any) => {
         try {
             // Update the profile data (phone, wpnumber)
@@ -60,13 +63,14 @@ export function ProfileMainTab({
             toast.success("Profile updated successfully");
             setIsEditing(false);
             refetch();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             toast.error(error?.data?.message || "Failed to update profile");
         }
     };
 
     return (
-        <div className="flex-1 bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
+        <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
 
             {/* Ambient glow inside right panel */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />

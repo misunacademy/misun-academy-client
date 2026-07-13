@@ -6,15 +6,15 @@ import { useGetMySalariesQuery, useGetMyEmployeeProfileQuery } from '@/redux/api
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-import { EmployeeStatCards } from './(components)/EmployeeStatCards';
-import { EmployeeInfoCard } from './(components)/EmployeeInfoCard';
-import { SalaryStructureCard } from './(components)/SalaryStructureCard';
-import { PayableCard } from './(components)/PayableCard';
-import { SalaryHistoryTable } from './(components)/SalaryHistoryTable';
+import { EmployeeStatCards } from './_components/EmployeeStatCards';
+import { EmployeeInfoCard } from './_components/EmployeeInfoCard';
+import { SalaryStructureCard } from './_components/SalaryStructureCard';
+import { PayableCard } from './_components/PayableCard';
+import { SalaryHistoryTable } from './_components/SalaryHistoryTable';
 import {
     UpdateInfoDialog,
     type EmployeeExtendedInfo,
-} from './(components)/UpdateInfoDialog';
+} from './_components/UpdateInfoDialog';
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 function DashboardLoader() {

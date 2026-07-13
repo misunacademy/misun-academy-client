@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -55,12 +54,15 @@ export default function StudentsPage() {
     });
 
     const studentsData = useMemo(() => studentsDataResponse?.data || [], [studentsDataResponse?.data]);
-    const metaData = studentsDataResponse?.meta;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const metaData = studentsDataResponse?.meta as any;
     const totalStudentsData = metaData?.total || 0;
     const totalPages = metaData?.totalPages || 1;
 
     const allStudents: StudentRow[] = useMemo(() => {
-        return studentsData.map((enrollment: any, index: number) => ({
+        return studentsData.map(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (enrollment: any, index: number) => ({
             _id: enrollment._id || enrollment.userId?._id || enrollment.enrollmentId || `row-${index}`,
             enrollmentId: enrollment.enrollmentId,
             name: enrollment.userId?.name || "Unknown",

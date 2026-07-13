@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { FormEvent, useState } from 'react';
 import { Button } from "@/components/ui/button";
@@ -52,7 +51,7 @@ export default function BatchCrate() {
     const router = useRouter();
     const courses = coursesData?.data || [];
 
-    const handleInputChange = (field: any, value: any) => {
+    const handleInputChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
@@ -89,8 +88,9 @@ export default function BatchCrate() {
 
             resetForm();
             router.push('/dashboard/admin/batch');
-        } catch (err: any) {
-            toast.error(err?.data?.message || ("Failed to create batch"));
+        } catch (err: unknown) {
+            const error = err as { data?: { message?: string } };
+            toast.error(error?.data?.message || ("Failed to create batch"));
         }
     };
 
@@ -128,7 +128,7 @@ export default function BatchCrate() {
                                             <Loader2 className="w-4 h-4 animate-spin" />
                                         </div>
                                     ) : courses.length > 0 ? (
-                                        courses.map((course: any) => (
+                                        courses.map((course) => (
                                             <SelectItem key={course._id} value={course._id}>
                                                 {course.title}
                                             </SelectItem>

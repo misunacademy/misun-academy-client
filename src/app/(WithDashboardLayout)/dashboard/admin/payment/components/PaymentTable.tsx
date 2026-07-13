@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
@@ -68,6 +67,7 @@ const PaymentTable = () => {
     }, [search, statusFilter, selectedCourseId, selectedBatchId]);
 
     // RTK Query hooks
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const paymentsQueryParams: any = {
         search: search || undefined,
         status: statusFilter !== 'all' ? statusFilter : undefined,
@@ -89,6 +89,7 @@ const PaymentTable = () => {
         if (selectedTransactionId && selectedStatus) {
             try {
                 // Find the payment to determine the method
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const payment = payments.find((p: any) => p.transactionId === selectedTransactionId);
 
                 if (payment?.method === 'PhonePay' && payment.status === 'review') {
@@ -102,8 +103,7 @@ const PaymentTable = () => {
                     toast.success('Payment status updated successfully');
                 }
                 refetch();
-            } catch (error) {
-                console.log(error)
+            } catch {
                 toast.error('Failed to update payment status');
             }
         }
@@ -172,20 +172,22 @@ const PaymentTable = () => {
                 id: 'gatewayResponse',
                 header: 'Payment Info',
                 cell: ({ row }) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const gw = row.original.gatewayResponse as any;
                     return <div>
                         {
-                            (row.original.method === 'PhonePay' && row.original.gatewayResponse) && (
+                            (row.original.method === 'PhonePay' && gw) && (
                                 <div>
-                                    <p className='text-[12px] font-bold'>{row.original?.gatewayResponse?.senderNumber}</p>
-                                    <p>{row.original?.gatewayResponse?.phonePeTransactionId}</p>
+                                    <p className='text-[12px] font-bold'>{gw?.senderNumber}</p>
+                                    <p>{gw?.phonePeTransactionId}</p>
                                 </div>
                             )
                         }
                         {
-                            (row.original.method === 'SSLCommerz' && row.original.gatewayResponse) && (
+                            (row.original.method === 'SSLCommerz' && gw) && (
                                 <div>
-                                    <p className='text-[12px] font-bold'>{row.original?.gatewayResponse?.card_issuer}</p>
-                                    <p>{row.original?.gatewayResponse?.bank_tran_id}</p>
+                                    <p className='text-[12px] font-bold'>{gw?.card_issuer}</p>
+                                    <p>{gw?.bank_tran_id}</p>
                                 </div>
                             )
                         }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Loader2, CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useGetMyPaymentsQuery } from "@/redux/api/paymentApi";
 
@@ -50,7 +49,7 @@ export function PaymentHistoryTab() {
 
     if (isLoading) {
         return (
-            <div className="flex-1 bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
+            <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         );
@@ -58,14 +57,14 @@ export function PaymentHistoryTab() {
 
     if (error) {
         return (
-            <div className="flex-1 bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
+            <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
                 <p className="text-red-400">Failed to load payment history</p>
             </div>
         );
     }
 
     return (
-        <div className="flex-1 bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
+        <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
             {/* Ambient glow inside right panel */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -90,6 +89,7 @@ export function PaymentHistoryTab() {
                         </p>
                     </div>
                 ) : (
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     payments.map((payment: any) => (
                         <div key={payment._id} className="flex flex-col gap-6 p-6 rounded-xl border border-primary/10 bg-primary/5 hover:bg-primary/10 transition-colors">
                             {/* Card Header equivalent */}

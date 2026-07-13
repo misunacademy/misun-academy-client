@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -72,7 +71,7 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
                 </TableCell>
               </TableRow>
             ) : (
-              courses.map((course: any) => (
+              courses.map((course) => (
                 <TableRow key={String(course._id)}>
                   <TableCell>
                     <div>
@@ -86,7 +85,8 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
                       {course.level || 'N/A'}
                     </Badge>
                   </TableCell>
-                  <TableCell>{course.durationEstimate || '—'}</TableCell>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  <TableCell>{(course as any).durationEstimate || '—'}</TableCell>
                   <TableCell>
                     <Badge variant={course.isCertificateAvailable ? 'default' : 'destructive'}>
                       {course.isCertificateAvailable ? 'Available' : 'Not Available'}

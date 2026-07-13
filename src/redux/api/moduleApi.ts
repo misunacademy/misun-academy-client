@@ -1,31 +1,24 @@
 import { baseApi } from "./baseApi";
 
 const moduleApi = baseApi.injectEndpoints({
+    overrideExisting: true,
     endpoints: (builder) => ({
-        getCourseModules: builder.query({
+        getCourseModules: builder.query<{ data: unknown }, { courseId: string; batchId?: string }>({
             query: ({ courseId, batchId }) => ({
                 url: `/admin/modules/courses/${courseId}/modules`,
-                method: "GET",
                 params: { batchId },
             }),
             providesTags: ["Modules"],
         }),
-        getModuleById: builder.query({
-            query: (moduleId) => ({
-                url: `/admin/modules/modules/${moduleId}`,
-                method: "GET",
-            }),
+        getModuleById: builder.query<{ data: unknown }, string>({
+            query: (moduleId) => ({ url: `/admin/modules/modules/${moduleId}` }),
             providesTags: ["Modules"],
         }),
-        getUnassignedCourseModules: builder.query({
-            query: (courseId) => ({
-                url: `/admin/modules/courses/${courseId}/modules/unassigned`,
-                method: "GET",
-            }),
+        getUnassignedCourseModules: builder.query<{ data: unknown }, string>({
+            query: (courseId) => ({ url: `/admin/modules/courses/${courseId}/modules/unassigned` }),
             providesTags: ["Modules"],
         }),
-        // Admin: Create module 
-        createCourseModule: builder.mutation({
+        createCourseModule: builder.mutation<unknown, { courseId: string; batchId?: string } & Record<string, unknown>>({
             query: ({ courseId, batchId, ...data }) => ({
                 url: `/admin/modules/courses/${courseId}/modules`,
                 method: "POST",
@@ -34,8 +27,7 @@ const moduleApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Modules"],
         }),
-        // Admin: Update module 
-        updateCourseModule: builder.mutation({
+        updateCourseModule: builder.mutation<unknown, { moduleId: string } & Record<string, unknown>>({
             query: ({ moduleId, ...data }) => ({
                 url: `/admin/modules/modules/${moduleId}`,
                 method: "PUT",
@@ -43,15 +35,14 @@ const moduleApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Modules"],
         }),
-        // Admin: Delete module 
-        deleteCourseModule: builder.mutation({
+        deleteCourseModule: builder.mutation<unknown, string>({
             query: (moduleId) => ({
                 url: `/admin/modules/modules/${moduleId}`,
                 method: "DELETE",
             }),
             invalidatesTags: ["Modules"],
         }),
-        reorderModules: builder.mutation({
+        reorderModules: builder.mutation<unknown, { courseId: string; batchId?: string; moduleOrders: unknown }>({
             query: ({ courseId, batchId, moduleOrders }) => ({
                 url: `/admin/modules/courses/${courseId}/modules/reorder`,
                 method: "PUT",

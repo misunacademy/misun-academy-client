@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "./baseApi";
 
 export interface InstructorProfileResponse {
@@ -77,39 +76,39 @@ const instructorApi = baseApi.injectEndpoints({
       providesTags: ["Instructors"],
     }),
 
-    updateInstructorProfile: build.mutation<any, Partial<InstructorProfileResponse>>({
+    updateInstructorProfile: build.mutation<unknown, Partial<InstructorProfileResponse>>({
       query: (data) => ({ url: "/instructor/profile", method: "PUT", body: data }),
       invalidatesTags: ["Instructors"],
     }),
 
     // ── Dashboard ─────────────────────────────────────────────────────────────
-    getInstructorDashboard: build.query<{ data: any }, void>({
+    getInstructorDashboard: build.query<{ data: unknown }, void>({
       query: () => ({ url: "/instructor/dashboard" }),
       providesTags: ["Instructors"],
     }),
 
     // ── Batches ───────────────────────────────────────────────────────────────
-    getAssignedBatches: build.query<{ data: any[] }, { status?: string }>({
+    getAssignedBatches: build.query<{ data: unknown[] }, { status?: string }>({
       query: (params) => ({ url: "/instructor/batches", params }),
       providesTags: ["Batches", "Instructors"],
     }),
 
-    getBatchStudents: build.query<{ data: any[] }, string>({
+    getBatchStudents: build.query<{ data: unknown[] }, string>({
       query: (batchId) => ({ url: `/instructor/batches/${batchId}/students` }),
       providesTags: ["Students", "Instructors"],
     }),
 
-    getBatchStatistics: build.query<{ data: any }, string>({
+    getBatchStatistics: build.query<{ data: unknown }, string>({
       query: (batchId) => ({ url: `/instructor/batches/${batchId}/statistics` }),
       providesTags: ["Batches", "Instructors"],
     }),
 
-    getPendingSubmissions: build.query<{ data: any[] }, void>({
+    getPendingSubmissions: build.query<{ data: unknown[] }, void>({
       query: () => ({ url: "/instructor/submissions/pending" }),
       providesTags: ["Instructors"],
     }),
 
-    getInstructorEnrolledStudents: build.query<{ data: any[], meta: any }, Record<string, any>>({
+    getInstructorEnrolledStudents: build.query<{ data: unknown[], meta: unknown }, Record<string, unknown>>({
       query: (params) => ({ url: "/instructor/students", params }),
       providesTags: ["Students", "Instructors"],
     }),
@@ -129,7 +128,7 @@ const instructorApi = baseApi.injectEndpoints({
       providesTags: ["Modules"],
     }),
 
-    createInstructorModule: build.mutation<any, { courseId: string; batchId: string } & Partial<InstructorModule>>({
+    createInstructorModule: build.mutation<unknown, { courseId: string; batchId: string } & Partial<InstructorModule>>({
       query: ({ courseId, batchId, ...data }) => ({
         url: `/instructor/courses/${courseId}/modules`,
         method: "POST",
@@ -139,7 +138,7 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Modules"],
     }),
 
-    reorderInstructorModules: build.mutation<any, { courseId: string; batchId: string; moduleOrders: { moduleId: string; orderIndex: number }[] }>({
+    reorderInstructorModules: build.mutation<unknown, { courseId: string; batchId: string; moduleOrders: { moduleId: string; orderIndex: number }[] }>({
       query: ({ courseId, batchId, moduleOrders }) => ({
         url: `/instructor/courses/${courseId}/modules/reorder`,
         method: "PUT",
@@ -149,7 +148,7 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Modules"],
     }),
 
-    updateInstructorModule: build.mutation<any, { moduleId: string } & Partial<InstructorModule>>({
+    updateInstructorModule: build.mutation<unknown, { moduleId: string } & Partial<InstructorModule>>({
       query: ({ moduleId, ...data }) => ({
         url: `/instructor/modules/${moduleId}`,
         method: "PUT",
@@ -158,7 +157,7 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Modules"],
     }),
 
-    deleteInstructorModule: build.mutation<any, string>({
+    deleteInstructorModule: build.mutation<unknown, string>({
       query: (moduleId) => ({ url: `/instructor/modules/${moduleId}`, method: "DELETE" }),
       invalidatesTags: ["Modules", "Lessons"],
     }),
@@ -169,7 +168,7 @@ const instructorApi = baseApi.injectEndpoints({
       providesTags: ["Lessons"],
     }),
 
-    createInstructorLesson: build.mutation<any, { moduleId: string } & Partial<InstructorLesson>>({
+    createInstructorLesson: build.mutation<unknown, { moduleId: string } & Partial<InstructorLesson>>({
       query: ({ moduleId, ...data }) => ({
         url: `/instructor/modules/${moduleId}/lessons`,
         method: "POST",
@@ -178,7 +177,7 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Lessons", "Modules"],
     }),
 
-    updateInstructorLesson: build.mutation<any, { lessonId: string } & Partial<InstructorLesson>>({
+    updateInstructorLesson: build.mutation<unknown, { lessonId: string } & Partial<InstructorLesson>>({
       query: ({ lessonId, ...data }) => ({
         url: `/instructor/lessons/${lessonId}`,
         method: "PUT",
@@ -187,7 +186,7 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Lessons"],
     }),
 
-    deleteInstructorLesson: build.mutation<any, string>({
+    deleteInstructorLesson: build.mutation<unknown, string>({
       query: (lessonId) => ({ url: `/instructor/lessons/${lessonId}`, method: "DELETE" }),
       invalidatesTags: ["Lessons", "Modules"],
     }),

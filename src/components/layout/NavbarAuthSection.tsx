@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,8 +16,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, UserCircle, Sparkles, LayoutDashboard } from 'lucide-react';
-import { FaCertificate, FaRegFileAlt } from 'react-icons/fa';
+import { User, LogOut, UserCircle, Sparkles, LayoutDashboard, BadgeCheck, FileText } from 'lucide-react';
 
 export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
     const { user, signOut } = useAuth();
@@ -72,15 +72,14 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
                     hover:scale-105 hover:-translate-y-0.5
                     active:scale-95 active:translate-y-0
                     transition-all duration-300 ease-out">
-                        {/* Rotating conic-gradient border */}
-                        <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,hsl(156_70%_42%)_25%,hsl(156_85%_70%)_50%,hsl(156_70%_42%)_75%,transparent_100%)]" />
+                        <AnimatedBorder />
                         <button className="group relative overflow-hidden
                       inline-flex items-center gap-2
                       px-6 py-2
                       text-sm font-bold tracking-wide rounded-full
-                      bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38]
+                      bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
                       text-white
-                      hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]
+                      hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
                       transition-all duration-300 ease-out">
                             <span className="relative z-10 flex items-center gap-1.5">
                                 <Sparkles className="w-4 h-4 text-white animate-pulse" />
@@ -127,7 +126,7 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
                             userRole === 'learner' && canSeeClasses && isEnrolled &&
                             <DropdownMenuItem asChild>
                                 <Link href="/enrollment-posters" className="">
-                                    <FaRegFileAlt className="mr-2 h-4 w-4" />
+                                    <FileText className="mr-2 h-4 w-4" />
                                     Your Enrollment Posters
                                 </Link>
                             </DropdownMenuItem>
@@ -137,7 +136,7 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
                             userRole === 'learner' && canSeeClasses && isEnrolled &&
                             <DropdownMenuItem asChild>
                                 <Link href="/my-classes/certificates" className="">
-                                    <FaCertificate className="mr-2 h-4 w-4" />
+                                    <BadgeCheck className="mr-2 h-4 w-4" />
                                     Certificates
                                 </Link>
                             </DropdownMenuItem>

@@ -100,20 +100,16 @@ export async function proxy(request: NextRequest) {
 
     const isProtectedRoute = PROTECTED_PATHS.some((path) => pathname.startsWith(path));
 
-    if (!isProtectedRoute || sessionCookie) {
-        return NextResponse.next();
+    if (isProtectedRoute && !sessionCookie) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/auth/login';
+        url.search = `?redirect=${encodeURIComponent(pathname)}`;
+        return NextResponse.redirect(url);
     }
 
     return NextResponse.next();
 }
 
-// Run on all public routes so maintenance mode can take effect.
 export const config = {
-    // matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
-    matcher: [
-        '/dashboard/:path*',
-        '/checkout/:path*',
-        '/my-classes/:path*',
-        '/profile/:path*',
-    ],
+    matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };

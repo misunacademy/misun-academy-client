@@ -8,6 +8,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
+import PageBackground from '@/components/shared/PageBackground';
 
 
 // Validation schema
@@ -56,20 +58,16 @@ const ResetPasswordForm = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#060f0a] flex flex-col relative overflow-hidden">
-            {/* Dot-grid */}
-            <div
-                className="absolute inset-0 opacity-[0.04] pointer-events-none"
-                style={{
-                    backgroundImage: "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)",
-                    backgroundSize: "32px 32px",
-                }}
-            />
-            <div className="absolute -top-24 left-1/4 w-[500px] h-[500px] bg-primary/7 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-
+        <PageBackground
+            gradient="bg-surface flex flex-col"
+            dotOpacity="opacity-[0.04]"
+            orbs={[
+                { position: "-top-24 left-1/4", size: "w-[500px] h-[500px]", opacity: "bg-primary/7", blur: "blur-[120px]" },
+                { position: "bottom-0 right-1/4", size: "w-80 h-80", opacity: "bg-primary/5", blur: "blur-3xl" },
+            ]}
+        >
             {/* Top nav bar */}
-            <div className="relative z-10 border-b border-primary/15 bg-[#060f0a]/80 backdrop-blur-sm">
+            <div className="relative z-10 border-b border-primary/15 bg-surface/80 backdrop-blur-sm">
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
                     <button
                         onClick={() => router.back()}
@@ -95,8 +93,8 @@ const ResetPasswordForm = () => {
                     <div className="text-center mb-8">
                         <div className="flex justify-center mb-4">
                             <div className="relative p-[1.5px] rounded-full overflow-hidden">
-                                <span className="absolute inset-[-100%] animate-[spin_5s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
-                                <div className="relative w-16 h-16 rounded-full bg-[#060f0a] flex items-center justify-center">
+                                <AnimatedBorder variant="simple" speed="5s" />
+                                <div className="relative w-16 h-16 rounded-full bg-surface flex items-center justify-center">
                                     <BookOpen className="w-7 h-7 text-primary" />
                                 </div>
                             </div>
@@ -116,7 +114,7 @@ const ResetPasswordForm = () => {
                     </div>
 
                     {/* Card */}
-                    <div className="relative overflow-hidden rounded-2xl bg-[#060f0a] border border-primary/20 shadow-[0_0_60px_hsl(156_70%_42%/0.12)]">
+                    <div className="relative overflow-hidden rounded-2xl bg-surface border border-primary/20 shadow-[0_0_60px_hsl(156_70%_42%/0.12)]">
                         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
                         <div className="absolute top-0 left-0 w-5 h-5 border-t border-l border-primary/40 rounded-tl-2xl" />
                         <div className="absolute top-0 right-0 w-5 h-5 border-t border-r border-primary/40 rounded-tr-2xl" />
@@ -181,9 +179,9 @@ const ResetPasswordForm = () => {
                                     />
 
                                     <div className={`relative p-[2px] rounded-xl overflow-hidden ${resetPasswordForm.formState.isSubmitting ? 'opacity-60' : ''}`}>
-                                        <span className="absolute inset-[-100%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_35%,hsl(156_100%_60%)_50%,transparent_65%)]" />
+                                        <AnimatedBorder variant="accent" speed="2s" />
                                         <button type="submit" disabled={resetPasswordForm.formState.isSubmitting}
-                                            className="relative w-full bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41] transition-all duration-300 text-white font-bold py-3.5 rounded-xl text-base disabled:cursor-not-allowed disabled:bg-primary/50 disabled:hover:bg-primary/50">
+                                            className="relative w-full bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep transition-all duration-300 text-white font-bold py-3.5 rounded-xl text-base disabled:cursor-not-allowed disabled:bg-primary/50 disabled:hover:bg-primary/50">
                                             {resetPasswordForm.formState.isSubmitting ? "রিসেট হচ্ছে..." : "পাসওয়ার্ড রিসেট করুন"}
                                         </button>
                                     </div>
@@ -193,13 +191,13 @@ const ResetPasswordForm = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </PageBackground>
     );
 };
 
 const ResetPasswordPage = () => {
     return (
-        <Suspense fallback={<div className="min-h-screen bg-[#060f0a]" />}>
+        <Suspense fallback={<div className="min-h-screen bg-surface" />}>
             <ResetPasswordForm />
         </Suspense>
     );

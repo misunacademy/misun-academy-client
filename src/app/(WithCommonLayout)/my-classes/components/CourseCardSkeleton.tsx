@@ -3,7 +3,7 @@ export function CourseCardSkeleton() {
     <div className="relative p-[1.5px] rounded-2xl overflow-hidden animate-pulse">
       <span className="absolute inset-0 rounded-2xl border border-primary/10" />
       
-      <div className="relative flex flex-col sm:flex-row min-h-[160px] rounded-2xl bg-[#060f0a] overflow-hidden">
+      <div className="relative flex flex-col sm:flex-row min-h-[160px] rounded-2xl bg-surface overflow-hidden">
         {/* Thumbnail Skeleton */}
         <div className="relative w-full sm:w-56 md:w-64 shrink-0 min-h-[140px] sm:min-h-0 bg-white/5" />
 

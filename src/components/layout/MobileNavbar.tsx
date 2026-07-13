@@ -64,10 +64,11 @@ export default function MobileNavbar() {
             ) : null}
 
             {/* Mobile Menu */}
-            <div
+            <nav
                 id="mobile-nav-menu"
+                aria-label="Main navigation"
                 className={cn(
-                    'fixed right-2 top-16 z-[1100] w-[min(365px,calc(100vw-1rem))] max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain bg-[#040a07] shadow-[0_12px_36px_rgba(0,0,0,0.75)] rounded-lg px-8 pb-10 pt-6 flex flex-col border border-primary/20 origin-top-right transition-all',
+                    'fixed right-2 top-16 z-[1100] w-[min(365px,calc(100vw-1rem))] max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain bg-surface-darker shadow-[0_12px_36px_rgba(0,0,0,0.75)] rounded-lg px-8 pb-10 pt-6 flex flex-col border border-primary/20 origin-top-right transition-all',
                     isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-1 pointer-events-none'
                 )}
             >
@@ -192,7 +193,7 @@ export default function MobileNavbar() {
                         <Button className='w-28 font-bangla'>এনরোল করুন</Button>
                     </Link>
                 </div>
-            </div>
+            </nav>
         </div>
     );
 }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useMemo, useState } from "react";
@@ -98,8 +97,8 @@ export default function RecordingPage() {
       toast.success("Recording created successfully");
       setIsCreateOpen(false);
       resetForm();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to create recording");
+    } catch (err: unknown) {
+      toast.error((err as { data?: { message?: string } })?.data?.message || "Failed to create recording");
     }
   };
 
@@ -133,8 +132,8 @@ export default function RecordingPage() {
       setIsEditOpen(false);
       setSelectedRecording(null);
       resetForm();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to update recording");
+    } catch (err: unknown) {
+      toast.error((err as { data?: { message?: string } })?.data?.message || "Failed to update recording");
     }
   };
 
@@ -150,8 +149,8 @@ export default function RecordingPage() {
       toast.success("Recording deleted successfully");
       setDeleteDialogOpen(false);
       setRecordingToDelete(null);
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to delete recording");
+    } catch (err: unknown) {
+      toast.error((err as { data?: { message?: string } })?.data?.message || "Failed to delete recording");
     }
   };
 

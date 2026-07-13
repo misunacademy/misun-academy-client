@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/hooks/useAuth";
 import { useMarkAllAsReadMutation } from "@/redux/api/notificationApi";
@@ -103,10 +103,15 @@ export default function SocketProvider({ children }: { children: React.ReactNode
     const baseUrl = getBaseUrl();
     if (!baseUrl) return;
 
-    const socket = io(baseUrl, {
-      withCredentials: true,
-      transports: ['websocket', 'polling'],
-    });
+    let socket: Socket;
+    try {
+      socket = io(baseUrl, {
+        withCredentials: true,
+        transports: ['websocket', 'polling'],
+      });
+    } catch {
+      return;
+    }
 
     socket.on('connect', () => {
       setIsConnected(true);
@@ -159,19 +164,19 @@ export default function SocketProvider({ children }: { children: React.ReactNode
     setUnreadCount((prev) => Math.max(0, prev - 1));
   }, []);
 
+  const contextValue = useMemo(() => ({
+    isConnected,
+    unreadCount,
+    recentNotifications,
+    setUnreadCount,
+    addNotification,
+    clearRecent,
+    markAllRead,
+    markSingleRead,
+  }), [isConnected, unreadCount, recentNotifications, setUnreadCount, addNotification, clearRecent, markAllRead, markSingleRead]);
+
   return (
-    <SocketContext.Provider
-      value={{
-        isConnected,
-        unreadCount,
-        recentNotifications,
-        setUnreadCount,
-        addNotification,
-        clearRecent,
-        markAllRead,
-        markSingleRead,
-      }}
-    >
+    <SocketContext.Provider value={contextValue}>
       {children}
     </SocketContext.Provider>
   );

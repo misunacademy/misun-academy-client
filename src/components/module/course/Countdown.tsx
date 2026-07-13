@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState } from 'react';
 import { useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
 import { useGetCourseBySlugQuery } from "@/redux/api/courseApi";
@@ -19,7 +18,7 @@ type TimeLeft = {
 function TimeBlock({ value, label }: { value: number; label: string }) {
   return (
     <div className="relative overflow-hidden flex flex-col items-center justify-center
-      bg-[#060f0a] border border-primary/20 rounded-2xl
+      bg-surface border border-primary/20 rounded-2xl
       w-20 h-24 sm:w-24 sm:h-28
       shadow-[0_8px_32px_hsl(156_70%_42%/0.15)]
       transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 group"
@@ -77,6 +76,7 @@ const Countdown = ({ batch: batchProp, courseSlug }: CountdownProps = {}) => {
   const { data: courseBySlug, isLoading: courseBySlugLoading } = useGetCourseBySlugQuery(
     courseSlug!, { skip: !courseSlug }
   );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const slugCourseId = courseSlug ? (courseBySlug?.data as any)?._id : undefined;
 
   const { data: slugBatchRes, isLoading: slugBatchLoading } = useGetCurrentEnrollmentBatchQuery(
@@ -85,13 +85,16 @@ const Countdown = ({ batch: batchProp, courseSlug }: CountdownProps = {}) => {
   );
 
   // Resolve batch: if a batch is passed directly, use it; otherwise use slug-resolved batch
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const batch = batchProp ?? (courseSlug ? (slugBatchRes?.data as any) : null);
 
   // derive effective slug from either prop or batch info
   const effectiveSlug = useMemo(() => {
     if (courseSlug) return courseSlug;
     // batch.courseId may be object with slug
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (batch && typeof batch.courseId === 'object' && batch.courseId !== null && (batch.courseId as any)?.slug) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (batch.courseId as any).slug as string;
     }
     return undefined;

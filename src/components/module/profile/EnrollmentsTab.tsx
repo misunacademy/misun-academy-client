@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ShoppingBagIcon } from "lucide-react";
 import { format, isValid } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 interface EnrollmentsTabProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     profile: any;
 }
 
@@ -46,7 +46,7 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
     };
 
     return (
-        <div className="flex-1 bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
+        <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
             {/* Ambient glow inside right panel */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -70,6 +70,7 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
 
             <div className="relative z-10 grid gap-6">
                 {enrollments.length > 0 ? (
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     enrollments.map((enrollment: any, index: number) => (
                         <div key={enrollment?.enrollmentId || enrollment?._id || index} className="flex flex-col md:flex-row gap-6 p-6 rounded-xl border border-primary/10 bg-primary/5 hover:bg-primary/10 transition-colors">
                             <div className="flex-1 space-y-4">

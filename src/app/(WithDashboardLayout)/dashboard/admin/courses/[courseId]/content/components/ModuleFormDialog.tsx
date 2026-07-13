@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useCreateCourseModuleMutation, useUpdateCourseModuleMutation } from "@/redux/api/moduleApi";
@@ -73,8 +72,9 @@ const ModuleFormDialog=({ open, mode, data, courseId, batchId, batches, onBatchC
         toast.success('Module updated successfully');
       }
       onSuccess();
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Operation failed');
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || 'Operation failed');
     }
   };
 
@@ -140,7 +140,7 @@ const ModuleFormDialog=({ open, mode, data, courseId, batchId, batches, onBatchC
             </div>
             <div>
               <Label>Status</Label>
-              <Select value={formData.status} onValueChange={(value: any) => setFormData({ ...formData, status: value })}>
+              <Select value={formData.status} onValueChange={(value: string) => setFormData({ ...formData, status: value as 'draft' | 'published' })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import MithunSarkar from "@/assets/images/Mithun-Sarkar.png";
 import Container from "@/components/ui/container";
+import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 
 const stats = [
     { value: "৬+", label: "বছরের অভিজ্ঞতা" },
@@ -10,7 +11,7 @@ const stats = [
 
 export default function InstructorSection() {
     return (
-        <section className="relative bg-[#060f0a] overflow-hidden">
+        <section className="relative bg-surface overflow-hidden">
 
             {/* Dot-grid texture */}
             <div
@@ -66,7 +67,7 @@ export default function InstructorSection() {
 
                             {/* Layer 2 — inner square, counter-rotated for balance */}
                             <div className="absolute inset-0 rounded-[3rem] rotate-[-4deg] scale-[0.94]
-                                bg-gradient-to-br from-primary/15 via-[#060f0a]/80 to-primary/5
+                                bg-gradient-to-br from-primary/15 via-surface/80 to-primary/5
                                 border border-primary/30 backdrop-blur-sm
                                 shadow-[0_0_50px_hsl(156_70%_42%/0.25),inset_0_1px_0_hsl(156_70%_42%/0.2)] ">
                                 {/* Corner accents — all 4 corners */}
@@ -84,7 +85,7 @@ export default function InstructorSection() {
                                     shadow-[0_0_70px_hsl(156_70%_42%/0.4)] ring-1 ring-primary/20">
                                     <span className="absolute inset-[-100%] animate-[spin_6s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_50%,hsl(156_70%_42%/1)_70%,transparent_100%)]" />
                                     <span className="absolute inset-[-100%] animate-[spin_10s_linear_infinite_reverse] bg-[conic-gradient(from_180deg,transparent_70%,hsl(156_85%_70%/0.6)_90%,transparent_100%)]" />
-                                    <div className="relative rounded-full overflow-hidden w-full h-full bg-[#060f0a] p-[4px]">
+                                    <div className="relative rounded-full overflow-hidden w-full h-full bg-surface p-[4px]">
                                         <div className="relative rounded-full overflow-hidden w-full h-full ring-1 ring-white/10">
                                             <Image
                                                 src={MithunSarkar}
@@ -140,8 +141,8 @@ export default function InstructorSection() {
                         {/* Name & Role */}
                         <div className="flex items-center gap-4">
                             <div className="relative p-[1.5px] rounded-xl overflow-hidden">
-                                <span className="absolute inset-[-100%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
-                                <div className="relative bg-[#060f0a] rounded-xl px-4 py-2.5">
+                                <AnimatedBorder variant="simple" speed="4s" />
+                                <div className="relative bg-surface rounded-xl px-4 py-2.5">
                                     <p className="font-bold text-white text-base">Mithun Sarkar</p>
                                     <p className="text-primary text-sm font-medium">Founder & Lead Instructor of MISUN ACADEMY</p>
                                 </div>
@@ -162,7 +163,7 @@ export default function InstructorSection() {
                         {/* Stats */}
                         <div className="flex flex-wrap gap-6">
                             {stats.map((stat, i) => (
-                                <div key={i} className="group relative overflow-hidden rounded-xl bg-[#060f0a] border border-primary/15
+                                <div key={i} className="group relative overflow-hidden rounded-xl bg-surface border border-primary/15
                                     px-5 py-4 transition-all duration-300
                                     hover:border-primary/40 hover:shadow-[0_4px_24px_hsl(156_70%_42%/0.18)]">
 

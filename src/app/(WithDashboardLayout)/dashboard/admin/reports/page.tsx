@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { Download, RefreshCw } from "lucide-react";
 
 // import { useGetMetadataQuery } from "@/redux/api/studentApi";
@@ -14,7 +11,9 @@ import { useState, useMemo } from "react";
 import { useGetDashboardMetadataQuery } from "@/redux/api/dashboardApi";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
 import ReportKeymetricsCards from "./components/ReportKeymetricsCards";
-import DashboardPageTabs from "@/components/layout/DashboardPageTabs";
+import dynamic from "next/dynamic";
+
+const ReportCharts = dynamic(() => import("./components/ReportCharts"), { ssr: false });
 
 type TimePeriod = '7days' | '30days' | '90days' | '1year';
 
@@ -35,7 +34,8 @@ export default function AdminReports() {
   const processedData = useMemo(() => {
     if (!metadata?.data) return null;
 
-    const data = metadata.data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = metadata.data as any;
 
     // Filter data based on selected period
     const now = new Date();
@@ -49,6 +49,7 @@ export default function AdminReports() {
     const cutoffDate = new Date();
     cutoffDate.setDate(now.getDate() - periodDays[selectedPeriod]);
 
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     const filteredDayWiseStats = (data.dayWiseStats || []).filter((stat: any) => {
       const statDate = new Date(stat.date);
       return statDate >= cutoffDate;
@@ -89,10 +90,12 @@ export default function AdminReports() {
       courseWiseStats: data.courseWiseStats || [],
       batchWiseIncome: data.batchWiseIncome || []
     };
+    /* eslint-enable @typescript-eslint/no-explicit-any */
   }, [metadata, coursesData, selectedPeriod, selectedCourseId]);
 
   const selectedCourseTitle = useMemo(() => {
     if (selectedCourseId === 'all') return 'All Courses';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const found = (coursesData?.data || []).find((course: any) => course._id === selectedCourseId);
     return found?.title || 'Selected Course';
   }, [coursesData, selectedCourseId]);
@@ -124,12 +127,15 @@ export default function AdminReports() {
         course: selectedCourseTitle,
         generatedAt: new Date().toISOString(),
         summary: {
-          totalRevenue: metadata?.data?.totalIncome || 0,
-          totalEnrollments: metadata?.data?.totalEnrolled || 0,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          totalRevenue: (metadata?.data as any)?.totalIncome || 0,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          totalEnrollments: (metadata?.data as any)?.totalEnrolled || 0,
           activeCourses: processedData?.activeCoursesCount || 0
         },
         courseWiseStats: processedData?.courseWiseStats || [],
         batchWiseIncome: processedData?.batchWiseIncome || [],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dailyStats: processedData?.enrollmentData.map((item: any, index: number) => ({
           date: item.month,
           enrollments: item.enrollments,
@@ -155,6 +161,7 @@ export default function AdminReports() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const generateCSV = (data: any) => {
     let csv = 'Academy Reports\n';
     csv += `Period: ${data.period}\n`;
@@ -171,6 +178,7 @@ export default function AdminReports() {
     // Course-wise stats
     csv += 'Course-wise Statistics\n';
     csv += 'Course,Enrollments,Revenue\n';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data.courseWiseStats.forEach((course: any) => {
       csv += `"${course.courseTitle}",${course.totalEnrollments},"$${course.totalIncome}"\n`;
     });
@@ -179,6 +187,7 @@ export default function AdminReports() {
     // Daily stats
     csv += 'Daily Statistics\n';
     csv += 'Date,Enrollments,Revenue\n';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data.dailyStats.forEach((day: any) => {
       csv += `"${day.date}",${day.enrollments},"$${day.revenue}"\n`;
     });
@@ -199,7 +208,7 @@ export default function AdminReports() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Courses</SelectItem>
-              {(coursesData?.data || []).map((course: any) => (
+              {(coursesData?.data || []).map((course) => (
                 <SelectItem key={course._id} value={course._id}>
                   {course.title}
                 </SelectItem>
@@ -233,92 +242,7 @@ export default function AdminReports() {
           {/* Key Metrics */}
           <ReportKeymetricsCards metadata={metadata} processedData={processedData} coursesLoading={coursesLoading} />
           {/* Charts */}
-          <DashboardPageTabs
-            defaultValue="enrollment"
-            triggers={[
-              { value: "enrollment", label: "Enrollment Trends" },
-              { value: "revenue", label: "Revenue Analytics" },
-              { value: "courses", label: "Course Popularity" },
-            ]}
-            contents={[
-              {
-                value: "enrollment",
-                content: (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Enrollment Trends</CardTitle>
-                      <CardDescription>Student enrollment patterns over the selected period</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={processedData?.enrollmentData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="month" />
-                          <YAxis />
-                          <Tooltip />
-                          <Line type="monotone" dataKey="enrollments" stroke="#8884d8" strokeWidth={2} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
-                ),
-              },
-              {
-                value: "revenue",
-                content: (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Revenue Analytics</CardTitle>
-                      <CardDescription>Revenue breakdown and trends for the selected period</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={processedData?.revenueData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="month" />
-                          <YAxis />
-                          <Tooltip formatter={(value) => [`$${value}`, "Revenue"]} />
-                          <Bar dataKey="revenue" fill="#82ca9d" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
-                ),
-              },
-              {
-                value: "courses",
-                content: (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Course Popularity Distribution</CardTitle>
-                      <CardDescription>Most popular courses by enrollment numbers</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                          <Pie
-                            data={processedData?.coursePopularityData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={({ name, value }) => `${name} (${value})`}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="value"
-                          >
-                            {processedData?.coursePopularityData.map((entry: any, index: number) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
-                ),
-              },
-            ]}
-          />
+          <ReportCharts data={processedData} />
         </>
       }
     />

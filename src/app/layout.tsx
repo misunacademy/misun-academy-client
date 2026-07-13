@@ -1,11 +1,12 @@
 import Script from 'next/script';
+import { Suspense } from 'react';
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/next";
 import Providers from '@/providers/Providers';
 import MetaPixelPageViewTracker from '@/components/analytics/MetaPixelPageViewTracker';
 import type { Metadata } from 'next';
 import { Hind_Siliguri, Mona_Sans } from 'next/font/google';
-// import FloatingChat from '@/components/shared/FloatingChat';
+import FloatingChat from '@/components/shared/FloatingChat';
 import BackToTop from '@/components/shared/BackToTop';
 import './globals.css';
 
@@ -73,7 +74,9 @@ export default function RootLayout({
       </head>
       <body className=''>
         <Providers>
-          <MetaPixelPageViewTracker />
+          <Suspense fallback={null}>
+            <MetaPixelPageViewTracker />
+          </Suspense>
 
           {/* Initialize GA tracking only if GA_ID is available */}
           {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
@@ -82,7 +85,7 @@ export default function RootLayout({
           <Analytics />
 
           {/* Global Tech Support Chat widget */}
-          {/* <FloatingChat /> */}
+          <FloatingChat />
 
           {/* Global Back to Top Button */}
           <BackToTop variant="glass-glow" />

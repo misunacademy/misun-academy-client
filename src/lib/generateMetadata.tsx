@@ -9,7 +9,7 @@ interface GenerateMetadataParams {
 }
 
 const BASE_URL = 'https://www.misun-academy.com';
-const DEFAULT_IMAGE = `/default-og-image.png`;
+const DEFAULT_IMAGE = `default-og-image.png`;
 const SITE_NAME = 'MISUN Academy';
 
 export const generateMetadata = ({
@@ -19,8 +19,8 @@ export const generateMetadata = ({
     slug = '',
     image = DEFAULT_IMAGE,
 }: GenerateMetadataParams): Metadata => {
-    const url = `${BASE_URL}/${slug}`;
-    const finalImage = `${BASE_URL}/preview/${image}`;
+    const url = slug ? `${BASE_URL}/${slug}` : BASE_URL;
+    const finalImage = image.startsWith('http') ? image : `${BASE_URL}/${image}`;
 
     return {
         title,

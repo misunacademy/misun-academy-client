@@ -1,23 +1,17 @@
 import { baseApi } from "./baseApi";
 
 const lessonApi = baseApi.injectEndpoints({
+    overrideExisting: true,
     endpoints: (builder) => ({
-        getModuleLessons: builder.query({
-            query: (moduleId) => ({
-                url: `/admin/lessons/modules/${moduleId}/lessons`,
-                method: "GET",
-            }),
+        getModuleLessons: builder.query<{ data: unknown }, string>({
+            query: (moduleId) => ({ url: `/admin/lessons/modules/${moduleId}/lessons` }),
             providesTags: ["Lessons"],
         }),
-        getLessonById: builder.query({
-            query: (lessonId) => ({
-                url: `/admin/lessons/lessons/${lessonId}`,
-                method: "GET",
-            }),
+        getLessonById: builder.query<{ data: unknown }, string>({
+            query: (lessonId) => ({ url: `/admin/lessons/lessons/${lessonId}` }),
             providesTags: ["Lessons"],
         }),
-        // Admin: Create lesson 
-        createModuleLesson: builder.mutation({
+        createModuleLesson: builder.mutation<unknown, { moduleId: string } & Record<string, unknown>>({
             query: ({ moduleId, ...data }) => ({
                 url: `/admin/lessons/modules/${moduleId}/lessons`,
                 method: "POST",
@@ -25,8 +19,7 @@ const lessonApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Lessons", "Modules"],
         }),
-        // Admin: Update lesson
-        updateModuleLesson: builder.mutation({
+        updateModuleLesson: builder.mutation<unknown, { lessonId: string } & Record<string, unknown>>({
             query: ({ lessonId, ...data }) => ({
                 url: `/admin/lessons/lessons/${lessonId}`,
                 method: "PUT",
@@ -34,15 +27,14 @@ const lessonApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Lessons"],
         }),
-        // Admin: Delete lesson 
-        deleteModuleLesson: builder.mutation({
+        deleteModuleLesson: builder.mutation<unknown, string>({
             query: (lessonId) => ({
                 url: `/admin/lessons/lessons/${lessonId}`,
                 method: "DELETE",
             }),
             invalidatesTags: ["Lessons", "Modules"],
         }),
-        reorderLessons: builder.mutation({
+        reorderLessons: builder.mutation<unknown, { moduleId: string; lessonOrders: unknown }>({
             query: ({ moduleId, lessonOrders }) => ({
                 url: `/admin/lessons/modules/${moduleId}/lessons/reorder`,
                 method: "PUT",

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Container from "@/components/ui/container";
+import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 
 interface EnrollCtaSectionProps {
     courseSlug?: string;
@@ -14,7 +15,7 @@ const stats = [
 
 export default function EnrollCtaSection({ courseSlug }: EnrollCtaSectionProps = {}) {
     return (
-        <section className="relative bg-[#060f0a] overflow-hidden">
+        <section className="relative bg-surface overflow-hidden">
 
             {/* Dot-grid texture */}
             <div
@@ -37,7 +38,7 @@ export default function EnrollCtaSection({ courseSlug }: EnrollCtaSectionProps =
 
                 {/* Main card */}
                 <div className="relative overflow-hidden rounded-3xl
-                    bg-gradient-to-br from-[#0a2016] via-[#0d2b1c] to-[#060f0a]
+                    bg-gradient-to-br from-[#0a2016] via-[#0d2b1c] to-surface
                     border border-primary/25
                     shadow-[0_0_80px_hsl(156_70%_42%/0.18),inset_0_1px_0_hsl(156_70%_42%/0.15)]
                     p-8 md:p-12 lg:p-16">
@@ -111,9 +112,9 @@ export default function EnrollCtaSection({ courseSlug }: EnrollCtaSectionProps =
                             <div>
                                 <Link href={courseSlug ? `/checkout?course=${courseSlug}` : '/checkout'}>
                                     <div className="inline-block relative p-[1.5px] rounded-xl overflow-hidden">
-                                        <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
-                                        <button className="relative bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38]
-                                            hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]
+                                        <AnimatedBorder variant="simple" speed="3s" />
+                                        <button className="relative bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
+                                            hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
                                             transition-all duration-300 text-white font-bold font-bangla text-base
                                             px-10 py-3.5 rounded-xl
                                             shadow-[0_0_24px_hsl(156_70%_42%/0.4)]
@@ -131,7 +132,7 @@ export default function EnrollCtaSection({ courseSlug }: EnrollCtaSectionProps =
                             {stats.map((stat, i) => (
                                 <div key={i}
                                     className="group relative overflow-hidden rounded-2xl
-                                        bg-[#060f0a]/70 border border-primary/20
+                                        bg-surface/70 border border-primary/20
                                         px-6 py-7 text-center
                                         transition-all duration-300
                                         hover:border-primary/50

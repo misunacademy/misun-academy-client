@@ -11,8 +11,10 @@ export function CourseStats() {
   const courses: CourseResponse[] = coursesData?.data || [];
   const totalCourses = courses.length;
   const activeCourses = courses.filter((course) => course.status === 'published').length;
-  const totalStudents = dashboardData?.data?.totalEnrolled || 0;
-  const totalRevenue = dashboardData?.data?.totalIncome || 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const totalStudents = (dashboardData?.data as any)?.totalEnrolled || 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const totalRevenue = (dashboardData?.data as any)?.totalIncome || 0;
 
   if (coursesLoading || dashboardLoading) {
     return (

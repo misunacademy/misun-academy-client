@@ -1,9 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
     BaseQueryApi,
-    BaseQueryFn,
-    DefinitionType,
     FetchArgs,
     createApi,
     fetchBaseQuery,
@@ -20,23 +16,19 @@ const baseQuery = fetchBaseQuery({
     },
 });
 
-const baseQueryWithSessionHandling: BaseQueryFn<
-    FetchArgs,
-    BaseQueryApi,
-    DefinitionType
-> = async (args, api, extraOptions): Promise<any> => {
+const baseQueryWithSessionHandling = async (args: FetchArgs, api: BaseQueryApi, extraOptions: object) => {
     const result = await baseQuery(args, api, extraOptions);
 
-    if (result?.error?.status === 404) {
-        //@ts-ignore
-        toast.error(result.error.data.message || "Something went wrong");
+    const error = result.error as { status: number; data: { message?: string } } | undefined;
+    const errorData = error?.data;
+
+    if (error?.status === 404) {
+        toast.error(errorData?.message || "Something went wrong");
     }
-    if (result?.error?.status === 403) {
-        //@ts-ignore
-        toast.error(result.error.data.message);
+    if (error?.status === 403) {
+        toast.error(errorData?.message || "Forbidden");
     }
-    if (result?.error?.status === 401) {
-        console.warn('[baseApi] 401 Unauthorized - session expired or invalid');
+    if (error?.status === 401) {
 
         // Better Auth handles sessions via HTTP-only cookies
         // Sign out and redirect to login
@@ -60,18 +52,16 @@ export const baseApi = createApi({
     reducerPath: "baseApi",
     baseQuery: baseQueryWithSessionHandling,
     tagTypes: [
-        'Users', 
-        'Students', 
-        'Batches', 
-        'Pricing-Plan', 
-        'Courses', 
-        'CourseEnrollments', 
-        'Profile', 
-        'Payments', 
+        'Users',
+        'Students',
+        'Batches',
+        'Courses',
+        'CourseEnrollments',
+        'Profile',
+        'Payments',
         'Recordings',
         'Certificates',
         'Instructors',
-        'Progress',
         'Dashboard',
         'Uploads',
         'Modules',
@@ -79,7 +69,7 @@ export const baseApi = createApi({
         'Settings',
         'Employees',
         'SpecialAccessEnrollments',
-        'Notifications'
+        'Notifications',
     ],
     endpoints: () => ({}),
 });

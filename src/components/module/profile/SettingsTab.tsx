@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +11,7 @@ import { authServerApi } from "@/lib/auth-server-api";
 import Image from "next/image";
 
 interface SettingsTabProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     profile?: any;
 }
 
@@ -32,6 +32,7 @@ export function SettingsTab(_props: SettingsTabProps) {
 
     const userInitials = user?.name
         ?.split(" ")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((n: any) => n[0])
         .join("")
         .toUpperCase()
@@ -86,6 +87,7 @@ export function SettingsTab(_props: SettingsTabProps) {
 
             if (error && typeof error === 'object') {
                 if ('status' in error) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const fetchError = error as { status: number; data?: any };
                     errorMessage = fetchError.data?.message || `Upload failed with status ${fetchError.status}`;
                 } else if ('data' in error) {
@@ -163,7 +165,7 @@ export function SettingsTab(_props: SettingsTabProps) {
 
     if (userLoading) {
         return (
-            <div className="flex-1 bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
+            <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         );
@@ -171,14 +173,14 @@ export function SettingsTab(_props: SettingsTabProps) {
 
     if (!user) {
         return (
-            <div className="flex-1 bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
+            <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
                 <p className="text-red-400">Error loading user data</p>
             </div>
         );
     }
 
     return (
-        <div className="flex-1 bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
+        <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
             {/* Ambient glow inside right panel */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -202,7 +204,7 @@ export function SettingsTab(_props: SettingsTabProps) {
 
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                         <div className="relative w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-primary via-primary-glow to-primary shadow-[0_0_20px_hsl(156_70%_42%/0.4)] flex-shrink-0">
-                            <div className="w-full h-full rounded-full border-4 border-[#060f0a] overflow-hidden bg-[#0a1510] relative flex items-center justify-center">
+                            <div className="w-full h-full rounded-full border-4 border-surface overflow-hidden bg-[#0a1510] relative flex items-center justify-center">
                                 {user.image ? (
                                     <Image src={user.image} alt={user.name!} fill sizes="96px" className="object-cover" />
                                 ) : (

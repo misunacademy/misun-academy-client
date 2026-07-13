@@ -1,4 +1,3 @@
-import { jsPDF } from "jspdf";
 import type { VerifiedCertificate } from "@/redux/api/certificateApi";
 
 const formatIssuedDate = (issuedDate?: string) => {
@@ -12,14 +11,15 @@ const formatIssuedDate = (issuedDate?: string) => {
   });
 };
 
-const centerText = (pdf: jsPDF, text: string, y: number) => {
+const centerText = (pdf: import("jspdf").jsPDF, text: string, y: number) => {
   const pageWidth = pdf.internal.pageSize.getWidth();
   const textWidth = pdf.getTextWidth(text);
   const x = (pageWidth - textWidth) / 2;
   pdf.text(text, x, y);
 };
 
-export const downloadCertificatePdf = (certificate: VerifiedCertificate) => {
+export const downloadCertificatePdf = async (certificate: VerifiedCertificate) => {
+  const { jsPDF } = await import("jspdf");
   const pdf = new jsPDF({
     orientation: "landscape",
     unit: "mm",

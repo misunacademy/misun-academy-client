@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -189,8 +188,9 @@ export default function CourseContentPage() {
       setDeleteModuleDialogOpen(false);
       setModuleToDelete(null);
       refetch();
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Failed to delete module');
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || 'Failed to delete module');
       setDeleteModuleDialogOpen(false);
       setModuleToDelete(null);
     }
@@ -220,8 +220,9 @@ export default function CourseContentPage() {
     try {
       await reorderModules({ courseId, batchId: selectedBatchId, moduleOrders }).unwrap();
       toast.success('Module order updated');
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Failed to reorder modules');
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || 'Failed to reorder modules');
       setOrderedModules(modules);
     }
   };
@@ -423,6 +424,7 @@ export default function CourseContentPage() {
                             if (!assignedBatchId) return;
                             try {
                               setUpdatingLegacyId(module._id);
+                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
                               await updateModule({ moduleId: module._id, batchId: assignedBatchId } as any).unwrap();
                               toast.success('Module batch assigned');
                               setLegacyAssignments((prev) => {
@@ -432,8 +434,9 @@ export default function CourseContentPage() {
                               });
                               await refetchUnassigned();
                               refetch();
-                            } catch (error: any) {
-                              toast.error(error?.data?.message || 'Failed to assign batch');
+                            } catch (error: unknown) {
+                              const err = error as { data?: { message?: string } };
+                              toast.error(err?.data?.message || 'Failed to assign batch');
                             } finally {
                               setUpdatingLegacyId(null);
                             }

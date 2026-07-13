@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useMemo } from 'react';
@@ -49,7 +48,7 @@ function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
 
     return (
         <FadeIn delay={0.1 + 0 * 0.08} direction="up" style={themeVars}>
-            <div style={themeVars} className="relative overflow-hidden rounded-[2rem] border border-primary/15 bg-[#060f0a]
+            <div style={themeVars} className="relative overflow-hidden rounded-[2rem] border border-primary/15 bg-surface
                 hover:border-primary/35 hover:shadow-[0_0_40px_hsl(var(--primary)/0.12)]
                 transition-all duration-500 group">
 
@@ -151,6 +150,7 @@ function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
 // ── Main Section ──────────────────────────────────────────────────────────────
 export const EnrollmentSection = () => {
     const { data: gdCourseData, isLoading: gdCourseLoading } = useGetCourseBySlugQuery('complete-graphic-design-with-freelancing');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const gdCourseId = (gdCourseData?.data as any)?._id;
     const { data: gdCurrentRes, isLoading: gdCurrentLoading } = useGetCurrentEnrollmentBatchQuery(
         { courseId: gdCourseId }, { skip: !gdCourseId });
@@ -160,7 +160,7 @@ export const EnrollmentSection = () => {
 
     if (gdCourseLoading || gdCurrentLoading) {
         return (
-            <section id="enroll-now" className="relative scroll-mt-24 py-20 px-4 bg-[#060f0a] font-bangla">
+            <section id="enroll-now" className="relative scroll-mt-24 py-20 px-4 bg-surface font-bangla">
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
                 <div className="max-w-4xl mx-auto text-center">
                     <p className="text-white/40 text-sm animate-pulse">লোড হচ্ছে...</p>
@@ -175,7 +175,7 @@ export const EnrollmentSection = () => {
         <section
             id="enroll-now"
             data-dark-section
-            className="relative scroll-mt-24 py-24 px-4 bg-[#060f0a] overflow-hidden font-bangla"
+            className="relative scroll-mt-24 py-24 px-4 bg-surface overflow-hidden font-bangla"
         >
             {/* ── Top edge ── */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />

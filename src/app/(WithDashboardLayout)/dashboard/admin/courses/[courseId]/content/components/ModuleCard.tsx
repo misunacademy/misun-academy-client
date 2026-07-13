@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useDeleteModuleLessonMutation, useGetModuleLessonsQuery } from "@/redux/api/lessonApi";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -88,8 +87,9 @@ const ModuleCard = ({
       toast.success('Lesson deleted successfully');
       setDeleteLessonDialogOpen(false);
       setLessonToDelete(null);
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Failed to delete lesson');
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || 'Failed to delete lesson');
       setDeleteLessonDialogOpen(false);
       setLessonToDelete(null);
     }

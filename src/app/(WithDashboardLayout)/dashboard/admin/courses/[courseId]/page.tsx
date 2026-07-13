@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { use, useState } from "react";
@@ -36,8 +35,10 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
   const [assignInstructor, { isLoading: isSaving }] =
     useAssignCourseInstructorMutation();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const instructors = (instructorsData?.data || []) as any[];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const course = courseData as any;
   const currentInstructorId: string | null =
     course?.instructorId?._id?.toString() ||
@@ -50,6 +51,7 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
   const effectiveId: string | null =
     selectedId !== undefined ? selectedId : currentInstructorId;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const filtered = instructors.filter((inst: any) => {
     const q = search.toLowerCase();
     return (
@@ -59,6 +61,7 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
   });
 
   const currentInst = instructors.find(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (i: any) => i._id?.toString() === effectiveId
   );
   const displayName = currentInst?.name || currentInstructorName || "Instructor";
@@ -70,9 +73,7 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
         effectiveId ? "Instructor assigned successfully" : "Instructor removed"
       );
       setOpen(false);
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to assign instructor");
-    }
+    } catch (err: unknown) { const error = err as { data?: { message?: string } }; toast.error(error?.data?.message || "Failed to assign instructor"); }
   };
 
   const handleRemove = async () => {
@@ -81,9 +82,7 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
       setSelectedId(undefined);
       toast.success("Instructor removed");
       setOpen(false);
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to remove instructor");
-    }
+    } catch (err: unknown) { const error = err as { data?: { message?: string } }; toast.error(error?.data?.message || "Failed to remove instructor"); }
   };
 
   return (
@@ -149,6 +148,7 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
           ) : (
             <ScrollArea className="h-52 border rounded-md p-2">
               <div className="space-y-1">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {filtered.map((inst: any) => {
                   const instId = inst._id?.toString();
                   const isSelected = effectiveId === instId;

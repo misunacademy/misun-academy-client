@@ -3,126 +3,11 @@
 import React, { useRef, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Float } from "@react-three/drei";
-import * as THREE from "three";
+import dynamic from "next/dynamic";
 import graphic from "@/assets/images/thumb_2.png";
 import english from "@/assets/images/thumb_1.png";
 
-// ─── Three.js floating wireframe shapes ──────────────────────────────────────
-
-function WireframeTorus({ position, color, speed }: { position: [number, number, number]; color: string; speed: number }) {
-  const mesh = useRef<THREE.Mesh>(null);
-  useFrame((_, delta) => {
-    if (!mesh.current) return;
-    mesh.current.rotation.x += delta * speed * 0.4;
-    mesh.current.rotation.y += delta * speed * 0.3;
-  });
-  return (
-    <Float speed={speed} rotationIntensity={0.8} floatIntensity={2}>
-      <mesh ref={mesh} position={position}>
-        <torusGeometry args={[1, 0.28, 16, 48]} />
-        <meshStandardMaterial color={color} wireframe transparent opacity={0.28} />
-      </mesh>
-    </Float>
-  );
-}
-
-function WireframeIcosa({ position, color, speed }: { position: [number, number, number]; color: string; speed: number }) {
-  const mesh = useRef<THREE.Mesh>(null);
-  useFrame((_, delta) => {
-    if (!mesh.current) return;
-    mesh.current.rotation.x += delta * speed * 0.3;
-    mesh.current.rotation.z += delta * speed * 0.2;
-  });
-  return (
-    <Float speed={speed} rotationIntensity={1.2} floatIntensity={1.5}>
-      <mesh ref={mesh} position={position}>
-        <icosahedronGeometry args={[1.1, 0]} />
-        <meshStandardMaterial color={color} wireframe transparent opacity={0.22} />
-      </mesh>
-    </Float>
-  );
-}
-
-function WireframeOcta({ position, color, speed }: { position: [number, number, number]; color: string; speed: number }) {
-  const mesh = useRef<THREE.Mesh>(null);
-  useFrame((_, delta) => {
-    if (!mesh.current) return;
-    mesh.current.rotation.y += delta * speed * 0.5;
-    mesh.current.rotation.x += delta * speed * 0.15;
-  });
-  return (
-    <Float speed={speed} rotationIntensity={1} floatIntensity={2.5}>
-      <mesh ref={mesh} position={position}>
-        <octahedronGeometry args={[0.9]} />
-        <meshStandardMaterial color={color} wireframe transparent opacity={0.25} />
-      </mesh>
-    </Float>
-  );
-}
-
-function Scene() {
-  return (
-    <>
-      <ambientLight intensity={0.5} />
-      <pointLight position={[6, 6, 4]} color="#22c55e" intensity={1.5} />
-      <pointLight position={[-6, -4, 2]} color="#3b82f6" intensity={1} />
-      <pointLight position={[0, -6, -4]} color="#a855f7" intensity={0.6} />
-
-      <WireframeTorus position={[-5, 2.5, -6]} color="#22c55e" speed={1.2} />
-      <WireframeTorus position={[5.5, -1.5, -7]} color="#3b82f6" speed={0.9} />
-      <WireframeIcosa position={[3.5, 3, -8]} color="#a855f7" speed={1.5} />
-      <WireframeIcosa position={[-4, -2.5, -7]} color="#22c55e" speed={1.1} />
-      <WireframeOcta position={[0, -3.5, -5]} color="#3b82f6" speed={1.8} />
-      <WireframeOcta position={[-6.5, 0, -9]} color="#f59e0b" speed={0.8} />
-    </>
-  );
-}
-
-// ─── English thumbnail — CSS art ──────────────────────────────────────────────
-
-// function EnglishThumbnail({ img }: { img: StaticImageData }) {
-//   return (
-//     <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-//       {/* Deep blue gradient base */}
-//       <div className="absolute inset-0 bg-gradient-to-br from-[#0b1a3b] via-[#0d2257] to-[#060a12]" />
-//       {/* Glowing orbs */}
-//       <div className="absolute top-4 right-6 w-24 h-24 rounded-full bg-blue-500/30 blur-2xl" />
-//       <div className="absolute bottom-4 left-6 w-20 h-20 rounded-full bg-indigo-500/25 blur-2xl" />
-//       {/* Grid lines */}
-//       <div
-//         className="absolute inset-0 opacity-[0.06]"
-//         style={{
-//           backgroundImage: "linear-gradient(hsl(217 91% 60%) 1px, transparent 1px), linear-gradient(90deg, hsl(217 91% 60%) 1px, transparent 1px)",
-//           backgroundSize: "28px 28px",
-//         }}
-//       />
-//       <Image src={img} alt="course thumbnail" fill className="" />
-//       {/* Central content */}
-//       {/* <div className="relative z-10 flex flex-col items-center justify-center gap-3 text-center px-4">
-//         <div className="text-5xl font-black font-sans tracking-tighter select-none">
-//           <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(217_91%_60%/0.6)]">
-//             E
-//           </span>
-//           <span className="bg-gradient-to-r from-cyan-300 via-white/90 to-blue-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-//             P
-//           </span>
-//           <span className="bg-gradient-to-r from-blue-400 via-blue-300 to-indigo-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(217_91%_60%/0.5)]">
-//             C
-//           </span>
-//         </div>
-//         <div className="flex items-center gap-1.5">
-//           {["English", "•", "Pro", "•", "Comm"].map((w, i) => (
-//             <span key={i} className={`text-[10px] font-semibold tracking-widest uppercase ${w === "•" ? "text-blue-400/50" : "text-blue-300/70"}`}>{w}</span>
-//           ))}
-//         </div>
-//       </div> */}
-//       {/* Shimmer overlay */}
-//       <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#060a12]/80 to-transparent" />
-//     </div>
-//   );
-// }
+const SceneBackground = dynamic(() => import("./CoursesListScene"), { ssr: false });
 
 // ─── Course card data ─────────────────────────────────────────────────────────
 
@@ -214,7 +99,7 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
         style={{ transformStyle: "preserve-3d", transition: "transform 0.15s ease, box-shadow 0.3s ease, border-color 0.3s ease" }}
         className={`
           relative overflow-hidden rounded-3xl
-          bg-gradient-to-br from-[#0a1a10] via-[#0c2318] to-[#060f0a]
+          bg-gradient-to-br from-[#0a1a10] via-[#0c2318] to-surface
           ${course.border}
           ${course.glow}
         `}
@@ -243,7 +128,7 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
             sizes="(max-width: 768px) 100vw, 50vw"
           />
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#060f0a] via-[#060f0a]/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent" />
           {/* </> */}
           {/* ) : (
             <EnglishThumbnail img={english} />
@@ -325,15 +210,13 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
 
 export default function CoursesListClient() {
   return (
-    <section className="relative bg-[#060f0a] min-h-screen overflow-hidden font-bangla">
+    <section className="relative bg-surface min-h-screen overflow-hidden font-bangla">
 
       {/* ── Three.js 3D background canvas ── */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        <Canvas camera={{ position: [0, 0, 5], fov: 60 }} gl={{ alpha: true, antialias: true }}>
-          <Suspense fallback={null}>
-            <Scene />
-          </Suspense>
-        </Canvas>
+        <Suspense fallback={null}>
+          <SceneBackground />
+        </Suspense>
       </div>
 
       {/* ── Dot-grid texture ── */}

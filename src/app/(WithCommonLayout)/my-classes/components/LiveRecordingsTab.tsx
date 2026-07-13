@@ -82,7 +82,7 @@ export function LiveRecordingsTab() {
 
   if (isLoading || isDashboardLoading) {
     return (
-      <div className="relative rounded-2xl border border-primary/20 bg-[#060f0a] overflow-hidden py-14 px-6 flex flex-col items-center justify-center gap-3 text-center">
+      <div className="relative rounded-2xl border border-primary/20 bg-surface overflow-hidden py-14 px-6 flex flex-col items-center justify-center gap-3 text-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-sm text-white/45">Loading live class recordings...</p>
       </div>
@@ -102,7 +102,7 @@ export function LiveRecordingsTab() {
 
   if (filteredRecordings.length === 0) {
     return (
-      <div className="relative rounded-2xl border border-primary/20 bg-[#060f0a] overflow-hidden flex flex-col items-center justify-center py-20 gap-5 text-center px-6">
+      <div className="relative rounded-2xl border border-primary/20 bg-surface overflow-hidden flex flex-col items-center justify-center py-20 gap-5 text-center px-6">
         {/* Dot grid */}
         <div
           className="absolute inset-0 opacity-[0.10] pointer-events-none"
@@ -149,7 +149,7 @@ export function LiveRecordingsTab() {
                   className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
                     active
                       ? "border-primary/50 bg-primary/15 text-primary"
-                      : "border-primary/20 bg-[#060f0a] text-white/60 hover:border-primary/35 hover:text-white"
+                      : "border-primary/20 bg-surface text-white/60 hover:border-primary/35 hover:text-white"
                   }`}
                 >
                   <BookOpen className="w-4 h-4" />
@@ -168,7 +168,7 @@ export function LiveRecordingsTab() {
             {activeCourseGroup.recordings.map((rec) => (
               <div
                 key={rec._id}
-                className="group relative rounded-2xl border border-primary/20 bg-[#060f0a] p-5 flex flex-col sm:flex-row sm:items-center gap-4
+                className="group relative rounded-2xl border border-primary/20 bg-surface p-5 flex flex-col sm:flex-row sm:items-center gap-4
                 hover:border-primary/30 transition-all duration-300"
               >
                 <div className="w-14 h-14 shrink-0 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -210,7 +210,7 @@ export function LiveRecordingsTab() {
           if (!open) setPlayingRecording(null);
         }}
       >
-        <DialogContent className="max-w-4xl w-full bg-[#060f0a] border border-primary/25 text-white">
+        <DialogContent className="max-w-4xl w-full bg-surface border border-primary/25 text-white">
           <DialogHeader>
             <DialogTitle>{playingRecording?.title}</DialogTitle>
           </DialogHeader>

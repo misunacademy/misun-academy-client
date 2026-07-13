@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Session } from "@/types/auth"
+
 type AuthServerError = {
   code?: string;
   message: string;
 };
 
-export type AuthServerResult<T = any> = {
+export type AuthServerResult<T = unknown> = {
   data: T | null;
   error: AuthServerError | null;
   status: number;
@@ -48,18 +49,20 @@ const parseResponsePayload = async (response: Response) => {
   }
 };
 
-const buildError = (status: number, payload: any): AuthServerError => {
-  const code = payload?.code || payload?.error?.code;
+const buildError = (status: number, payload: Record<string, unknown> | null): AuthServerError => {
+  const p = payload ?? {};
+  const error = (p.error as Record<string, unknown> | undefined) ?? {};
+  const code = (p.code as string | undefined) ?? (error.code as string | undefined);
   const message =
-    payload?.message ||
-    payload?.error?.message ||
-    payload?.error ||
+    (p.message as string | undefined) ||
+    (error.message as string | undefined) ||
+    (p.error as string | undefined) ||
     `Authentication request failed (${status})`;
 
   return { code, message };
 };
 
-const authServerRequest = async <T = any>(
+const authServerRequest = async <T = unknown>(
   path: string,
   init?: RequestInit
 ): Promise<AuthServerResult<T>> => {
@@ -85,7 +88,7 @@ const authServerRequest = async <T = any>(
   };
 };
 
-const absoluteRequest = async <T = any>(
+const absoluteRequest = async <T = unknown>(
   url: string,
   init?: RequestInit
 ): Promise<AuthServerResult<T>> => {
@@ -111,6 +114,7 @@ const absoluteRequest = async <T = any>(
   };
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const jsonRequest = <T = any>(
   path: string,
   method: 'POST' | 'PATCH',
@@ -182,6 +186,7 @@ export const authServerApi = {
   updateUser: (body: Record<string, unknown>) =>
     jsonRequest('/update-user', 'PATCH', body),
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   listSessions: () => authServerRequest<any[]>('/list-sessions'),
 
   revokeSession: (token: string) =>

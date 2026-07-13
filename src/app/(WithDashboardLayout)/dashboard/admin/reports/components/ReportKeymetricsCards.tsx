@@ -1,9 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, DollarSign, TrendingUp, Users } from "lucide-react";
 
 const ReportKeymetricsCards = ({metadata,processedData,coursesLoading}:{
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     metadata: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     processedData: any;
     coursesLoading: boolean;
 }) => {

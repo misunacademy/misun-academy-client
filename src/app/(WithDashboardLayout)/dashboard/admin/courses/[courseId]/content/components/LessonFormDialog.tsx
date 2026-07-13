@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCreateModuleLessonMutation, useUpdateModuleLessonMutation } from "@/redux/api/lessonApi";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -91,8 +90,9 @@ const LessonFormDialog = ({ open, mode, moduleId, data, onClose, onSuccess }: {
                 toast.success('Lesson updated successfully');
             }
             onSuccess();
-        } catch (error: any) {
-            toast.error(error?.data?.message || 'Operation failed');
+        } catch (error: unknown) {
+            const err = error as { data?: { message?: string } };
+            toast.error(err?.data?.message || 'Operation failed');
         }
     };
 
@@ -123,7 +123,7 @@ const LessonFormDialog = ({ open, mode, moduleId, data, onClose, onSuccess }: {
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label>Type *</Label>
-                            <Select value={formData.type} onValueChange={(value: any) => setFormData({ ...formData, type: value })}>
+                            <Select value={formData.type} onValueChange={(value: string) => setFormData({ ...formData, type: value as 'video' | 'reading' | 'quiz' | 'project' })}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
@@ -153,7 +153,7 @@ const LessonFormDialog = ({ open, mode, moduleId, data, onClose, onSuccess }: {
                         <>
                             <div>
                                 <Label>Video Source</Label>
-                                <Select value={formData.videoSource} onValueChange={(value: any) => setFormData({ ...formData, videoSource: value })}>
+                                <Select value={formData.videoSource} onValueChange={(value: string) => setFormData({ ...formData, videoSource: value as 'youtube' | 'googledrive' })}>
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>

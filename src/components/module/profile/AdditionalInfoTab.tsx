@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -8,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 interface AdditionalInfoProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     profile: any;
     refetch: () => void;
 }
@@ -48,7 +48,7 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
         name: "education",
     });
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: FormValues) => {
         try {
             const payload = { ...data };
             if (payload.dateOfBirth) {
@@ -65,6 +65,7 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
             toast.success("Additional info updated successfully");
             setIsEditing(false);
             refetch();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             toast.error(error?.data?.message || "Failed to update info");
         }
@@ -73,7 +74,7 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
     return (
         <div className="flex-1 flex flex-col gap-8">
             {/* primary additional info card */}
-            <div className="bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
+            <div className="bg-surface rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
                 <div className="relative z-10 flex items-center justify-between border-b border-dashed border-primary/20 pb-6 mb-8">
@@ -226,6 +227,7 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
                         <div className="col-span-1 md:col-span-2">
                             <p className="text-white/40 text-sm mb-1.5">Education</p>
                             {profile?.education && profile.education.length > 0 ? (
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 profile.education.map((edu: any, idx: number) => (
                                     <div key={idx} className="mb-4">
                                         <h3 className="text-white font-semibold">{edu.degree}</h3>

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { FormEvent, useState, useEffect, startTransition } from 'react';
 import { Button } from "@/components/ui/button";
@@ -81,6 +80,7 @@ export default function BatchEdit() {
             manualPaymentPrice: batch.data.manualPaymentPrice?.toString() || '',
             status: (batch.data.status as BatchStatus) || 'draft',
             selectedCourse: typeof batch.data.courseId === 'object' && batch.data.courseId !== null
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ? (batch.data.courseId as any)._id || ''
                 : typeof batch.data.courseId === 'string'
                 ? batch.data.courseId
@@ -97,6 +97,7 @@ export default function BatchEdit() {
             enrollmentEndDate: batch.data.enrollmentEndDate
                 ? new Date(batch.data.enrollmentEndDate).toISOString().split('T')[0]
                 : '',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             description: (batch.data as any).description || '',
         };
 
@@ -142,8 +143,9 @@ export default function BatchEdit() {
             await updateBatch({ id: batchId, data: batchData }).unwrap();
             toast.success("Batch updated successfully");
             router.push('/dashboard/admin/batch');
-        } catch (err: any) {
-            toast.error(err?.data?.message || "Failed to update batch");
+        } catch (err: unknown) {
+            const error = err as { data?: { message?: string } };
+            toast.error(error?.data?.message || "Failed to update batch");
         }
     };
 
@@ -196,7 +198,8 @@ export default function BatchEdit() {
                                 value={formData.selectedCourse}
                                 defaultValue={
                                     typeof batch.data.courseId === 'object' && batch.data.courseId !== null
-                                        ? (batch.data.courseId as any).title
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                ? (batch.data.courseId as any).title
                                         : undefined
                                 }
                                 onValueChange={(val) => handleInputChange('selectedCourse', val)}
@@ -211,7 +214,7 @@ export default function BatchEdit() {
                                             <Loader2 className="w-4 h-4 animate-spin" />
                                         </div>
                                     ) : courses.length > 0 ? (
-                                        courses.map((course: any) => (
+                                        courses.map((course) => (
                                             <SelectItem key={course._id} value={course._id}>
                                                 {course.title}
                                             </SelectItem>

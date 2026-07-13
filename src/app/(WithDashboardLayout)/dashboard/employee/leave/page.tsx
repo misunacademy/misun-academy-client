@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import DashboardPageTableWithPagination from '@/components/layout/DashboardPageTableWithPagination';
-import { LeaveRequestDialog } from '../(components)/LeaveRequestDialog';
+import { LeaveRequestDialog } from '../_components/LeaveRequestDialog';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function daysBetween(from: string, to: string) {

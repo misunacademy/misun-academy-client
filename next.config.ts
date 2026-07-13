@@ -3,15 +3,17 @@ import type { NextConfig } from 'next';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true, // Enable strict mode for better development warnings
+  reactStrictMode: true,
+
+  cacheComponents: true,
 
   experimental: {
-    optimizePackageImports: ['lucide-react', 'react-icons', 'framer-motion'],
+    viewTransition: true,
   },
 
   images: {
     qualities: [65, 75],
-    formats: ['image/avif', 'image/webp'], // Better compression formats
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -32,6 +34,14 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
       },
     ],
   },

@@ -1,108 +1,24 @@
 "use client"
 
+import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { motion } from "framer-motion"
-import { FaTools, FaProjectDiagram, FaUserTie } from "react-icons/fa"
-import Image, { StaticImageData } from 'next/image';
+import { StaticImageData } from 'next/image';
 import { IllustratorImg, PhotoshopImg } from '@/assets/images';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip"
 import Link from 'next/link';
 import { FadeIn } from '@/components/ui/FadeIn';
 import { MousePointer2 } from "lucide-react";
-
-//  Skill Badge 
-
-interface SkillBadgeProps {
-    image: StaticImageData;
-    name: string;
-    delay?: number;
-}
-
-const SkillBadge = ({ image, name, delay = 0 }: SkillBadgeProps) => (
-    <TooltipProvider>
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: delay * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                    viewport={{ once: true }}
-                    className="group relative cursor-pointer"
-                >
-                    <div className="absolute inset-0 rounded-2xl bg-primary/15 blur-xl opacity-0 transition-opacity duration-700 pointer-events-none group-hover:opacity-100" />
-                    <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-primary/[0.1] bg-primary/[0.02] backdrop-blur-md transition-all duration-500 ease-out group-hover:-translate-y-1.5 group-hover:border-primary/[0.25] group-hover:bg-primary/[0.05] group-hover:shadow-[0_8px_30px_rgba(32,180,134,0.15)] z-10">
-                        <Image
-                            src={image.src}
-                            alt={name}
-                            width={44}
-                            height={44}
-                            className="h-11 w-11 object-contain drop-shadow transition-transform duration-500 ease-in-out group-hover:scale-110"
-                        />
-                    </div>
-                </motion.div>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="rounded-lg border border-primary/[0.15] bg-[#060f0a] px-3 py-1.5 font-medium text-primary shadow-xl">
-                <p>{name}</p>
-            </TooltipContent>
-        </Tooltip>
-    </TooltipProvider>
-);
-
-//  Data 
-
-const featureCards = [
-    {
-        icon: <FaTools className="h-5 w-5" />,
-        title: "ইন্ডাস্ট্রি স্ট্যান্ডার্ড টুলস",
-        description: "বিশ্বের সেরা ডিজাইন স্টুডিওগুলো যেসব সফটওয়্যার ব্যবহার করে, সেগুলোই শিখুন।",
-    },
-    {
-        icon: <FaProjectDiagram className="h-5 w-5" />,
-        title: "হ্যান্ডস-অন প্রজেক্ট",
-        description: "বাস্তব জীবনের ডিজাইন চ্যালেঞ্জ ও প্রজেক্ট দিয়ে আপনার পোর্টফোলিও গড়ে তুলুন।",
-    },
-    {
-        icon: <FaUserTie className="h-5 w-5" />,
-        title: "এক্সপার্ট মেন্টরশিপ",
-        description: "অভিজ্ঞ ডিজাইনার ও ইন্ডাস্ট্রি প্রফেশনালদের গাইডলাইন নিন সরাসরি।",
-    },
-];
-
-//  Section 
+import FeatureCard from './FeatureCard';
+import SkillBadge from './SkillBadge';
+import { featureCards } from './featureCardsData';
 
 export default function GraphicsSkills() {
-    const skills = [
+    const skills: { image: StaticImageData; name: string }[] = [
         { image: PhotoshopImg, name: "ফটোশপ" },
         { image: IllustratorImg, name: "ইলাস্ট্রেটর" },
     ];
 
     return (
-        <section className="relative overflow-hidden bg-[#040a07] py-24 selection:bg-primary/30 selection:text-white md:py-32">
-
-            {/* 3D workspace illustration */}
-            {/* <div
-                className="pointer-events-none absolute top-15 left-0 z-0 w-[300px] md:w-[400px] opacity-60"
-                style={{ animation: 'floatSlow 8s ease-in-out infinite' }}
-            >
-             green glow behind the image 
-                <div
-                    className="absolute inset-0 scale-90 rounded-full blur-2xl opacity-30"
-                    style={{
-                        background:
-                            'radial-gradient(ellipse, hsl(156 70% 42% / 0.6) 0%, transparent 70%)',
-                    }}
-                />
-                <Image
-                    src={WorkspaceIllustration}
-                    alt=""
-                    className="w-full h-auto drop-shadow-[0_8px_32px_hsl(156_70%_42%/0.35)]"
-                    priority={false}
-                />
-            </div> */}
+        <section className="relative overflow-hidden bg-surface-darker py-24 selection:bg-primary/30 selection:text-white md:py-32">
 
             {/* Elegant Background Meshes & Masks */}
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(32,180,134,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(32,180,134,0.04)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
@@ -194,38 +110,27 @@ export default function GraphicsSkills() {
                                 ))}
                             </div>
 
-                            {/* Premium Shimmer/Glass CTA (Desktop only here, mobile is below) */}
-                            {/* <Link href="/checkout" className="group hidden relative md:inline-flex items-center justify-center overflow-hidden rounded-xl p-[1px]">
-                                <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                                <div className="relative inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-primary/20 bg-[#0d1f14]/80 px-8 text-sm font-medium text-white backdrop-blur-sm transition-all duration-300 group-hover:bg-[#112a1b] group-hover:shadow-[0_0_20px_rgba(32,180,134,0.15)]">
-                                    <span>আপনার যাত্রা শুরু করুন</span>
-                                    <span className="text-primary transition-transform duration-300 group-hover:translate-x-1">→</span>
-                                </div>
-                            </Link> */}
                             <div className="pt-4 hidden md:inline-flex">
                                 <Link href="/checkout">
-                                    {/* Spinning glowing border wrapper */}
                                     <div className="relative inline-flex p-[2px] rounded-xl overflow-hidden
                                               shadow-[0_4px_24px_rgba(32,180,134,0.35)]
                                               hover:shadow-[0_8px_36px_rgba(32,180,134,0.60)]
                                               hover:scale-105 hover:-translate-y-0.5
                                               active:scale-95 active:translate-y-0
                                               transition-all duration-300 ease-out">
-                                        {/* Rotating conic-gradient border */}
-                                        <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,hsl(156_70%_42%)_25%,hsl(156_85%_70%)_50%,hsl(156_70%_42%)_75%,transparent_100%)]" />
+                                        <AnimatedBorder />
                                         <button className="group relative overflow-hidden
                                                 inline-flex items-center gap-2
                                                 px-8 py-3.5
                                                 text-base font-bold tracking-wide rounded-[10px]
-                                                bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38]
+                                                bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
                                                 text-white
-                                                hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]
+                                                hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
                                                 transition-all duration-300 ease-out">
                                             <span className="relative z-10 flex items-center gap-2">
                                                 আপনার যাত্রা শুরু করুন
                                                 <MousePointer2 className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
                                             </span>
-                                            {/* Shine sweep */}
                                             <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
                                         </button>
                                     </div>
@@ -239,7 +144,6 @@ export default function GraphicsSkills() {
                         <div className="mb-14 flex w-full max-w-[800px] items-center gap-4 opacity-70">
                             <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
 
-                            {/* premium badge with side decor */}
                             <div className="flex items-center gap-2">
                                 <span className="text-primary/60 text-xl select-none">←</span>
                                 <span className="relative inline-block px-4 py-1 bg-primary/10 border border-primary/20 rounded-full text-md font-medium uppercase text-primary backdrop-blur-md shadow-sm">
@@ -261,40 +165,27 @@ export default function GraphicsSkills() {
                     ))}
                 </div>
 
-                {/* Premium CTA (Mobile) */}
-                {/* <div className="mt-12 flex justify-center md:hidden">
-                    <Link href="/checkout" className="group relative inline-flex items-center justify-center overflow-hidden rounded-xl p-[1px]">
-                        <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                        <div className="relative inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-primary/20 bg-[#0d1f14]/80 px-8 text-sm font-medium text-white backdrop-blur-sm transition-all duration-300 hover:bg-[#112a1b] hover:shadow-[0_0_20px_rgba(32,180,134,0.15)]">
-                            <span>আপনার যাত্রা শুরু করুন</span>
-                            <span className="text-primary transition-transform duration-300 group-hover:translate-x-1">→</span>
-                        </div>
-                    </Link>
-                </div> */}
                 <div className="pt-4 md:hidden  flex justify-center items-center">
                     <Link href="/checkout">
-                        {/* Spinning glowing border wrapper */}
                         <div className="relative inline-flex p-[2px] rounded-xl overflow-hidden
                                               shadow-[0_4px_24px_rgba(32,180,134,0.35)]
                                               hover:shadow-[0_8px_36px_rgba(32,180,134,0.60)]
                                               hover:scale-105 hover:-translate-y-0.5
                                               active:scale-95 active:translate-y-0
                                               transition-all duration-300 ease-out">
-                            {/* Rotating conic-gradient border */}
-                            <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,hsl(156_70%_42%)_25%,hsl(156_85%_70%)_50%,hsl(156_70%_42%)_75%,transparent_100%)]" />
+                            <AnimatedBorder />
                             <button className="group relative overflow-hidden
                                                 inline-flex items-center gap-2
                                                 px-8 py-3.5
                                                 text-base font-bold tracking-wide rounded-[10px]
-                                                bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38]
+                                                bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
                                                 text-white
-                                                hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]
+                                                hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
                                                 transition-all duration-300 ease-out">
                                 <span className="relative z-10 flex items-center gap-2">
                                     আপনার যাত্রা শুরু করুন
                                     <MousePointer2 className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
                                 </span>
-                                {/* Shine sweep */}
                                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
                             </button>
                         </div>
@@ -309,52 +200,5 @@ export default function GraphicsSkills() {
                     100% { transform: translateY(0px) rotate(-2deg) scale(1); }
                 }`}</style>
         </section>
-    );
-}
-
-//  Feature Card 
-
-function FeatureCard({
-    icon,
-    title,
-    description,
-    index,
-}: {
-    icon: React.ReactNode;
-    title: string;
-    description: string;
-    index: number;
-}) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: index * 0.15, ease: [0.22, 1, 0.36, 1] }}
-            viewport={{ once: true, margin: "-50px" }}
-            className="group relative overflow-hidden rounded-2xl p-[1px] transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_8px_30px_rgba(32,180,134,0.06)]"
-        >
-            {/* Animated Glowing Border Background */}
-            <span className="absolute inset-[-100%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0%,transparent_40%,hsl(156_70%_42%/0.4)_50%,transparent_60%,transparent_100%)]" />
-
-            {/* Inner Card Background */}
-            <div className="relative h-full w-full rounded-[15px] bg-[#040a07] p-8 border border-white/[0.02] backdrop-blur-md transition-colors duration-500 group-hover:bg-[#060f0a]">
-
-                {/* Top Shine (Subtle hover effect) */}
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-
-                {/* Icon Box */}
-                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl border border-primary/[0.15] bg-primary/[0.05] text-primary transition-colors duration-500 group-hover:bg-primary/[0.1] group-hover:text-[hsl(var(--primary-glow))]">
-                    {icon}
-                </div>
-
-                {/* Content */}
-                <h3 className="mb-3 text-[17px] font-semibold tracking-tight text-white/90 transition-colors duration-300 group-hover:text-white">
-                    {title}
-                </h3>
-                <p className="text-sm leading-relaxed text-zinc-400">
-                    {description}
-                </p>
-            </div>
-        </motion.div>
     );
 }

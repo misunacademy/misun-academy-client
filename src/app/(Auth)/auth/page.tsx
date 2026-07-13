@@ -1,6 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
-
-"use client";
+﻿"use client";
 import { ArrowLeft, BookOpen, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Suspense } from "react";
@@ -11,6 +9,8 @@ import EmailVerificationModal from "@/components/module/auth/EmailVerificationMo
 import LoginForm from "@/components/module/auth/LoginForm";
 import RegisterForm from "@/components/module/auth/RegisterForm";
 import { isAllowedRedirectUrl } from '@/lib/auth-redirect';
+import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
+import PageBackground from '@/components/shared/PageBackground';
 
 
 const AuthPage = () => {
@@ -71,6 +71,7 @@ const AuthPage = () => {
                 return;
             }
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const userRole = (user as any).role;
             if (userRole === 'admin' || userRole === 'superadmin') {
                 router.replace('/dashboard/admin');
@@ -88,21 +89,16 @@ const AuthPage = () => {
 
 
     return (
-        <div className="min-h-screen bg-[#060f0a] flex flex-col relative overflow-hidden">
-            {/* Dot-grid */}
-            <div
-                className="absolute inset-0 opacity-[0.04] pointer-events-none"
-                style={{
-                    backgroundImage: "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)",
-                    backgroundSize: "32px 32px",
-                }}
-            />
-            {/* Ambient glows */}
-            <div className="absolute -top-24 left-1/4 w-[500px] h-[500px] bg-primary/7 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-
+        <PageBackground
+            gradient="bg-surface flex flex-col"
+            dotOpacity="opacity-[0.04]"
+            orbs={[
+                { position: "-top-24 left-1/4", size: "w-[500px] h-[500px]", opacity: "bg-primary/7", blur: "blur-[120px]" },
+                { position: "bottom-0 right-1/4", size: "w-80 h-80", opacity: "bg-primary/5", blur: "blur-3xl" },
+            ]}
+        >
             {/* Top nav bar */}
-            <div className="relative z-10 border-b border-primary/15 bg-[#060f0a]/80 backdrop-blur-sm">
+            <div className="relative z-10 border-b border-primary/15 bg-surface/80 backdrop-blur-sm">
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
                     <button
                         onClick={() => router.back()}
@@ -128,8 +124,8 @@ const AuthPage = () => {
                     <div className="text-center mb-8">
                         <div className="flex justify-center mb-4">
                             <div className="relative p-[1.5px] rounded-full overflow-hidden">
-                                <span className="absolute inset-[-100%] animate-[spin_5s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
-                                <div className="relative w-16 h-16 rounded-full bg-[#060f0a] flex items-center justify-center">
+                                <AnimatedBorder variant="simple" speed="5s" />
+                                <div className="relative w-16 h-16 rounded-full bg-surface flex items-center justify-center">
                                     <BookOpen className="w-7 h-7 text-primary" />
                                 </div>
                             </div>
@@ -157,7 +153,7 @@ const AuthPage = () => {
                     </div>
 
                     {/* Card */}
-                    <div className="relative overflow-hidden rounded-2xl bg-[#060f0a] border border-primary/20 shadow-[0_0_60px_hsl(156_70%_42%/0.12)]">
+                    <div className="relative overflow-hidden rounded-2xl bg-surface border border-primary/20 shadow-[0_0_60px_hsl(156_70%_42%/0.12)]">
                         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
                         <div className="absolute top-0 left-0 w-5 h-5 border-t border-l border-primary/40 rounded-tl-2xl" />
                         <div className="absolute top-0 right-0 w-5 h-5 border-t border-r border-primary/40 rounded-tr-2xl" />
@@ -210,13 +206,13 @@ const AuthPage = () => {
                     onClose={() => { setShowVerificationModal(false); setAuthMode('login'); }}
                 />
             )}
-        </div>
+        </PageBackground>
     );
 };
 
 export default function AuthPageWithSuspense() {
     return (
-        <Suspense fallback={<div className="min-h-screen bg-[#060f0a]" />}>
+        <Suspense fallback={<div className="min-h-screen bg-surface" />}>
             <AuthPage />
         </Suspense>
     );

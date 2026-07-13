@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "./baseApi";
 
 export interface PaymentInitiateRequest {
@@ -19,7 +18,7 @@ export interface PaymentResponse {
   currency: string;
   status: 'pending' | 'success' | 'failed' | 'review' | 'cancel';
   method: string; // Changed from paymentMethod to method to match backend
-  gatewayResponse?: any;
+  gatewayResponse?: unknown;
   verifiedAt?: string; // Date as string from API
   verifiedBy?: {
     _id: string;
@@ -75,7 +74,7 @@ const paymentApi = baseApi.injectEndpoints({
     }),
 
     // Update payment status (admin)
-    updatePaymentStatus: build.mutation<any, { transactionId: string; status: string }>({
+    updatePaymentStatus: build.mutation<unknown, { transactionId: string; status: string }>({
       query: ({ transactionId, status }) => ({
         url: `/payments/${transactionId}/status`,
         method: "PUT",
@@ -86,7 +85,7 @@ const paymentApi = baseApi.injectEndpoints({
     }),
 
     // Verify manual payment submission (admin)
-    verifyManualPayment: build.mutation<any, { transactionId: string; approved: boolean }>({
+    verifyManualPayment: build.mutation<unknown, { transactionId: string; approved: boolean }>({
       query: ({ transactionId, approved }) => ({
         url: `/payments/${transactionId}/verify`,
         method: "POST",

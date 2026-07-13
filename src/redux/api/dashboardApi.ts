@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "./baseApi";
 
 const dashboardApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
     // Get admin dashboard analytics
-    getAdminDashboard: build.query<{ data: any }, void>({
+    getAdminDashboard: build.query<{ data: unknown }, void>({
       query: () => ({
         url: "/dashboard/admin",
       }),
@@ -13,7 +12,7 @@ const dashboardApi = baseApi.injectEndpoints({
     }),
 
     // Get user statistics
-    getUserStats: build.query<{ data: any }, void>({
+    getUserStats: build.query<{ data: unknown }, void>({
       query: () => ({
         url: "/dashboard/users",
       }),
@@ -21,7 +20,7 @@ const dashboardApi = baseApi.injectEndpoints({
     }),
 
     // Get dashboard metadata (legacy - 60 days stats)
-    getDashboardMetadata: build.query<{ data: any }, { courseId?: string } | void>({
+    getDashboardMetadata: build.query<{ data: unknown }, { courseId?: string } | void>({
       query: (params) => ({
         url: "/dashboard/metadata",
         params: params || undefined,
@@ -29,14 +28,14 @@ const dashboardApi = baseApi.injectEndpoints({
       providesTags: ["Dashboard"],
     }),
 
-    getInstructorDashboard: build.query<{ data: any }, void>({
+    getInstructorDashboard: build.query<{ data: unknown }, void>({
       query: () => ({
         url: "/dashboard/instructor",
       }),
       providesTags: ["Dashboard"],
     }),
     // Keep only student-specific endpoints here
-    getStudentDashboardData: build.query({
+    getStudentDashboardData: build.query<{ data: Record<string, unknown> }, void>({
       query: () => ({
         url: "/dashboard/student",
       }),

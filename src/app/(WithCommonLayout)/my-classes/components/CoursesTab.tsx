@@ -6,7 +6,7 @@ import { EnrolledCourse } from "../types";
 export function CoursesTab({ enrolledCourses }: { enrolledCourses: EnrolledCourse[] }) {
   if (enrolledCourses.length === 0) {
     return (
-      <div className="relative rounded-2xl border border-primary/20 bg-[#060f0a] overflow-hidden flex flex-col items-center justify-center py-20 gap-5 text-center px-6">
+      <div className="relative rounded-2xl border border-primary/20 bg-surface overflow-hidden flex flex-col items-center justify-center py-20 gap-5 text-center px-6">
         {/* Dot grid */}
         <div
           className="absolute inset-0 opacity-[0.10] pointer-events-none"
@@ -29,7 +29,7 @@ export function CoursesTab({ enrolledCourses }: { enrolledCourses: EnrolledCours
         </div>
         <Link href="/courses" className="relative">
           <button className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm
-            bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white
+            bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark text-white
             shadow-[0_0_20px_hsl(156_70%_42%/0.3)] hover:shadow-[0_0_30px_hsl(156_70%_42%/0.5)]
             transition-all duration-300 hover:-translate-y-0.5">
             Browse Courses

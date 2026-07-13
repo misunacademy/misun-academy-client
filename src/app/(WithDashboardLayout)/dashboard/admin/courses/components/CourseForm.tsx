@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import Image from "next/image";
@@ -144,8 +143,8 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
         return "beginner";
       };
 
+      /* eslint-disable @typescript-eslint/no-explicit-any */
       const normalizedLevel = normalizeLevel((course as any).level);
-
 
       const formData = {
         title: (course as any).title || "",
@@ -189,6 +188,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
 
       setFeatures((course as any).features || []);
       setHighlights((course as any).highlights || []);
+      /* eslint-enable @typescript-eslint/no-explicit-any */
     }
   }, [course, form]);
 
@@ -240,8 +240,9 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
       if (fileInputRefs.current[field]) {
         fileInputRefs.current[field]!.value = "";
       }
-    } catch (error: any) {
-      toast.error(error?.data?.message || error?.message || "Upload failed");
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string }; message?: string };
+      toast.error(err?.data?.message || err?.message || "Upload failed");
     } finally {
       setUploadingField(null);
     }
@@ -278,8 +279,9 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
         toast.success("Course updated");
       }
       router.push("/dashboard/admin/courses");
-    } catch (err: any) {
-      toast.error(err?.data?.message || err?.message || "Failed to save course");
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string }; message?: string };
+      toast.error(error?.data?.message || error?.message || "Failed to save course");
     }
   };
 
@@ -289,7 +291,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
   if (error) {
     return (
       <div className="p-6 text-red-500">
-        Error loading course: {(error as any)?.data?.message || (error as any)?.message || 'Unknown error'}
+        Error loading course: {(error as { data?: { message?: string }; message?: string })?.data?.message || (error as { data?: { message?: string }; message?: string })?.message || 'Unknown error'}
       </div>
     );
   }
@@ -363,7 +365,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
             <Field label="Level">
               <Select
                 value={form.watch("level")}
-                onValueChange={(v) => form.setValue("level", v as any, { shouldDirty: true, shouldValidate: true })}
+                onValueChange={(v) => form.setValue("level", v as "beginner" | "intermediate" | "advanced", { shouldDirty: true, shouldValidate: true })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select level" />
@@ -498,7 +500,7 @@ Portfolio development and client presentation"
             </Field>
             <Field label="Status">
               <Select value={form.watch("status") as string}
-                onValueChange={(v) => form.setValue("status", v as any, { shouldDirty: true, shouldValidate: true })}>
+                onValueChange={(v) => form.setValue("status", v as "draft" | "published" | "archived", { shouldDirty: true, shouldValidate: true })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

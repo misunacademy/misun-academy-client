@@ -7,7 +7,7 @@ import { CheckCircle, Clock, Gift } from 'lucide-react';
 import { useGetMySalariesQuery } from '@/redux/api/employeeApi';
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
 import DashboardPageTableWithPagination from '@/components/layout/DashboardPageTableWithPagination';
-import { EmployeeStatCards } from '../(components)/EmployeeStatCards';
+import { EmployeeStatCards } from '../_components/EmployeeStatCards';
 
 const COLUMNS = [
     'Month / Year',
