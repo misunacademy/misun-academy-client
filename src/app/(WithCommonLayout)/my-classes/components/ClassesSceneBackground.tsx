@@ -25,6 +25,7 @@ export default function ClassesSceneBackground() {
       <Canvas
         camera={{ position: [0, 0, 5], fov: 60 }}
         gl={{ alpha: true, antialias: true }}
+        dpr={[1, 1.5]}
       >
         <Suspense fallback={null}>
           <Scene />

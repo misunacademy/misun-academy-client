@@ -1,39 +1,18 @@
-"use client";
+"use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Users } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { Users } from "lucide-react"
+import { InputField } from "@/components/forms/input-field"
+import { SubmitButton } from "@/components/forms/submit-button"
 
 interface CommunityLinksTabProps {
-  maFacebookGroupLink: string;
-  maWhatsappGroupLink: string;
-  epFacebookGroupLink: string;
-  epWhatsappGroupLink: string;
-  saving: boolean;
-  onMaFacebookGroupLinkChange: (value: string) => void;
-  onMaWhatsappGroupLinkChange: (value: string) => void;
-  onEpFacebookGroupLinkChange: (value: string) => void;
-  onEpWhatsappGroupLinkChange: (value: string) => void;
-  onSave: () => Promise<void>;
+  onSave: () => void
 }
 
-export function CommunityLinksTab({
-  maFacebookGroupLink,
-  maWhatsappGroupLink,
-  epFacebookGroupLink,
-  epWhatsappGroupLink,
-  saving,
-  onMaFacebookGroupLinkChange,
-  onMaWhatsappGroupLinkChange,
-  onEpFacebookGroupLinkChange,
-  onEpWhatsappGroupLinkChange,
-  onSave,
-}: CommunityLinksTabProps) {
+export function CommunityLinksTab({ onSave }: CommunityLinksTabProps) {
   return (
-    <>
+    <form onSubmit={(e) => { e.preventDefault(); onSave() }}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -46,24 +25,8 @@ export function CommunityLinksTab({
           <div className="space-y-3">
             <p className="text-sm font-semibold">Misun Academy</p>
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="ma-facebook-group-link">Facebook group link</Label>
-                <Input
-                  id="ma-facebook-group-link"
-                  value={maFacebookGroupLink}
-                  placeholder="https://www.facebook.com/groups/your-group"
-                  onChange={(e) => onMaFacebookGroupLinkChange(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="ma-whatsapp-group-link">WhatsApp group link</Label>
-                <Input
-                  id="ma-whatsapp-group-link"
-                  value={maWhatsappGroupLink}
-                  placeholder="https://chat.whatsapp.com/your-invite-link"
-                  onChange={(e) => onMaWhatsappGroupLinkChange(e.target.value)}
-                />
-              </div>
+              <InputField name="maFacebookGroupLink" label="Facebook group link" placeholder="https://www.facebook.com/groups/your-group" />
+              <InputField name="maWhatsappGroupLink" label="WhatsApp group link" placeholder="https://chat.whatsapp.com/your-invite-link" />
             </div>
           </div>
 
@@ -72,34 +35,16 @@ export function CommunityLinksTab({
           <div className="space-y-3">
             <p className="text-sm font-semibold">Esun Point</p>
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="ep-facebook-group-link">Facebook group link</Label>
-                <Input
-                  id="ep-facebook-group-link"
-                  value={epFacebookGroupLink}
-                  placeholder="https://www.facebook.com/groups/your-group"
-                  onChange={(e) => onEpFacebookGroupLinkChange(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="ep-whatsapp-group-link">WhatsApp group link</Label>
-                <Input
-                  id="ep-whatsapp-group-link"
-                  value={epWhatsappGroupLink}
-                  placeholder="https://chat.whatsapp.com/your-invite-link"
-                  onChange={(e) => onEpWhatsappGroupLinkChange(e.target.value)}
-                />
-              </div>
+              <InputField name="epFacebookGroupLink" label="Facebook group link" placeholder="https://www.facebook.com/groups/your-group" />
+              <InputField name="epWhatsappGroupLink" label="WhatsApp group link" placeholder="https://chat.whatsapp.com/your-invite-link" />
             </div>
           </div>
         </CardContent>
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={onSave} disabled={saving}>
-          {saving ? "Saving..." : "Save Settings"}
-        </Button>
+        <SubmitButton>Save Settings</SubmitButton>
       </div>
-    </>
-  );
+    </form>
+  )
 }

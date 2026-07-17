@@ -1,81 +1,123 @@
-"use client";
+"use client"
+/* eslint-disable react-hooks/incompatible-library */
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
-} from "@/components/ui/dialog";
-import { toast } from "sonner";
-import { Plus, Trash2, Loader2 } from "lucide-react";
+import { useForm, useFieldArray, FormProvider, type Resolver } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { toast } from "sonner"
+import { Plus, Trash2 } from "lucide-react"
+import { InputField } from "@/components/forms/input-field"
+import { TextareaField } from "@/components/forms/textarea-field"
+import { SelectField } from "@/components/forms/select-field"
+import { SwitchField } from "@/components/forms/switch-field"
+import { SubmitButton } from "@/components/forms/submit-button"
 import {
   useCreateInstructorLessonMutation,
   useUpdateInstructorLessonMutation,
   type InstructorLesson,
-} from "@/redux/api/instructorApi";
+} from "@/redux/api/instructorApi"
+
+const resourceSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  type: z.enum(["link", "text"]),
+  url: z.string().optional(),
+  textContent: z.string().optional(),
+})
+
+const lessonSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  type: z.enum(["video", "reading", "quiz", "project"]),
+  videoSource: z.enum(["youtube", "googledrive"]).optional(),
+  videoId: z.string().optional(),
+  videoUrl: z.string().optional(),
+  videoDuration: z.coerce.number().optional(),
+  content: z.string().optional(),
+  isMandatory: z.boolean(),
+  resources: z.array(resourceSchema),
+})
+
+type LessonFormValues = z.infer<typeof lessonSchema>
+
+const LESSON_TYPE_OPTIONS = [
+  { value: "video", label: "Video" },
+  { value: "reading", label: "Reading" },
+  { value: "quiz", label: "Quiz" },
+  { value: "project", label: "Project" },
+]
+
+const VIDEO_SOURCE_OPTIONS = [
+  { value: "youtube", label: "YouTube" },
+  { value: "googledrive", label: "Google Drive" },
+]
+
+const RESOURCE_TYPE_OPTIONS = [
+  { value: "link", label: "Link" },
+  { value: "text", label: "Text" },
+]
 
 interface LessonFormDialogProps {
-  open: boolean;
-  mode: "create" | "edit";
-  moduleId?: string;
-  data?: InstructorLesson;
-  onClose: () => void;
-  onSuccess: () => void;
+  open: boolean
+  mode: "create" | "edit"
+  moduleId?: string
+  data?: InstructorLesson
+  onClose: () => void
+  onSuccess: () => void
 }
 
 export function LessonFormDialog({ open, mode, moduleId, data, onClose, onSuccess }: LessonFormDialogProps) {
-  const [create, { isLoading: creating }] = useCreateInstructorLessonMutation();
-  const [update, { isLoading: updating }] = useUpdateInstructorLessonMutation();
-  const [form, setForm] = useState({
-    title: data?.title || "",
-    description: data?.description || "",
-    type: data?.type || "video" as const,
-    videoSource: data?.videoSource || "youtube" as const,
-    videoId: data?.videoId || "",
-    videoUrl: data?.videoUrl || "",
-    videoDuration: data?.videoDuration || 0,
-    content: data?.content || "",
-    isMandatory: data?.isMandatory ?? true,
-    resources: (data?.resources || []) as Array<{ title: string; type: "link" | "text"; url: string; textContent: string }>,
-  });
+  const [create, { isLoading: creating }] = useCreateInstructorLessonMutation()
+  const [update, { isLoading: updating }] = useUpdateInstructorLessonMutation()
 
-  const handleAddResource = () => {
-    const newResource: { title: string; type: "link" | "text"; url: string; textContent: string } = { title: '', type: 'link', url: '', textContent: '' };
-    setForm({ ...form, resources: [...form.resources, newResource] });
-  };
+  const form = useForm<LessonFormValues>({
+    resolver: zodResolver(lessonSchema) as Resolver<LessonFormValues>,
+    defaultValues: {
+      title: data?.title || "",
+      description: data?.description || "",
+      type: data?.type || "video",
+      videoSource: data?.videoSource || "youtube",
+      videoId: data?.videoId || "",
+      videoUrl: data?.videoUrl || "",
+      videoDuration: data?.videoDuration || 0,
+      content: data?.content || "",
+      isMandatory: data?.isMandatory ?? true,
+      resources: (data?.resources || []) as LessonFormValues["resources"],
+    },
+  })
 
-  const handleUpdateResource = (index: number, field: keyof (typeof form.resources)[number], value: string) => {
-    const updated = [...form.resources];
-    updated[index] = { ...updated[index], [field]: value };
-    setForm({ ...form, resources: updated });
-  };
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "resources",
+  })
 
-  const handleRemoveResource = (index: number) => {
-    setForm({ ...form, resources: form.resources.filter((_, i) => i !== index) });
-  };
+  const watchedType = form.watch("type")
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (values: LessonFormValues) => {
     try {
-      const lessonPayload: Record<string, unknown> = { ...form };
-      if (mode === "create") {
-        await create({ moduleId: moduleId!, ...lessonPayload }).unwrap();
-        toast.success("Lesson created");
-      } else {
-        await update({ lessonId: data!._id, ...lessonPayload }).unwrap();
-        toast.success("Lesson updated");
+      const payload = { ...values }
+      if (payload.type !== "video") {
+        delete payload.videoSource
+        delete payload.videoId
+        delete payload.videoUrl
+        delete payload.videoDuration
       }
-      onSuccess();
+
+      if (mode === "create") {
+        await create({ moduleId: moduleId!, ...payload }).unwrap()
+        toast.success("Lesson created")
+      } else {
+        await update({ lessonId: data!._id, ...payload }).unwrap()
+        toast.success("Lesson updated")
+      }
+      onSuccess()
     } catch (err: unknown) {
-      const error = err as { data?: { message?: string } };
-      toast.error(error?.data?.message || "Operation failed");
+      const error = err as { data?: { message?: string } }
+      toast.error(error?.data?.message || "Operation failed")
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -84,115 +126,70 @@ export function LessonFormDialog({ open, mode, moduleId, data, onClose, onSucces
           <DialogTitle>{mode === "create" ? "Add Lesson" : "Edit Lesson"}</DialogTitle>
           <DialogDescription>Fill in the lesson details.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label>Title *</Label>
-            <Input value={form.title} placeholder="Enter title of the lesson..." onChange={e => setForm({ ...form, title: e.target.value })} required />
-          </div>
-          <div>
-            <Label>Description *</Label>
-            <Textarea value={form.description} placeholder="Enter description..." onChange={e => setForm({ ...form, description: e.target.value })} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>Type</Label>
-              <Select value={form.type} onValueChange={(v: string) => setForm({ ...form, type: v as 'video' | 'reading' | 'quiz' | 'project' })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="video">Video</SelectItem>
-                  <SelectItem value="reading">Reading</SelectItem>
-                  <SelectItem value="quiz">Quiz</SelectItem>
-                </SelectContent>
-              </Select>
+        <FormProvider {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <InputField name="title" label="Title" placeholder="Enter title of the lesson..." required />
+            <TextareaField name="description" label="Description" placeholder="Enter description..." />
+
+            <div className="grid grid-cols-2 gap-4">
+              <SelectField name="type" label="Type" options={LESSON_TYPE_OPTIONS} required />
+              <div className="flex items-end pb-2">
+                <SwitchField name="isMandatory" label="Mandatory" />
+              </div>
             </div>
-            <div className="flex items-center gap-2 mt-6">
-              <Switch checked={form.isMandatory} onCheckedChange={v => setForm({ ...form, isMandatory: v })} />
-              <Label>Mandatory</Label>
-            </div>
-          </div>
-          {form.type === "video" && (
-            <>
-              <div>
-                <Label>Video Source</Label>
-                <Select value={form.videoSource} onValueChange={(v: string) => setForm({ ...form, videoSource: v as 'youtube' | 'googledrive' })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="youtube">YouTube</SelectItem>
-                    <SelectItem value="googledrive">Google Drive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Video ID</Label>
-                <Input value={form.videoId} onChange={e => setForm({ ...form, videoId: e.target.value })} placeholder="dQw4w9WgXcQ" />
-              </div>
-              <div>
-                <Label>Duration (seconds)</Label>
-                <Input type="number" value={form.videoDuration} onChange={e => setForm({ ...form, videoDuration: parseInt(e.target.value) || 0 })} />
-              </div>
-            </>
-          )}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label>Resources</Label>
-              <Button type="button" variant="outline" size="sm" onClick={handleAddResource}>
-                <Plus className="h-4 w-4 mr-2" />Add Resource
-              </Button>
-            </div>
-            {form.resources.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No resources added yet</p>
-            ) : (
-              <div className="space-y-3">
-                {form.resources.map((resource, index) => (
-                  <Card key={index} className="p-3">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium">Resource {index + 1}</Label>
-                        <Button type="button" variant="ghost" size="sm" onClick={() => handleRemoveResource(index)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <div>
-                        <Label className="text-xs">Title *</Label>
-                        <Input value={resource.title} onChange={(e) => handleUpdateResource(index, 'title', e.target.value)} placeholder="Resource title" required />
-                      </div>
-                      <div>
-                        <Label className="text-xs">Type *</Label>
-                        <Select value={resource.type} onValueChange={(value: "link" | "text") => handleUpdateResource(index, 'type', value)}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="link">Link</SelectItem>
-                            <SelectItem value="text">Text</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {resource.type === 'link' && (
-                        <div>
-                          <Label className="text-xs">URL *</Label>
-                          <Input value={resource.url} onChange={(e) => handleUpdateResource(index, 'url', e.target.value)} placeholder="https://example.com" type="url" required />
-                        </div>
-                      )}
-                      {resource.type === 'text' && (
-                        <div>
-                          <Label className="text-xs">Text Content *</Label>
-                          <Textarea value={resource.textContent} onChange={(e) => handleUpdateResource(index, 'textContent', e.target.value)} placeholder="Enter text content..." rows={3} required />
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                ))}
-              </div>
+
+            {watchedType === "video" && (
+              <>
+                <SelectField name="videoSource" label="Video Source" options={VIDEO_SOURCE_OPTIONS} />
+                <InputField name="videoId" label="Video ID" placeholder="dQw4w9WgXcQ" />
+                <InputField name="videoDuration" label="Duration (seconds)" type="number" />
+              </>
             )}
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit" disabled={creating || updating}>
-              {(creating || updating) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {mode === "create" ? "Create" : "Update"}
-            </Button>
-          </DialogFooter>
-        </form>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium">Resources</label>
+                <Button type="button" variant="outline" size="sm" onClick={() => append({ title: "", type: "link", url: "", textContent: "" })}>
+                  <Plus className="h-4 w-4 mr-2" />Add Resource
+                </Button>
+              </div>
+              {fields.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No resources added yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {fields.map((field, index) => (
+                    <Card key={field.id} className="p-3">
+                      <CardContent className="p-0 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-medium">Resource {index + 1}</label>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <InputField name={`resources.${index}.title`} label="Title" placeholder="Resource title" required rules={{ required: "Title is required" }} />
+                        <SelectField name={`resources.${index}.type`} label="Type" options={RESOURCE_TYPE_OPTIONS} />
+                        {form.watch(`resources.${index}.type`) === "link" && (
+                          <InputField name={`resources.${index}.url`} label="URL" type="url" placeholder="https://example.com" rules={{ required: "URL is required" }} />
+                        )}
+                        {form.watch(`resources.${index}.type`) === "text" && (
+                          <TextareaField name={`resources.${index}.textContent`} label="Text Content" placeholder="Enter text content..." rows={3} rules={{ required: "Content is required" }} />
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+              <SubmitButton disabled={creating || updating}>
+                {mode === "create" ? "Create" : "Update"}
+              </SubmitButton>
+            </DialogFooter>
+          </form>
+        </FormProvider>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

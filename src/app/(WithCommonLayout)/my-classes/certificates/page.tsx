@@ -3,7 +3,7 @@
 import { Skeleton } from 'boneyard-js/react'
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Loader2, ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import AuthGuard from "@/components/shared/AuthGuard";
 import PageBackground from "@/components/shared/PageBackground";

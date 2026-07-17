@@ -1,64 +1,60 @@
-"use client";
+"use client"
 
-import { ChangeEvent } from "react";
-import Image from "next/image";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
+import { type ChangeEvent } from "react"
+import { Controller, useFormContext } from "react-hook-form"
+import Image from "next/image"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { InputField } from "@/components/forms/input-field"
+import { SubmitButton } from "@/components/forms/submit-button"
 
 interface PopupBannerTabProps {
-  popupEnabled: boolean;
-  popupLink: string;
-  popupImageUrl: string;
-  uploadLoading: boolean;
-  saving: boolean;
-  onPopupEnabledChange: (value: boolean) => Promise<void>;
-  onPopupLinkChange: (value: string) => void;
-  onBannerFileChange: (e: ChangeEvent<HTMLInputElement>) => Promise<void>;
-  onSave: () => Promise<void>;
+  uploadLoading: boolean
+  onPopupEnabledChange: (value: boolean) => Promise<void>
+  onBannerFileChange: (e: ChangeEvent<HTMLInputElement>) => Promise<void>
+  onSave: () => void
 }
 
 export function PopupBannerTab({
-  popupEnabled,
-  popupLink,
-  popupImageUrl,
   uploadLoading,
-  saving,
   onPopupEnabledChange,
-  onPopupLinkChange,
   onBannerFileChange,
   onSave,
 }: PopupBannerTabProps) {
+  const { control, watch } = useFormContext()
+  const popupImageUrl = watch("popupImageUrl")
+
   return (
-    <>
+    <form onSubmit={(e) => { e.preventDefault(); onSave() }}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">Popup Banner</CardTitle>
           <CardDescription>Show a popup banner to website visitors if enabled</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Popup enabled</Label>
-              <p className="text-sm text-muted-foreground">Show banner on initial visit for visitors</p>
-            </div>
-            <Switch checked={popupEnabled} onCheckedChange={onPopupEnabledChange} />
-          </div>
+          <Controller
+            name="popupEnabled"
+            control={control}
+            render={({ field }) => (
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="popup-enabled">Popup enabled</Label>
+                  <p className="text-sm text-muted-foreground">Show banner on initial visit for visitors</p>
+                </div>
+                <Switch
+                  id="popup-enabled"
+                  checked={!!field.value}
+                  onCheckedChange={onPopupEnabledChange}
+                />
+              </div>
+            )}
+          />
 
           <Separator />
 
-          <div className="space-y-2">
-            <Label htmlFor="popup-link">Popup target URL (optional)</Label>
-            <Input
-              id="popup-link"
-              value={popupLink}
-              placeholder="https://example.com"
-              onChange={(e) => onPopupLinkChange(e.target.value)}
-            />
-          </div>
+          <InputField name="popupLink" label="Popup target URL (optional)" placeholder="https://example.com" />
 
           <div className="space-y-2">
             <Label htmlFor="popup-image">Banner image file</Label>
@@ -84,10 +80,8 @@ export function PopupBannerTab({
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={onSave} disabled={saving}>
-          {saving ? "Saving..." : "Save Settings"}
-        </Button>
+        <SubmitButton>Save Settings</SubmitButton>
       </div>
-    </>
-  );
+    </form>
+  )
 }

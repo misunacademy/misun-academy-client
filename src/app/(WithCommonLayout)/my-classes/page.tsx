@@ -8,14 +8,10 @@ import {
   AlertCircle,
   Video,
   KeyRound,
-  Loader2,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AuthGuard from "@/components/shared/AuthGuard";
 import dynamic from "next/dynamic";
-import { CoursesTab } from "./components/CoursesTab";
-import { LiveRecordingsTab } from "./components/LiveRecordingsTab";
-import { SpecialAccessTab } from "./components/SpecialAccessTab";
 import { EnrolledCourse } from "./types";
 import { useGetStudentDashboardDataQuery } from "@/redux/api/dashboardApi";
 import WelcomeBanner from "./_components/WelcomeBanner";
@@ -24,6 +20,10 @@ const SceneBackground = dynamic(
   () => import("./components/ClassesSceneBackground"),
   { ssr: false }
 )
+
+const CoursesTab = dynamic(() => import("./components/CoursesTab").then(m => ({ default: m.CoursesTab })), { ssr: false });
+const LiveRecordingsTab = dynamic(() => import("./components/LiveRecordingsTab").then(m => ({ default: m.LiveRecordingsTab })), { ssr: false });
+const SpecialAccessTab = dynamic(() => import("./components/SpecialAccessTab").then(m => ({ default: m.SpecialAccessTab })), { ssr: false });
 
 const MyClassesPage = () => {
   const { user } = useAuth();

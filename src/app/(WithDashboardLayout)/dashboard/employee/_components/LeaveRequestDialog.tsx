@@ -58,6 +58,7 @@ export function LeaveRequestDialog({ open, onClose }: Props) {
         },
     });
 
+    // eslint-disable-next-line react-hooks/incompatible-library
     const watchedFrom = form.watch('from');
     const watchedTo = form.watch('to');
     const days = daysBetween(watchedFrom, watchedTo);

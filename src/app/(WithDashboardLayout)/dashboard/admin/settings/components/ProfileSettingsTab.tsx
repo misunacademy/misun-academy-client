@@ -1,24 +1,37 @@
-"use client";
+"use client"
 
-import { useRef, useState, ChangeEvent } from "react";
-import Image from "next/image";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Shield, Loader2, Camera, User, Eye, EyeOff } from "lucide-react";
-import { toast } from "sonner";
-import { authServerApi } from "@/lib/auth-server-api";
-import type { AuthUser } from "@/types/auth";
+import { type ChangeEvent } from "react"
+import { useForm, FormProvider, type Resolver } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Shield, Loader2, Camera, User } from "lucide-react"
+import { toast } from "sonner"
+import { authServerApi } from "@/lib/auth-server-api"
+import type { AuthUser } from "@/types/auth"
+import { PasswordField } from "@/components/forms/password-field"
+import { SubmitButton } from "@/components/forms/submit-button"
+
+const passwordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your new password"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+})
+
+type PasswordFormValues = z.infer<typeof passwordSchema>
 
 interface ProfileSettingsTabProps {
-  user: AuthUser | null;
-  uploadLoading: boolean;
-  profileUpdateLoading: boolean;
-  handleProfilePhotoClick: () => void;
-  handleProfilePhotoChange: (e: ChangeEvent<HTMLInputElement>) => Promise<void>;
-  profileFileInputRef: React.RefObject<HTMLInputElement | null>;
+  user: AuthUser | null
+  uploadLoading: boolean
+  profileUpdateLoading: boolean
+  handleProfilePhotoClick: () => void
+  handleProfilePhotoChange: (e: ChangeEvent<HTMLInputElement>) => Promise<void>
+  profileFileInputRef: React.RefObject<HTMLInputElement | null>
 }
 
 export function ProfileSettingsTab({
@@ -29,65 +42,39 @@ export function ProfileSettingsTab({
   handleProfilePhotoChange,
   profileFileInputRef,
 }: ProfileSettingsTabProps) {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordLoading, setPasswordLoading] = useState(false);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const passwordForm = useForm<PasswordFormValues>({
+    resolver: zodResolver(passwordSchema) as Resolver<PasswordFormValues>,
+    defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
+  })
 
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      toast.error("All password fields are required.");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error("New passwords do not match.");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters long.");
-      return;
-    }
-
-    setPasswordLoading(true);
+  const handleChangePassword = async (values: PasswordFormValues) => {
     try {
       const result = await authServerApi.changePassword({
-        currentPassword,
-        newPassword,
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
         revokeOtherSessions: false,
-      });
+      })
 
       if (result.error) {
-        toast.error(result.error.message || "Failed to change password.");
-        return;
+        toast.error(result.error.message || "Failed to change password.")
+        return
       }
 
-      toast.success("Password changed successfully.");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      toast.success("Password changed successfully.")
+      passwordForm.reset()
     } catch (error) {
-      let errorMessage = "Failed to change password.";
+      let errorMessage = "Failed to change password."
       if (error && typeof error === "object") {
         if ("data" in error) {
-          const apiError = error as { data?: { message?: string } };
-          errorMessage = apiError.data?.message || errorMessage;
+          const apiError = error as { data?: { message?: string } }
+          errorMessage = apiError.data?.message || errorMessage
         } else if ("message" in error) {
-          const generalError = error as { message: string };
-          errorMessage = generalError.message;
+          errorMessage = (error as { message: string }).message
         }
       }
-      toast.error(errorMessage);
-    } finally {
-      setPasswordLoading(false);
+      toast.error(errorMessage)
     }
-  };
+  }
 
   return (
     <>
@@ -117,15 +104,9 @@ export function ProfileSettingsTab({
                 disabled={uploadLoading || profileUpdateLoading}
               >
                 {uploadLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Uploading...
-                  </>
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Uploading...</>
                 ) : (
-                  <>
-                    <Camera className="mr-2 h-4 w-4" />
-                    Change Photo
-                  </>
+                  <><Camera className="mr-2 h-4 w-4" />Change Photo</>
                 )}
               </Button>
               <input
@@ -149,77 +130,16 @@ export function ProfileSettingsTab({
           <CardDescription>Update your admin password securely.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleChangePassword} className="space-y-4">
-            <div className="space-y-2 relative">
-              <Label htmlFor="current-password">Current password</Label>
-              <Input
-                id="current-password"
-                type={showCurrentPassword ? "text" : "password"}
-                placeholder="Enter your current password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                onClick={() => setShowCurrentPassword((s) => !s)}
-                className="absolute right-3 top-[38px] text-muted-foreground"
-                aria-label="Toggle current password visibility"
-              >
-                {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-
-            <div className="space-y-2 relative">
-              <Label htmlFor="new-password">New password</Label>
-              <Input
-                id="new-password"
-                type={showNewPassword ? "text" : "password"}
-                value={newPassword}
-                placeholder="At least 6 characters"
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                onClick={() => setShowNewPassword((s) => !s)}
-                className="absolute right-3 top-[38px] text-muted-foreground"
-                aria-label="Toggle new password visibility"
-              >
-                {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-
-            <div className="space-y-2 relative">
-              <Label htmlFor="confirm-password">Confirm new password</Label>
-              <Input
-                id="confirm-password"
-                type={showConfirmPassword ? "text" : "password"}
-                value={confirmPassword}
-                placeholder="Repeat new password"
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword((s) => !s)}
-                className="absolute right-3 top-[38px] text-muted-foreground"
-                aria-label="Toggle confirm password visibility"
-              >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-
-            <Button type="submit" disabled={passwordLoading}>
-              {passwordLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Changing...
-                </>
-              ) : (
-                "Change Password"
-              )}
-            </Button>
-          </form>
+          <FormProvider {...passwordForm}>
+            <form onSubmit={passwordForm.handleSubmit(handleChangePassword)} className="space-y-4">
+              <PasswordField name="currentPassword" label="Current password" placeholder="Enter your current password" required />
+              <PasswordField name="newPassword" label="New password" placeholder="At least 6 characters" required />
+              <PasswordField name="confirmPassword" label="Confirm new password" placeholder="Repeat new password" required />
+              <SubmitButton>Change Password</SubmitButton>
+            </form>
+          </FormProvider>
         </CardContent>
       </Card>
     </>
-  );
+  )
 }

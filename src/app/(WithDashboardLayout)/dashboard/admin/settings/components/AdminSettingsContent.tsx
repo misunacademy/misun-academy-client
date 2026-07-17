@@ -1,166 +1,158 @@
-"use client";
+"use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState, ChangeEvent } from "react";
-import { toast } from "sonner";
-import { authServerApi } from "@/lib/auth-server-api";
-import { useAuth } from "@/hooks/useAuth";
-import { useGetSettingsQuery, useUpdateSettingsMutation } from "@/redux/api/settingsApi";
-import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
-import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
-import DashboardPageTabs from "@/components/layout/DashboardPageTabs";
-import { ProfileSettingsTab } from "./ProfileSettingsTab";
-import { MaintenanceSettingsTab } from "./MaintenanceSettingsTab";
-import { CommunityLinksTab } from "./CommunityLinksTab";
-import { PopupBannerTab } from "./PopupBannerTab";
+import { useCallback, useEffect, useMemo, useRef, type ChangeEvent } from "react"
+import { useForm, FormProvider, type Resolver } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { toast } from "sonner"
+import { useAuth } from "@/hooks/useAuth"
+import { useGetSettingsQuery, useUpdateSettingsMutation } from "@/redux/api/settingsApi"
+import { useUploadSingleImageMutation } from "@/redux/api/uploadApi"
+import { useUpdateUserProfileMutation } from "@/redux/api/profileApi"
+import DashboardPageTabs from "@/components/layout/DashboardPageTabs"
+import { ProfileSettingsTab } from "./ProfileSettingsTab"
+import { MaintenanceSettingsTab } from "./MaintenanceSettingsTab"
+import { CommunityLinksTab } from "./CommunityLinksTab"
+import { PopupBannerTab } from "./PopupBannerTab"
+
+const settingsSchema = z.object({
+  popupEnabled: z.boolean(),
+  popupImageUrl: z.string().optional(),
+  popupLink: z.string().optional(),
+  maintenanceEnabled: z.boolean(),
+  maintenanceTitle: z.string().optional(),
+  maintenanceMessage: z.string().optional(),
+  maFacebookGroupLink: z.string().optional(),
+  maWhatsappGroupLink: z.string().optional(),
+  epFacebookGroupLink: z.string().optional(),
+  epWhatsappGroupLink: z.string().optional(),
+})
+
+type SettingsFormValues = z.infer<typeof settingsSchema>
 
 export default function AdminSettingsContent() {
-  const [saving, setSaving] = useState(false);
-  const [popupEnabled, setPopupEnabled] = useState(false);
-  const [popupImageUrl, setPopupImageUrl] = useState("");
-  const [popupLink, setPopupLink] = useState("");
-  const [maintenanceEnabled, setMaintenanceEnabled] = useState(false);
-  const [maintenanceTitle, setMaintenanceTitle] = useState("");
-  const [maintenanceMessage, setMaintenanceMessage] = useState("");
-  const [maFacebookGroupLink, setMaFacebookGroupLink] = useState("");
-  const [maWhatsappGroupLink, setMaWhatsappGroupLink] = useState("");
-  const [epFacebookGroupLink, setEpFacebookGroupLink] = useState("");
-  const [epWhatsappGroupLink, setEpWhatsappGroupLink] = useState("");
+  const { data: settingsData, isSuccess: hasSettings } = useGetSettingsQuery()
+  const [updateSettings] = useUpdateSettingsMutation()
+  const [uploadImage, { isLoading: uploadLoading }] = useUploadSingleImageMutation()
+  const profileFileInputRef = useRef<HTMLInputElement>(null)
+  const { user, updateUserProfile } = useAuth()
+  const [updateProfile, { isLoading: profileUpdateLoading }] = useUpdateUserProfileMutation()
 
-  const { data: settingsData, isSuccess: hasSettings } = useGetSettingsQuery();
-  const [updateSettings] = useUpdateSettingsMutation();
-  const [uploadImage, { isLoading: uploadLoading }] = useUploadSingleImageMutation();
-  const profileFileInputRef = useRef<HTMLInputElement>(null);
-  const { user, updateUserProfile } = useAuth();
-  const [updateProfile, { isLoading: profileUpdateLoading }] = useUpdateUserProfileMutation();
-
-  const handlePopupEnabledChange = useCallback(async (value: boolean) => {
-    setPopupEnabled(value);
-    try {
-      await updateSettings({
-        popupEnabled: value,
-        popupImageUrl,
-        popupLink,
-        maintenanceEnabled,
-        maintenanceTitle,
-        maintenanceMessage,
-        maFacebookGroupLink,
-        maWhatsappGroupLink,
-        epFacebookGroupLink,
-        epWhatsappGroupLink,
-      }).unwrap();
-      toast.success(`Popup ${value ? "enabled" : "disabled"}`);
-    } catch (error) {
-      toast.error("Unable to update popup status");
-    }
-  }, [popupImageUrl, popupLink, maintenanceEnabled, maintenanceTitle, maintenanceMessage, maFacebookGroupLink, maWhatsappGroupLink, epFacebookGroupLink, epWhatsappGroupLink, updateSettings]);
-
-  const handleMaintenanceEnabledChange = useCallback(async (value: boolean) => {
-    setMaintenanceEnabled(value);
-    try {
-      await updateSettings({
-        popupEnabled,
-        popupImageUrl,
-        popupLink,
-        maintenanceEnabled: value,
-        maintenanceTitle,
-        maintenanceMessage,
-        maFacebookGroupLink,
-        maWhatsappGroupLink,
-        epFacebookGroupLink,
-        epWhatsappGroupLink,
-      }).unwrap();
-      toast.success(`Maintenance mode ${value ? "enabled" : "disabled"}`);
-    } catch (error) {
-      toast.error("Unable to update maintenance mode");
-    }
-  }, [popupEnabled, popupImageUrl, popupLink, maintenanceTitle, maintenanceMessage, maFacebookGroupLink, maWhatsappGroupLink, epFacebookGroupLink, epWhatsappGroupLink, updateSettings]);
+  const form = useForm<SettingsFormValues>({
+    resolver: zodResolver(settingsSchema) as Resolver<SettingsFormValues>,
+    defaultValues: {
+      popupEnabled: false,
+      popupImageUrl: "",
+      popupLink: "",
+      maintenanceEnabled: false,
+      maintenanceTitle: "",
+      maintenanceMessage: "",
+      maFacebookGroupLink: "",
+      maWhatsappGroupLink: "",
+      epFacebookGroupLink: "",
+      epWhatsappGroupLink: "",
+    },
+  })
 
   useEffect(() => {
-    if (!hasSettings) return;
+    if (!hasSettings) return
 
     if (!settingsData?.data) {
-      updateSettings({
-        popupEnabled: false, popupImageUrl: "", popupLink: "",
-        maintenanceEnabled: false, maintenanceTitle: "", maintenanceMessage: "",
-        maFacebookGroupLink: "", maWhatsappGroupLink: "",
-        epFacebookGroupLink: "", epWhatsappGroupLink: "",
-      }).unwrap().catch(() => {});
-      return;
+      updateSettings(form.getValues()).unwrap().catch(() => {})
+      return
     }
 
-    const settings = settingsData.data;
-    setPopupEnabled(settings.popupEnabled ?? false);
-    setPopupImageUrl(settings.popupImageUrl ?? "");
-    setPopupLink(settings.popupLink ?? "");
-    setMaintenanceEnabled(settings.maintenanceEnabled ?? false);
-    setMaintenanceTitle(settings.maintenanceTitle ?? "");
-    setMaintenanceMessage(settings.maintenanceMessage ?? "");
-    setMaFacebookGroupLink(settings.maFacebookGroupLink ?? "");
-    setMaWhatsappGroupLink(settings.maWhatsappGroupLink ?? "");
-    setEpFacebookGroupLink(settings.epFacebookGroupLink ?? "");
-    setEpWhatsappGroupLink(settings.epWhatsappGroupLink ?? "");
-  }, [settingsData, hasSettings, updateSettings]);
+    const s = settingsData.data
+    form.reset({
+      popupEnabled: s.popupEnabled ?? false,
+      popupImageUrl: s.popupImageUrl ?? "",
+      popupLink: s.popupLink ?? "",
+      maintenanceEnabled: s.maintenanceEnabled ?? false,
+      maintenanceTitle: s.maintenanceTitle ?? "",
+      maintenanceMessage: s.maintenanceMessage ?? "",
+      maFacebookGroupLink: s.maFacebookGroupLink ?? "",
+      maWhatsappGroupLink: s.maWhatsappGroupLink ?? "",
+      epFacebookGroupLink: s.epFacebookGroupLink ?? "",
+      epWhatsappGroupLink: s.epWhatsappGroupLink ?? "",
+    })
+  }, [settingsData, hasSettings, form, updateSettings])
+
+  const onSubmit = useCallback(async (values: SettingsFormValues) => {
+    try {
+      await updateSettings(values).unwrap()
+      toast.success("Settings saved successfully")
+    } catch {
+      toast.error("Failed to save settings")
+    }
+  }, [updateSettings])
+
+  const handleSave = useMemo(() => form.handleSubmit(onSubmit), [form, onSubmit])
+
+  const handlePopupEnabledChange = useCallback(async (value: boolean) => {
+    form.setValue("popupEnabled", value)
+    try {
+      const current = form.getValues()
+      await updateSettings({ ...current, popupEnabled: value }).unwrap()
+      toast.success(`Popup ${value ? "enabled" : "disabled"}`)
+    } catch {
+      toast.error("Unable to update popup status")
+    }
+  }, [form, updateSettings])
+
+  const handleMaintenanceEnabledChange = useCallback(async (value: boolean) => {
+    form.setValue("maintenanceEnabled", value)
+    try {
+      const current = form.getValues()
+      await updateSettings({ ...current, maintenanceEnabled: value }).unwrap()
+      toast.success(`Maintenance mode ${value ? "enabled" : "disabled"}`)
+    } catch {
+      toast.error("Unable to update maintenance mode")
+    }
+  }, [form, updateSettings])
 
   const onBannerFileChange = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) { toast.error("Please select an image file"); return; }
-    const formData = new FormData();
-    formData.append("image", file);
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith("image/")) { toast.error("Please select an image file"); return }
+    const formData = new FormData()
+    formData.append("image", file)
     try {
-      const result = await uploadImage(formData).unwrap();
-      setPopupImageUrl(result.data.url);
-      toast.success("Popup image uploaded");
-    } catch (error) {
-      toast.error("Image upload failed");
+      const result = await uploadImage(formData).unwrap()
+      form.setValue("popupImageUrl", result.data.url)
+      toast.success("Popup image uploaded")
+    } catch {
+      toast.error("Image upload failed")
     }
-  }, [uploadImage]);
-
-  const handleSave = useCallback(async () => {
-    setSaving(true);
-    try {
-      await updateSettings({
-        popupEnabled, popupImageUrl, popupLink,
-        maintenanceEnabled, maintenanceTitle, maintenanceMessage,
-        maFacebookGroupLink, maWhatsappGroupLink,
-        epFacebookGroupLink, epWhatsappGroupLink,
-      }).unwrap();
-      toast.success("Settings saved successfully");
-    } catch (error) {
-      toast.error("Failed to save settings");
-    } finally {
-      setSaving(false);
-    }
-  }, [popupEnabled, popupImageUrl, popupLink, maintenanceEnabled, maintenanceTitle, maintenanceMessage, maFacebookGroupLink, maWhatsappGroupLink, epFacebookGroupLink, epWhatsappGroupLink, updateSettings]);
+  }, [uploadImage, form])
 
   const handleProfilePhotoClick = useCallback(() => {
-    profileFileInputRef.current?.click();
-  }, []);
+    profileFileInputRef.current?.click()
+  }, [])
 
   const handleProfilePhotoChange = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) { toast.error("Please select an image file."); return; }
-    if (file.size > 5 * 1024 * 1024) { toast.error("Please select an image smaller than 5MB."); return; }
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith("image/")) { toast.error("Please select an image file."); return }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Please select an image smaller than 5MB."); return }
     try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const result = await uploadImage(formData).unwrap();
-      await updateProfile({ avatar: result.data.url }).unwrap();
-      await updateUserProfile({ image: result.data.url });
-      toast.success("Profile photo updated successfully.");
-      if (profileFileInputRef.current) profileFileInputRef.current.value = "";
-    } catch (error) {
-      toast.error("Failed to upload profile photo.");
+      const formData = new FormData()
+      formData.append("image", file)
+      const result = await uploadImage(formData).unwrap()
+      await updateProfile({ avatar: result.data.url }).unwrap()
+      await updateUserProfile({ image: result.data.url })
+      toast.success("Profile photo updated successfully.")
+      if (profileFileInputRef.current) profileFileInputRef.current.value = ""
+    } catch {
+      toast.error("Failed to upload profile photo.")
     }
-  }, [uploadImage, updateProfile, updateUserProfile]);
+  }, [uploadImage, updateProfile, updateUserProfile])
 
   const tabTriggers = useMemo(() => [
     { value: "profile", label: "Profile" },
     { value: "maintenance", label: "Maintenance" },
     { value: "community", label: "Community Links" },
     { value: "popup", label: "Popup Banner" },
-  ], []);
+  ], [])
 
   const tabContents = useMemo(() => [
     {
@@ -180,59 +172,37 @@ export default function AdminSettingsContent() {
       value: "maintenance",
       content: (
         <MaintenanceSettingsTab
-          maintenanceEnabled={maintenanceEnabled}
-          maintenanceTitle={maintenanceTitle}
-          maintenanceMessage={maintenanceMessage}
-          saving={saving}
           onMaintenanceEnabledChange={handleMaintenanceEnabledChange}
-          onMaintenanceTitleChange={setMaintenanceTitle}
-          onMaintenanceMessageChange={setMaintenanceMessage}
           onSave={handleSave}
         />
       ),
     },
     {
       value: "community",
-      content: (
-        <CommunityLinksTab
-          maFacebookGroupLink={maFacebookGroupLink}
-          maWhatsappGroupLink={maWhatsappGroupLink}
-          epFacebookGroupLink={epFacebookGroupLink}
-          epWhatsappGroupLink={epWhatsappGroupLink}
-          saving={saving}
-          onMaFacebookGroupLinkChange={setMaFacebookGroupLink}
-          onMaWhatsappGroupLinkChange={setMaWhatsappGroupLink}
-          onEpFacebookGroupLinkChange={setEpFacebookGroupLink}
-          onEpWhatsappGroupLinkChange={setEpWhatsappGroupLink}
-          onSave={handleSave}
-        />
-      ),
+      content: <CommunityLinksTab onSave={handleSave} />,
     },
     {
       value: "popup",
       content: (
         <PopupBannerTab
-          popupEnabled={popupEnabled}
-          popupLink={popupLink}
-          popupImageUrl={popupImageUrl}
           uploadLoading={uploadLoading}
-          saving={saving}
           onPopupEnabledChange={handlePopupEnabledChange}
-          onPopupLinkChange={setPopupLink}
           onBannerFileChange={onBannerFileChange}
           onSave={handleSave}
         />
       ),
     },
-  ], [user, uploadLoading, profileUpdateLoading, handleProfilePhotoClick, handleProfilePhotoChange, maintenanceEnabled, handleMaintenanceEnabledChange, maintenanceTitle, maintenanceMessage, handleSave, saving, maFacebookGroupLink, maWhatsappGroupLink, epFacebookGroupLink, epWhatsappGroupLink, popupEnabled, handlePopupEnabledChange, popupLink, onBannerFileChange, popupImageUrl]);
+  ], [user, uploadLoading, profileUpdateLoading, handleProfilePhotoClick, handleProfilePhotoChange, handleMaintenanceEnabledChange, handleSave, handlePopupEnabledChange, onBannerFileChange])
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Admin Settings</h1>
-        <p className="text-muted-foreground">Update only the essentials for now</p>
+    <FormProvider {...form}>
+      <div className="container mx-auto p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Admin Settings</h1>
+          <p className="text-muted-foreground">Update only the essentials for now</p>
+        </div>
+        <DashboardPageTabs defaultValue="profile" triggers={tabTriggers} contents={tabContents} />
       </div>
-      <DashboardPageTabs defaultValue="profile" triggers={tabTriggers} contents={tabContents} />
-    </div>
-  );
+    </FormProvider>
+  )
 }

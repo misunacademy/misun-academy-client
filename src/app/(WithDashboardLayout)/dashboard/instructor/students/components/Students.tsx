@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { GraduationCap } from "lucide-react";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
-import DashboardPageTableWithPagination from "@/components/layout/DashboardPageTableWithPagination";
+import { DataTable } from "@/components/ui/data-table";
 import StudentsFiltersCard from "./StudentsFiltersCard";
 import StudentsStatsCards from "./StudentsStatsCards";
-import StudentsTableRow, { StudentRow } from "./StudentsTableRow";
+import { useStudentColumns, type StudentRow } from "./studentColumns";
 import {
     useGetInstructorCoursesQuery,
     useGetInstructorEnrolledStudentsQuery,
@@ -87,6 +87,8 @@ export default function StudentsPage() {
     );
     const totalBatches = courses.reduce((sum, course) => sum + (course.batches || []).length, 0);
 
+    const columns = useStudentColumns();
+
     const pagination = totalStudentsData > 0
         ? { page, totalPages, total: totalStudentsData, limit: PAGE_SIZE, onPageChange: setPage }
         : undefined;
@@ -102,7 +104,7 @@ export default function StudentsPage() {
                         <StudentsStatsCards totalBatches={totalBatches} totalStudents={totalStudentsStats} />
                     )}
 
-                    <DashboardPageTableWithPagination
+                    <DataTable
                         heading="Enrolled Students"
                         subheading="Students across your assigned courses and batches"
                         filters={
@@ -122,19 +124,9 @@ export default function StudentsPage() {
                                 }}
                             />
                         }
-                        columns={[
-                            "Student",
-                            "Enrollment ID",
-                            "Email",
-                            "Phone",
-                            "Course",
-                            "Batch",
-                            "Status",
-                            "Enrolled Date",
-                        ]}
+                        columns={columns}
                         data={allStudents}
-                        renderRow={(student) => <StudentsTableRow student={student} />}
-                        getRowKey={(student) => student._id}
+                        getRowId={(student) => student._id}
                         isLoading={studentsLoading}
                         emptyState="No students found."
                         pagination={pagination}

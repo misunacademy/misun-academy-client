@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationControlsProps {
@@ -7,7 +7,7 @@ interface PaginationControlsProps {
     onPageChange: (page: number) => void;
 }
 
-export const PaginationControls = memo(({ currentPage, totalPages, onPageChange }: PaginationControlsProps) => {
+const PaginationControls = memo(({ currentPage, totalPages, onPageChange }: PaginationControlsProps) => {
     const getVisiblePages = () => {
         const pages = [];
         const maxVisible = 5;
@@ -32,7 +32,6 @@ export const PaginationControls = memo(({ currentPage, totalPages, onPageChange 
 
     return (
         <div className="flex items-center justify-center gap-1.5 mt-12">
-            {/* Prev */}
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
@@ -72,7 +71,6 @@ export const PaginationControls = memo(({ currentPage, totalPages, onPageChange 
                 )}
             </div>
 
-            {/* Next */}
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages}
@@ -84,3 +82,5 @@ export const PaginationControls = memo(({ currentPage, totalPages, onPageChange 
         </div>
     );
 });
+PaginationControls.displayName = "PaginationControls";
+export { PaginationControls };

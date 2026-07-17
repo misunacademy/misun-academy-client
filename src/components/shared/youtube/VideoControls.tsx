@@ -1,6 +1,6 @@
 import { Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, Minus, Plus } from 'lucide-react';
 import { formatTime, formatQualityLabel } from '@/lib/youtube/utils';
-import type { YouTubePlayerState } from '@/hooks/useYouTubePlayer';
+import type { YouTubePlayerState } from '@/types/youtube';
 import { VideoProgressBar } from './VideoProgressBar';
 
 interface VideoControlsProps {

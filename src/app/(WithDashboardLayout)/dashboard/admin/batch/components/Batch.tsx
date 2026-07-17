@@ -1,11 +1,10 @@
 "use client";
 
-import { FormEvent, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
-  useCreateBatchMutation,
   useDeleteBatchMutation,
   useGetAllBatchesQuery,
   useUpdateBatchMutation,
@@ -21,7 +20,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { BatchForm } from "./BatchForm";
 import BatchFilters from "./BatchFilters";
 import BatchTable from "./BatchTable";
 
@@ -32,19 +30,11 @@ const BATCH_STATUSES = [
   { value: "completed", label: "Completed", className: "bg-gray-100 text-gray-800 hover:bg-gray-100" },
 ];
 
-const INITIAL_FORM_STATE = {
-  title: "", price: "", status: "draft", selectedCourse: "",
-  startDate: "", endDate: "", enrollmentStartDate: "", enrollmentEndDate: "", description: "",
-};
-
 export default function BatchDashboard() {
-  const [showForm, setShowForm] = useState(false);
-  const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [batchToDelete, setBatchToDelete] = useState<{ _id: string; title: string } | null>(null);
   const [courseFilter, setCourseFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const router = useRouter();
@@ -55,22 +45,11 @@ export default function BatchDashboard() {
     page, limit,
   });
 
-  const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({ status: "published" });
-  const [createBatch, { isLoading: isCreating }] = useCreateBatchMutation();
-  const [updateBatch, { isLoading: isUpdating }] = useUpdateBatchMutation();
+  const { data: coursesData } = useGetAllCoursesQuery({ status: "published" });
+  const [updateBatch] = useUpdateBatchMutation();
   const [deleteBatch] = useDeleteBatchMutation();
 
   const courses = useMemo(() => coursesData?.data || [], [coursesData]);
-
-  const handleInputChange = useCallback((field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  }, []);
-
-  const resetForm = useCallback(() => {
-    setFormData(INITIAL_FORM_STATE);
-    setEditingBatchId(null);
-    setShowForm(false);
-  }, []);
 
   const handleFilterChange = useCallback(() => { setPage(1); }, []);
 
@@ -84,34 +63,6 @@ export default function BatchDashboard() {
       toast.error((error as { data?: { message?: string } })?.data?.message || "Failed to update status");
     }
   }, [updateBatch, refetch]);
-
-  const handleSubmit = useCallback(async (e: FormEvent) => {
-    e.preventDefault();
-    if (!formData.selectedCourse) { toast.error("Please select a course"); return; }
-    const batchData = {
-      title: formData.title, price: Number(formData.price),
-      status: formData.status as "draft" | "upcoming" | "running" | "completed",
-      courseId: formData.selectedCourse,
-      startDate: formData.startDate ? new Date(formData.startDate) : undefined,
-      endDate: formData.endDate ? new Date(formData.endDate) : undefined,
-      enrollmentStartDate: formData.enrollmentStartDate ? new Date(formData.enrollmentStartDate) : undefined,
-      enrollmentEndDate: formData.enrollmentEndDate ? new Date(formData.enrollmentEndDate) : undefined,
-      description: formData.description || undefined,
-    };
-    try {
-      if (editingBatchId) {
-        await updateBatch({ id: editingBatchId, data: batchData }).unwrap();
-        toast.success("Batch updated successfully");
-      } else {
-        await createBatch(batchData).unwrap();
-        toast.success("Batch created successfully");
-      }
-      resetForm();
-    } catch (err: unknown) {
-      const error = err as { data?: { message?: string } };
-      toast.error(error?.data?.message || (editingBatchId ? "Failed to update batch" : "Failed to create batch"));
-    }
-  }, [formData, editingBatchId, updateBatch, createBatch, resetForm]);
 
   const handleDeleteClick = useCallback((batch: { _id: string; title: string }) => {
     setBatchToDelete(batch);
@@ -138,13 +89,6 @@ export default function BatchDashboard() {
 
   return (
     <div className="space-y-6">
-      {showForm && (
-        <BatchForm
-          editingBatchId={editingBatchId} formData={formData} courses={courses}
-          coursesLoading={coursesLoading} isCreating={isCreating} isUpdating={isUpdating}
-          onInputChange={handleInputChange} onSubmit={handleSubmit} onReset={resetForm}
-        />
-      )}
       <BatchTable
         batches={batches}
         filters={

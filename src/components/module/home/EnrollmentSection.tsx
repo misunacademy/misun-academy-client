@@ -158,24 +158,15 @@ export const EnrollmentSection = () => {
                 <section
                     id="enroll-now"
                     data-dark-section
-                    className="relative scroll-mt-24 py-24 px-4 bg-surface overflow-hidden font-bangla"
+                    className="relative scroll-mt-24 py-24 px-4 bg-surface-darker overflow-hidden font-bangla selection:bg-primary/30 selection:text-white"
                 >
-            {/* ── Top edge ── */}
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
-            {/* ── Dot-grid texture ── */}
-            <div
-                className="absolute inset-0 opacity-[0.15] pointer-events-none"
-                style={{
-                    backgroundImage: 'radial-gradient(circle, hsl(var(--primary)) 1px, transparent 1px)',
-                    backgroundSize: '32px 32px',
-                }}
-            />
+            {/* Elegant Background Meshes & Masks */}
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(32,180,134,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(32,180,134,0.04)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
 
-            {/* ── Ambient glows ── */}
-            <div className="absolute top-[-60px] left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-0 left-[10%] w-[300px] h-[200px] bg-primary/6 rounded-full blur-[90px] pointer-events-none" />
-            <div className="absolute bottom-0 right-[10%] w-[260px] h-[180px] bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
+            {/* Subtle Top Glow */}
+            <div className="pointer-events-none absolute left-1/2 top-[-10%] h-[400px] w-[800px] -translate-x-1/2 rounded-[100%] bg-primary/[0.06] blur-[100px]" />
+            <div className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[600px] -translate-x-1/2 rounded-[100%] bg-emerald-500/[0.04] blur-[120px]" />
 
             <div className="relative z-10 max-w-4xl mx-auto">
 

@@ -7,13 +7,15 @@ import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
 import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery, type CourseResponse } from "@/redux/api/courseApi";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { toast } from "sonner";
-import { Loader2, Book } from "lucide-react";
+import { Book } from "lucide-react";
 import { InstructorAssignDialog } from "../[courseId]/page";
 import { splitLines, splitTags } from "./CourseFormHelpers";
 import { CourseFormFields } from "./CourseFormFields";
+import { SubmitButton } from "@/components/forms/submit-button";
 import type { ImageFieldName } from "./fields/ImageUploadField";
 
 const formSchema = z.object({
@@ -49,7 +51,7 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
   const { data: course, isFetching, error } = useGetCourseByIdQuery(courseId!, { skip: !courseId });
   const [createCourse, { isLoading: creating }] = useCreateCourseMutation();
   const [updateCourse, { isLoading: updating }] = useUpdateCourseMutation();
-  const [uploadImage, { isLoading: uploadingImage }] = useUploadSingleImageMutation();
+  const [uploadImage] = useUploadSingleImageMutation();
   const [selectedFiles, setSelectedFiles] = useState<Partial<Record<ImageFieldName, File>>>({});
   const [previews, setPreviews] = useState<Partial<Record<ImageFieldName, string>>>({});
   const [uploadingField, setUploadingField] = useState<ImageFieldName | null>(null);
@@ -96,8 +98,6 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
       setHighlights(c.highlights || []);
     }
   }, [course, form]);
-
-  const { errors } = form.formState;
 
   const handleFileChange = (field: ImageFieldName, e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -203,42 +203,43 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
   }
 
   return (
-    <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => router.push('/dashboard/admin/courses')} className="mb-2">← Back to Courses</Button>
-          <div>
-            <h1 className="text-3xl font-bold">{isNew ? "Create Course" : "Edit Course"}</h1>
-            <p className="text-muted-foreground">Aligned with server course schema.</p>
+    <Form {...form}>
+      <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={() => router.push('/dashboard/admin/courses')} className="mb-2">← Back to Courses</Button>
+            <div>
+              <h1 className="text-3xl font-bold">{isNew ? "Create Course" : "Edit Course"}</h1>
+              <p className="text-muted-foreground">Aligned with server course schema.</p>
+            </div>
+          </div>
+          <div className="flex gap-2 items-center">
+            {!isNew && courseId && (
+              <Button type="button" variant="outline" onClick={() => router.push(`/dashboard/admin/courses/${courseId}/content`)}>
+                <Book className="h-4 w-4 mr-2" />Manage Content</Button>
+            )}
+            {!isNew && courseId && <InstructorAssignDialog courseId={courseId} />}
           </div>
         </div>
-        <div className="flex gap-2 items-center">
-          {!isNew && courseId && (
-            <Button type="button" variant="outline" onClick={() => router.push(`/dashboard/admin/courses/${courseId}/content`)}>
-              <Book className="h-4 w-4 mr-2" />Manage Content</Button>
-          )}
-          {!isNew && courseId && <InstructorAssignDialog courseId={courseId} />}
+        <Card>
+          <CardHeader>
+            <CardTitle>Course Details</CardTitle>
+            <CardDescription>Required fields only</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <CourseFormFields
+              features={features} highlights={highlights} previews={previews} selectedFiles={selectedFiles}
+              uploadingField={uploadingField} onFeaturesChange={setFeatures}
+              onHighlightsChange={setHighlights} onFileChange={handleFileChange} onUpload={uploadImageForField}
+            />
+          </CardContent>
+        </Card>
+        <div className="flex justify-end">
+          <SubmitButton disabled={isFetching || saving} loadingText="Saving...">
+            Save Course
+          </SubmitButton>
         </div>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Course Details</CardTitle>
-          <CardDescription>Required fields only</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <CourseFormFields
-            register={form.register} watch={form.watch} setValue={form.setValue} errors={errors}
-            features={features} highlights={highlights} previews={previews} selectedFiles={selectedFiles}
-            uploadingField={uploadingField} onFeaturesChange={setFeatures}
-            onHighlightsChange={setHighlights} onFileChange={handleFileChange} onUpload={uploadImageForField}
-          />
-        </CardContent>
-      </Card>
-      <div className="flex justify-end">
-        <Button type="submit" disabled={saving || isFetching}>
-          {saving || isFetching ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "Save Course"}
-        </Button>
-      </div>
-    </form>
+      </form>
+    </Form>
   );
 }

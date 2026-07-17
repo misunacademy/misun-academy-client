@@ -11,7 +11,7 @@ interface TestimonialCardProps {
     index?: number;
 }
 
-export const TestimonialCard = memo(({ name, batch, studentId, testimonial, postLink, index = 0 }: TestimonialCardProps) => {
+const TestimonialCard = memo(({ name, batch, studentId, testimonial, postLink, index = 0 }: TestimonialCardProps) => {
     return (
         <div
             className="group relative overflow-hidden rounded-2xl
@@ -97,3 +97,5 @@ export const TestimonialCard = memo(({ name, batch, studentId, testimonial, post
         </div>
     );
 });
+TestimonialCard.displayName = "TestimonialCard";
+export { TestimonialCard };

@@ -36,7 +36,7 @@ const EmployeePage = () => {
     const { data: serverProfile, isLoading: profileLoading, isError: profileError } = useGetMyEmployeeProfileQuery();
 
     /* ── Salary data ────────────────────────────────────────────────────────── */
-    const { data: salaryData, isLoading: salaryLoading, isError: salaryError } = useGetMySalariesQuery({
+    const { data: salaryData, isLoading: salaryLoading } = useGetMySalariesQuery({
         page: 1,
         limit: 12,
     });

@@ -1,34 +1,30 @@
-import { useState, useRef } from "react";
+'use client';
+
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Camera, Shield, Loader2, User } from "lucide-react";
+import { useForm, FormProvider } from "react-hook-form";
 import { useAuth } from "@/hooks/useAuth";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
-import type { ProfileData } from "@/redux/api/profileApi";
 import { toast } from "sonner";
 import { authServerApi } from "@/lib/auth-server-api";
 import Image from "next/image";
+import { PasswordField } from "@/components/forms/password-field";
+import { SubmitButton } from "@/components/forms/submit-button";
 
-interface SettingsTabProps {
-    profile?: ProfileData | undefined;
+interface PasswordFormValues {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function SettingsTab(_props: SettingsTabProps) {
+export function SettingsTab() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // API hooks
     const { user, isLoading: userLoading, updateUserProfile } = useAuth();
     const [updateProfile, { isLoading: updateLoading }] = useUpdateUserProfileMutation();
     const [uploadImage, { isLoading: uploadLoading }] = useUploadSingleImageMutation();
-
-    // Form state
-    const [currentPassword, setCurrentPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [passwordLoading, setPasswordLoading] = useState(false);
 
     const userInitials = user?.name
         ?.split(" ")
@@ -37,7 +33,14 @@ export function SettingsTab(_props: SettingsTabProps) {
         .toUpperCase()
         .slice(0, 2) || "U";
 
-    // Handle photo upload
+    const passwordForm = useForm<PasswordFormValues>({
+        defaultValues: {
+            currentPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+        }
+    });
+
     const handlePhotoClick = () => {
         fileInputRef.current?.click();
     };
@@ -46,38 +49,32 @@ export function SettingsTab(_props: SettingsTabProps) {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validate file type
         if (!file.type.startsWith("image/")) {
             toast.error("Please select an image file.");
             return;
         }
 
-        // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
             toast.error("Please select an image smaller than 5MB.");
             return;
         }
 
         try {
-            // Upload image
             const formData = new FormData();
             formData.append("image", file);
 
             const uploadResult = await uploadImage(formData).unwrap();
 
-            // Update profile with new image URL
             await updateProfile({
                 avatar: uploadResult.data.url,
             }).unwrap();
 
-            // Update Better Auth session (automatically refreshes)
             await updateUserProfile({
                 image: uploadResult.data.url,
             });
 
             toast.success("Profile photo updated successfully.");
 
-            // Reset file input
             if (fileInputRef.current) {
                 fileInputRef.current.value = "";
             }
@@ -101,29 +98,15 @@ export function SettingsTab(_props: SettingsTabProps) {
         }
     };
 
-    // Handle password change
-    const handleChangePassword = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        // Validation
-        if (!currentPassword || !newPassword || !confirmPassword) {
-            toast.error("All password fields are required.");
-            return;
-        }
+    const handleChangePassword = async (data: PasswordFormValues) => {
+        const { currentPassword, newPassword, confirmPassword } = data;
 
         if (newPassword !== confirmPassword) {
             toast.error("New passwords do not match.");
             return;
         }
 
-        if (newPassword.length < 6) {
-            toast.error("Password must be at least 6 characters long.");
-            return;
-        }
-
         try {
-            setPasswordLoading(true);
-
             const result = await authServerApi.changePassword({
                 currentPassword,
                 newPassword,
@@ -136,11 +119,7 @@ export function SettingsTab(_props: SettingsTabProps) {
             }
 
             toast.success("Password changed successfully.");
-
-            // Clear form
-            setCurrentPassword("");
-            setNewPassword("");
-            setConfirmPassword("");
+            passwordForm.reset();
         } catch (error) {
             console.error("Password change error:", error);
             let errorMessage = "Failed to change password.";
@@ -156,8 +135,6 @@ export function SettingsTab(_props: SettingsTabProps) {
             }
 
             toast.error(errorMessage);
-        } finally {
-            setPasswordLoading(false);
         }
     };
 
@@ -179,10 +156,8 @@ export function SettingsTab(_props: SettingsTabProps) {
 
     return (
         <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
-            {/* Ambient glow inside right panel */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
-            {/* Header */}
             <div className="relative z-10 flex items-start justify-between border-b border-dashed border-primary/20 pb-6 mb-8">
                 <div>
                     <h2 className="text-primary text-2xl font-semibold flex items-center gap-2 mb-1">
@@ -193,7 +168,6 @@ export function SettingsTab(_props: SettingsTabProps) {
             </div>
 
             <div className="relative z-10 grid gap-8">
-                {/* Profile Photo */}
                 <div className="flex flex-col gap-6 p-6 rounded-xl border border-primary/10 bg-primary/5">
                     <div className="flex items-center gap-2 mb-2 border-b border-white/5 pb-4">
                         <User className="w-5 h-5 text-primary" />
@@ -251,62 +225,54 @@ export function SettingsTab(_props: SettingsTabProps) {
                     </div>
                 </div>
 
-                {/* Security */}
                 <div className="flex flex-col gap-6 p-6 rounded-xl border border-primary/10 bg-primary/5">
                     <div className="flex items-center gap-2 mb-2 border-b border-white/5 pb-4">
                         <Shield className="w-5 h-5 text-primary" />
                         <h3 className="text-white font-medium text-lg leading-tight">Security</h3>
                     </div>
 
-                    <form onSubmit={handleChangePassword} className="space-y-6 max-w-md">
-                        <div className="space-y-2">
-                            <Label className="text-white/70 text-sm">Current Password</Label>
-                            <Input
-                                type="password"
-                                value={currentPassword}
-                                onChange={(e) => setCurrentPassword(e.target.value)}
+                    <FormProvider {...passwordForm}>
+                        <form onSubmit={passwordForm.handleSubmit(handleChangePassword)} className="space-y-6 max-w-md">
+                            <PasswordField
+                                name="currentPassword"
+                                label="Current Password"
+                                labelClassName="text-white/70"
+                                required
+                                rules={{ required: "Current password is required" }}
                                 placeholder="Enter current password"
-                                className="bg-primary/5 border-primary/20 text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50"
+                                className="bg-primary/5 border-primary/20 text-white placeholder:text-white/20"
                             />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label className="text-white/70 text-sm">New Password</Label>
-                            <Input
-                                type="password"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
+                            <PasswordField
+                                name="newPassword"
+                                label="New Password"
+                                labelClassName="text-white/70"
+                                required
+                                rules={{
+                                    required: "New password is required",
+                                    minLength: { value: 6, message: "Password must be at least 6 characters long" }
+                                }}
                                 placeholder="Enter new password"
-                                className="bg-primary/5 border-primary/20 text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50"
+                                className="bg-primary/5 border-primary/20 text-white placeholder:text-white/20"
                             />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label className="text-white/70 text-sm">Confirm New Password</Label>
-                            <Input
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
+                            <PasswordField
+                                name="confirmPassword"
+                                label="Confirm New Password"
+                                labelClassName="text-white/70"
+                                required
+                                rules={{
+                                    required: "Please confirm your new password",
+                                    validate: (value: string) =>
+                                        value === passwordForm.getValues("newPassword") || "Passwords do not match"
+                                }}
                                 placeholder="Confirm new password"
-                                className="bg-primary/5 border-primary/20 text-white placeholder:text-white/20 focus:outline-none focus:border-primary/50"
+                                className="bg-primary/5 border-primary/20 text-white placeholder:text-white/20"
                             />
-                        </div>
 
-                        <Button
-                            type="submit"
-                            disabled={passwordLoading}
-                            className="bg-primary hover:bg-primary-glow text-white w-full sm:w-auto mt-2"
-                        >
-                            {passwordLoading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Changing Password...
-                                </>
-                            ) : (
-                                "Change Password"
-                            )}
-                        </Button>
-                    </form>
+                            <SubmitButton className="bg-primary hover:bg-primary-glow text-white w-full sm:w-auto mt-2">
+                                Change Password
+                            </SubmitButton>
+                        </form>
+                    </FormProvider>
                 </div>
             </div>
         </div>

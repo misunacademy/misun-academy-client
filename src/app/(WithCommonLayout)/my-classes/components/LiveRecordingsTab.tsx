@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Skeleton } from 'boneyard-js/react'
-import { AlertCircle, BookOpen, Clock, Loader2, PlayCircle, Radio, Video } from "lucide-react";
+import { AlertCircle, BookOpen, Clock, PlayCircle, Radio, Video } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";

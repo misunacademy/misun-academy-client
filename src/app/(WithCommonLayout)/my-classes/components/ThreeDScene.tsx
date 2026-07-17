@@ -3,19 +3,30 @@
 import { useFrame } from "@react-three/fiber";
 import { Float } from "@react-three/drei";
 import * as THREE from "three";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
+
+function useIsVisible() {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const handler = () => setVisible(!document.hidden);
+    document.addEventListener("visibilitychange", handler);
+    return () => document.removeEventListener("visibilitychange", handler);
+  }, []);
+  return visible;
+}
 
 function WireframeTorus({ position, color, speed }: { position: [number, number, number]; color: string; speed: number }) {
   const mesh = useRef<THREE.Mesh>(null);
+  const visible = useIsVisible();
   useFrame((_, delta) => {
-    if (!mesh.current) return;
+    if (!mesh.current || !visible) return;
     mesh.current.rotation.x += delta * speed * 0.4;
     mesh.current.rotation.y += delta * speed * 0.3;
   });
   return (
     <Float speed={speed} rotationIntensity={0.8} floatIntensity={2}>
       <mesh ref={mesh} position={position}>
-        <torusGeometry args={[1, 0.28, 16, 48]} />
+        <torusGeometry args={[1, 0.28, 8, 24]} />
         <meshStandardMaterial color={color} wireframe transparent opacity={0.15} />
       </mesh>
     </Float>
@@ -24,8 +35,9 @@ function WireframeTorus({ position, color, speed }: { position: [number, number,
 
 function WireframeIcosa({ position, color, speed }: { position: [number, number, number]; color: string; speed: number }) {
   const mesh = useRef<THREE.Mesh>(null);
+  const visible = useIsVisible();
   useFrame((_, delta) => {
-    if (!mesh.current) return;
+    if (!mesh.current || !visible) return;
     mesh.current.rotation.x += delta * speed * 0.3;
     mesh.current.rotation.z += delta * speed * 0.2;
   });
@@ -41,8 +53,9 @@ function WireframeIcosa({ position, color, speed }: { position: [number, number,
 
 function WireframeOcta({ position, color, speed }: { position: [number, number, number]; color: string; speed: number }) {
   const mesh = useRef<THREE.Mesh>(null);
+  const visible = useIsVisible();
   useFrame((_, delta) => {
-    if (!mesh.current) return;
+    if (!mesh.current || !visible) return;
     mesh.current.rotation.y += delta * speed * 0.5;
     mesh.current.rotation.x += delta * speed * 0.15;
   });

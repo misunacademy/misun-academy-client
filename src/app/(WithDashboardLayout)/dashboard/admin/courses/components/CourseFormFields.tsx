@@ -1,21 +1,15 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { useFormContext } from "react-hook-form";
+import { InputField } from "@/components/forms/input-field";
+import { TextareaField } from "@/components/forms/textarea-field";
+import { SelectField } from "@/components/forms/select-field";
+import { SwitchField } from "@/components/forms/switch-field";
 import { ArrayField } from "./fields/ArrayField";
 import { ImageUploadField, type ImageFieldName } from "./fields/ImageUploadField";
-import { Field } from "./CourseFormHelpers";
-import type { UseFormRegister, UseFormWatch, UseFormSetValue, FieldErrors, UseFormHandleSubmit } from "react-hook-form";
 import type { CourseFormValues } from "./CourseForm";
 
 interface CourseFormFieldsProps {
-  register: UseFormRegister<CourseFormValues>;
-  watch: UseFormWatch<CourseFormValues>;
-  setValue: UseFormSetValue<CourseFormValues>;
-  errors: FieldErrors<CourseFormValues>;
   features: string[];
   highlights: string[];
   previews: Partial<Record<ImageFieldName, string | undefined>>;
@@ -27,81 +21,64 @@ interface CourseFormFieldsProps {
   onUpload: (field: ImageFieldName) => Promise<void>;
 }
 
+const LEVEL_OPTIONS = [
+  { value: "beginner", label: "Beginner" },
+  { value: "intermediate", label: "Intermediate" },
+  { value: "advanced", label: "Advanced" },
+];
+
+const STATUS_OPTIONS = [
+  { value: "draft", label: "Draft" },
+  { value: "published", label: "Published" },
+  { value: "archived", label: "Archived" },
+];
+
 export function CourseFormFields({
-  register, watch, setValue, errors,
   features, highlights, previews, selectedFiles, uploadingField,
   onFeaturesChange, onHighlightsChange, onFileChange, onUpload,
 }: CourseFormFieldsProps) {
+  const { formState: { errors } } = useFormContext<CourseFormValues>();
+
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Title">
-          <Input {...register("title")} placeholder="e.g. Introduction to Graphic Design" />
-        </Field>
-        <Field label="Category">
-          <Input {...register("category")} placeholder="e.g. Graphic Design" />
-        </Field>
+        <InputField name="title" label="Title" placeholder="e.g. Introduction to Graphic Design" />
+        <InputField name="category" label="Category" placeholder="e.g. Graphic Design" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Field label="Level">
-          <Select
-            value={watch("level")}
-            onValueChange={(v) => setValue("level", v as "beginner" | "intermediate" | "advanced", { shouldDirty: true, shouldValidate: true })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="beginner">Beginner</SelectItem>
-              <SelectItem value="intermediate">Intermediate</SelectItem>
-              <SelectItem value="advanced">Advanced</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="Duration Estimate">
-          <Input {...register("durationEstimate")} placeholder="e.g. 4 months" />
-        </Field>
+        <SelectField name="level" label="Level" options={LEVEL_OPTIONS} placeholder="Select level" />
+        <InputField name="durationEstimate" label="Duration Estimate" placeholder="e.g. 4 months" />
       </div>
 
-      <Field label="Short Description">
-        <Textarea {...register("shortDescription")} placeholder="Brief overview of the graphic design course (Max ~200 chars)" />
-      </Field>
+      <TextareaField name="shortDescription" label="Short Description" placeholder="Brief overview of the graphic design course (Max ~200 chars)" />
 
-      <Field label="Full Description">
-        <Textarea {...register("fullDescription")} className="min-h-[140px]" placeholder="Detailed description of the graphic design course" />
-      </Field>
+      <TextareaField name="fullDescription" label="Full Description" className="min-h-[140px]" placeholder="Detailed description of the graphic design course" />
 
-      <Field label="Learning Outcomes (one per line)">
-        <Textarea
-          {...register("learningOutcomes")}
-          className="min-h-[120px]"
-          placeholder="e.g. Master Adobe Creative Suite (Photoshop, Illustrator, InDesign)
+      <TextareaField
+        name="learningOutcomes"
+        label="Learning Outcomes (one per line)"
+        className="min-h-[120px]"
+        placeholder="e.g. Master Adobe Creative Suite (Photoshop, Illustrator, InDesign)
 Create professional logos and branding materials
 Apply color theory and typography principles
 Design responsive web graphics and UI elements
 Build a professional portfolio showcasing design work"
-        />
-      </Field>
+      />
 
-      <Field label="Prerequisites (one per line, optional)">
-        <Textarea
-          {...register("prerequisites")}
-          className="min-h-[100px]"
-          placeholder="e.g. Basic computer literacy and file management
+      <TextareaField
+        name="prerequisites"
+        label="Prerequisites (one per line, optional)"
+        className="min-h-[100px]"
+        placeholder="e.g. Basic computer literacy and file management
 Familiarity with Windows/Mac operating systems
 Creative mindset and attention to detail
 No prior design experience required (beginner-friendly)"
-        />
-      </Field>
+      />
 
-      <Field label="Target Audience">
-        <Textarea {...register("targetAudience")} placeholder="e.g. Aspiring graphic designers, UI/UX enthusiasts, marketing professionals, small business owners, freelancers, students, career changers interested in creative fields" />
-      </Field>
+      <TextareaField name="targetAudience" label="Target Audience" placeholder="e.g. Aspiring graphic designers, UI/UX enthusiasts, marketing professionals, small business owners, freelancers, students, career changers interested in creative fields" />
 
-      <Field label="Instructor (optional)">
-        <Input {...register("instructor")} placeholder="e.g. Mithun Sarkar" />
-      </Field>
+      <InputField name="instructor" label="Instructor (optional)" placeholder="e.g. Mithun Sarkar" />
 
       <ArrayField
         label="Features"
@@ -133,7 +110,7 @@ No prior design experience required (beginner-friendly)"
         <ImageUploadField
           label="Thumbnail Image (upload)"
           field="thumbnailImage"
-          value={watch("thumbnailImage")}
+          value={""}
           previewUrl={previews.thumbnailImage}
           selectedFile={selectedFiles.thumbnailImage ?? null}
           isUploading={uploadingField === "thumbnailImage"}
@@ -142,40 +119,14 @@ No prior design experience required (beginner-friendly)"
           onFileChange={onFileChange}
           onUpload={onUpload}
         />
-        <Field label="Status">
-          <Select value={watch("status") as string}
-            onValueChange={(v) => setValue("status", v as "draft" | "published" | "archived", { shouldDirty: true, shouldValidate: true })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-              <SelectItem value="archived">Archived</SelectItem>
-            </SelectContent>
-          </Select>
-        </Field>
+        <SelectField name="status" label="Status" options={STATUS_OPTIONS} />
       </div>
 
-      <Field label="Tags (comma separated)">
-        <Input {...register("tags")} placeholder="photoshop, illustrator, indesign, graphic design, ui/ux, branding, typography, color theory, logo design, portfolio" />
-      </Field>
+      <InputField name="tags" label="Tags (comma separated)" placeholder="photoshop, illustrator, indesign, graphic design, ui/ux, branding, typography, color theory, logo design, portfolio" />
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="flex items-center gap-2">
-          <Switch
-            checked={watch("isCertificateAvailable")}
-            onCheckedChange={(checked) => setValue("isCertificateAvailable", Boolean(checked), { shouldDirty: true })}
-          />
-          <Label className="font-medium">Certificate Available</Label>
-        </div>
-        <div className="flex items-center gap-2">
-          <Switch
-            checked={watch("featured")}
-            onCheckedChange={(checked) => setValue("featured", checked)}
-          />
-          <Label className="font-medium">Featured</Label>
-        </div>
+        <SwitchField name="isCertificateAvailable" label="Certificate Available" />
+        <SwitchField name="featured" label="Featured" />
       </div>
     </div>
   );

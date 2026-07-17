@@ -15,9 +15,6 @@ import PageBackground from '@/components/shared/PageBackground';
 
 const AuthPage = () => {
     const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-    const [showLoginPassword, setShowLoginPassword] = useState(false);
-    const [showRegisterPassword, setShowRegisterPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [showVerificationModal, setShowVerificationModal] = useState(false);
     const [registeredEmail, setRegisteredEmail] = useState('');
@@ -179,17 +176,11 @@ const AuthPage = () => {
                                 <LoginForm
                                     onForgotPassword={() => setShowForgotPassword(true)}
                                     onLogin={handleLogin}
-                                    showPassword={showLoginPassword}
-                                    toggleShowPassword={() => setShowLoginPassword(!showLoginPassword)}
                                 />
                             )}
                             {authMode === 'register' && (
                                 <RegisterForm
                                     onRegister={handleRegister}
-                                    showPassword={showRegisterPassword}
-                                    toggleShowPassword={() => setShowRegisterPassword(!showRegisterPassword)}
-                                    showConfirmPassword={showConfirmPassword}
-                                    toggleShowConfirmPassword={() => setShowConfirmPassword(!showConfirmPassword)}
                                 />
                             )}
                         </div>

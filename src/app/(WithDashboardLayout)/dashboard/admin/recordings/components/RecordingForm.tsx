@@ -1,15 +1,15 @@
 "use client";
+/* eslint-disable react-hooks/incompatible-library */
 
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2 } from "lucide-react";
+import { Form } from "@/components/ui/form";
+import { InputField } from "@/components/forms/input-field";
+import { TextareaField } from "@/components/forms/textarea-field";
+import { SelectField } from "@/components/forms/select-field";
+import { CheckboxField } from "@/components/forms/checkbox-field";
+import { SubmitButton } from "@/components/forms/submit-button";
 import type { CourseResponse } from "@/redux/api/courseApi";
 import type { BatchResponse } from "@/redux/api/batchApi";
 
@@ -35,6 +35,11 @@ interface RecordingFormProps {
   isLoading: boolean;
 }
 
+const VIDEO_SOURCE_OPTIONS = [
+  { value: "youtube", label: "YouTube" },
+  { value: "googledrive", label: "Google Drive" },
+];
+
 const RecordingForm = ({
   defaultValues,
   courses,
@@ -59,185 +64,65 @@ const RecordingForm = ({
   });
 
   const watchedVideoSource = form.watch("videoSource");
+  const courseOptions = courses.map((c) => ({ value: c._id, label: c.title }));
+  const batchOptions = batches.map((b) => ({ value: b._id, label: `${b.title} - ${b.status}` }));
+
+  const videoDescription =
+    watchedVideoSource === "youtube"
+      ? "YouTube URL: https://www.youtube.com/watch?v=VIDEO_ID"
+      : "Google Drive URL: https://drive.google.com/file/d/FILE_ID/view";
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
+          <SelectField
             name="courseId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Course <span className="text-red-500">*</span></FormLabel>
-                <Select
-                  onValueChange={(value) => { field.onChange(value); form.setValue("batchId", ""); }}
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select course" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {courses.map((course) => (
-                      <SelectItem key={course._id} value={course._id}>{course.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Course"
+            options={courseOptions}
+            placeholder="Select course"
+            required
+            onValueChange={() => form.setValue("batchId", "")}
           />
-
-          <FormField
-            control={form.control}
+          <SelectField
             name="batchId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Batch <span className="text-red-500">*</span></FormLabel>
-                <Select onValueChange={field.onChange} value={field.value} disabled={!form.watch("courseId")}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select batch" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {batches.map((batch) => (
-                      <SelectItem key={batch._id} value={batch._id}>{batch.title} - {batch.status}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Batch"
+            options={batchOptions}
+            placeholder="Select batch"
+            disabled={!form.watch("courseId")}
+            required
           />
         </div>
 
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title <span className="text-red-500">*</span></FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="e.g., Week 1: Introduction to JavaScript" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <InputField name="title" label="Title" placeholder="e.g., Week 1: Introduction to JavaScript" required />
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea {...field} placeholder="Brief description of the session content" rows={3} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <TextareaField name="description" label="Description" placeholder="Brief description of the session content" rows={3} />
 
         <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="sessionDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Session Date <span className="text-red-500">*</span></FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="duration"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Duration (minutes)</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} placeholder="e.g., 90" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <InputField name="sessionDate" label="Session Date" type="date" required />
+          <InputField name="duration" label="Duration (minutes)" type="number" placeholder="e.g., 90" />
         </div>
 
-        <FormField
-          control={form.control}
-          name="videoSource"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Video Source <span className="text-red-500">*</span></FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="youtube">YouTube</SelectItem>
-                  <SelectItem value="googledrive">Google Drive</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <SelectField name="videoSource" label="Video Source" options={VIDEO_SOURCE_OPTIONS} required />
 
-        <FormField
-          control={form.control}
+        <InputField
           name="videoId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Video ID <span className="text-red-500">*</span></FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder={
-                    watchedVideoSource === "youtube"
-                      ? "YouTube video ID (e.g., dQw4w9WgXcQ)"
-                      : "Google Drive file ID"
-                  }
-                />
-              </FormControl>
-              <p className="text-xs text-muted-foreground">
-                {watchedVideoSource === "youtube"
-                  ? "YouTube URL: https://www.youtube.com/watch?v=VIDEO_ID"
-                  : "Google Drive URL: https://drive.google.com/file/d/FILE_ID/view"}
-              </p>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Video ID"
+          required
+          description={videoDescription}
+          placeholder={
+            watchedVideoSource === "youtube"
+              ? "YouTube video ID (e.g., dQw4w9WgXcQ)"
+              : "Google Drive file ID"
+          }
         />
 
-        <FormField
-          control={form.control}
-          name="isPublished"
-          render={({ field }) => (
-            <FormItem className="flex items-center gap-2 space-y-0">
-              <FormControl>
-                <Checkbox checked={field.value} onCheckedChange={field.onChange} id="isPublished" />
-              </FormControl>
-              <FormLabel htmlFor="isPublished" className="cursor-pointer">Publish immediately (students can view)</FormLabel>
-            </FormItem>
-          )}
-        />
+        <CheckboxField name="isPublished" label="Publish immediately (students can view)" />
 
         <div className="flex justify-end gap-2 pt-4">
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            {isLoading ? "Saving..." : "Save Recording"}
-          </Button>
+          <SubmitButton disabled={isLoading} loadingText="Saving...">
+            Save Recording
+          </SubmitButton>
         </div>
       </form>
     </Form>

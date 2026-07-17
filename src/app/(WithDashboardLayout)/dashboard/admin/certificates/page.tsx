@@ -6,9 +6,10 @@ import { Loader2, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useGetCertificatesQuery, useUpdateCertificateMutation, type CertificateResponse } from "@/redux/api/certificateApi";
 import { toast } from "sonner";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
-import DashboardPageTableWithPagination from "@/components/layout/DashboardPageTableWithPagination";
+import { Card, CardContent } from "@/components/ui/card";
+import { DataTable } from "@/components/ui/data-table";
 import DashboardPageTabs from "@/components/layout/DashboardPageTabs";
-import CertificateTableRow from "./components/CertificateTableRow";
+import { useCertificateColumns } from "./components/certificateColumns";
 import CertificateStatsCards from "./components/CertificateStatsCards";
 import CertificateReviewDialog from "./components/CertificateReviewDialog";
 
@@ -131,37 +132,28 @@ export default function CertificateManagementPage() {
     }
   };
 
-  const renderCertificateRow = (cert: CertificateResponse) => (
-    <CertificateTableRow
-      certificate={cert}
-      getStudentName={getStudentName}
-      getStudentEmail={getStudentEmail}
-      getCourseTitle={getCourseTitle}
-      getBatchTitle={getBatchTitle}
-      getStatusBadge={getStatusBadge}
-      onViewDetails={openReviewDialog}
-    />
+  const columns = useCertificateColumns(
+    getStudentName,
+    getStudentEmail,
+    getCourseTitle,
+    getBatchTitle,
+    getStatusBadge,
+    openReviewDialog,
   );
 
-  const tableColumns = ["Student", "Course", "Batch", "Application Date", "Status", "Actions"];
-  const tablePagination = {
-    page,
-    totalPages,
-    total: meta.total,
-    limit,
-    onPageChange: setPage,
-  };
-
   const tableContent = (
-    <DashboardPageTableWithPagination
-      columns={tableColumns}
-      data={certificates}
-      renderRow={renderCertificateRow}
-      getRowKey={(cert) => cert._id}
-      isFetching={isFetching}
-      emptyState="No certificates found."
-      pagination={tablePagination}
-    />
+    <Card>
+      <CardContent>
+        <DataTable
+          columns={columns}
+          data={certificates}
+          getRowId={(cert) => cert._id}
+          isFetching={isFetching}
+          emptyState="No certificates found."
+          pagination={{ page, totalPages, total: meta.total, limit, onPageChange: setPage }}
+        />
+      </CardContent>
+    </Card>
   );
 
   const tabTriggers = [

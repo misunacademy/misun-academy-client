@@ -179,7 +179,7 @@ export default function AdminReports() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (error) {
+    } catch {
     } finally {
       setIsExporting(false);
     }

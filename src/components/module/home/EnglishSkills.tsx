@@ -1,67 +1,10 @@
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { motion } from "framer-motion"
-import { BookOpen, Mic, Globe, Pencil, MessageSquare } from "lucide-react"
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { Mic, Pencil, MousePointer2 } from "lucide-react"
 import Link from 'next/link';
 import { FadeIn } from '@/components/ui/FadeIn';
-import { MousePointer2 } from "lucide-react";
-
-//  Skill Badge 
-
-interface SkillBadgeProps {
-    icon: React.ReactNode;
-    name: string;
-    delay?: number;
-}
-
-const SkillBadge = ({ icon, name, delay = 0 }: SkillBadgeProps) => (
-    <TooltipProvider>
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: delay * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                    viewport={{ once: true }}
-                    className="group relative cursor-pointer"
-                >
-                    <div className="absolute inset-0 rounded-2xl bg-blue-400/15 blur-xl opacity-0 transition-opacity duration-700 pointer-events-none group-hover:opacity-100" />
-                    <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-blue-400/[0.1] bg-blue-400/[0.02] backdrop-blur-md transition-all duration-500 ease-out group-hover:-translate-y-1.5 group-hover:border-blue-400/[0.25] group-hover:bg-blue-400/[0.05] group-hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] z-10 text-4xl text-white/80 group-hover:text-white group-hover:scale-110">
-                        {icon}
-                    </div>
-                </motion.div>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="rounded-lg border border-blue-400/[0.15] bg-surface px-3 py-1.5 font-medium text-blue-400 shadow-xl">
-                <p>{name}</p>
-            </TooltipContent>
-        </Tooltip>
-    </TooltipProvider>
-);
-
-//  Data 
-
-const featureCards = [
-    {
-        icon: <MessageSquare className="h-5 w-5" />,
-        title: "ফ্লুয়েন্ট স্পিকিং",
-        description: "বাস্তব জীবনের কথোপকথন ও ইন্টারভিউতে আত্মবিশ্বাসের সাথে ইংরেজিতে কথা বলতে শিখুন।",
-    },
-    {
-        icon: <Globe className="h-5 w-5" />,
-        title: "আইইএলটিএস (IELTS)",
-        description: "উচ্চতর শিক্ষা ও ক্যারিয়ারের জন্য প্রয়োজনীয় স্কোর অর্জন করতে আমাদের এক্সপার্ট গাইডলাইন অনুসরণ করুন।",
-    },
-    {
-        icon: <BookOpen className="h-5 w-5" />,
-        title: "অ্যাডভান্সড গ্রামার",
-        description: "সঠিক উচ্চারণ, শব্দভাণ্ডার এবং কর্পোরেট লেভেল গ্রামার দক্ষতা অর্জন করুন সহজে।",
-    },
-];
+import { SkillBadge } from './EnglishSkillsSkillBadge';
+import { featureCards } from './englishSkillsData';
 
 //  Section 
 

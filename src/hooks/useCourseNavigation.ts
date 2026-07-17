@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useCallback } from "react";
 import { useCurriculumProgress } from "./useCurriculumProgress";
 import { useLessonNav } from "./useLessonNav";
 
@@ -24,19 +24,7 @@ export function useCourseNavigation() {
       nav.setCurrentModuleIndex(nav.currentModuleIndex + 1);
       nav.setCurrentLessonIndex(0);
     }
-  }, [nav.currentModule, nav.currentLessonItem, nav.currentModuleIndex, nav.currentLessonIndex,
-      progress.curriculum, progress.isLessonCompleted, progress.handleCompleteLesson]);
-
-  const canGoPrev = nav.currentModuleIndex !== 0 || nav.currentLessonIndex !== 0;
-  const canGoNext = useMemo(() => {
-    if (!progress.course?.curriculum || !nav.currentModule) return false;
-    return !(
-      nav.currentModuleIndex === (progress.course.curriculum as Record<string, unknown>[]).length - 1 &&
-      nav.currentLessonIndex === nav.currentModule.lessons.length - 1 &&
-      progress.isLessonCompleted(nav.currentModule.moduleId, nav.currentLessonItem?.lessonId || "")
-    );
-  }, [progress.course?.curriculum, nav.currentModule, nav.currentModuleIndex,
-      nav.currentLessonIndex, nav.currentLessonItem, progress.isLessonCompleted]);
+  }, [nav, progress]);
 
   return {
     course: progress.course,

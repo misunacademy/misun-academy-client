@@ -2,18 +2,18 @@
 
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { useCallback, useMemo, useState, useEffect, FormEvent } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { useGetAllUsersQuery, useLazyGetAllUsersQuery, useCreateAdminMutation, useUpdateUserMutation, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
+import { useGetAllUsersQuery, useLazyGetAllUsersQuery, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import type { BatchResponse } from "@/redux/api/batchApi";
-import type { GetAllUsersParams, UsersListResponse, UpdateUserRequest } from "@/redux/api/adminApi";
+import type { GetAllUsersParams, UsersListResponse } from "@/redux/api/adminApi";
 import { toast } from 'sonner';
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
+import { DataTable } from "@/components/ui/data-table";
 import DeleteConfirmationDialog from "./components/DeleteConfirmationDialog";
 import EditingDialog from "./components/EditingDialog";
-import DashboardPageTableWithPagination from "@/components/layout/DashboardPageTableWithPagination";
-import TableRows from "./components/TableRows";
+import { useUserColumns } from "./components/userColumns";
 import UsersStatsCards from "./components/UsersStatsCards";
 import CreateUserDialog from "./components/CreateUserDialog";
 import UsersFilters from "./components/UsersFilters";
@@ -55,8 +55,6 @@ export default function AdminUsers() {
   const [isExporting, setIsExporting] = useState(false);
 
   // RTK Query mutations
-  const [createAdmin] = useCreateAdminMutation();
-  const [updateUserMutation] = useUpdateUserMutation();
   const [deleteUserMutation] = useDeleteUserMutation();
   const [updateUserStatusMutation] = useUpdateUserStatusMutation();
   const [triggerExportQuery] = useLazyGetAllUsersQuery();
@@ -113,47 +111,6 @@ export default function AdminUsers() {
   }, [resp]);
 
 
-  const handleCreateUser = useCallback(async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const payload = {
-      name: fd.get('name') as string,
-      email: fd.get('email') as string,
-      password: fd.get('password') as string,
-      role: fd.get('role') as string,
-    };
-    try {
-      await createAdmin(payload).unwrap();
-      toast.success('User created successfully');
-      setCreateDialogOpen(false);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to create user');
-    }
-  }, [createAdmin]);
-
-  const handleUpdateUser = useCallback(async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const id = fd.get('id') as string;
-    const updateData: Partial<UpdateUserRequest> = {};
-    const name = fd.get('name') as string;
-    const email = fd.get('email') as string;
-    const role = fd.get('role') as string;
-    const status = fd.get('status') as string;
-    if (name) updateData.name = name;
-    if (email) updateData.email = email;
-    if (role) updateData.role = role.toLowerCase() as UpdateUserRequest['role'];
-    if (status) updateData.status = status as 'active' | 'suspended' | 'deleted';
-    try {
-      await updateUserMutation({ id, data: updateData }).unwrap();
-      toast.success('User updated successfully');
-      setEditDialogOpen(false);
-      setEditUser(null);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to update user');
-    }
-  }, [updateUserMutation]);
-
   const handleDeleteUser = useCallback(async () => {
     if (!userToDelete) return;
     try {
@@ -193,6 +150,15 @@ export default function AdminUsers() {
       default: return 'outline';
     }
   }, []);
+
+  const columns = useUserColumns(
+    getRoleBadgeVariant,
+    setEditUser,
+    setEditDialogOpen,
+    handleToggleStatus,
+    setUserToDelete,
+    setDeleteDialogOpen,
+  );
 
   const handleExportExcel = useCallback(async () => {
     if (filteredUsers.length === 0) {
@@ -262,7 +228,7 @@ export default function AdminUsers() {
       XLSX.writeFile(workbook, `users-${timestamp}.xlsx`);
 
       toast.success('Excel sheet exported successfully', { id: toastId });
-    } catch (error) {
+    } catch {
       toast.error('Failed to export Excel sheet', { id: toastId });
     } finally {
       setIsExporting(false);
@@ -312,14 +278,14 @@ export default function AdminUsers() {
           <CreateUserDialog
             open={createDialogOpen}
             onOpenChange={setCreateDialogOpen}
-            onSubmit={handleCreateUser}
+            onSuccess={() => setCreateDialogOpen(false)}
           />
         </div>
       }
       content={
         <div>
           {/* Edit User Dialog */}
-          <EditingDialog editUser={editUser} editDialogOpen={editDialogOpen} onOpenChange={setEditDialogOpen} handleUpdateUser={handleUpdateUser} />
+          <EditingDialog user={editUser} open={editDialogOpen} onOpenChange={setEditDialogOpen} onSuccess={() => { setEditDialogOpen(false); setEditUser(null); }} />
 
           {/* Stats Cards */}
           <UsersStatsCards
@@ -331,7 +297,7 @@ export default function AdminUsers() {
 
 
           {/* User table */}
-          <DashboardPageTableWithPagination
+          <DataTable
             heading="All Users"
             subheading="View and manage all users in the system"
             filters={
@@ -349,12 +315,9 @@ export default function AdminUsers() {
                 onEnrolledChange={setEnrolledFilter}
               />
             }
-            columns={["User", "Role", "Status", "Enrolled", "Join Date", "Actions"]}
+            columns={columns}
             data={filteredUsers}
-            renderRow={(user) => (
-              <TableRows user={user} getRoleBadgeVariant={getRoleBadgeVariant} setEditUser={setEditUser} setEditDialogOpen={setEditDialogOpen} handleToggleStatus={handleToggleStatus} setUserToDelete={setUserToDelete} setDeleteDialogOpen={setDeleteDialogOpen} />
-            )}
-            getRowKey={(user) => user._id}
+            getRowId={(user) => user._id}
             isFetching={isFetching}
             emptyState="No users found."
             pagination={{

@@ -1,7 +1,7 @@
 "use client";
 
 import { Skeleton } from 'boneyard-js/react'
-import { Loader2, CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
+import { CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useGetMyPaymentsQuery } from "@/redux/api/paymentApi";
 import type { PaymentResponse } from "@/redux/api/paymentApi";
 

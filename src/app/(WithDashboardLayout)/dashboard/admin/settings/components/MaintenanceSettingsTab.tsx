@@ -1,37 +1,25 @@
-"use client";
+"use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
-import { Wrench } from "lucide-react";
+import { Controller, useFormContext } from "react-hook-form"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { Wrench } from "lucide-react"
+import { InputField } from "@/components/forms/input-field"
+import { TextareaField } from "@/components/forms/textarea-field"
+import { SubmitButton } from "@/components/forms/submit-button"
 
 interface MaintenanceSettingsTabProps {
-  maintenanceEnabled: boolean;
-  maintenanceTitle: string;
-  maintenanceMessage: string;
-  saving: boolean;
-  onMaintenanceEnabledChange: (value: boolean) => Promise<void>;
-  onMaintenanceTitleChange: (value: string) => void;
-  onMaintenanceMessageChange: (value: string) => void;
-  onSave: () => Promise<void>;
+  onMaintenanceEnabledChange: (value: boolean) => Promise<void>
+  onSave: () => void
 }
 
-export function MaintenanceSettingsTab({
-  maintenanceEnabled,
-  maintenanceTitle,
-  maintenanceMessage,
-  saving,
-  onMaintenanceEnabledChange,
-  onMaintenanceTitleChange,
-  onMaintenanceMessageChange,
-  onSave,
-}: MaintenanceSettingsTabProps) {
+export function MaintenanceSettingsTab({ onMaintenanceEnabledChange, onSave }: MaintenanceSettingsTabProps) {
+  const { control } = useFormContext()
+
   return (
-    <>
+    <form onSubmit={(e) => { e.preventDefault(); onSave() }}>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -43,44 +31,35 @@ export function MaintenanceSettingsTab({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Maintenance enabled</Label>
-              <p className="text-sm text-muted-foreground">Temporarily pause the public site.</p>
-            </div>
-            <Switch checked={maintenanceEnabled} onCheckedChange={onMaintenanceEnabledChange} />
-          </div>
+          <Controller
+            name="maintenanceEnabled"
+            control={control}
+            render={({ field }) => (
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="maintenance-enabled">Maintenance enabled</Label>
+                  <p className="text-sm text-muted-foreground">Temporarily pause the public site.</p>
+                </div>
+                <Switch
+                  id="maintenance-enabled"
+                  checked={!!field.value}
+                  onCheckedChange={onMaintenanceEnabledChange}
+                />
+              </div>
+            )}
+          />
 
           <Separator />
 
-          <div className="space-y-2">
-            <Label htmlFor="maintenance-title">Maintenance title (Optional)</Label>
-            <Input
-              id="maintenance-title"
-              value={maintenanceTitle}
-              placeholder="We are making the site better"
-              onChange={(e) => onMaintenanceTitleChange(e.target.value)}
-            />
-          </div>
+          <InputField name="maintenanceTitle" label="Maintenance title (Optional)" placeholder="We are making the site better" />
 
-          <div className="space-y-2">
-            <Label htmlFor="maintenance-message">Maintenance message (Optional)</Label>
-            <Textarea
-              id="maintenance-message"
-              value={maintenanceMessage}
-              placeholder="We will be back shortly. Thank you for your patience."
-              rows={4}
-              onChange={(e) => onMaintenanceMessageChange(e.target.value)}
-            />
-          </div>
+          <TextareaField name="maintenanceMessage" label="Maintenance message (Optional)" placeholder="We will be back shortly. Thank you for your patience." rows={4} />
         </CardContent>
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={onSave} disabled={saving}>
-          {saving ? "Saving..." : "Save Settings"}
-        </Button>
+        <SubmitButton>Save Settings</SubmitButton>
       </div>
-    </>
-  );
+    </form>
+  )
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import type { AuthUser } from '@/types/auth';
@@ -38,17 +38,17 @@ export default function AuthGuard({
     const router = useRouter();
     const pathname = usePathname();
     const { user, isLoading } = useAuth();
-    const [mounted, setMounted] = useState(false);
+    const mountedRef = useRef(false);
 
     const isAuthenticated = !!user;
     const userRole = (user as AuthUser | undefined)?.role || null;
 
     useEffect(() => {
-        setMounted(true);
+        mountedRef.current = true;
     }, []);
 
     useEffect(() => {
-        if (!mounted || isLoading) return;
+        if (!mountedRef.current || isLoading) return;
 
         if (!isAuthenticated) {
             const currentPath = `${window.location.pathname}${window.location.search}`;
@@ -89,9 +89,9 @@ export default function AuthGuard({
             router.replace('/my-classes');
             return;
         }
-    }, [mounted, isLoading, isAuthenticated, userRole, pathname, router, requiredRoles, unauthorizedRedirectTo]);
+    }, [isLoading, isAuthenticated, userRole, pathname, router, requiredRoles, unauthorizedRedirectTo]);
 
-    if (!mounted || isLoading || !isAuthenticated) {
+    if (isLoading || !isAuthenticated) {
         return <>{fallback || <LoadingFallback />}</>;
     }
 

@@ -1,23 +1,28 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { studentFeedbacks } from '@/constants/studentFeedbacks';
+import { getFeedbacks, type StudentFeedback } from '@/constants/studentFeedbacks';
 import { successStories } from './feedbackData';
 import { SuccessStoriesCarousel } from './SuccessStoriesCarousel';
 import { StudentOpinionsCarousel } from './StudentOpinionsCarousel';
 import { FadeIn } from '../../ui/FadeIn';
 
 export default function Feedback() {
+  const [feedbacks, setFeedbacks] = useState<StudentFeedback[]>([]);
+
+  useEffect(() => {
+    getFeedbacks().then(setFeedbacks);
+  }, []);
+
   return (
     <section
       data-dark-section
       className="relative bg-surface overflow-hidden"
     >
-      {/* ── Top edge separator ── */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
-      {/* ── Dot-grid texture ── */}
       <div
         className="absolute inset-0 opacity-[0.18] pointer-events-none"
         style={{
@@ -27,18 +32,15 @@ export default function Feedback() {
         }}
       />
 
-      {/* ── Ambient glows ── */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[280px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute top-1/3 left-[5%] w-[320px] h-[220px] bg-primary/7 rounded-full blur-[90px] pointer-events-none" />
       <div className="absolute top-1/3 right-[5%] w-[280px] h-[200px] bg-primary/6 rounded-full blur-[80px] pointer-events-none" />
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[240px] bg-primary/8 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Content */}
       <div className="relative z-10 pt-24 pb-20">
 
       <SuccessStoriesCarousel successStories={successStories} />
 
-      {/* ── Decorative divider ── */}
       <div className="mt-4 mb-16 flex items-center gap-4 px-4">
         <div className="flex-1 h-px bg-gradient-to-r from-transparent to-primary/20" />
         <div className="flex gap-1.5">
@@ -49,7 +51,7 @@ export default function Feedback() {
         <div className="flex-1 h-px bg-gradient-to-l from-transparent to-primary/20" />
       </div>
 
-      <StudentOpinionsCarousel studentFeedbacks={studentFeedbacks} />
+      <StudentOpinionsCarousel studentFeedbacks={feedbacks} />
 
       <FadeIn delay={0.4} direction="up" className="w-full flex justify-center mt-10">
         <Link href="/feedback">
@@ -74,9 +76,8 @@ export default function Feedback() {
           </div>
         </Link>
       </FadeIn>
-      </div>{/* end relative z-10 */}
+      </div>
 
-      {/* ── Bottom edge separator ── */}
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
     </section>
   );

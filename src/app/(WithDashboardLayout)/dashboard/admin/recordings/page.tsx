@@ -16,10 +16,10 @@ import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import type { CourseResponse } from "@/redux/api/courseApi";
 import type { BatchResponse } from "@/redux/api/batchApi";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
-import DashboardPageTableWithPagination from "@/components/layout/DashboardPageTableWithPagination";
+import { DataTable } from "@/components/ui/data-table";
 import RecordingFiltersCard, { RecordingFilters } from "./components/RecordingFiltersCard";
 import RecordingFormDialog from "./components/RecordingFormDialog";
-import RecordingTableRow from "./components/RecordingTableRow";
+import { useRecordingColumns } from "./components/recordingColumns";
 import RecordingPreviewDialog from "./components/RecordingPreviewDialog";
 import RecordingDeleteDialog from "./components/RecordingDeleteDialog";
 import type { RecordingFormValues } from "./components/RecordingForm";
@@ -149,6 +149,13 @@ export default function RecordingsPage() {
     ? batches.filter((batch) => getBatchCourseId(batch) === filters.courseId)
     : batches;
 
+  const columns = useRecordingColumns(
+    (item) => setPlayingRecording(item),
+    openEditDialog,
+    handleDelete,
+    isDeleting,
+  );
+
   const emptyState = (
     <div className="flex flex-col items-center gap-3">
       <Video className="h-12 w-12 text-muted-foreground" />
@@ -210,20 +217,11 @@ export default function RecordingsPage() {
             getBatchCourseTitle={getBatchCourseTitle}
           />
 
-          <DashboardPageTableWithPagination
+          <DataTable
             heading={`Recordings (${meta.total})`}
-            columns={["Title", "Course/Batch", "Session Date", "Duration", "Status", "Actions"]}
+            columns={columns}
             data={recordings}
-            renderRow={(recording) => (
-              <RecordingTableRow
-                recording={recording}
-                onPlay={(item) => setPlayingRecording(item)}
-                onEdit={openEditDialog}
-                onDelete={handleDelete}
-                isDeleting={isDeleting}
-              />
-            )}
-            getRowKey={(recording) => recording._id}
+            getRowId={(recording) => recording._id}
             isLoading={isLoading}
             isFetching={isFetching}
             emptyState={emptyState}

@@ -70,7 +70,7 @@ export default function CourseContentPage() {
   useEffect(() => { setOrderedModules(modules); }, [modules]);
 
   const toggleModule = useCallback((moduleId: string) => {
-    setExpandedModules((prev) => { const ns = new Set(prev); ns.has(moduleId) ? ns.delete(moduleId) : ns.add(moduleId); return ns; });
+    setExpandedModules((prev) => { const ns = new Set(prev); if (ns.has(moduleId)) ns.delete(moduleId); else ns.add(moduleId); return ns; });
   }, []);
 
   const handleDeleteModule = useCallback(async () => {

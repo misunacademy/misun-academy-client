@@ -88,6 +88,7 @@ const PaymentTable = () => {
     const handlePrevPage = useCallback(() => setPage((prev) => Math.max(prev - 1, 1)), []);
     const handleNextPage = useCallback(() => setPage((prev) => Math.min(prev + 1, meta.totalPages)), [meta.totalPages]);
 
+    // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
         data: payments,
         columns,

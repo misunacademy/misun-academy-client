@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
 import {
   ChevronDown, ChevronRight, Edit, Trash2, Video, FileText,
-  GripVertical, ArrowUp, ArrowDown, Plus, Eye, Loader2,
+  GripVertical, ArrowUp, ArrowDown, Plus, Eye,
 } from "lucide-react";
 import {
   useGetInstructorModuleLessonsQuery,

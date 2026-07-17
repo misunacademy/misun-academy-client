@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { TableCell } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
@@ -17,7 +16,8 @@ import {
     useUpdateSalaryStatusMutation,
     useDeleteSalaryMutation,
 } from '@/redux/api/employeeAdminApi';
-import DashboardPageTableWithPagination from '@/components/layout/DashboardPageTableWithPagination';
+import { DataTable } from '@/components/ui/data-table';
+import type { ColumnDef } from '@tanstack/react-table';
 import { AddSalaryDialog } from './AddSalaryDialog';
 import { EditSalaryDialog } from './EditSalaryDialog';
 import { toast } from 'sonner';
@@ -46,7 +46,7 @@ export function SalaryManagementTab() {
     const total = data?.data?.total ?? 0;
     const totalPages = data?.data?.totalPages ?? 1;
 
-    const handleToggle = async (s: Salary) => {
+    const handleToggle = useCallback(async (s: Salary) => {
         const next = s.status === 'Paid' ? 'Pending' : 'Paid';
         setUpdatingId(s._id);
         try {
@@ -57,7 +57,7 @@ export function SalaryManagementTab() {
         } finally {
             setUpdatingId(null);
         }
-    };
+    }, [updateStatus]);
 
     const handleDelete = async () => {
         if (!deleteSalary) return;
@@ -73,9 +73,46 @@ export function SalaryManagementTab() {
         }
     };
 
+    const columns = useMemo<ColumnDef<Salary>[]>(() => [
+        { accessorKey: "employeeName", header: "Employee", cell: ({ row }) => <span className="font-medium">{row.original.employeeName}</span> },
+        { accessorKey: "jobTitle", header: "Job Title", cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original.jobTitle}</span> },
+        { id: "period", header: "Period", cell: ({ row }) => <span className="text-sm">{row.original.month} {row.original.year}</span> },
+        { accessorKey: "amount", header: "Gross", cell: ({ row }) => <span className="text-sm">৳ {row.original.amount.toLocaleString()}</span> },
+        { accessorKey: "bonus", header: "Bonus", cell: ({ row }) => row.original.bonus ? <span className="flex items-center gap-1"><Gift className="w-3.5 h-3.5 text-muted-foreground" />৳ {row.original.bonus.toLocaleString()}</span> : <span>—</span> },
+        { accessorKey: "totalAmount", header: "Total", cell: ({ row }) => <span className="font-semibold">৳ {row.original.totalAmount.toLocaleString()}</span> },
+        { accessorKey: "status", header: "Status", cell: ({ row }) => <Badge variant={row.original.status === 'Paid' ? 'default' : 'secondary'} className="gap-1">{row.original.status === 'Paid' ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}{row.original.status}</Badge> },
+        { accessorKey: "paymentDate", header: "Payment Date", cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original.paymentDate ? new Date(row.original.paymentDate).toLocaleDateString() : '—'}</span> },
+        { id: "actions", header: "Action", cell: ({ row }) => {
+            const s = row.original
+            return (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                            {updatingId === s._id || deletingId === s._id
+                                ? <Loader2 className="w-4 h-4 animate-spin" />
+                                : <MoreHorizontal className="w-4 h-4" />}
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleToggle(s)} disabled={!!updatingId || !!deletingId} className="gap-2">
+                            {s.status === 'Paid' ? <><Clock className="w-4 h-4" /> Mark as Pending</> : <><CheckCircle className="w-4 h-4" /> Mark as Paid</>}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setEditSalary(s)} disabled={!!updatingId || !!deletingId} className="gap-2">
+                            <Pencil className="w-4 h-4" /> Edit Record
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setDeleteSalary(s)} disabled={!!updatingId || !!deletingId} className="gap-2 text-destructive focus:text-destructive">
+                            <Trash2 className="w-4 h-4" /> Delete Record
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )
+        }},
+    ], [handleToggle, setEditSalary, setDeleteSalary, updatingId, deletingId])
+
     return (
         <>
-            <DashboardPageTableWithPagination
+            <DataTable
                 heading='Manage Employee Salary'
                 subheading='Here you can manage employee salary'
                 filters={
@@ -98,96 +135,17 @@ export function SalaryManagementTab() {
                         </CardContent>
                     </Card>
                 }
-                columns={['Employee', 'Job Title', 'Period', 'Gross', 'Bonus', 'Total', 'Status', 'Payment Date', 'Action']}
+                columns={columns}
                 data={salaries}
-                getRowKey={(s) => s._id}
+                getRowId={(s) => s._id}
                 isLoading={isLoading}
                 isFetching={isFetching}
                 emptyState="No salary records found."
-                renderRow={(s) => (
-                    <>
-                        <TableCell className="font-medium">{s.employeeName}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{s.jobTitle}</TableCell>
-                        <TableCell className="text-sm">{s.month} {s.year}</TableCell>
-                        <TableCell className="text-sm">৳ {s.amount.toLocaleString()}</TableCell>
-                        <TableCell className="text-sm">
-                            {s.bonus ? (
-                                <span className="flex items-center gap-1">
-                                    <Gift className="w-3.5 h-3.5 text-muted-foreground" />
-                                    ৳ {s.bonus.toLocaleString()}
-                                </span>
-                            ) : '—'}
-                        </TableCell>
-                        <TableCell className="font-semibold">৳ {s.totalAmount.toLocaleString()}</TableCell>
-                        <TableCell>
-                            <Badge variant={s.status === 'Paid' ? 'default' : 'secondary'} className="gap-1">
-                                {s.status === 'Paid' ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                                {s.status}
-                            </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                            {s.paymentDate ? new Date(s.paymentDate).toLocaleDateString() : '—'}
-                        </TableCell>
-                        <TableCell>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                        {updatingId === s._id || deletingId === s._id
-                                            ? <Loader2 className="w-4 h-4 animate-spin" />
-                                            : <MoreHorizontal className="w-4 h-4" />}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    {/* Toggle status */}
-                                    <DropdownMenuItem
-                                        onClick={() => handleToggle(s)}
-                                        disabled={!!updatingId || !!deletingId}
-                                        className="gap-2"
-                                    >
-                                        {s.status === 'Paid'
-                                            ? <><Clock className="w-4 h-4" /> Mark as Pending</>
-                                            : <><CheckCircle className="w-4 h-4" /> Mark as Paid</>}
-                                    </DropdownMenuItem>
-
-                                    <DropdownMenuSeparator />
-
-                                    {/* Edit */}
-                                    <DropdownMenuItem
-                                        onClick={() => setEditSalary(s)}
-                                        disabled={!!updatingId || !!deletingId}
-                                        className="gap-2"
-                                    >
-                                        <Pencil className="w-4 h-4" /> Edit Record
-                                    </DropdownMenuItem>
-
-                                    {/* Delete */}
-                                    <DropdownMenuItem
-                                        onClick={() => setDeleteSalary(s)}
-                                        disabled={!!updatingId || !!deletingId}
-                                        className="gap-2 text-destructive focus:text-destructive"
-                                    >
-                                        <Trash2 className="w-4 h-4" /> Delete Record
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </TableCell>
-                    </>
-                )}
                 pagination={{ page, totalPages, total, limit, onPageChange: setPage }}
             />
 
-            {/* Add dialog */}
             <AddSalaryDialog open={addOpen} onClose={() => setAddOpen(false)} />
-
-            {/* Edit dialog */}
-            <EditSalaryDialog
-                key={editSalary?._id ?? 'edit'}
-                open={!!editSalary}
-                salary={editSalary}
-                onClose={() => setEditSalary(null)}
-            />
-
-            {/* Delete confirmation */}
+            <EditSalaryDialog key={editSalary?._id ?? 'edit'} open={!!editSalary} salary={editSalary} onClose={() => setEditSalary(null)} />
             <AlertDialog open={!!deleteSalary} onOpenChange={(o) => { if (!o) setDeleteSalary(null); }}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -199,11 +157,7 @@ export function SalaryManagementTab() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={!!deletingId}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={handleDelete}
-                            disabled={!!deletingId}
-                            className="bg-destructive hover:bg-destructive/90 gap-2"
-                        >
+                        <AlertDialogAction onClick={handleDelete} disabled={!!deletingId} className="bg-destructive hover:bg-destructive/90 gap-2">
                             {deletingId ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                             {deletingId ? 'Deleting…' : 'Delete'}
                         </AlertDialogAction>

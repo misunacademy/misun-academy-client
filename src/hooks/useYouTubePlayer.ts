@@ -1,108 +1,76 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { YouTubePlayerState } from '@/types/youtube';
+import { useYouTubePlayerInit } from './useYouTubePlayerInit';
 
-export interface YouTubePlayerState {
-  isPlaying: boolean;
-  isMuted: boolean;
-  progress: number;
-  currentTime: number;
-  duration: number;
-  isReady: boolean;
-  showControls: boolean;
-  isFullscreen: boolean;
-  isEnded: boolean;
-  volume: number;
-  playbackRates: number[];
-  playbackRate: number;
-  qualityLevels: string[];
-  qualityLevel: string;
-}
+const INITIAL_STATE: YouTubePlayerState = {
+  isPlaying: false, isMuted: false, progress: 0, currentTime: 0, duration: 0,
+  isReady: false, showControls: true, isFullscreen: false, isEnded: false,
+  volume: 100, playbackRates: [0.5, 1, 1.5, 2], playbackRate: 1,
+  qualityLevels: ['auto'], qualityLevel: 'auto',
+};
 
-export interface YouTubePlayerActions {
-  togglePlay: () => void;
-  toggleMute: (e: React.MouseEvent) => void;
-  updateVolume: (nextVolume: number) => void;
-  handleVolumeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handlePlaybackRateChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  handleQualityChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  handleSeek: (e: React.MouseEvent<HTMLDivElement>) => void;
-  handleFullscreen: (e: React.MouseEvent) => void;
-  handleKeyboardControl: (e: React.KeyboardEvent<HTMLDivElement>) => void;
-  resetControlsTimer: () => void;
-  setShowControls: (v: boolean) => void;
-}
-
-export function useYouTubePlayer(videoId: string | null): {
-  state: YouTubePlayerState;
-  actions: YouTubePlayerActions;
-  playerContainerRef: React.RefObject<HTMLDivElement | null>;
-  outerRef: React.RefObject<HTMLDivElement | null>;
-} {
-  const playerContainerRef = useRef<HTMLDivElement>(null);
-  const playerRef = useRef<YTPlayer | null>(null);
-  const outerRef = useRef<HTMLDivElement>(null);
-
-  const [state, setState] = useState<YouTubePlayerState>({
-    isPlaying: false, isMuted: false, progress: 0, currentTime: 0, duration: 0,
-    isReady: false, showControls: true, isFullscreen: false, isEnded: false,
-    volume: 100, playbackRates: [0.5, 1, 1.5, 2], playbackRate: 1,
-    qualityLevels: ['auto'], qualityLevel: 'auto',
-  });
+export function useYouTubePlayer(videoId: string | null) {
+  "use no memo";
+  const [state, setState] = useState<YouTubePlayerState>(INITIAL_STATE);
+  const update = useCallback((partial: Partial<YouTubePlayerState>) => setState((prev) => ({ ...prev, ...partial })), []);
 
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const controlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const qualityApplyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const qualityPreferenceRef = useRef<string>('auto');
-
-  const update = (partial: Partial<YouTubePlayerState>) => setState((prev) => ({ ...prev, ...partial }));
+  const outerRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<YTPlayer | null>(null);
 
   useEffect(() => { qualityPreferenceRef.current = state.qualityLevel; }, [state.qualityLevel]);
 
   const syncPlaybackOptions = useCallback(() => {
-    if (!playerRef.current) return;
-    const rates = playerRef.current.getAvailablePlaybackRates?.();
+    const p = playerRef.current;
+    if (!p) return;
+    const rates = p.getAvailablePlaybackRates?.();
     if (Array.isArray(rates) && rates.length > 0) update({ playbackRates: rates });
-    const currentRate = playerRef.current.getPlaybackRate?.();
+    const currentRate = p.getPlaybackRate?.();
     if (typeof currentRate === 'number' && Number.isFinite(currentRate)) update({ playbackRate: currentRate });
-    const qualities = playerRef.current.getAvailableQualityLevels?.();
+    const qualities = p.getAvailableQualityLevels?.();
     if (Array.isArray(qualities) && qualities.length > 0) {
       const normalized = qualities.filter((q) => !!q && q !== 'unknown' && q !== 'tiny').map((q) => (q === 'default' ? 'auto' : q));
-      const nextQualities = Array.from(new Set(['auto', ...normalized]));
-      update({ qualityLevels: nextQualities, qualityLevel: nextQualities.includes(state.qualityLevel) ? state.qualityLevel : 'auto' });
+      const next = Array.from(new Set(['auto', ...normalized]));
+      update({ qualityLevels: next, qualityLevel: next.includes(state.qualityLevel) ? state.qualityLevel : 'auto' });
     }
-  }, [state.qualityLevel]);
+  }, [state.qualityLevel, update]);
 
   const applyQualityPreference = useCallback((nextQuality: string, hardReload = false) => {
-    if (!playerRef.current || !videoId) return;
+    const p = playerRef.current;
+    if (!p || !videoId) return;
     const ytQuality = nextQuality === 'auto' ? 'default' : nextQuality;
-    playerRef.current.setPlaybackQuality?.(ytQuality);
-    if (typeof playerRef.current.setPlaybackQualityRange === 'function') {
-      try { playerRef.current.setPlaybackQualityRange(nextQuality === 'auto' ? 'default' : ytQuality, ytQuality); } catch { /* ignore */ }
+    p.setPlaybackQuality?.(ytQuality);
+    if (typeof (p as YTPlayer & { setPlaybackQualityRange?: (min: string, max: string) => void }).setPlaybackQualityRange === 'function') {
+      try { (p as YTPlayer & { setPlaybackQualityRange: (min: string, max: string) => void }).setPlaybackQualityRange(ytQuality, ytQuality); } catch { /* ignore */ }
     }
     if (!hardReload || nextQuality === 'auto') return;
-    const now = playerRef.current.getCurrentTime?.() ?? 0;
-    const wasPlaying = playerRef.current.getPlayerState?.() === window.YT.PlayerState.PLAYING;
-    playerRef.current.loadVideoById?.({ videoId, startSeconds: now, suggestedQuality: ytQuality });
-    if (!wasPlaying) { playerRef.current.pauseVideo?.(); playerRef.current.seekTo?.(now, true); }
+    const now = p.getCurrentTime?.() ?? 0;
+    const wasPlaying = p.getPlayerState?.() === window.YT.PlayerState.PLAYING;
+    p.loadVideoById?.({ videoId, startSeconds: now, suggestedQuality: ytQuality });
+    if (!wasPlaying) { p.pauseVideo?.(); p.seekTo?.(now, true); }
   }, [videoId]);
 
   const onPlayerReady = useCallback((event: { target: YTPlayer }) => {
-    playerRef.current = event.target;
-    update({ duration: event.target.getDuration(), volume: event.target.getVolume?.() ?? 100, isMuted: event.target.isMuted?.() ?? false, isReady: true });
+    const p = event.target;
+    playerRef.current = p;
+    update({
+      duration: p.getDuration(), volume: p.getVolume?.() ?? 100,
+      isMuted: p.isMuted?.() ?? false, isReady: true,
+    });
     syncPlaybackOptions();
-    const iframe = event.target.getIframe?.();
+    const iframe = p.getIframe?.();
     if (iframe) {
-      iframe.style.position = 'absolute';
-      iframe.style.top = '-80px';
-      iframe.style.left = '0';
-      iframe.style.width = '100%';
-      iframe.style.height = 'calc(100% + 160px)';
-      iframe.style.zIndex = '0';
-      iframe.style.pointerEvents = 'none';
-      iframe.style.border = '0';
-      iframe.style.borderRadius = 'inherit';
+      Object.assign(iframe.style, {
+        position: 'absolute', top: '-80px', left: '0', width: '100%',
+        height: 'calc(100% + 160px)', zIndex: '0', pointerEvents: 'none',
+        border: '0', borderRadius: 'inherit',
+      });
       iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation');
     }
-  }, [syncPlaybackOptions]);
+  }, [syncPlaybackOptions, update]);
 
   const onStateChange = useCallback((event: { data: number }) => {
     const { PlayerState } = window.YT;
@@ -123,167 +91,156 @@ export function useYouTubePlayer(videoId: string | null): {
       update({ isPlaying: false });
       if (progressInterval.current) clearInterval(progressInterval.current);
     }
-  }, [syncPlaybackOptions, applyQualityPreference]);
+  }, [syncPlaybackOptions, applyQualityPreference, update]);
 
   const onPlaybackRateChange = useCallback((event: { data: number }) => {
     if (typeof event.data === 'number' && Number.isFinite(event.data)) update({ playbackRate: event.data });
-  }, []);
+  }, [update]);
 
   const onPlaybackQualityChange = useCallback((event: { data: string }) => {
     if (typeof event.data === 'string' && event.data.length > 0) {
       const apiQuality = event.data === 'default' || event.data === 'tiny' ? 'auto' : event.data;
       update({ qualityLevel: state.qualityLevel === 'auto' ? apiQuality : state.qualityLevel });
     }
-  }, [state.qualityLevel]);
+  }, [state.qualityLevel, update]);
 
-  useEffect(() => {
-    if (!videoId) return;
-    let destroyed = false;
-
-    function createPlayer() {
-      if (destroyed || !playerContainerRef.current) return undefined;
-      playerContainerRef.current.innerHTML = '';
-      const target = document.createElement('div');
-      playerContainerRef.current.appendChild(target);
-      return new window.YT.Player(target, {
-        videoId, width: '100%', height: '100%', host: 'https://www.youtube-nocookie.com',
-        playerVars: { controls: 0, disablekb: 1, fs: 0, iv_load_policy: 3, modestbranding: 1, rel: 0, showinfo: 0, playsinline: 1, loop: 1, playlist: videoId, origin: window.location.origin },
-        events: { onReady: onPlayerReady, onStateChange, onPlaybackRateChange, onPlaybackQualityChange },
-      });
-    }
-
-    let rawPlayer: YTPlayer | undefined;
-    function init() { rawPlayer = createPlayer(); }
-
-    if (window.YT?.Player) {
-      init();
-    } else {
-      window._ytApiCallbacks = window._ytApiCallbacks || [];
-      window._ytApiCallbacks.push(init);
-      if (!document.getElementById('yt-iframe-api')) {
-        const tag = document.createElement('script');
-        tag.id = 'yt-iframe-api';
-        tag.src = 'https://www.youtube.com/iframe_api';
-        document.head.appendChild(tag);
-      }
-      window.onYouTubeIframeAPIReady = () => {
-        (window._ytApiCallbacks || []).forEach((cb) => cb());
-        window._ytApiCallbacks = [];
-      };
-    }
-
-    return () => {
-      destroyed = true;
-      if (progressInterval.current) clearInterval(progressInterval.current);
-      if (controlsTimer.current) clearTimeout(controlsTimer.current);
-      if (qualityApplyTimer.current) clearTimeout(qualityApplyTimer.current);
-      playerRef.current?.destroy?.();
-      rawPlayer?.destroy?.();
-      playerRef.current = null;
-      update({ isReady: false, isPlaying: false });
-    };
-  }, [videoId, onPlayerReady, onStateChange, onPlaybackRateChange, onPlaybackQualityChange]);
+  const { playerContainerRef } = useYouTubePlayerInit(
+    videoId, onPlayerReady, onStateChange, onPlaybackRateChange, onPlaybackQualityChange, playerRef,
+  );
 
   useEffect(() => {
     const handler = () => update({ isFullscreen: !!document.fullscreenElement });
     document.addEventListener('fullscreenchange', handler);
     return () => document.removeEventListener('fullscreenchange', handler);
+  }, [update]);
+
+  useEffect(() => {
+    return () => {
+      if (progressInterval.current) clearInterval(progressInterval.current);
+      if (controlsTimer.current) clearTimeout(controlsTimer.current);
+      if (qualityApplyTimer.current) clearTimeout(qualityApplyTimer.current);
+    };
   }, []);
 
   const togglePlay = useCallback(() => {
-    if (!playerRef.current || !state.isReady) return;
-    if (state.isPlaying) playerRef.current.pauseVideo(); else playerRef.current.playVideo();
+    const p = playerRef.current;
+    if (!p || !state.isReady) return;
+    if (state.isPlaying) p.pauseVideo(); else p.playVideo();
   }, [state.isReady, state.isPlaying]);
 
   const toggleMuteState = useCallback(() => {
-    if (!playerRef.current) return;
+    const p = playerRef.current;
+    if (!p) return;
     if (state.isMuted) {
-      playerRef.current.unMute();
-      if (state.volume === 0) { playerRef.current.setVolume?.(50); update({ volume: 50 }); }
+      p.unMute();
+      if (state.volume === 0) { p.setVolume?.(50); update({ volume: 50 }); }
       update({ isMuted: false });
-    } else { playerRef.current.mute(); update({ isMuted: true }); }
-  }, [state.isMuted, state.volume]);
+    } else { p.mute(); update({ isMuted: true }); }
+  }, [state.isMuted, state.volume, update]);
 
   const toggleMute = useCallback((e: React.MouseEvent) => { e.stopPropagation(); toggleMuteState(); }, [toggleMuteState]);
+
   const updateVolume = useCallback((nextVolume: number) => {
-    if (!playerRef.current) return;
+    const p = playerRef.current;
+    if (!p) return;
     const bounded = Math.min(100, Math.max(0, nextVolume));
-    playerRef.current.setVolume?.(bounded);
-    if (bounded === 0) { playerRef.current.mute?.(); update({ isMuted: true }); }
-    else { playerRef.current.unMute?.(); update({ isMuted: false }); }
+    p.setVolume?.(bounded);
+    if (bounded === 0) { p.mute?.(); update({ isMuted: true }); }
+    else { p.unMute?.(); update({ isMuted: false }); }
     update({ volume: bounded });
-  }, []);
-  const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { e.stopPropagation(); updateVolume(Number(e.target.value)); }, [updateVolume]);
+  }, [update]);
+
+  const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation(); updateVolume(Number(e.target.value));
+  }, [updateVolume]);
+
   const handlePlaybackRateChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     e.stopPropagation();
-    if (!playerRef.current) return;
+    const p = playerRef.current;
+    if (!p) return;
     const nextRate = Number(e.target.value);
     if (!Number.isFinite(nextRate)) return;
-    playerRef.current.setPlaybackRate?.(nextRate);
+    p.setPlaybackRate?.(nextRate);
     update({ playbackRate: nextRate });
-  }, []);
+  }, [update]);
+
   const handleQualityChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     e.stopPropagation();
-    if (!playerRef.current) return;
+    const p = playerRef.current;
+    if (!p) return;
     const nextQuality = e.target.value;
     applyQualityPreference(nextQuality);
     if (qualityApplyTimer.current) clearTimeout(qualityApplyTimer.current);
     qualityApplyTimer.current = setTimeout(() => {
-      if (!playerRef.current || nextQuality === 'auto') return;
-      const applied = playerRef.current.getPlaybackQuality?.();
-      const normalizedApplied = applied === 'default' ? 'auto' : applied;
-      if (normalizedApplied !== nextQuality) applyQualityPreference(nextQuality, true);
+      if (!p || nextQuality === 'auto') return;
+      const applied = p.getPlaybackQuality?.();
+      const normalized = applied === 'default' ? 'auto' : applied;
+      if (normalized !== nextQuality) applyQualityPreference(nextQuality, true);
     }, 800);
     update({ qualityLevel: nextQuality });
-  }, [applyQualityPreference]);
+  }, [applyQualityPreference, update]);
+
   const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    if (!playerRef.current || !state.duration) return;
+    const p = playerRef.current;
+    if (!p || !state.duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const pct = (e.clientX - rect.left) / rect.width;
     const seekTo = pct * state.duration;
-    playerRef.current.seekTo(seekTo, true);
+    p.seekTo(seekTo, true);
     update({ progress: pct * 100, currentTime: seekTo });
-  }, [state.duration]);
+  }, [state.duration, update]);
+
   const handleFullscreen = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (!document.fullscreenElement) outerRef.current?.requestFullscreen();
     else document.exitFullscreen();
   }, []);
+
   const seekToTime = useCallback((nextTime: number) => {
-    if (!playerRef.current || !state.duration) return;
+    const p = playerRef.current;
+    if (!p || !state.duration) return;
     const bounded = Math.min(state.duration, Math.max(0, nextTime));
-    playerRef.current.seekTo(bounded, true);
+    p.seekTo(bounded, true);
     update({ currentTime: bounded, progress: (bounded / state.duration) * 100, isEnded: false });
-  }, [state.duration]);
+  }, [state.duration, update]);
+
   const resetControlsTimer = useCallback(() => {
     update({ showControls: true });
     if (controlsTimer.current) clearTimeout(controlsTimer.current);
     controlsTimer.current = setTimeout(() => { if (state.isPlaying) update({ showControls: false }); }, 3000);
-  }, [state.isPlaying]);
+  }, [state.isPlaying, update]);
+
   const handleKeyboardControl = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
     const tag = target.tagName.toLowerCase();
     if (tag === 'input' || tag === 'textarea' || target.isContentEditable) return;
-    switch (e.key) {
-      case ' ': case 'k': case 'K': e.preventDefault(); togglePlay(); resetControlsTimer(); break;
-      case 'ArrowLeft': case 'j': case 'J': e.preventDefault(); seekToTime((playerRef.current?.getCurrentTime?.() ?? state.currentTime) - 5); resetControlsTimer(); break;
-      case 'ArrowRight': case 'l': case 'L': e.preventDefault(); seekToTime((playerRef.current?.getCurrentTime?.() ?? state.currentTime) + 5); resetControlsTimer(); break;
-      case 'ArrowUp': e.preventDefault(); updateVolume(state.volume + 5); resetControlsTimer(); break;
-      case 'ArrowDown': e.preventDefault(); updateVolume(state.volume - 5); resetControlsTimer(); break;
-      case 'm': case 'M': e.preventDefault(); toggleMuteState(); resetControlsTimer(); break;
-      case 'f': case 'F': e.preventDefault(); handleFullscreen(e as unknown as React.MouseEvent); resetControlsTimer(); break;
-      case 'Home': e.preventDefault(); seekToTime(0); resetControlsTimer(); break;
-      case 'End': e.preventDefault(); seekToTime(state.duration); resetControlsTimer(); break;
-    }
+    const key = e.key.toLowerCase();
+    const seek = (offset: number) => seekToTime((playerRef.current?.getCurrentTime?.() ?? state.currentTime) + offset);
+    const handlers: Record<string, () => void> = {
+      ' ': () => { e.preventDefault(); togglePlay(); resetControlsTimer(); },
+      'k': () => { e.preventDefault(); togglePlay(); resetControlsTimer(); },
+      'arrowleft': () => { e.preventDefault(); seek(-5); resetControlsTimer(); },
+      'arrowright': () => { e.preventDefault(); seek(5); resetControlsTimer(); },
+      'arrowup': () => { e.preventDefault(); updateVolume(state.volume + 5); resetControlsTimer(); },
+      'arrowdown': () => { e.preventDefault(); updateVolume(state.volume - 5); resetControlsTimer(); },
+      'm': () => { e.preventDefault(); toggleMuteState(); resetControlsTimer(); },
+      'f': () => { e.preventDefault(); handleFullscreen(e as unknown as React.MouseEvent); resetControlsTimer(); },
+      'home': () => { e.preventDefault(); seekToTime(0); resetControlsTimer(); },
+      'end': () => { e.preventDefault(); seekToTime(state.duration); resetControlsTimer(); },
+    };
+    handlers[key]?.();
   }, [togglePlay, seekToTime, state.volume, state.currentTime, state.duration, updateVolume, toggleMuteState, handleFullscreen, resetControlsTimer]);
 
   return {
-    state, actions: {
-      togglePlay, toggleMute, updateVolume, handleVolumeChange, handlePlaybackRateChange,
-      handleQualityChange, handleSeek, handleFullscreen, handleKeyboardControl, resetControlsTimer,
+    state,
+    actions: {
+      togglePlay, toggleMute, updateVolume, handleVolumeChange,
+      handlePlaybackRateChange, handleQualityChange, handleSeek,
+      handleFullscreen, handleKeyboardControl, resetControlsTimer,
       setShowControls: (v: boolean) => update({ showControls: v }),
     },
-    playerContainerRef, outerRef,
+    playerContainerRef,
+    outerRef,
   };
 }

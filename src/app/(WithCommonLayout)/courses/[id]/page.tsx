@@ -61,8 +61,6 @@ export async function generateMetadata({
   });
 }
 
-// ─── Static Params (optional SSG) ───────────────────────────────────────────
-
 export function generateStaticParams() {
   return Object.keys(courseConfig).map((id) => ({ id }));
 }

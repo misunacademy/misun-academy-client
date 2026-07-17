@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Plus, Video } from "lucide-react";
 import { toast } from "sonner";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
-import DashboardPageTableWithPagination from "@/components/layout/DashboardPageTableWithPagination";
+import { DataTable } from "@/components/ui/data-table";
 import RecordingFiltersCard, { RecordingFilters } from "./RecordingFiltersCard";
 import RecordingFormDialog from "./RecordingFormDialog";
 import RecordingPreviewDialog from "./RecordingPreviewDialog";
 import RecordingDeleteDialog from "./RecordingDeleteDialog";
-import RecordingTableRow from "./RecordingTableRow";
+import { useRecordingColumns } from "./recordingColumns";
 import { type RecordingFormValues } from "./RecordingForm";
 import {
   useGetRecordingsQuery,
@@ -149,6 +149,14 @@ export default function RecordingPage() {
     }
   };
 
+  const columns = useRecordingColumns(
+    setPlayingRecording,
+    openEditDialog,
+    handleDelete,
+    resolveUrl,
+    isDeleting,
+  );
+
   return (
     <DashboardPageContainer
       heading="Live Class Recordings"
@@ -172,7 +180,7 @@ export default function RecordingPage() {
       }
       content={
         <div className="space-y-6">
-          <DashboardPageTableWithPagination
+          <DataTable
             heading={`Recordings (${meta.total})`}
             filters={
               <RecordingFiltersCard
@@ -182,27 +190,9 @@ export default function RecordingPage() {
                 onPageReset={() => setPage(1)}
               />
             }
-            columns={[
-              "Title",
-              "Course / Batch",
-              "Session Date",
-              "Duration",
-              "Status",
-              "Preview",
-              "Actions",
-            ]}
+            columns={columns}
             data={recordings}
-            renderRow={(recording) => (
-              <RecordingTableRow
-                recording={recording}
-                onPreview={setPlayingRecording}
-                onEdit={openEditDialog}
-                onDelete={handleDelete}
-                getPreviewUrl={resolveUrl}
-                isDeleting={isDeleting}
-              />
-            )}
-            getRowKey={(recording) => recording._id}
+            getRowId={(recording) => recording._id}
             isLoading={isLoading}
             emptyState={emptyState}
             pagination={pagination}

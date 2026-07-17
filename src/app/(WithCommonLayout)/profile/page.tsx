@@ -139,7 +139,7 @@ export default function StudentProfile() {
                         {activeTab === "additional" && <AdditionalInfoTab profile={profile} refetch={refetch} />}
                         {activeTab === "enrollments" && <EnrollmentsTab profile={profile} />}
                         {activeTab === "payment-history" && <PaymentHistoryTab />}
-                        {activeTab === "settings" && <SettingsTab profile={profile} />}
+                        {activeTab === "settings" && <SettingsTab />}
                     </div>
                 </div>
             </div>
