@@ -51,6 +51,7 @@ const baseQueryWithSessionHandling = async (args: FetchArgs, api: BaseQueryApi, 
 export const baseApi = createApi({
     reducerPath: "baseApi",
     baseQuery: baseQueryWithSessionHandling,
+    keepUnusedDataFor: 300,
     tagTypes: [
         'Users',
         'Students',
