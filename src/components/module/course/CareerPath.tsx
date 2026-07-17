@@ -54,7 +54,7 @@ export default function CareerPath() {
                         start: 'top top',
                         end: 'bottom bottom',
                         scrub: 0.5,
-                        onUpdate: (self) => {
+                        onUpdate: (self: { progress: number }) => {
 
                             const currentScroll = self.progress;
                             // Check if the scroll direction has changed
