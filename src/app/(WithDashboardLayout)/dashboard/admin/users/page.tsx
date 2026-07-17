@@ -1,9 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import { useCallback, useMemo, useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
 import { useGetAllUsersQuery, useLazyGetAllUsersQuery, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import type { BatchResponse } from "@/redux/api/batchApi";
@@ -86,7 +85,7 @@ export default function AdminUsers() {
       batch: batchFilter === 'all' ? undefined : batchFilter,
       enrolled: enrolledFilter === 'all' ? undefined : (enrolledFilter === 'enrolled' ? 'true' : 'false'),
     },
-    { refetchOnMountOrArgChange: true }
+    {}
   );
 
   const resp = data as UsersListResponse | undefined;

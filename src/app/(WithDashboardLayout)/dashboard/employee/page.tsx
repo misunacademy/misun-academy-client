@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useGetMySalariesQuery, useGetMyEmployeeProfileQuery } from '@/redux/api/employeeApi';
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
@@ -63,23 +63,27 @@ const EmployeePage = () => {
     const email =  serverProfile?.data?.email || '';
     const avatarUrl = serverProfile?.data?.image || undefined;
 
-    const salaries = salaryData?.data?.salaries ?? [];
+    const salaries = useMemo(() => salaryData?.data?.salaries ?? [], [salaryData]);
     const latestSalary = salaries[0];
     const grossSalary = latestSalary?.amount ?? 0;
     const latestBonus = latestSalary?.bonus ?? 0;
-    const totalPaid = salaries
-        .filter((s) => s.status === 'Paid')
-        .reduce((acc, s) => acc + (s.totalAmount ?? 0), 0);
-    const pendingCount = salaries.filter((s) => s.status === 'Pending').length;
 
-    const initials = extInfo.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-    const firstName = extInfo.name.trim().split(' ')[0] || 'Employee';
-    const designationLabel = extInfo.designation.trim() || 'Not provided';
+    const { totalPaid, pendingCount } = useMemo(() => {
+        let paid = 0, pending = 0;
+        for (const s of salaries) {
+            if (s.status === 'Paid') paid += s.totalAmount ?? 0;
+            else if (s.status === 'Pending') pending++;
+        }
+        return { totalPaid: paid, pendingCount: pending };
+    }, [salaries]);
+
+    const { initials, firstName, designationLabel } = useMemo(() => {
+        const name = extInfo.name;
+        const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+        const firstName = name.trim().split(' ')[0] || 'Employee';
+        const designationLabel = extInfo.designation.trim() || 'Not provided';
+        return { initials, firstName, designationLabel };
+    }, [extInfo.name, extInfo.designation]);
 
     if (authLoading || profileLoading) return <DashboardLoader />;
 

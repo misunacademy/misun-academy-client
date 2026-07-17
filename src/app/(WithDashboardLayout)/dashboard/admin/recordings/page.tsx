@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus, Video } from "lucide-react";
 import { toast } from "sonner";
@@ -120,8 +120,8 @@ export default function RecordingsPage() {
     setIsEditOpen(true);
   };
 
-  const courses = coursesData?.data || [];
-  const batches = batchesData?.data || [];
+  const courses = useMemo(() => coursesData?.data || [], [coursesData]);
+  const batches = useMemo(() => batchesData?.data || [], [batchesData]);
   const recordings = recordingsData?.data || [];
   const meta = recordingsData?.meta ?? { page, limit, total: 0, totalPages: 1 };
 
@@ -132,22 +132,25 @@ export default function RecordingsPage() {
     return rec.videoUrl ?? "";
   };
 
-  const getBatchCourseId = (batch: Batch) => {
+  const getBatchCourseId = useCallback((batch: Batch) => {
     if (!batch.courseId) return "";
     return typeof batch.courseId === "string" ? batch.courseId : batch.courseId._id;
-  };
+  }, []);
 
-  const getBatchCourseTitle = (batch: Batch) => {
+  const getBatchCourseTitle = useCallback((batch: Batch) => {
     if (!batch.courseId) return "";
     if (typeof batch.courseId === "string") {
       return courses.find((course: Course) => course._id === batch.courseId)?.title || "";
     }
     return batch.courseId.title;
-  };
+  }, [courses]);
 
-  const filteredFilterBatches = filters.courseId
-    ? batches.filter((batch) => getBatchCourseId(batch) === filters.courseId)
-    : batches;
+  const filteredFilterBatches = useMemo(
+    () => filters.courseId
+      ? batches.filter((batch) => getBatchCourseId(batch) === filters.courseId)
+      : batches,
+    [batches, filters.courseId, getBatchCourseId],
+  );
 
   const columns = useRecordingColumns(
     (item) => setPlayingRecording(item),

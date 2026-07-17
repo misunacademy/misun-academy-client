@@ -60,26 +60,35 @@ const LeavePage = () => {
     const [dialogOpen, setDialogOpen]     = useState(false);
     const limit = 10;
 
-    // Fetch all for stats (small limit is fine — employee won't have thousands)
-    const { data: allData } = useGetMyLeaveRequestsQuery({ limit: 200 });
+    const { data, isLoading, isFetching } = useGetMyLeaveRequestsQuery({ limit: 200 });
 
-    // Fetch paginated + filtered for table
-    const { data, isLoading, isFetching } = useGetMyLeaveRequestsQuery({
-        page,
-        limit,
-        ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
-    });
+    const allRequests = useMemo(() => data?.data?.requests ?? [], [data]);
 
-    const allRequests = allData?.data?.requests ?? [];
-    const pending     = allRequests.filter((r) => r.status === 'Pending').length;
-    const approved    = allRequests.filter((r) => r.status === 'Approved').length;
-    const totalDaysApproved = allRequests
-        .filter((r) => r.status === 'Approved')
-        .reduce((acc, r) => acc + daysBetween(r.from, r.to), 0);
+    const stats = useMemo(() => {
+        let pending = 0, approved = 0, totalDaysApproved = 0;
+        for (const r of allRequests) {
+            if (r.status === 'Pending') pending++;
+            if (r.status === 'Approved') {
+                approved++;
+                totalDaysApproved += daysBetween(r.from, r.to);
+            }
+        }
+        return { pending, approved, totalDaysApproved };
+    }, [allRequests]);
 
-    const requests   = data?.data?.requests   ?? [];
-    const total      = data?.data?.total      ?? 0;
-    const totalPages = data?.data?.totalPages ?? 1;
+    const filtered = useMemo(() =>
+        statusFilter === 'all'
+            ? allRequests
+            : allRequests.filter((r) => r.status === statusFilter),
+        [allRequests, statusFilter],
+    );
+
+    const paginated = useMemo(() => {
+        const start = (page - 1) * limit;
+        return filtered.slice(start, start + limit);
+    }, [filtered, page, limit]);
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
 
     return (
         <div className="container mx-auto p-6 space-y-6">
@@ -98,9 +107,9 @@ const LeavePage = () => {
             {/* ── Stats ───────────────────────────────────────── */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard label="Total Requests"   value={allRequests.length} sub="All time" />
-                <StatCard label="Pending"          value={pending}            sub="Awaiting review" />
-                <StatCard label="Approved"         value={approved}           sub="Approved by admin" />
-                <StatCard label="Approved Days"    value={totalDaysApproved}  sub="Total leave days taken" />
+                <StatCard label="Pending"          value={stats.pending}            sub="Awaiting review" />
+                <StatCard label="Approved"         value={stats.approved}           sub="Approved by admin" />
+                <StatCard label="Approved Days"    value={stats.totalDaysApproved}  sub="Total leave days taken" />
             </div>
 
             {/* ── Table ───────────────────────────────────────── */}
@@ -134,7 +143,7 @@ const LeavePage = () => {
                     { accessorKey: "status", header: "Status", cell: ({ row }) => <Badge className={`gap-1 ${STATUS_BADGE[row.original.status]}`}>{row.original.status === 'Pending' && <Clock className="w-3 h-3" />}{row.original.status === 'Approved' && <CheckCircle2 className="w-3 h-3" />}{row.original.status === 'Rejected' && <XCircle className="w-3 h-3" />}{row.original.status}</Badge> },
                     { accessorKey: "createdAt", header: "Applied On", cell: ({ row }) => <span className="text-sm text-muted-foreground whitespace-nowrap">{new Date(row.original.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span> },
                 ], [])}
-                data={requests}
+                data={paginated}
                 getRowId={(r) => r._id}
                 isLoading={isLoading}
                 isFetching={isFetching}
@@ -147,7 +156,7 @@ const LeavePage = () => {
                         </Button>
                     </div>
                 }
-                pagination={{ page, totalPages, total, limit, onPageChange: setPage }}
+                pagination={{ page, totalPages, total: filtered.length, limit, onPageChange: setPage }}
             />
 
             {/* ── Dialog ──────────────────────────────────────── */}
