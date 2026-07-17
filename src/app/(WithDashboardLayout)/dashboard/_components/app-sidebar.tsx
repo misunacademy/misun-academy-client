@@ -142,11 +142,8 @@ const adminItems = [
         url: "/dashboard/admin/settings",
         icon: Settings,
     },
-    // {
-    //     title: "Profile",
-    //     url: "/dashboard/admin/profile",
-    //     icon: User2,
-    // },
+
+
 ];
 
 export function AppSidebar() {
@@ -155,8 +152,7 @@ export function AppSidebar() {
 
     // Determine if we're in admin or student dashboard based on user role
     // Handle both uppercase (API) and lowercase (enum) role values
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const userRole = (user as any)?.role?.toLowerCase() || '';
+    const userRole = user?.role?.toLowerCase() || '';
 
     const isInstructor = userRole === Role.INSTRUCTOR.toLowerCase();
     const isAdmin = [

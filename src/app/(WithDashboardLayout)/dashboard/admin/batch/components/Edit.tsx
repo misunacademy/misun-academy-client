@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { toast } from 'sonner';
 import { useParams, useRouter } from 'next/navigation';
-import { useGetBatchByIdQuery, useUpdateBatchMutation } from '@/redux/api/batchApi';
+import { useGetBatchByIdQuery, useUpdateBatchMutation, type BatchResponse, type CourseInfo } from '@/redux/api/batchApi';
 import { Loader2 } from 'lucide-react';
 
 
@@ -80,8 +80,7 @@ export default function BatchEdit() {
             manualPaymentPrice: batch.data.manualPaymentPrice?.toString() || '',
             status: (batch.data.status as BatchStatus) || 'draft',
             selectedCourse: typeof batch.data.courseId === 'object' && batch.data.courseId !== null
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ? (batch.data.courseId as any)._id || ''
+                ? (batch.data.courseId as CourseInfo)._id || ''
                 : typeof batch.data.courseId === 'string'
                 ? batch.data.courseId
                 : '',
@@ -97,8 +96,7 @@ export default function BatchEdit() {
             enrollmentEndDate: batch.data.enrollmentEndDate
                 ? new Date(batch.data.enrollmentEndDate).toISOString().split('T')[0]
                 : '',
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            description: (batch.data as any).description || '',
+            description: (batch.data as BatchResponse & { description?: string }).description || '',
         };
 
         startTransition(() => {
@@ -198,8 +196,7 @@ export default function BatchEdit() {
                                 value={formData.selectedCourse}
                                 defaultValue={
                                     typeof batch.data.courseId === 'object' && batch.data.courseId !== null
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                ? (batch.data.courseId as any).title
+                                ? (batch.data.courseId as CourseInfo).title
                                         : undefined
                                 }
                                 onValueChange={(val) => handleInputChange('selectedCourse', val)}

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { io, Socket } from "socket.io-client";
+import type { Socket } from "socket.io-client";
 import { useAuth } from "@/hooks/useAuth";
 import { useMarkAllAsReadMutation } from "@/redux/api/notificationApi";
 
@@ -92,8 +92,6 @@ export default function SocketProvider({ children }: { children: React.ReactNode
   useEffect(() => {
     if (!isAuthenticated || !user) {
       if (socketRef.current) {
-        // Disconnecting fires the socket's own 'disconnect' handler,
-        // which updates isConnected(false) — no synchronous setState needed here.
         socketRef.current.disconnect();
         socketRef.current = null;
       }
@@ -103,45 +101,52 @@ export default function SocketProvider({ children }: { children: React.ReactNode
     const baseUrl = getBaseUrl();
     if (!baseUrl) return;
 
-    let socket: Socket;
-    try {
-      socket = io(baseUrl, {
+    let cancelled = false;
+
+    (async () => {
+      const { io: createSocket } = await import("socket.io-client");
+      if (cancelled) return;
+
+      const socket = createSocket(baseUrl, {
         withCredentials: true,
         transports: ['websocket', 'polling'],
       });
-    } catch {
-      return;
-    }
 
-    socket.on('connect', () => {
-      setIsConnected(true);
-      // Fetch initial state from the server inside the connect callback
-      // (a subscription callback) instead of synchronously in the effect body.
-      fetchUnreadCount();
-      fetchRecentNotifications();
-    });
+      socket.on('connect', () => {
+        setIsConnected(true);
+        fetchUnreadCount();
+        fetchRecentNotifications();
+      });
 
-    socket.on('disconnect', () => {
-      setIsConnected(false);
-    });
+      socket.on('disconnect', () => {
+        setIsConnected(false);
+      });
 
-    socket.on('notification', (data: NotificationEvent) => {
-      setRecentNotifications((prev) => [data, ...prev].slice(0, 10));
-      setUnreadCount((prev) => prev + 1);
-    });
+      socket.on('notification', (data: NotificationEvent) => {
+        setRecentNotifications((prev) => [data, ...prev].slice(0, 10));
+        setUnreadCount((prev) => prev + 1);
+      });
 
-    socketRef.current = socket;
+      socketRef.current = socket;
 
-    if (pollingRef.current) clearInterval(pollingRef.current);
-    pollingRef.current = setInterval(() => {
-      fetchUnreadCount();
-    }, 30000);
+      if (pollingRef.current) clearInterval(pollingRef.current);
+      pollingRef.current = setInterval(() => {
+        fetchUnreadCount();
+      }, 30000);
+    })();
 
     return () => {
-      socket.disconnect();
-      if (pollingRef.current) clearInterval(pollingRef.current);
+      cancelled = true;
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
     };
-  }, [isAuthenticated, user?.id, getBaseUrl, fetchUnreadCount, fetchRecentNotifications]);
+  }, [isAuthenticated, user, getBaseUrl, fetchUnreadCount, fetchRecentNotifications]);
 
   const addNotification = useCallback((notification: NotificationEvent) => {
     setRecentNotifications((prev) => [notification, ...prev].slice(0, 10));

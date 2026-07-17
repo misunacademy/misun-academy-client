@@ -45,20 +45,8 @@ const CreateUserDialog = ({ open, onOpenChange, onSubmit }: CreateUserDialogProp
               <span className="text-red-500">Note:*</span>
               The new user will receive an email to verify their account. Please ensure the email address is correct. This user will set default role as &ldquo;learner&ldquo; and can be updated later as your desired.
             </p>
-            {/* <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="role" className="text-right">Role</Label>
-                <Select name="role" defaultValue="learner">
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="learner">Learner</SelectItem>
-                    <SelectItem value="instructor">Instructor</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="superadmin">Super Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div> */}
+
+
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

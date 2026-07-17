@@ -1,4 +1,11 @@
-﻿import PageBackground from "@/components/shared/PageBackground";
+﻿import { generateMetadata as genMeta } from '@/lib/generateMetadata';
+import PageBackground from "@/components/shared/PageBackground";
+
+export const metadata = genMeta({
+  title: 'Refund Policy | MISUN Academy',
+  description: 'MISUN Academy-এর রিফান্ড নীতিমালা। কিভাবে রিফান্ডের জন্য আবেদন করবেন এবং আমাদের রিফান্ড শর্তাবলি সম্পর্কে জানুন। | Understand MISUN Academy\'s refund policy, eligibility, and the refund request process.',
+  slug: 'refund-policy',
+});
 
 export default function RefundPolicyPage() {
     return (

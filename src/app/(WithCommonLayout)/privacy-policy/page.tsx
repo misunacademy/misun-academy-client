@@ -1,5 +1,11 @@
-// app/privacy-policy/page.tsx
+import { generateMetadata as genMeta } from '@/lib/generateMetadata';
 import PageBackground from "@/components/shared/PageBackground";
+
+export const metadata = genMeta({
+  title: 'Privacy Policy | MISUN Academy',
+  description: 'MISUN Academy-এর গোপনীয়তা নীতিমালা। আপনার ব্যক্তিগত তথ্যের নিরাপত্তা ও গোপনীয়তা রক্ষায় আমাদের প্রতিশ্রুতি। | Learn how MISUN Academy collects, uses, and protects your personal information.',
+  slug: 'privacy-policy',
+});
 
 export default function PrivacyPolicyPage() {
     return (

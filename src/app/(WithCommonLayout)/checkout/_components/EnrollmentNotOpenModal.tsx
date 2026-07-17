@@ -7,6 +7,7 @@ import {
     DialogFooter,
     DialogDescription,
 } from '@/components/ui/dialog';
+import type { BatchResponse } from "@/redux/api/batchApi";
 import CourseEnrollmentCard from "./CourseEnrollmentCard";
 
 export default function EnrollmentNotOpenModal({
@@ -17,10 +18,8 @@ export default function EnrollmentNotOpenModal({
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    courseData: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    batchData: any;
+    courseData: Record<string, unknown> | undefined;
+    batchData: BatchResponse | null;
 }) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

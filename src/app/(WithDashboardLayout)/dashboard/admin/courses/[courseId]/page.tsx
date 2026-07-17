@@ -6,7 +6,9 @@ import {
   useAssignCourseInstructorMutation,
   useGetAllInstructorProfilesQuery,
   useGetCourseByIdQuery,
+  type CourseResponse,
 } from "@/redux/api/courseApi";
+import type { UserResponse } from "@/redux/api/adminApi";
 import {
   Dialog,
   DialogContent,
@@ -35,15 +37,17 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
   const [assignInstructor, { isLoading: isSaving }] =
     useAssignCourseInstructorMutation();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const instructors = (instructorsData?.data || []) as any[];
+  const instructors = (instructorsData?.data || []) as UserResponse[];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const course = courseData as any;
+  interface CourseWithInstructor extends Omit<CourseResponse, 'instructorId'> {
+    instructorId?: { _id: string; name: string; email?: string } | string;
+  }
+  const course = courseData as CourseWithInstructor | undefined;
+  const instructorObj = typeof course?.instructorId === 'object' ? course.instructorId : null;
   const currentInstructorId: string | null =
-    course?.instructorId?._id?.toString() ||
+    instructorObj?._id?.toString() ||
     (typeof course?.instructorId === "string" ? course.instructorId : null);
-  const currentInstructorName: string = course?.instructorId?.name || "";
+  const currentInstructorName: string = instructorObj?.name || "";
 
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null | undefined>(undefined);
@@ -51,8 +55,7 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
   const effectiveId: string | null =
     selectedId !== undefined ? selectedId : currentInstructorId;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const filtered = instructors.filter((inst: any) => {
+  const filtered = instructors.filter((inst: UserResponse) => {
     const q = search.toLowerCase();
     return (
       (inst.name || "").toLowerCase().includes(q) ||
@@ -61,8 +64,7 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
   });
 
   const currentInst = instructors.find(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (i: any) => i._id?.toString() === effectiveId
+    (i: UserResponse) => i._id?.toString() === effectiveId
   );
   const displayName = currentInst?.name || currentInstructorName || "Instructor";
 
@@ -148,8 +150,7 @@ export function InstructorAssignDialog({ courseId }: { courseId: string }) {
           ) : (
             <ScrollArea className="h-52 border rounded-md p-2">
               <div className="space-y-1">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {filtered.map((inst: any) => {
+                {filtered.map((inst: UserResponse) => {
                   const instId = inst._id?.toString();
                   const isSelected = effectiveId === instId;
                   return (

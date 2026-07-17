@@ -4,6 +4,7 @@ import React, { useRef, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { COURSE_SLUGS } from "@/constants/courses";
 import graphic from "@/assets/images/thumb_2.png";
 import english from "@/assets/images/thumb_1.png";
 
@@ -13,7 +14,7 @@ const SceneBackground = dynamic(() => import("./CoursesListScene"), { ssr: false
 
 const courses = [
   {
-    slug: "complete-graphic-design-with-freelancing",
+    slug: COURSE_SLUGS.GRAPHIC_DESIGN,
     badge: "কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স",
     label: "Design",
     title: "কমপ্লিট গ্রাফিক্স ডিজাইন উইথ ফ্রিল্যান্সিং",
@@ -33,7 +34,7 @@ const courses = [
     thumbnail: "graphic-design" as const,
   },
   {
-    slug: "english-for-professional-communication",
+    slug: COURSE_SLUGS.ENGLISH,
     badge: "English For Professional Communication",
     label: "Language",
     title: "English For Professional Communication",
@@ -88,7 +89,7 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
   };
 
   return (
-    <Link href={!course.slug.includes('graphic')
+    <Link href={course.slug !== COURSE_SLUGS.GRAPHIC_DESIGN
       ? `${process.env.NEXT_PUBLIC_EP_FRONTEND_URL}`
       : `/courses/${course.slug}`
     } className="group block" style={{ perspective: "1100px" }}>
@@ -118,8 +119,6 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
 
         {/* ── Thumbnail ── */}
         <div className="relative w-full h-56 overflow-hidden">
-          {/* {course.thumbnail === "graphic-design" ? ( */}
-          {/* <> */}
           <Image
             src={course.thumbnail === "graphic-design" ? graphic : english}
             alt="Graphic Design Course"
@@ -129,10 +128,6 @@ function CourseCard({ course }: { course: (typeof courses)[number] }) {
           />
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent" />
-          {/* </> */}
-          {/* ) : (
-            <EnglishThumbnail img={english} />
-          )} */}
 
           {/* NEW badge */}
           {course.isNew && (

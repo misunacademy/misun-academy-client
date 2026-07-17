@@ -3,11 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-// interface ChartData {
-//     name?: string;
-//     value?: number;
-//     [key: string]: string | number | undefined;
-// }
 
 interface BatchIncomeEntry {
     batchId: string;

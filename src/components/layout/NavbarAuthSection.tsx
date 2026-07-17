@@ -2,12 +2,10 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import type { AuthUser } from '@/types/auth';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -17,19 +15,17 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User, LogOut, UserCircle, Sparkles, LayoutDashboard, BadgeCheck, FileText } from 'lucide-react';
+import { COURSE_PRICES } from '@/constants/courses';
 
 export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
     const { user, signOut } = useAuth();
-    const router = useRouter();
-    const safeUser = hydrated ? user : null;
-    const userRole = (safeUser as AuthUser | null)?.role;
-    const canSeeClasses = !!userRole && userRole.toLowerCase() === 'learner';
-    const isEnrolled = (safeUser?.enrolledCourses?.length ?? 0) > 0;
+    const safeUser = hydrated ? user : undefined;
+    const userRole = safeUser?.role;
+    const isLearner = userRole === 'learner';
+    const isStaff = userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor' || userRole === 'employee';
+
     const handleLogout = async () => {
-        const result = await signOut();
-        if (result.success) {
-            router.push('/');
-        }
+        await signOut();
     };
 
     const handleEnrollClick = () => {
@@ -37,15 +33,19 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
             track('InitiateCheckout', {
                 content_name: 'Graphic Design Course',
                 content_type: 'course',
-                value: 4800,
+                value: COURSE_PRICES.GRAPHIC_DESIGN_BDT,
                 currency: 'BDT',
             })
         );
     };
 
+    const dashboardPath = userRole === 'superadmin' || userRole === 'admin'
+        ? '/dashboard/admin'
+        : `/dashboard/${userRole}`;
+
     return (
         <>
-            {canSeeClasses ? (
+            {isLearner ? (
                 <Link href="/my-classes" className="relative group py-2">
                     <span className="group-hover:text-primary transition-colors duration-300 text-xs">
                         আমার ক্লাসগুলো
@@ -65,7 +65,6 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
             ) : null}
             <div className="flex items-center justify-end">
                 <Link href="/checkout" className="w-full sm:w-auto block" onClick={handleEnrollClick}>
-                    {/* Spinning glowing border wrapper */}
                     <div className="relative inline-flex p-[1.5px] rounded-full overflow-hidden
                     shadow-[0_4px_24px_rgba(32,180,134,0.35)]
                     hover:shadow-[0_8px_36px_rgba(32,180,134,0.60)]
@@ -85,7 +84,6 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
                                 <Sparkles className="w-4 h-4 text-white animate-pulse" />
                                 এনরোল করুন
                             </span>
-                            {/* Shine sweep */}
                             <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
                         </button>
                     </div>
@@ -122,35 +120,30 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
                                 Profile
                             </Link>
                         </DropdownMenuItem>
-                        {
-                            userRole === 'learner' && canSeeClasses && isEnrolled &&
+                        {isLearner && (
                             <DropdownMenuItem asChild>
-                                <Link href="/enrollment-posters" className="">
+                                <Link href="/enrollment-posters">
                                     <FileText className="mr-2 h-4 w-4" />
                                     Your Enrollment Posters
                                 </Link>
                             </DropdownMenuItem>
-
-                        }
-                        {
-                            userRole === 'learner' && canSeeClasses && isEnrolled &&
+                        )}
+                        {isLearner && (
                             <DropdownMenuItem asChild>
-                                <Link href="/my-classes/certificates" className="">
+                                <Link href="/my-classes/certificates">
                                     <BadgeCheck className="mr-2 h-4 w-4" />
                                     Certificates
                                 </Link>
                             </DropdownMenuItem>
-
-                        }
-                        {
-                            (userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor' || userRole === 'employee') &&
+                        )}
+                        {isStaff && (
                             <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/${(userRole==='superadmin' || userRole==='admin') ? 'admin' : `${userRole}`}`} className="flex items-center">
+                                <Link href={dashboardPath} className="flex items-center">
                                     <LayoutDashboard className="mr-2 h-4 w-4" />
                                     Dashboard
                                 </Link>
                             </DropdownMenuItem>
-                        }
+                        )}
                         <DropdownMenuItem onClick={handleLogout} className="flex items-center text-red-600">
                             <LogOut className="mr-2 h-4 w-4" />
                             Log out

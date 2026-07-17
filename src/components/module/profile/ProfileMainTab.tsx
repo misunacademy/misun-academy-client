@@ -2,22 +2,35 @@ import { useState } from "react";
 import { Edit, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
+import type { ProfileData } from "@/redux/api/profileApi";
 import { useAuth } from "@/hooks/useAuth";
+import type { AuthUser } from "@/types/auth";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
+interface SessionInfo {
+    id: string;
+    token: string;
+    createdAt: string;
+    userAgent?: string;
+    isCurrent?: boolean;
+}
+
+interface ProfileFormData {
+    name?: string;
+    phone?: string;
+    wpnumber?: string;
+}
+
 interface ProfileMainTabProps {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    profile: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    user: any;
+    profile: ProfileData | undefined;
+    user: AuthUser;
     studentId: string;
     phone: string;
     wpnumber: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sessions: any[];
+    sessions: SessionInfo[];
     handleRevokeSession: (token: string) => void;
     refetch: () => void;
 }
@@ -44,16 +57,13 @@ export function ProfileMainTab({
         }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: ProfileFormData) => {
         try {
-            // Update the profile data (phone, wpnumber)
             await updateProfile({
                 phone: data.phone,
                 wpnumber: data.wpnumber,
             }).unwrap();
 
-            // Check if name changed to update the auth user
             if (data.name !== user.name) {
                 await updateUserProfile({
                     name: data.name
@@ -63,9 +73,9 @@ export function ProfileMainTab({
             toast.success("Profile updated successfully");
             setIsEditing(false);
             refetch();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-            toast.error(error?.data?.message || "Failed to update profile");
+        } catch (error: unknown) {
+            const apiError = error as { data?: { message?: string } };
+            toast.error(apiError?.data?.message || "Failed to update profile");
         }
     };
 
@@ -173,7 +183,7 @@ export function ProfileMainTab({
                     </thead>
                     <tbody>
                         {sessions.length > 0 ? (
-                            sessions.map((sess, idx) => (
+                            sessions.map((sess: SessionInfo, idx: number) => (
                                 <tr key={sess.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
                                     <td className="py-4 px-4 text-white/70 text-sm">{idx + 1}</td>
                                     <td className="py-4 px-4 text-white/70 text-sm">

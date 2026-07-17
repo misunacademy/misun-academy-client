@@ -9,7 +9,7 @@ import { CheckCircle, ArrowLeft, User, Phone, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { phonePe } from "@/assets/images";
-import { paymentInfo } from "@/constants/enrollment";
+import { paymentInfo } from "@/constants/payment";
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 
 const paymentSchema = z.object({
@@ -22,7 +22,7 @@ type PaymentForm = z.infer<typeof paymentSchema>;
 interface ManualPaymentFormProps {
     onBack: () => void;
     onPaymentComplete: (data: { senderNumber: string; transactionId: string }) => void;
-    manualAmount?: number;
+    manualAmount: number;
     manualCurrency?: string;
     batch:string
 }
@@ -53,7 +53,7 @@ const ManualPaymentForm = ({
         onPaymentComplete(data);
     };
 
-    const displayAmount = typeof manualAmount === 'number' ? manualAmount : paymentInfo.amount;
+    const displayAmount = manualAmount ?? 0;
     const dynamicInstructions = paymentInfo.instructions.map((instruction) => {
         if (instruction.toLowerCase().includes('enter the exact amount')) {
             return `Enter the exact amount: INR ${displayAmount.toLocaleString('en-IN')}`;
@@ -205,32 +205,8 @@ const ManualPaymentForm = ({
                                 )}
                             />
 
-                            {/* <FormField
-                                control={form.control}
-                                name="amount"
-                                disabled
-                                render={({ field, fieldState }) => (
-                                    <FormItem>
-                                        <FormLabel>Amount Paid (৳) *</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="number"
-                                                placeholder="2867.24"
-                                                {...field}
-                                                className={cn(
-                                                    "h-12",
-                                                    fieldState.invalid
-                                                        ? "border-red-500 focus-visible:ring-red-500"
-                                                        : fieldState.isTouched && field.value
-                                                            ? "border-green-500 focus-visible:ring-green-500"
-                                                            : ""
-                                                )}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            /> */}
+
+
 
                             <div className="flex gap-3 pt-2">
                                 <button type="button" onClick={onBack}

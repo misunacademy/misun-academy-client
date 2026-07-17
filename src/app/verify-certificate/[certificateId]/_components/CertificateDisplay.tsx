@@ -1,4 +1,3 @@
-import { useRef } from "react";
 import Image from "next/image";
 
 const clash = "'Clash Display', sans-serif";
@@ -14,13 +13,17 @@ function formatDate(dateStr?: string) {
     return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" });
 }
 
+interface BatchInfo {
+    startDate?: string;
+    endDate?: string;
+}
+
 interface CertificateDisplayProps {
     certificateData?: {
         recipientName?: string;
         courseName?: string;
         batchName?: string;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        batchId?: any;
+        batchId?: BatchInfo;
     } | null;
     onLoad: () => void;
     certificateRef: React.RefObject<HTMLDivElement | null>;
@@ -31,10 +34,9 @@ export default function CertificateDisplay({ certificateData, onLoad, certificat
     const recipientName = toTitleCase(certificateData?.recipientName || "Student Name");
     const courseName = certificateData?.courseName || "Course Name";
     const batchName = certificateData?.batchName || "";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const batchData = certificateData?.batchId as any;
-    const start = new Date(batchData?.startDate).getTime();
-    const end = new Date(batchData?.endDate).getTime();
+    const batchData = certificateData?.batchId;
+    const start = batchData?.startDate ? new Date(batchData.startDate).getTime() : NaN;
+    const end = batchData?.endDate ? new Date(batchData.endDate).getTime() : NaN;
     const durationInDays = (end - start) / (1000 * 60 * 60 * 24);
     const duration = Math.round(durationInDays / 30);
     const startDate = formatDate(batchData?.startDate);

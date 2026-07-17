@@ -1,5 +1,6 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useGetEnrollmentsQuery } from '@/redux/api/enrollmentApi';
+import type { EnrollmentResponse } from '@/redux/api/enrollmentApi';
 
 interface EnrollmentStatus {
   hasEnrollments: boolean;
@@ -46,17 +47,15 @@ export function useEnrollment(): EnrollmentStatus {
     };
   }
 
-  const enrollments = data?.data || [];
+  const enrollments = data?.data ?? [];
   const activeEnrollments = enrollments.filter(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (enrollment: any) => enrollment.status === 'active'
+    (enrollment: EnrollmentResponse) => enrollment.status === 'active'
   );
 
   return {
     hasEnrollments: activeEnrollments.length > 0,
     enrolledBatchIds: activeEnrollments.map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (e: any) => e.batchId
+      (e: EnrollmentResponse) => e.batchId._id
     ),
     isLoading: false,
     error: null,

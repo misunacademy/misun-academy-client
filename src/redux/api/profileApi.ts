@@ -1,6 +1,8 @@
 import { baseApi } from "@/redux/api/baseApi";
 
 export interface ProfileUser {
+    name?: string;
+    email?: string;
     studentId?: string;
     phone?: string;
 }
@@ -12,6 +14,28 @@ export interface EducationEntry {
     result?: string;
 }
 
+export interface EnrollmentRef {
+    _id?: string;
+    enrollmentId?: string;
+    status?: string;
+    enrolledAt?: string;
+    certificateIssued?: boolean;
+    batchId?: {
+        _id: string;
+        title: string;
+        price?: number;
+        courseId?: {
+            _id: string;
+            title: string;
+        };
+    };
+    courseId?: {
+        _id: string;
+        title: string;
+    };
+    accessType?: string;
+}
+
 export interface ProfileData {
     user?: ProfileUser;
     wpnumber?: string;
@@ -20,6 +44,12 @@ export interface ProfileData {
     address?: string;
     education?: EducationEntry[];
     linkedinUrl?: string;
+    timeZone?: string;
+    enrollments?: EnrollmentRef[];
+    currentJob?: string;
+    company?: string;
+    industry?: string;
+    experience?: string;
 }
 
 const profileApi = baseApi.injectEndpoints({

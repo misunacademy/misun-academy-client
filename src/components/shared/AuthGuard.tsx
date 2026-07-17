@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import type { AuthUser } from '@/types/auth';
@@ -21,6 +21,14 @@ const roleHome: Record<Role, string> = {
     learner: '/my-classes',
 };
 
+function LoadingFallback() {
+    return (
+        <div className="flex items-center justify-center min-h-screen" suppressHydrationWarning>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
+        </div>
+    );
+}
+
 export default function AuthGuard({
     children,
     requiredRoles,
@@ -30,17 +38,20 @@ export default function AuthGuard({
     const router = useRouter();
     const pathname = usePathname();
     const { user, isLoading } = useAuth();
+    const [mounted, setMounted] = useState(false);
 
     const isAuthenticated = !!user;
     const userRole = (user as AuthUser | undefined)?.role || null;
 
     useEffect(() => {
-        if (isLoading) return;
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!mounted || isLoading) return;
 
         if (!isAuthenticated) {
-            const currentPath = typeof window !== 'undefined'
-                ? `${window.location.pathname}${window.location.search}`
-                : pathname;
+            const currentPath = `${window.location.pathname}${window.location.search}`;
             const redirectUrl = `/auth?redirect_url=${encodeURIComponent(currentPath)}`;
             router.replace(redirectUrl);
             return;
@@ -78,22 +89,14 @@ export default function AuthGuard({
             router.replace('/my-classes');
             return;
         }
-    }, [isLoading, isAuthenticated, userRole, pathname, router, requiredRoles, unauthorizedRedirectTo]);
+    }, [mounted, isLoading, isAuthenticated, userRole, pathname, router, requiredRoles, unauthorizedRedirectTo]);
 
-    if (isLoading || !isAuthenticated) {
-        return <>{fallback || (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
-            </div>
-        )}</>;
+    if (!mounted || isLoading || !isAuthenticated) {
+        return <>{fallback || <LoadingFallback />}</>;
     }
 
     if (requiredRoles && requiredRoles.length > 0 && !requiredRoles.includes(userRole as Role)) {
-        return <>{fallback || (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500" />
-            </div>
-        )}</>;
+        return <>{fallback || <LoadingFallback />}</>;
     }
 
     return <>{children}</>;

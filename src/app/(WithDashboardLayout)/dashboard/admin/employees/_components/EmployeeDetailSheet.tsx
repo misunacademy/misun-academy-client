@@ -53,7 +53,6 @@ function InfoRow({
     label,
     value,
 }: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     icon: React.ComponentType<{ className?: string }>;
     label: string;
     value?: string | null;

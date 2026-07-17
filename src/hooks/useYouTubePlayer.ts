@@ -69,7 +69,7 @@ export function useYouTubePlayer(videoId: string | null): {
       const nextQualities = Array.from(new Set(['auto', ...normalized]));
       update({ qualityLevels: nextQualities, qualityLevel: nextQualities.includes(state.qualityLevel) ? state.qualityLevel : 'auto' });
     }
-  }, []);
+  }, [state.qualityLevel]);
 
   const applyQualityPreference = useCallback((nextQuality: string, hardReload = false) => {
     if (!playerRef.current || !videoId) return;
@@ -182,7 +182,7 @@ export function useYouTubePlayer(videoId: string | null): {
       playerRef.current = null;
       update({ isReady: false, isPlaying: false });
     };
-  }, [videoId]);
+  }, [videoId, onPlayerReady, onStateChange, onPlaybackRateChange, onPlaybackQualityChange]);
 
   useEffect(() => {
     const handler = () => update({ isFullscreen: !!document.fullscreenElement });
@@ -256,6 +256,11 @@ export function useYouTubePlayer(videoId: string | null): {
     playerRef.current.seekTo(bounded, true);
     update({ currentTime: bounded, progress: (bounded / state.duration) * 100, isEnded: false });
   }, [state.duration]);
+  const resetControlsTimer = useCallback(() => {
+    update({ showControls: true });
+    if (controlsTimer.current) clearTimeout(controlsTimer.current);
+    controlsTimer.current = setTimeout(() => { if (state.isPlaying) update({ showControls: false }); }, 3000);
+  }, [state.isPlaying]);
   const handleKeyboardControl = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
     const tag = target.tagName.toLowerCase();
@@ -271,12 +276,7 @@ export function useYouTubePlayer(videoId: string | null): {
       case 'Home': e.preventDefault(); seekToTime(0); resetControlsTimer(); break;
       case 'End': e.preventDefault(); seekToTime(state.duration); resetControlsTimer(); break;
     }
-  }, [togglePlay, seekToTime, state.volume, state.currentTime, state.duration, updateVolume, toggleMuteState, handleFullscreen]);
-  const resetControlsTimer = useCallback(() => {
-    update({ showControls: true });
-    if (controlsTimer.current) clearTimeout(controlsTimer.current);
-    controlsTimer.current = setTimeout(() => { if (state.isPlaying) update({ showControls: false }); }, 3000);
-  }, [state.isPlaying]);
+  }, [togglePlay, seekToTime, state.volume, state.currentTime, state.duration, updateVolume, toggleMuteState, handleFullscreen, resetControlsTimer]);
 
   return {
     state, actions: {

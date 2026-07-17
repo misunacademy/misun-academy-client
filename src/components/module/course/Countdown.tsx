@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
-import { useGetCourseBySlugQuery } from "@/redux/api/courseApi";
 import { intervalToDuration, isBefore, isAfter } from "date-fns";
 import { FadeIn } from '@/components/ui/FadeIn';
+import { useCurrentBatch } from '@/hooks/useCurrentBatch';
 import { BatchResponse } from '@/redux/api/batchApi';
+import { COURSE_SLUGS } from '@/constants/courses';
 
 type TimeLeft = {
   months: number;
@@ -56,9 +56,8 @@ interface CountdownProps {
   courseSlug?: string;
 }
 
-// map of course slug → primary colors (HSL) used by CSS vars
 const themeMap: Record<string, { primary: string; glow: string }> = {
-  'english-for-professional-communication': {
+  [COURSE_SLUGS.ENGLISH]: {
     primary: '217 91% 60%',
     glow: '217 91% 60%',
   },
@@ -72,43 +71,23 @@ const Countdown = ({ batch: batchProp, courseSlug }: CountdownProps = {}) => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
   const [label, setLabel] = useState<string>('');
 
-  // ── Course-slug path (course detail pages & BannerSection) ───────────────
-  const { data: courseBySlug, isLoading: courseBySlugLoading } = useGetCourseBySlugQuery(
-    courseSlug!, { skip: !courseSlug }
-  );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const slugCourseId = courseSlug ? (courseBySlug?.data as any)?._id : undefined;
+  const { batch: resolvedBatch, isLoading } = useCurrentBatch(courseSlug);
+  const batch = batchProp ?? resolvedBatch;
 
-  const { data: slugBatchRes, isLoading: slugBatchLoading } = useGetCurrentEnrollmentBatchQuery(
-    { courseId: slugCourseId },
-    { skip: !slugCourseId }
-  );
-
-  // Resolve batch: if a batch is passed directly, use it; otherwise use slug-resolved batch
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const batch = batchProp ?? (courseSlug ? (slugBatchRes?.data as any) : null);
-
-  // derive effective slug from either prop or batch info
   const effectiveSlug = useMemo(() => {
     if (courseSlug) return courseSlug;
-    // batch.courseId may be object with slug
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (batch && typeof batch.courseId === 'object' && batch.courseId !== null && (batch.courseId as any)?.slug) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (batch.courseId as any).slug as string;
+    if (batch && typeof batch.courseId === 'object' && batch.courseId !== null) {
+      const info = batch.courseId as { slug?: string };
+      return info.slug;
     }
     return undefined;
   }, [courseSlug, batch]);
 
-  // compute CSS variable overrides based on slug
   const themeVars = useMemo(() => {
-    if (!effectiveSlug) return {};
+    if (!effectiveSlug) return {} as React.CSSProperties;
     const t = themeMap[effectiveSlug];
-    if (!t) return {};
-    return {
-      '--primary': t.primary,
-      '--primary-glow': t.glow,
-    } as React.CSSProperties;
+    if (!t) return {} as React.CSSProperties;
+    return { '--primary': t.primary, '--primary-glow': t.glow } as React.CSSProperties;
   }, [effectiveSlug]);
 
   const enrollmentStart = useMemo(() => batch?.enrollmentStartDate ? new Date(batch.enrollmentStartDate) : null, [batch]);
@@ -119,7 +98,7 @@ const Countdown = ({ batch: batchProp, courseSlug }: CountdownProps = {}) => {
 
     const tick = () => {
       const now = new Date();
-      const batchStatus = batch.status as string;
+      const batchStatus = batch.status;
 
       let targetDate: Date | null = null;
       let nextLabel = '';
@@ -129,17 +108,13 @@ const Countdown = ({ batch: batchProp, courseSlug }: CountdownProps = {}) => {
         const enrollmentNotYetOpen = isBefore(now, enrollmentStart);
 
         if (enrollmentOpen) {
-          // Enrollment window is currently open → count down to its end
           targetDate = enrollmentEnd;
           nextLabel = 'এনরোলমেন্ট শেষ হতে বাকি';
         } else if (enrollmentNotYetOpen) {
-          // Enrollment hasn't started yet → count down to its start
           targetDate = enrollmentStart;
           nextLabel = 'এনরোলমেন্ট শুরু হতে বাকি';
         }
-        // If past enrollmentEnd and still "upcoming", nothing to show
       } else if (batchStatus === 'running') {
-        // The batch is running — show enrollment end countdown only if still within window
         if (isBefore(now, enrollmentEnd)) {
           targetDate = enrollmentEnd;
           nextLabel = 'এনরোলমেন্ট শেষ হতে বাকি';
@@ -162,16 +137,12 @@ const Countdown = ({ batch: batchProp, courseSlug }: CountdownProps = {}) => {
       }
     };
 
-    tick(); // run immediately
+    tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
   }, [batch, enrollmentStart, enrollmentEnd]);
 
-  const isCountdownLoading = courseSlug
-    ? (courseBySlugLoading || (!!slugCourseId && slugBatchLoading))
-    : false;
-
-  if (isCountdownLoading) return null;
+  if (isLoading) return null;
   if (!batch || !timeLeft || !label) return null;
 
   return (

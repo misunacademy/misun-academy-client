@@ -1,5 +1,3 @@
-"use client"
-
 import { DiamondMinus } from "lucide-react"
 import Link from "next/link"
 import Countdown from "../Countdown"

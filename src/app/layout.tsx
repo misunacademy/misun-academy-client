@@ -8,6 +8,8 @@ import type { Metadata } from 'next';
 import { Hind_Siliguri, Mona_Sans } from 'next/font/google';
 import FloatingChat from '@/components/shared/FloatingChat';
 import BackToTop from '@/components/shared/BackToTop';
+import OrganizationJsonLd from '@/components/seo/OrganizationJsonLd';
+import WebSiteJsonLd from '@/components/seo/WebSiteJsonLd';
 import './globals.css';
 
 const monaSans = Mona_Sans({
@@ -23,7 +25,11 @@ const hindSiliguri = Hind_Siliguri({
 });
 
 export const metadata: Metadata = {
-  title: 'Misun Academy',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.misun-academy.com'),
+  title: {
+    default: 'Misun Academy',
+    template: '%s | MISUN Academy',
+  },
   description:
     'Build a successful career in the digital age by learning the right skills with MISUN Academy. From start to finish, we guide and support you to achieve your dreams in design and beyond.',
 };
@@ -39,6 +45,8 @@ export default function RootLayout({
   return (
     <html lang="bn" className={`${monaSans.variable} ${hindSiliguri.variable}`}>
       <head>
+        <OrganizationJsonLd />
+        <WebSiteJsonLd />
               {/* Meta Pixel */}
         {pixelId && (
           <>
@@ -73,6 +81,9 @@ export default function RootLayout({
         )}
       </head>
       <body className=''>
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg focus:outline-none">
+          Skip to main content
+        </a>
         <Providers>
           <Suspense fallback={null}>
             <MetaPixelPageViewTracker />
@@ -90,7 +101,7 @@ export default function RootLayout({
           {/* Global Back to Top Button */}
           <BackToTop variant="glass-glow" />
 
-          {children}
+          <div id="main-content">{children}</div>
         </Providers>
       </body>
     </html>

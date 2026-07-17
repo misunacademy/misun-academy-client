@@ -5,17 +5,17 @@ import { CalendarCheck, CalendarX, ArrowRight } from "lucide-react";
 import Countdown from "../course/Countdown";
 import { format } from "date-fns";
 import { FadeIn } from "../../ui/FadeIn";
-import {  BatchResponse, CourseInfo, useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
+import { BatchResponse, CourseInfo } from "@/redux/api/batchApi";
 import Link from "next/link";
-import { useGetCourseBySlugQuery } from '@/redux/api/courseApi';
+import { useCurrentBatch } from '@/hooks/useCurrentBatch';
+import { COURSE_SLUGS } from '@/constants/courses';
 
 export const formatDate = (date: Date | string) => {
     return format(new Date(date), 'dd MMM, yyyy');
 };
 
-// theme definitions matching Countdown
 const themeMap: Record<string, { primary: string; glow: string }> = {
-    'english-for-professional-communication': {
+    [COURSE_SLUGS.ENGLISH]: {
         primary: '217 91% 60%',
         glow: '217 91% 60%',
     },
@@ -149,16 +149,9 @@ function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
 
 // ── Main Section ──────────────────────────────────────────────────────────────
 export const EnrollmentSection = () => {
-    const { data: gdCourseData, isLoading: gdCourseLoading } = useGetCourseBySlugQuery('complete-graphic-design-with-freelancing');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const gdCourseId = (gdCourseData?.data as any)?._id;
-    const { data: gdCurrentRes, isLoading: gdCurrentLoading } = useGetCurrentEnrollmentBatchQuery(
-        { courseId: gdCourseId }, { skip: !gdCourseId });
+    const { batch, isLoading } = useCurrentBatch();
 
-
-    const batch = useMemo(() => (gdCurrentRes?.data ?? {}) as BatchResponse, [gdCurrentRes]);
-
-    if (gdCourseLoading || gdCurrentLoading) {
+    if (isLoading) {
         return (
             <section id="enroll-now" className="relative scroll-mt-24 py-20 px-4 bg-surface font-bangla">
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
@@ -169,7 +162,7 @@ export const EnrollmentSection = () => {
         );
     }
 
-
+    if (!batch) return null;
 
     return (
         <section

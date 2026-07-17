@@ -72,12 +72,13 @@ export function useEnrollmentCheckout(courseSlug?: string) {
       : 0;
 
   const manualPaymentCurrency = (resolvedBatch as Record<string, string>)?.currency || 'BDT';
+  const resolvedBatchId = (resolvedBatch as Record<string, { _id: string } | string>)?._id;
 
   useEffect(() => {
-    if (!form.getValues('batchId') && (resolvedBatch as Record<string, unknown>)?._id) {
-      form.setValue('batchId', (resolvedBatch as Record<string, string>)._id);
+    if (!form.getValues('batchId') && resolvedBatchId) {
+      form.setValue('batchId', resolvedBatchId as string);
     }
-  }, [form, (resolvedBatch as Record<string, unknown>)?._id]);
+  }, [form, resolvedBatchId]);
 
   const processSSLCommerzPayment = useCallback(async (data: EnrollmentForm) => {
     setIsProcessing(true);

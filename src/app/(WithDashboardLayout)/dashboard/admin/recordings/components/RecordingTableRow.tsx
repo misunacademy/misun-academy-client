@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ interface RecordingTableRowProps {
   isDeleting: boolean;
 }
 
-const RecordingTableRow = ({
+const RecordingTableRow = memo(({
   recording,
   onPlay,
   onEdit,
@@ -67,6 +68,7 @@ const RecordingTableRow = ({
           <Button
             variant="ghost"
             size="sm"
+            aria-label="Play recording"
             onClick={() => onPlay(recording)}
           >
             <Eye className="h-4 w-4" />
@@ -74,6 +76,7 @@ const RecordingTableRow = ({
           <Button
             variant="ghost"
             size="sm"
+            aria-label="Edit recording"
             onClick={() => onEdit(recording)}
           >
             <Edit className="h-4 w-4" />
@@ -81,6 +84,7 @@ const RecordingTableRow = ({
           <Button
             variant="ghost"
             size="sm"
+            aria-label="Delete recording"
             onClick={() => onDelete(recording)}
             disabled={isDeleting}
           >
@@ -90,6 +94,6 @@ const RecordingTableRow = ({
       </TableCell>
     </>
   );
-};
+});
 
 export default RecordingTableRow;

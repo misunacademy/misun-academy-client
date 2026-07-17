@@ -2,10 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, DollarSign, TrendingUp, Users } from "lucide-react";
 
 const ReportKeymetricsCards = ({metadata,processedData,coursesLoading}:{
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    metadata: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    processedData: any;
+    metadata?: { data?: { totalIncome?: number; totalEnrolled?: number } };
+    processedData?: { activeCoursesCount?: number } | null;
     coursesLoading: boolean;
 }) => {
     return (

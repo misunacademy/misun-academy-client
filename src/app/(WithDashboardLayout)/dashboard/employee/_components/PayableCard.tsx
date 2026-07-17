@@ -12,7 +12,6 @@ interface Props {
 
 interface PayRow {
     label: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     icon: React.ComponentType<{ className?: string }>;
     amount: number;
     textColor: string;

@@ -94,7 +94,7 @@ export const SuccessStoriesCarousel = memo(function SuccessStoriesCarousel({
                         >
                           <Image
                             src={`https://i.ytimg.com/vi/${story.videoId}/mqdefault.jpg`}
-                            alt=""
+                            alt="Success story video thumbnail"
                             fill
                             sizes="(max-width: 768px) 100vw, 640px"
                             className="object-cover transition-transform duration-500 group-hover:scale-110"

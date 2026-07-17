@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState, type MouseEvent } from 'react';
+import { useState, type MouseEvent } from 'react';
 import Link from 'next/link';
 import { CalendarCheck, CalendarX, Rocket, X } from 'lucide-react';
-import { useGetCourseBySlugQuery } from '@/redux/api/courseApi';
-import { BatchResponse, useGetCurrentEnrollmentBatchQuery } from '@/redux/api/batchApi';
+import { BatchResponse } from '@/redux/api/batchApi';
+import { useCurrentBatch } from '@/hooks/useCurrentBatch';
 import { formatDate } from './EnrollmentSection';
 
 type EnrollmentFixedContentProps = {
@@ -117,7 +117,6 @@ export default function EnrollmentFixed() {
         window.history.replaceState(null, '', `#${targetSectionId}`);
         scrollToCurrentBestTarget();
 
-        // Deferred content can mount after the first scroll; retry until the real section is present.
         const startedAt = Date.now();
         const retryUntilReady = () => {
             const hasRealSection = !!document.getElementById(targetSectionId);
@@ -133,25 +132,9 @@ export default function EnrollmentFixed() {
 
         window.setTimeout(retryUntilReady, 180);
     };
-    const {
-        data: gdCourseData,
-        isLoading: gdCourseLoading,
-        isError: gdCourseError,
-    } = useGetCourseBySlugQuery('complete-graphic-design-with-freelancing');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const gdCourseId = (gdCourseData?.data as any)?._id;
-    const {
-        data: gdCurrentRes,
-        isLoading: gdCurrentLoading,
-        isError: gdCurrentError,
-    } = useGetCurrentEnrollmentBatchQuery(
-        { courseId: gdCourseId }, { skip: !gdCourseId });
+    const { batch, isLoading, isError } = useCurrentBatch();
 
-
-    const batch = useMemo(() => (gdCurrentRes?.data ?? null) as BatchResponse | null, [gdCurrentRes]);
-    const hasApiError = gdCourseError || gdCurrentError;
-
-    if (gdCourseLoading || gdCurrentLoading) {
+    if (isLoading) {
         return (
             <div
                 className="
@@ -170,7 +153,7 @@ export default function EnrollmentFixed() {
         );
     }
 
-    if (hasApiError || !batch) return null;
+    if (isError || !batch) return null;
 
     return (
         <EnrollmentFixedContent

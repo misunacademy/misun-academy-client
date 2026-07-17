@@ -1,19 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState, Suspense } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/shared/AuthGuard';
 import EnrollmentCheckout from '@/components/module/checkout/EnrollmentCheckout';
-import { useGetCourseBySlugQuery } from '@/redux/api/courseApi';
-import { useGetCurrentEnrollmentBatchQuery, useGetUpcomingBatchesQuery } from '@/redux/api/batchApi';
-import { Calendar, Clock, ArrowRight } from 'lucide-react';
+import { useCurrentBatch } from '@/hooks/useCurrentBatch';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import { v4 as uuid } from "uuid";
 import { track } from '@/lib/metaPixel';
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { isWindowOpen } from './_components/CourseEnrollmentCard';
 import EnrollmentNotOpenModal from './_components/EnrollmentNotOpenModal';
+import { COURSE_SLUGS } from '@/constants/courses';
 
 function Spinner() {
     return (
@@ -33,36 +32,20 @@ function Spinner() {
 
 function CheckoutContent() {
     const router = useRouter();
-    const courseSlug = 'complete-graphic-design-with-freelancing';
+    const courseSlug = COURSE_SLUGS.GRAPHIC_DESIGN;
 
     const { user, isLoading: authLoading } = useAuth();
     const hasTracked = useRef(false);
     const [openModal, setOpenModal] = useState(false);
 
-    const { data: gdCourseData, isLoading: gdCourseLoading } = useGetCourseBySlugQuery('complete-graphic-design-with-freelancing');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const gdCourseId = (gdCourseData?.data as any)?._id;
-    const { data: gdCurrentRes, isLoading: gdCurrentLoading } = useGetCurrentEnrollmentBatchQuery(
-        { courseId: gdCourseId }, { skip: !gdCourseId }
-    );
-    const { data: gdUpcomingRes, isLoading: gdUpcomingLoading } = useGetUpcomingBatchesQuery(
-        { courseId: gdCourseId }, { skip: !gdCourseId || !!gdCurrentRes?.data }
-    );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const gdBatch = (gdCurrentRes?.data as any) ?? (gdUpcomingRes?.data as any)?.[0];
+    const { course, batch, isLoading: allLoading } = useCurrentBatch();
 
-    const currentBatch = gdBatch;
-    const enrollmentStart = currentBatch?.enrollmentStartDate as string | undefined;
-    const enrollmentEnd = currentBatch?.enrollmentEndDate as string | undefined;
+    const enrollmentStart = batch?.enrollmentStartDate as string | undefined;
+    const enrollmentEnd = batch?.enrollmentEndDate as string | undefined;
     const enrollmentRunning = isWindowOpen(enrollmentStart, enrollmentEnd);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const currentCourse = (gdCourseData?.data as any);
-    const courseFee = currentBatch?.price ?? currentCourse?.price ?? 4000;
-    const courseTitle = currentCourse?.name ?? 'MISUN Academy Course Enrollment';
-
-    const allLoading =
-        gdCourseLoading || (!!gdCourseId && gdCurrentLoading) || (!!gdCourseId && !gdCurrentRes?.data && gdUpcomingLoading);
+    const courseFee = (batch?.price as number) ?? (course?.price as number) ?? 4000;
+    const courseTitle = (course?.name as string) ?? 'MISUN Academy Course Enrollment';
 
     useEffect(() => {
         if (!allLoading && !enrollmentRunning && user) {
@@ -108,8 +91,8 @@ function CheckoutContent() {
             <EnrollmentNotOpenModal
                 open={openModal}
                 onOpenChange={handleModalChange}
-                courseData={gdCourseData?.data}
-                batchData={gdBatch}
+                courseData={course}
+                batchData={batch}
             />
         );
     }
@@ -125,9 +108,7 @@ function CheckoutContent() {
 export default function Page() {
     return (
         <AuthGuard>
-            <Suspense fallback={<Spinner />}>
-                <CheckoutContent />
-            </Suspense>
+            <CheckoutContent />
         </AuthGuard>
     );
 }

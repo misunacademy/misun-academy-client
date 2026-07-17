@@ -1,4 +1,11 @@
+import { generateMetadata as genMeta } from '@/lib/generateMetadata';
 import PageBackground from "@/components/shared/PageBackground";
+
+export const metadata = genMeta({
+  title: 'Terms and Conditions | MISUN Academy',
+  description: 'MISUN Academy ব্যবহারের শর্তাবলি। কোর্স কনটেন্ট, অ্যাকাউন্ট ব্যবহার, এবং আমাদের কমিউনিটি আচরণবিধি সম্পর্কে জানুন। | Read MISUN Academy\'s terms of service, content usage policies, and community guidelines.',
+  slug: 'terms-and-conditions',
+});
 
 export default function TermsAndConditionsPage() {
     return (

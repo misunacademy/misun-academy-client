@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import {
   ArrowLeft, ArrowUp, ArrowDown, ArrowRight,
@@ -15,8 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
-import { courseInfo } from "@/constants/enrollment";
-import { TEMPLATES } from "@/constants/posterTemplates";
+import { FALLBACK_COURSE_TITLE } from "@/constants/courses";
+import { TEMPLATES, type PosterTemplate } from "@/constants/posterTemplates";
 import { getCourseType, getBatchNumber, getTemplatePriority } from "@/utils/posterHelpers";
 import { useAuth } from "@/hooks/useAuth";
 import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
@@ -33,7 +33,7 @@ function CongratulationsPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useGetEnrollmentsQuery(undefined, { skip: !user?.id });
 
-  const appCourseType = getCourseType(courseInfo?.title);
+  const appCourseType = getCourseType(FALLBACK_COURSE_TITLE);
   const allEnrollments = enrollmentsData?.data?.filter((e) => e.accessType !== "special") ?? [];
   const activeEnrollments = allEnrollments.filter((e) => e.status === "active");
   const sourceList = activeEnrollments.length > 0 ? activeEnrollments : allEnrollments;
@@ -43,19 +43,19 @@ function CongratulationsPage() {
 
   const latestEnrollment = (() => {
     if (selectedEnrollmentId) {
-      const matchedById = sourceList.find((e) => (e as any)?._id === selectedEnrollmentId);
+      const matchedById = sourceList.find((e) => e._id === selectedEnrollmentId);
       if (matchedById) return matchedById;
     }
     const matchedByCourse = sourceList.find((e) => getCourseType(e?.course?.title) === appCourseType);
     return matchedByCourse ?? sourceList[0];
   })();
 
-  const selectedEnrollment = latestEnrollment as any;
-  const courseTitle = selectedEnrollment?.batchId?.courseId?.title || selectedEnrollment?.course?.title || selectedEnrollment?.courseId?.title || courseInfo?.title || "";
+  const selectedEnrollment = latestEnrollment;
+  const courseTitle = selectedEnrollment?.batchId?.courseId?.title || selectedEnrollment?.course?.title || selectedEnrollment?.courseId?.title || FALLBACK_COURSE_TITLE;
   const selectedEnrollmentValue = selectedEnrollmentId || selectedEnrollment?._id || undefined;
 
   const { data: batchData } = useGetBatchByIdQuery(
-    (selectedEnrollment?.batchId as any)?._id || selectedEnrollment?.batchId || "",
+    String((selectedEnrollment?.batchId as { _id?: string })?._id || selectedEnrollment?.batchId || ""),
     { skip: !selectedEnrollment?.batchId },
   );
 
@@ -83,7 +83,7 @@ function CongratulationsPage() {
   const selectedCourseType = getCourseType(courseTitle);
   const templatePriority = getTemplatePriority(selectedCourseType, batchNumber);
 
-  const templateGroups: Record<string, any[]> = {
+  const templateGroups: Record<string, PosterTemplate[]> = {
     graphic: TEMPLATES.graphic,
     english: TEMPLATES.english.length > 0 ? TEMPLATES.english : TEMPLATES.graphic,
     general: TEMPLATES.graphic,
@@ -232,11 +232,9 @@ function CongratulationsPage() {
                       </SelectTrigger>
                       <SelectContent className="bg-[#0d1f12] border-primary/30 text-white">
                         {enrollments.map((enrollment) => {
-                          const item = enrollment as any;
-                          const title = item?.batchId?.courseId?.title || item?.course?.title || item?.courseId?.title || "Unknown Course";
-                          if (!item?._id) return null;
+                          const title = enrollment.batchId.courseId.title || enrollment.course?.title || enrollment.courseId?.title || "Unknown Course";
                           return (
-                            <SelectItem key={item._id} value={item._id} className="text-white focus:bg-primary/15 focus:text-white">
+                            <SelectItem key={enrollment._id} value={enrollment._id} className="text-white focus:bg-primary/15 focus:text-white">
                               {title}
                             </SelectItem>
                           );

@@ -2,13 +2,13 @@ import { useState } from "react";
 import { Edit, Loader2, Plus, Trash2 } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
+import type { ProfileData, EducationEntry } from "@/redux/api/profileApi";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 interface AdditionalInfoProps {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    profile: any;
+    profile: ProfileData | undefined;
     refetch: () => void;
 }
 
@@ -65,9 +65,9 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
             toast.success("Additional info updated successfully");
             setIsEditing(false);
             refetch();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-            toast.error(error?.data?.message || "Failed to update info");
+        } catch (error: unknown) {
+            const apiError = error as { data?: { message?: string } };
+            toast.error(apiError?.data?.message || "Failed to update info");
         }
     };
 
@@ -227,8 +227,7 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
                         <div className="col-span-1 md:col-span-2">
                             <p className="text-white/40 text-sm mb-1.5">Education</p>
                             {profile?.education && profile.education.length > 0 ? (
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                profile.education.map((edu: any, idx: number) => (
+                                profile.education.map((edu: EducationEntry, idx: number) => (
                                     <div key={idx} className="mb-4">
                                         <h3 className="text-white font-semibold">{edu.degree}</h3>
                                         <p className="text-white/70">{edu.institution} &bull; {edu.passingYear}</p>

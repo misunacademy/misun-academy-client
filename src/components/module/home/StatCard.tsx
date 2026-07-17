@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { useCountUp } from '@/hooks/useCountUp';
 
 interface StatCardProps {
@@ -11,7 +12,7 @@ interface StatCardProps {
   delay?: number;
 }
 
-export function StatCard({ icon, target, suffix, label, animate, delay = 0 }: StatCardProps) {
+export const StatCard = memo(function StatCard({ icon, target, suffix, label, animate, delay = 0 }: StatCardProps) {
   const count = useCountUp(target, 1800, animate);
 
   return (
@@ -58,4 +59,4 @@ export function StatCard({ icon, target, suffix, label, animate, delay = 0 }: St
       </div>
     </div>
   );
-}
+});

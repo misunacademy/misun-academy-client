@@ -1,4 +1,4 @@
-import React from "react";
+import { memo, useState, useEffect, type FC } from "react";
 
 type Props = {
     value: string;
@@ -8,12 +8,12 @@ type Props = {
     className?: string;
 };
 
-export const DebouncedInput: React.FC<Props> = ({ value, onChange, delay = 300, placeholder, className }) => {
-    const [inner, setInner] = React.useState(value);
+export const DebouncedInput: FC<Props> = memo(({ value, onChange, delay = 300, placeholder, className }) => {
+    const [inner, setInner] = useState(value);
 
-    React.useEffect(() => setInner(value), [value]);
+    useEffect(() => setInner(value), [value]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const id = setTimeout(() => onChange(inner), delay);
         return () => clearTimeout(id);
     }, [inner, delay, onChange]);
@@ -26,4 +26,4 @@ export const DebouncedInput: React.FC<Props> = ({ value, onChange, delay = 300, 
             placeholder={placeholder}
         />
     );
-};
+});

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { TableCell } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +23,7 @@ interface User {
     avatar?: string;
 }
 
-const TableRows = ({ user, getRoleBadgeVariant, setEditUser, setEditDialogOpen, handleToggleStatus, setUserToDelete, setDeleteDialogOpen }: {
+const TableRows = memo(({ user, getRoleBadgeVariant, setEditUser, setEditDialogOpen, handleToggleStatus, setUserToDelete, setDeleteDialogOpen }: {
     user: User;
     getRoleBadgeVariant: (role: string) => BadgeVariant;
     setEditUser: React.Dispatch<React.SetStateAction<User | null>>;
@@ -109,6 +110,6 @@ const TableRows = ({ user, getRoleBadgeVariant, setEditUser, setEditDialogOpen, 
             </TableCell>
         </>
     )
-}
+});
 
 export default TableRows;

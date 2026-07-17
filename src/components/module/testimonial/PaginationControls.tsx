@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationControlsProps {
@@ -6,7 +7,7 @@ interface PaginationControlsProps {
     onPageChange: (page: number) => void;
 }
 
-export const PaginationControls = ({ currentPage, totalPages, onPageChange }: PaginationControlsProps) => {
+export const PaginationControls = memo(({ currentPage, totalPages, onPageChange }: PaginationControlsProps) => {
     const getVisiblePages = () => {
         const pages = [];
         const maxVisible = 5;
@@ -82,4 +83,4 @@ export const PaginationControls = ({ currentPage, totalPages, onPageChange }: Pa
             </button>
         </div>
     );
-};
+});

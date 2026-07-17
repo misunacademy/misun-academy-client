@@ -1,5 +1,4 @@
-"use client"
-
+import { memo } from "react"
 import { motion } from "framer-motion"
 
 interface FeatureCardProps {
@@ -9,7 +8,7 @@ interface FeatureCardProps {
     index: number;
 }
 
-export default function FeatureCard({ icon, title, description, index }: FeatureCardProps) {
+const FeatureCard = memo(function FeatureCard({ icon, title, description, index }: FeatureCardProps) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -37,4 +36,6 @@ export default function FeatureCard({ icon, title, description, index }: Feature
             </div>
         </motion.div>
     );
-}
+});
+
+export default FeatureCard;

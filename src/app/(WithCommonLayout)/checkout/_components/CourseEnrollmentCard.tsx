@@ -1,5 +1,6 @@
 import { Calendar, Clock, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import type { BatchResponse } from "@/redux/api/batchApi";
 
 function fmtDate(iso: string | undefined): string {
     if (!iso) return '—';
@@ -24,17 +25,15 @@ export default function CourseEnrollmentCard({
     batchData,
     courseSlug,
 }: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    courseData: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    batchData: any;
+    courseData: Record<string, unknown> | undefined;
+    batchData: BatchResponse | null;
     courseSlug: string;
 }) {
-    const courseName = courseData?.name ?? courseData?.title;
+    const courseName = (courseData?.name as string | undefined) ?? (courseData?.title as string | undefined);
     const batchTitle = batchData?.title;
     const start = batchData?.enrollmentStartDate as string | undefined;
     const end = batchData?.enrollmentEndDate as string | undefined;
-    const fee = batchData?.price ?? courseData?.price;
+    const fee = batchData?.price ?? (courseData?.price as number | undefined) ?? 0;
     const hasStarted = hasBatchStarted(start);
     const isOpen = isWindowOpen(start, end);
 

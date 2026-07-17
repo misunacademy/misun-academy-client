@@ -1,5 +1,3 @@
-"use client"
-
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { motion } from "framer-motion"
 import { StaticImageData } from 'next/image';

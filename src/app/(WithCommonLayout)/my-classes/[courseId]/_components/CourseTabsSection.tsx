@@ -1,19 +1,35 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Calendar, FileText } from "lucide-react";
+import type { CourseResponse } from "@/redux/api/courseApi";
 import DarkCard from "./DarkCard";
 import CourseOverviewTab from "./CourseOverviewTab";
 import CourseResourcesTab from "./CourseResourcesTab";
 
+interface LessonLink {
+    lessonId: string;
+    title: string;
+    media?: { url?: string };
+    duration?: number;
+    resources?: Array<{ type?: string; title?: string; url?: string; textContent?: string }>;
+}
+
+interface AugmentedResource {
+    type?: string;
+    title?: string;
+    url?: string;
+    textContent?: string;
+    lessonTitle: string;
+    moduleTitle: string;
+    lessonId: string;
+}
+
 interface CourseTabsSectionProps {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    course: any;
+    course: CourseResponse;
     totalLessons: number;
     instructorName: string;
     calculatedPercentage: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    allResources: any[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    currentLesson: any;
+    allResources: AugmentedResource[];
+    currentLesson: LessonLink | undefined;
 }
 
 export default function CourseTabsSection({

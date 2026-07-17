@@ -85,8 +85,7 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
                       {course.level || 'N/A'}
                     </Badge>
                   </TableCell>
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <TableCell>{(course as any).durationEstimate || '—'}</TableCell>
+                  <TableCell>{(course as Course & { durationEstimate?: string }).durationEstimate || '—'}</TableCell>
                   <TableCell>
                     <Badge variant={course.isCertificateAvailable ? 'default' : 'destructive'}>
                       {course.isCertificateAvailable ? 'Available' : 'Not Available'}

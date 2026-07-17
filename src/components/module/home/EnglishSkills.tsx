@@ -1,5 +1,3 @@
-"use client"
-
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { motion } from "framer-motion"
 import { BookOpen, Mic, Globe, Pencil, MessageSquare } from "lucide-react"

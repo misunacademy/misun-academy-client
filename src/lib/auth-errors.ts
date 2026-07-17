@@ -1,5 +1,5 @@
 // Error message translations for Better Auth error codes
-import { authClient } from './auth-client';
+import type { authClient } from './auth-client';
 
 type ErrorCode = keyof typeof authClient.$ERROR_CODES;
 

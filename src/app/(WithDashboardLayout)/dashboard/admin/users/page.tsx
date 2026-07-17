@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { useState, useEffect, FormEvent } from "react";
+import { useCallback, useMemo, useState, useEffect, FormEvent } from "react";
 import { Loader2 } from "lucide-react";
 import { useGetAllUsersQuery, useLazyGetAllUsersQuery, useCreateAdminMutation, useUpdateUserMutation, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
@@ -73,10 +73,10 @@ export default function AdminUsers() {
   }, [debouncedSearch, roleFilter, statusFilter]);
 
   // Send role and status as lowercase strings to match server enum values
-  const roleParam: GetAllUsersParams['role'] = roleFilter === 'all'
+  const roleParam: GetAllUsersParams['role'] = useMemo(() => roleFilter === 'all'
     ? undefined
-    : (roleFilter.toLowerCase() as GetAllUsersParams['role']);
-  const statusParam = statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'suspended' | 'deleted');
+    : (roleFilter.toLowerCase() as GetAllUsersParams['role']), [roleFilter]);
+  const statusParam = useMemo(() => statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'suspended' | 'deleted'), [statusFilter]);
 
   const { data, isLoading, isFetching } = useGetAllUsersQuery(
     {
@@ -113,7 +113,7 @@ export default function AdminUsers() {
   }, [resp]);
 
 
-  const handleCreateUser = async (e: FormEvent<HTMLFormElement>) => {
+  const handleCreateUser = useCallback(async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const payload = {
@@ -129,9 +129,9 @@ export default function AdminUsers() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to create user');
     }
-  };
+  }, [createAdmin]);
 
-  const handleUpdateUser = async (e: FormEvent<HTMLFormElement>) => {
+  const handleUpdateUser = useCallback(async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const id = fd.get('id') as string;
@@ -152,9 +152,9 @@ export default function AdminUsers() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to update user');
     }
-  };
+  }, [updateUserMutation]);
 
-  const handleDeleteUser = async () => {
+  const handleDeleteUser = useCallback(async () => {
     if (!userToDelete) return;
     try {
       await deleteUserMutation(userToDelete).unwrap();
@@ -166,9 +166,9 @@ export default function AdminUsers() {
       setDeleteDialogOpen(false);
       setUserToDelete(null);
     }
-  };
+  }, [userToDelete, deleteUserMutation]);
 
-  const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+  const handleToggleStatus = useCallback(async (id: string, currentStatus: boolean) => {
     try {
       const status = !currentStatus ? 'active' : 'suspended';
       await updateUserStatusMutation({ id, status }).unwrap();
@@ -176,13 +176,13 @@ export default function AdminUsers() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to update status');
     }
-  };
+  }, [updateUserStatusMutation]);
 
   // Typed server response and current page rows
-  const filteredUsers: User[] = (resp?.data as User[] | undefined) || [];
-  const batches = (batchesData?.data as BatchResponse[] | undefined) || [];
+  const filteredUsers: User[] = useMemo(() => (resp?.data as User[] | undefined) || [], [resp]);
+  const batches: BatchResponse[] = useMemo(() => (batchesData?.data as BatchResponse[] | undefined) || [], [batchesData]);
 
-  const getRoleBadgeVariant = (role: string): "default" | "secondary" | "destructive" | "outline" => {
+  const getRoleBadgeVariant = useCallback((role: string): "default" | "secondary" | "destructive" | "outline" => {
     const lr = role?.toLowerCase?.() ?? '';
     switch (lr) {
       case 'superadmin': return 'destructive';
@@ -192,9 +192,9 @@ export default function AdminUsers() {
       case 'learner': return 'outline';
       default: return 'outline';
     }
-  };
+  }, []);
 
-  const handleExportExcel = async () => {
+  const handleExportExcel = useCallback(async () => {
     if (filteredUsers.length === 0) {
       toast.error('No user data available to export');
       return;
@@ -268,14 +268,14 @@ export default function AdminUsers() {
     } finally {
       setIsExporting(false);
     }
-  };
+  }, [filteredUsers, roleParam, statusParam, debouncedSearch, batchFilter, enrolledFilter, triggerExportQuery]);
 
-  const activeUsersCount = filteredUsers.filter((u) => u.status === "active").length;
-  const instructorCount = filteredUsers.filter((u) => u.role?.toLowerCase() === "instructor").length;
-  const adminCount = filteredUsers.filter((u) => {
+  const activeUsersCount = useMemo(() => filteredUsers.filter((u) => u.status === "active").length, [filteredUsers]);
+  const instructorCount = useMemo(() => filteredUsers.filter((u) => u.role?.toLowerCase() === "instructor").length, [filteredUsers]);
+  const adminCount = useMemo(() => filteredUsers.filter((u) => {
     const r = u.role?.toLowerCase?.() ?? "";
     return r === "admin" || r === "superadmin";
-  }).length;
+  }).length, [filteredUsers]);
 
   if (isLoading) {
     return (

@@ -138,6 +138,7 @@ const ResetPasswordForm = () => {
                                                         />
                                                         <button
                                                             type="button"
+                                                            aria-label={showNewPassword ? 'পাসওয়ার্ড লুকান' : 'পাসওয়ার্ড দেখান'}
                                                             className="absolute right-3 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/70 transition-colors"
                                                             onClick={() => setShowNewPassword(!showNewPassword)}
                                                         >
@@ -166,6 +167,7 @@ const ResetPasswordForm = () => {
                                                         />
                                                         <button
                                                             type="button"
+                                                            aria-label={showConfirmPassword ? 'পাসওয়ার্ড লুকান' : 'পাসওয়ার্ড দেখান'}
                                                             className="absolute right-3 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/70 transition-colors"
                                                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                                         >

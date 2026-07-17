@@ -1,57 +1,30 @@
-"use client"
-
-import { useState, useMemo } from "react"
 import { Layers, Trophy, Clock, Users } from "lucide-react"
 import { courseCurriculum } from "@/data/courseCurriculum"
-import { CourseSelector, StatsCard, ContentPanel, COURSE_CONFIG } from "./curriculum"
+import { CourseCurriculumContent, COURSE_CONFIG } from "./curriculum"
 
 const courses = courseCurriculum.courses
 
-const CourseCurriculum = () => {
-  const [active, setActive] = useState(0)
-  const cfg = COURSE_CONFIG[active]
-  const course = courses[active]
+const CourseCurriculum = () => (
+  <section className="relative bg-surface overflow-hidden font-sans">
+    <div
+      className="absolute inset-0 opacity-[0.035] pointer-events-none"
+      style={{
+        backgroundImage: "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)",
+        backgroundSize: "32px 32px",
+      }}
+    />
+    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+    <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
-  const { modules, projects, totalHours } = useMemo(() => {
-    const mods = course.modules ?? []
-    const projs = course.projects ?? []
-    const parse = (s: string) => parseFloat(s) || 0
-    const hours = [...mods, ...projs].reduce((acc, m) => acc + parse(m.duration), 0)
-    return { modules: mods, projects: projs, totalHours: hours }
-  }, [course])
+    <div className="relative z-10 py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <SectionHeader />
 
-  return (
-    <section className="relative bg-surface overflow-hidden font-sans">
-      <div
-        className="absolute inset-0 opacity-[0.035] pointer-events-none"
-        style={{
-          backgroundImage: "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)",
-          backgroundSize: "32px 32px",
-        }}
-      />
-      <div
-        className="absolute inset-0 pointer-events-none transition-all duration-700"
-        style={{ background: `radial-gradient(ellipse 55% 40% at 70% 50%, ${cfg.glow}, transparent)` }}
-      />
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+      <CourseCurriculumContent courseConfigs={COURSE_CONFIG} />
 
-      <div className="relative z-10 py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SectionHeader />
-
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
-          <div className="flex flex-col w-full lg:w-[260px] shrink-0">
-            <CourseSelector courses={courses} active={active} onSelect={setActive} configs={COURSE_CONFIG} />
-            <StatsCard config={cfg} modules={modules.length} projects={projects.length} totalHours={totalHours} />
-          </div>
-          <ContentPanel course={course} config={cfg} modules={modules} projects={projects} />
-        </div>
-
-        <SummaryBar />
-      </div>
-    </section>
-  )
-}
+      <SummaryBar />
+    </div>
+  </section>
+)
 
 function SectionHeader() {
   return (

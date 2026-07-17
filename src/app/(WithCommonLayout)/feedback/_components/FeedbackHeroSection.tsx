@@ -1,4 +1,4 @@
-import { GraduationCap, Users, Star, TrendingUp, Award, Heart } from "lucide-react";
+import { GraduationCap, Users, Star, TrendingUp, Award } from "lucide-react";
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 
 export default function FeedbackHeroSection() {

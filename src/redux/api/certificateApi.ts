@@ -37,7 +37,10 @@ export interface VerifiedCertificate {
   courseName: string;
   batchName?: string;
   issuedDate: string;
-  batchId?: unknown;
+  batchId?: {
+    startDate?: string;
+    endDate?: string;
+  };
 }
 
 const certificateApi = baseApi.injectEndpoints({

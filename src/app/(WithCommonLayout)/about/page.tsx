@@ -1,12 +1,20 @@
-
+import { generateMetadata as genMeta } from '@/lib/generateMetadata';
 import { Users } from "lucide-react";
 import TeamMemberCard from './_components/TeamMemberCard';
 import AboutHeroSection from './_components/AboutHeroSection';
 import AboutStorySection from './_components/AboutStorySection';
 import AboutMissionVisionSection from './_components/AboutMissionVisionSection';
 import AboutCtaSection from './_components/AboutCtaSection';
-
 import { ajeful, debrotto, mehedi, mithun, neyemur, nur, nur_2, puspita, sakin } from "@/assets/teamMembers/index";
+
+export const revalidate = 86400;
+
+export const metadata = genMeta({
+  title: 'আমাদের সম্পর্কে | MISUN Academy',
+  description: 'MISUN Academy-র লক্ষ্য ও ভিশন। আমাদের টিম সম্পর্কে জানুন এবং ডিজিটাল শিক্ষার এই যাত্রায় অংশীদার হন। | Learn about MISUN Academy, our mission, vision, and the team behind Bangladesh\'s leading graphic design and freelancing courses.',
+  keywords: ['MISUN Academy', 'About MISUN', 'Graphic Design Team', 'MISUN Team', 'মিসুন একাডেমি', 'ডিজিটাল শিক্ষা', 'গ্রাফিক্স ডিজাইন টিম'],
+  slug: 'about',
+});
 
 const teamMembers = [
   { name: "Mithun Sarkar", role: "Founder & CEO", company: "MISUN Academy", image: mithun },
@@ -17,7 +25,7 @@ const teamMembers = [
   { name: "Ajeful Mallick", role: "Design And Social Media Coordinator", company: "MISUN Academy", image: ajeful },
   { name: "Mehedi Hasan", role: "Web Developer", company: "MISUN Academy", image: mehedi },
   { name: "S. M. Nayemur Rahman", role: "Marketing Executive", company: "MISUN Academy", image: neyemur },
-  { name: "𝐍𝐚𝐟𝐢𝐮𝐧 𝐒𝐚𝐤𝐢𝐧", role: "Community Growth Manager", company: "MISUN Academy", image: sakin },
+  { name: "Nafiun Sakin", role: "Community Growth Manager", company: "MISUN Academy", image: sakin },
 ];
 
 const AboutUs = () => {

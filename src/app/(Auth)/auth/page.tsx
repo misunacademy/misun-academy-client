@@ -71,8 +71,7 @@ const AuthPage = () => {
                 return;
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const userRole = (user as any).role;
+            const userRole = user.role;
             if (userRole === 'admin' || userRole === 'superadmin') {
                 router.replace('/dashboard/admin');
             } else if (userRole === 'employee') {

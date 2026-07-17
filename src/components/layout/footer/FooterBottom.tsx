@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import CurrentYear from '@/components/shared/CurrentYear';
 
 export default function FooterBottom() {
   return (
@@ -21,7 +22,7 @@ export default function FooterBottom() {
         <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
         <div className="flex w-full justify-center py-5">
           <p className="text-white/40 text-sm tracking-wide">
-            © {new Date().getFullYear()}{' '}
+            © <CurrentYear />{' '}
             <span className="text-primary/70 font-medium">Misun Academy</span>
             {' '}— All rights reserved.
           </p>

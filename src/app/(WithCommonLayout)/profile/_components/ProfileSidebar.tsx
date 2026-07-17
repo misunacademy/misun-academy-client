@@ -1,7 +1,7 @@
-import { useRef } from "react";
 import Image from "next/image";
 import { Info, Edit, Loader2, User, ShoppingBagIcon, Settings } from "lucide-react";
 import { Wallet } from "lucide-react";
+import type { AuthUser } from "@/types/auth";
 
 export interface NavItem {
     id: string;
@@ -30,8 +30,7 @@ export default function ProfileSidebar({
     activeTab,
     setActiveTab,
 }: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    user: any;
+    user: AuthUser;
     studentId: string;
     phone: string;
     profileCompletion: number;

@@ -1,4 +1,6 @@
-export function CourseCardSkeleton() {
+import { memo } from "react";
+
+export const CourseCardSkeleton = memo(function CourseCardSkeleton() {
   return (
     <div className="relative p-[1.5px] rounded-2xl overflow-hidden animate-pulse">
       <span className="absolute inset-0 rounded-2xl border border-primary/10" />
@@ -38,4 +40,4 @@ export function CourseCardSkeleton() {
       </div>
     </div>
   );
-}
+});

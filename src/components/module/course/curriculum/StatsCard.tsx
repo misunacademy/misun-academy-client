@@ -1,5 +1,3 @@
-"use client"
-
 import { Layers, Trophy, Clock } from "lucide-react"
 import type { CourseConfig } from "./curriculumData"
 

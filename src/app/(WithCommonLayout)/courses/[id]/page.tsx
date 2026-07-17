@@ -1,13 +1,13 @@
 import { notFound } from 'next/navigation';
 import { generateMetadata as genMeta } from '@/lib/generateMetadata';
 import type { Metadata } from 'next';
+import { COURSE_SLUGS } from '@/constants/courses';
 import CourseDetails from '../GraphicDesignCourseDetails';
+import CourseJsonLd from '@/components/seo/CourseJsonLd';
 
-
-// ─── Static course config ────────────────────────────────────────────────────
 
 const courseConfig = {
-  'complete-graphic-design-with-freelancing': {
+  [COURSE_SLUGS.GRAPHIC_DESIGN]: {
     title: 'কমপ্লিট গ্রাফিক্স ডিজাইন উইথ ফ্রিল্যান্সিং | MISUN Academy',
     description:
       'বেসিক থেকে অ্যাডভান্স লেভেল পর্যন্ত গ্রাফিক্স ডিজাইন শিখুন। লাইভ ক্লাস, ১:১ মেন্টরশিপ এবং ফ্রিল্যান্সিং গাইডসহ সম্পূর্ণ কোর্স।',
@@ -22,7 +22,7 @@ const courseConfig = {
     ],
     image: '/course-og-image.png',
   },
-  'english-for-professional-communication': {
+  [COURSE_SLUGS.ENGLISH]: {
     title: 'English For Professional Communication | MISUN Academy',
     description:
       'প্রফেশনাল পরিবেশে আত্মবিশ্বাসের সাথে ইংরেজি বলুন। Puspita Singha-র তত্ত্বাবধানে লাইভ ক্লাস, স্পিকিং প্র্যাকটিস ও সার্টিফিকেটসহ সম্পূর্ণ কোর্স।',
@@ -61,6 +61,8 @@ export async function generateMetadata({
   });
 }
 
+export const revalidate = 3600;
+
 // ─── Static Params (optional SSG) ───────────────────────────────────────────
 
 export function generateStaticParams() {
@@ -75,11 +77,21 @@ export default async function CourseDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const config = courseConfig[id as CourseSlug];
 
-  if (!courseConfig[id as CourseSlug]) notFound();
+  if (!config) notFound();
 
-  return <CourseDetails />;
-
+  return (
+    <>
+      <CourseJsonLd
+        name={config.title}
+        description={config.description}
+        slug={id}
+        image={config.image}
+      />
+      <CourseDetails />
+    </>
+  );
 
   notFound();
 }

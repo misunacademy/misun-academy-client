@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Quote, Facebook } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -10,7 +11,7 @@ interface TestimonialCardProps {
     index?: number;
 }
 
-export const TestimonialCard = ({ name, batch, studentId, testimonial, postLink, index = 0 }: TestimonialCardProps) => {
+export const TestimonialCard = memo(({ name, batch, studentId, testimonial, postLink, index = 0 }: TestimonialCardProps) => {
     return (
         <div
             className="group relative overflow-hidden rounded-2xl
@@ -95,4 +96,4 @@ export const TestimonialCard = ({ name, batch, studentId, testimonial, postLink,
             </div>
         </div>
     );
-};
+});

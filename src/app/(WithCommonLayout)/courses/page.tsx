@@ -1,6 +1,8 @@
 import { generateMetadata } from '@/lib/generateMetadata';
 import CoursesListClient from './CoursesListClient';
 
+export const revalidate = 3600;
+
 export const metadata = generateMetadata({
   title: 'কোর্সসমূহ | MISUN Academy',
   description:

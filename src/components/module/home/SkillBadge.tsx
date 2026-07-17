@@ -1,5 +1,4 @@
-"use client"
-
+import { memo } from "react"
 import { motion } from "framer-motion"
 import Image, { StaticImageData } from 'next/image';
 import {
@@ -15,7 +14,7 @@ interface SkillBadgeProps {
     delay?: number;
 }
 
-export default function SkillBadge({ image, name, delay = 0 }: SkillBadgeProps) {
+const SkillBadge = memo(function SkillBadge({ image, name, delay = 0 }: SkillBadgeProps) {
     return (
         <TooltipProvider>
             <Tooltip>
@@ -45,4 +44,6 @@ export default function SkillBadge({ image, name, delay = 0 }: SkillBadgeProps) 
             </Tooltip>
         </TooltipProvider>
     );
-}
+});
+
+export default SkillBadge;

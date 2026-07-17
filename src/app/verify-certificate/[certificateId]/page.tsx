@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
@@ -24,7 +24,7 @@ const downloadBlob = (blob: Blob, filename: string) => {
     URL.revokeObjectURL(url);
 };
 
-export default function VerifyCertificatePage() {
+function VerifyCertificateContent() {
     const certificateRef = useRef<HTMLDivElement>(null);
     const hasAutoDownloadedRef = useRef(false);
     const [isDownloading, setIsDownloading] = useState(false);
@@ -154,5 +154,13 @@ export default function VerifyCertificatePage() {
                 </CardContent>
             </Card>
         </div>
+    );
+}
+
+export default function VerifyCertificatePage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-10 h-10 animate-spin" /></div>}>
+            <VerifyCertificateContent />
+        </Suspense>
     );
 }

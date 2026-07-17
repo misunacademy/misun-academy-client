@@ -72,32 +72,27 @@ const EnrolledStudentTable = () => {
             {
                 accessorKey: "studentId",
                 header: "Student ID",
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                cell: ({ row }) =>( row.original as any).studentId || row.original.userId || 'N/A',
+                cell: ({ row }) => row.original.studentId || row.original.userId || 'N/A',
             },
             {
-                accessorKey: "name",
-                header: "Name",
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                cell: ({ row }) => ( (row.original as any).student?.name ) || (row.original.userId as string) || 'N/A',
+                accessorKey: 'studentName',
+                header: "Student Name",
+                cell: ({ row }) => row.original.student?.name || row.original.userId || 'N/A',
             },
             {
-                accessorKey: "email",
+                accessorKey: 'email',
                 header: "Email",
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                cell: ({ row }) => ( (row.original as any).student?.email ) || 'N/A',
+                cell: ({ row }) => row.original.student?.email || 'N/A',
             },
             {
-                accessorKey: "phone",
+                accessorKey: 'phone',
                 header: "Phone",
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                cell: ({ row }) => ( (row.original as any).student?.phone ) || 'N/A',
+                cell: ({ row }) => row.original.student?.phone || 'N/A',
             },
             {
-                accessorKey: "address",
+                accessorKey: 'address',
                 header: "Address",
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                cell: ({ row }) => ( (row.original as any).student?.address ) || 'N/A',
+                cell: ({ row }) => row.original.student?.address || 'N/A',
             },
             {
                 accessorKey: "course",

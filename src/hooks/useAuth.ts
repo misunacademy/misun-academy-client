@@ -1,27 +1,34 @@
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
 import type { AuthUser } from '@/types/auth';
 import {
   signInAction,
   signUpAction,
-  signOutAction,
   signInWithGoogleAction,
   forgotPasswordAction,
   resetPasswordAction,
   verifyEmailTokenAction,
   updateUserProfileAction,
 } from '@/lib/auth-actions';
+import { useGetSessionQuery } from '@/redux/api/authApi';
+import { authServerApi } from '@/lib/auth-server-api';
 
 export function useAuth() {
   const router = useRouter();
-  const [user, setUser] = useState<AuthUser | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { data: sessionData, isLoading: isPending, error: sessionError, refetch: refetchSession } = useGetSessionQuery();
 
   const baseApiUrl = process.env.NEXT_PUBLIC_BASE_API_URL;
 
+  const user = useMemo(() => {
+    if (!sessionData?.user) return undefined;
+    return sessionData.user as AuthUser;
+  }, [sessionData]);
+
   const session = useMemo(() => (user ? { user } : null), [user]);
   const isAuthenticated = !!user;
+  const isLoading = isPending;
+  const error = sessionError as Error | null;
 
   const goToRedirect = useCallback((target: string) => {
     if (target.startsWith('/')) {
@@ -44,54 +51,15 @@ export function useAuth() {
     }
   }, [router]);
 
-  const refetchSession = useCallback(async () => {
-    if (!baseApiUrl) {
-      setUser(undefined);
-      setError(new Error('Missing NEXT_PUBLIC_BASE_API_URL'));
-      setIsLoading(false);
-      return null;
-    }
-
-    try {
-      setIsLoading(true);
-      const response = await fetch(`${baseApiUrl}/auth/me`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (response.status === 401) {
-        setUser(undefined);
-        setError(null);
-        setIsLoading(false);
-        return null;
-      }
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch auth user: ${response.status}`);
-      }
-
-      const payload = await response.json();
-      const nextUser = payload?.data?.user as AuthUser | undefined;
-      setUser(nextUser);
-      setError(null);
-      return nextUser || null;
-    } catch (err) {
-      setError(err as Error);
-      setUser(undefined);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [baseApiUrl]);
-
-  useEffect(() => {
-    refetchSession();
+  const refetchSessionTyped = useCallback(async () => {
+    const result = await refetchSession();
+    return (result.data?.user as AuthUser | null | undefined) ?? undefined;
   }, [refetchSession]);
 
   const signIn = useCallback(
     (email: string, password: string, redirectUrl?: string) =>
-      signInAction(email, password, redirectUrl, refetchSession, goToRedirect),
-    [refetchSession, goToRedirect],
+      signInAction(email, password, redirectUrl, refetchSessionTyped, goToRedirect),
+    [refetchSessionTyped, goToRedirect],
   );
 
   const signUp = useCallback(
@@ -100,10 +68,21 @@ export function useAuth() {
     [],
   );
 
-  const signOut = useCallback(
-    () => signOutAction(setUser, router.push),
-    [router.push],
-  );
+  const signOut = useCallback(async () => {
+    try {
+      const result = await authServerApi.signOut();
+      if (result.error) {
+        throw new Error(result.error.message);
+      }
+      await refetchSession();
+      toast.success('Successfully logged out');
+      router.push('/');
+      return { success: true };
+    } catch (error) {
+      toast.error('Logout failed');
+      return { success: false, error: (error as Error).message };
+    }
+  }, [router, refetchSession]);
 
   const signInWithGoogle = useCallback(
     (redirectUrl?: string) => signInWithGoogleAction(baseApiUrl, redirectUrl),
@@ -127,8 +106,8 @@ export function useAuth() {
   );
 
   const updateUserProfile = useCallback(
-    (data: Partial<AuthUser>) => updateUserProfileAction(data, refetchSession),
-    [refetchSession],
+    (data: Partial<AuthUser>) => updateUserProfileAction(data, refetchSessionTyped),
+    [refetchSessionTyped],
   );
 
   return {
@@ -144,7 +123,7 @@ export function useAuth() {
     forgotPassword,
     resetPassword,
     verifyEmail,
-    refetchSession,
+    refetchSession: refetchSessionTyped,
     updateUserProfile,
   };
 }

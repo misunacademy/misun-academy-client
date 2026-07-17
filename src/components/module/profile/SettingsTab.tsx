@@ -6,13 +6,13 @@ import { Camera, Shield, Loader2, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
+import type { ProfileData } from "@/redux/api/profileApi";
 import { toast } from "sonner";
 import { authServerApi } from "@/lib/auth-server-api";
 import Image from "next/image";
 
 interface SettingsTabProps {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    profile?: any;
+    profile?: ProfileData | undefined;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -32,8 +32,7 @@ export function SettingsTab(_props: SettingsTabProps) {
 
     const userInitials = user?.name
         ?.split(" ")
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((n: any) => n[0])
+        .map((n: string) => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2) || "U";
@@ -87,8 +86,7 @@ export function SettingsTab(_props: SettingsTabProps) {
 
             if (error && typeof error === 'object') {
                 if ('status' in error) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const fetchError = error as { status: number; data?: any };
+                    const fetchError = error as { status: number; data?: { message?: string } };
                     errorMessage = fetchError.data?.message || `Upload failed with status ${fetchError.status}`;
                 } else if ('data' in error) {
                     const apiError = error as { data?: { message?: string } };

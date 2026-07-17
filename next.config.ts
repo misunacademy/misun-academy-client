@@ -5,8 +5,6 @@ import withBundleAnalyzer from '@next/bundle-analyzer';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
-  cacheComponents: true,
-
   experimental: {
     viewTransition: true,
   },

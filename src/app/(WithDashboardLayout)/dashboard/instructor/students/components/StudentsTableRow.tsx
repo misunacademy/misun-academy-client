@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -34,7 +35,7 @@ interface StudentsTableRowProps {
   student: StudentRow;
 }
 
-const StudentsTableRow = ({ student }: StudentsTableRowProps) => {
+const StudentsTableRow = memo(({ student }: StudentsTableRowProps) => {
   const initials = student.name
     .split(" ")
     .map((word) => word[0])
@@ -80,6 +81,6 @@ const StudentsTableRow = ({ student }: StudentsTableRowProps) => {
       </TableCell>
     </>
   );
-};
+});
 
 export default StudentsTableRow;

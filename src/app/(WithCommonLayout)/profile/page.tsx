@@ -20,7 +20,7 @@ export default function StudentProfile() {
     const { user, isLoading: sessionLoading, updateUserProfile } = useAuth();
     const { data: profileData, isLoading: profileLoading, refetch } = useGetUserProfileQuery();
     const [uploadImage, { isLoading: uploadLoading }] = useUploadSingleImageMutation();
-    const [sessions, setSessions] = useState<unknown[]>([]);
+    const [sessions, setSessions] = useState<Array<{ id: string; token: string; createdAt: string; userAgent?: string; isCurrent?: boolean }>>([]);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [activeTab, setActiveTab] = useState("profile");
@@ -62,7 +62,7 @@ export default function StudentProfile() {
         try {
             const result = await authServerApi.revokeSession(token);
             if (result.error) throw new Error(result.error.message);
-            setSessions(prev => prev.filter(s => (s as { token: string }).token !== token));
+            setSessions(prev => prev.filter((s: { token: string }) => s.token !== token));
             toast.success("Session removed successfully");
         } catch {
             toast.error("Failed to remove session");
@@ -85,8 +85,7 @@ export default function StudentProfile() {
         );
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const studentId = (user as any)?.studentId || profile?.user?.studentId || "N/A";
+    const studentId = profile?.user?.studentId || "N/A";
     const phone = profile?.user?.phone || "Not provided";
     const wpnumber = profile?.wpnumber || "Not provided";
 

@@ -3,8 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Download, RefreshCw } from "lucide-react";
-
-// import { useGetMetadataQuery } from "@/redux/api/studentApi";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { Loader2 } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -16,6 +14,46 @@ import dynamic from "next/dynamic";
 const ReportCharts = dynamic(() => import("./components/ReportCharts"), { ssr: false });
 
 type TimePeriod = '7days' | '30days' | '90days' | '1year';
+
+interface DayWiseStat {
+  date: string;
+  totalIncome: number;
+  totalEnrollment: number;
+}
+
+interface CourseWiseStat {
+  courseId: string;
+  courseTitle: string;
+  courseSlug: string;
+  totalIncome: number;
+  totalEnrollments: number;
+}
+
+interface DashboardMetadata {
+  totalEnrolled: number;
+  totalIncome: number;
+  dayWiseStats: DayWiseStat[];
+  courseWiseStats: CourseWiseStat[];
+  batchWiseIncome: {
+    batchId: string;
+    batchTitle: string;
+    courseTitle: string;
+    batchNumber: string;
+    totalIncome: number;
+    totalEnrollments: number;
+  }[];
+}
+
+interface ProcessedData {
+  totalIncome: number;
+  totalEnrolled: number;
+  activeCoursesCount: number;
+  enrollmentData: { month: string; enrollments: number }[];
+  revenueData: { month: string; revenue: number }[];
+  coursePopularityData: { name: string; value: number; color: string }[];
+  courseWiseStats: CourseWiseStat[];
+  batchWiseIncome: DashboardMetadata["batchWiseIncome"];
+}
 
 export default function AdminReports() {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30days');
@@ -30,16 +68,13 @@ export default function AdminReports() {
   const isLoading = metadataLoading || coursesLoading;
   const error = metadataError;
 
-  // Calculate dynamic data - moved before early returns
   const processedData = useMemo(() => {
     if (!metadata?.data) return null;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data = metadata.data as any;
+    const data = metadata.data as DashboardMetadata;
 
-    // Filter data based on selected period
     const now = new Date();
-    const periodDays = {
+    const periodDays: Record<TimePeriod, number> = {
       '7days': 7,
       '30days': 30,
       '90days': 90,
@@ -49,32 +84,27 @@ export default function AdminReports() {
     const cutoffDate = new Date();
     cutoffDate.setDate(now.getDate() - periodDays[selectedPeriod]);
 
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    const filteredDayWiseStats = (data.dayWiseStats || []).filter((stat: any) => {
+    const filteredDayWiseStats = (data.dayWiseStats || []).filter((stat) => {
       const statDate = new Date(stat.date);
       return statDate >= cutoffDate;
     });
 
-
-    // Get active courses count (for selected course, this becomes either 1 or 0)
-    const activeCourses = coursesData?.data?.filter((course: any) => (course.status || '').toLowerCase() === 'published') || [];
+    const activeCourses = (coursesData?.data || []).filter((course) => course.status === 'published');
     const activeCoursesCount = selectedCourseId === 'all'
       ? activeCourses.length
-      : activeCourses.filter((course: any) => course._id === selectedCourseId).length;
+      : activeCourses.filter((course) => course._id === selectedCourseId).length;
 
-    // Format data for charts
-    const enrollmentData = filteredDayWiseStats.map((stat: any) => ({
+    const enrollmentData = filteredDayWiseStats.map((stat) => ({
       month: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       enrollments: stat.totalEnrollment,
     }));
 
-    const revenueData = filteredDayWiseStats.map((stat: any) => ({
+    const revenueData = filteredDayWiseStats.map((stat) => ({
       month: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       revenue: stat.totalIncome,
     }));
 
-    // For course popularity, use course-wise stats
-    const coursePopularityData = (data.courseWiseStats || []).map((course: any, index: number) => ({
+    const coursePopularityData = (data.courseWiseStats || []).map((course, index) => ({
       name: course.courseTitle || `Course ${index + 1}`,
       value: course.totalEnrollments || 0,
       color: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'][index % 5],
@@ -88,15 +118,13 @@ export default function AdminReports() {
       revenueData,
       coursePopularityData,
       courseWiseStats: data.courseWiseStats || [],
-      batchWiseIncome: data.batchWiseIncome || []
-    };
-    /* eslint-enable @typescript-eslint/no-explicit-any */
+      batchWiseIncome: data.batchWiseIncome || [],
+    } satisfies ProcessedData;
   }, [metadata, coursesData, selectedPeriod, selectedCourseId]);
 
   const selectedCourseTitle = useMemo(() => {
     if (selectedCourseId === 'all') return 'All Courses';
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const found = (coursesData?.data || []).find((course: any) => course._id === selectedCourseId);
+    const found = (coursesData?.data || []).find((course) => course._id === selectedCourseId);
     return found?.title || 'Selected Course';
   }, [coursesData, selectedCourseId]);
 
@@ -121,29 +149,26 @@ export default function AdminReports() {
 
     setIsExporting(true);
     try {
-      // Create export data
+      const meta = metadata.data as DashboardMetadata;
+
       const exportData = {
         period: selectedPeriod,
         course: selectedCourseTitle,
         generatedAt: new Date().toISOString(),
         summary: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          totalRevenue: (metadata?.data as any)?.totalIncome || 0,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          totalEnrollments: (metadata?.data as any)?.totalEnrolled || 0,
+          totalRevenue: meta?.totalIncome || 0,
+          totalEnrollments: meta?.totalEnrolled || 0,
           activeCourses: processedData?.activeCoursesCount || 0
         },
         courseWiseStats: processedData?.courseWiseStats || [],
         batchWiseIncome: processedData?.batchWiseIncome || [],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        dailyStats: processedData?.enrollmentData.map((item: any, index: number) => ({
+        dailyStats: processedData?.enrollmentData.map((item, index) => ({
           date: item.month,
           enrollments: item.enrollments,
           revenue: processedData.revenueData[index]?.revenue || 0
         })) || []
       };
 
-      // Convert to CSV
       const csvContent = generateCSV(exportData);
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
@@ -161,34 +186,36 @@ export default function AdminReports() {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const generateCSV = (data: any) => {
+  const generateCSV = (data: {
+    period: string;
+    course: string;
+    generatedAt: string;
+    summary: { totalRevenue: number; totalEnrollments: number; activeCourses: number };
+    courseWiseStats: CourseWiseStat[];
+    batchWiseIncome: { batchTitle: string; totalEnrollments: number; totalIncome: number }[];
+    dailyStats: { date: string; enrollments: number; revenue: number }[];
+  }) => {
     let csv = 'Academy Reports\n';
     csv += `Period: ${data.period}\n`;
     csv += `Course: ${data.course}\n`;
     csv += `Generated: ${data.generatedAt}\n\n`;
 
-    // Summary
     csv += 'Summary\n';
     csv += 'Metric,Value\n';
     csv += `Total Revenue,$${data.summary.totalRevenue}\n`;
     csv += `Total Enrollments,${data.summary.totalEnrollments}\n`;
     csv += `Active Courses,${data.summary.activeCourses}\n\n`;
 
-    // Course-wise stats
     csv += 'Course-wise Statistics\n';
     csv += 'Course,Enrollments,Revenue\n';
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data.courseWiseStats.forEach((course: any) => {
+    data.courseWiseStats.forEach((course) => {
       csv += `"${course.courseTitle}",${course.totalEnrollments},"$${course.totalIncome}"\n`;
     });
     csv += '\n';
 
-    // Daily stats
     csv += 'Daily Statistics\n';
     csv += 'Date,Enrollments,Revenue\n';
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data.dailyStats.forEach((day: any) => {
+    data.dailyStats.forEach((day) => {
       csv += `"${day.date}",${day.enrollments},"$${day.revenue}"\n`;
     });
 
@@ -239,15 +266,11 @@ export default function AdminReports() {
       }
       content={
         <>
-          {/* Key Metrics */}
-          <ReportKeymetricsCards metadata={metadata} processedData={processedData} coursesLoading={coursesLoading} />
-          {/* Charts */}
+          <ReportKeymetricsCards metadata={metadata as { data?: { totalIncome?: number; totalEnrolled?: number } }} processedData={processedData as { activeCoursesCount?: number } | undefined} coursesLoading={coursesLoading} />
           <ReportCharts data={processedData} />
         </>
       }
     />
-
-
 
   );
 }

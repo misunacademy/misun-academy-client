@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { memo, type ReactNode } from "react";
 import { TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
@@ -14,7 +14,7 @@ interface CertificateTableRowProps {
   onViewDetails: (cert: CertificateResponse) => void;
 }
 
-const CertificateTableRow = ({
+const CertificateTableRow = memo(({
   certificate,
   getStudentName,
   getStudentEmail,
@@ -41,6 +41,6 @@ const CertificateTableRow = ({
       </TableCell>
     </>
   );
-};
+});
 
 export default CertificateTableRow;

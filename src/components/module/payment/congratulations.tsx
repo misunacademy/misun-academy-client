@@ -12,8 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { courseInfo } from "@/constants/enrollment";
-import { TEMPLATES } from "@/constants/posterTemplates";
+import { FALLBACK_COURSE_TITLE } from "@/constants/courses";
+import { TEMPLATES, type PosterTemplate } from "@/constants/posterTemplates";
 import { toSlug, getCourseType, getBatchNumber, getTemplatePriority } from "@/utils/posterHelpers";
 import { useAuth } from "@/hooks/useAuth";
 import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
@@ -32,7 +32,7 @@ function CongratulationsPage({ courseSlug }: CongratulationsPageProps) {
   const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useGetEnrollmentsQuery(undefined, { skip: !user?.id });
 
   const queryCourseSlug = toSlug(courseSlug);
-  const appCourseType = getCourseType(queryCourseSlug || courseInfo?.title);
+  const appCourseType = getCourseType(queryCourseSlug || FALLBACK_COURSE_TITLE);
 
   const latestEnrollment = (() => {
     const allEnrollments = enrollmentsData?.data ?? [];
@@ -41,24 +41,22 @@ function CongratulationsPage({ courseSlug }: CongratulationsPageProps) {
 
     if (queryCourseSlug) {
       const matchedBySlug = sourceList.find((e) => {
-        const enrollment = e as any;
-        const slug = toSlug(enrollment?.course?.slug) || toSlug(enrollment?.batchId?.courseId?.slug) || toSlug(enrollment?.courseId?.slug) || toSlug(enrollment?.batchId?.courseId?.title) || toSlug(enrollment?.courseId?.title) || toSlug(enrollment?.course?.title);
+        const slug = toSlug(e.course?.slug) || toSlug(e.batchId.courseId.slug) || toSlug(e.courseId?.slug) || toSlug(e.batchId.courseId.title) || toSlug(e.courseId?.title) || toSlug(e.course?.title);
         return slug === queryCourseSlug;
       });
       if (matchedBySlug) return matchedBySlug;
     }
 
     const matchedByCourse = sourceList.find((e) => {
-      const enrollment = e as any;
-      return getCourseType(enrollment?.batchId?.courseId?.title || enrollment?.course?.title || enrollment?.courseId?.title || "") === appCourseType;
+      return getCourseType(e.batchId.courseId.title || e.course?.title || e.courseId?.title || "") === appCourseType;
     });
     return matchedByCourse ?? sourceList[0];
   })();
 
-  const courseTitle = (latestEnrollment as any)?.batchId?.courseId?.title || (latestEnrollment as any)?.course?.title || (latestEnrollment as any)?.courseId?.title || courseInfo?.title || "";
+  const courseTitle = latestEnrollment?.batchId?.courseId?.title || latestEnrollment?.course?.title || latestEnrollment?.courseId?.title || FALLBACK_COURSE_TITLE;
 
   const { data: batchData } = useGetBatchByIdQuery(
-    (latestEnrollment?.batchId as any)?._id || "",
+    String((latestEnrollment?.batchId as { _id?: string })?._id || ""),
     { skip: !latestEnrollment?.batchId },
   );
 
@@ -80,12 +78,12 @@ function CongratulationsPage({ courseSlug }: CongratulationsPageProps) {
     MIN_ZOOM, MAX_ZOOM, ZOOM_STEP,
   } = useImageEditor();
 
-  const batchNo = batchData?.data?.title ?? latestEnrollment?.batch?.title ?? (latestEnrollment as any)?.batchId?.title ?? (batchData?.data ? `BATCH-${batchData.data.batchNumber}` : "");
+  const batchNo = batchData?.data?.title ?? latestEnrollment?.batch?.title ?? latestEnrollment?.batchId?.title ?? (batchData?.data ? `BATCH-${batchData.data.batchNumber}` : "");
   const batchNumber = getBatchNumber(batchNo);
   const selectedCourseType = queryCourseSlug ? getCourseType(queryCourseSlug) : getCourseType(courseTitle);
   const templatePriority = getTemplatePriority(selectedCourseType, batchNumber);
 
-  const templateGroups: Record<string, any[]> = {
+  const templateGroups: Record<string, PosterTemplate[]> = {
     graphic: TEMPLATES.graphic,
     english: TEMPLATES.english.length > 0 ? TEMPLATES.english : TEMPLATES.graphic,
     general: TEMPLATES.graphic,

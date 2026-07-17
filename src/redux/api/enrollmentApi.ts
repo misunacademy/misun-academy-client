@@ -28,6 +28,7 @@ export interface EnrollmentResponse {
     courseId: {
       _id: string;
       title: string;
+      slug?: string;
       thumbnailImage?: string;
       category?: string;
       level?: string;
@@ -58,6 +59,11 @@ export interface EnrollmentResponse {
   batch?: {
     _id?: string;
     title: string;
+  };
+  courseId?: {
+    _id?: string;
+    title?: string;
+    slug?: string;
   };
   isCertificateAvailable?: boolean;
   createdAt: Date;

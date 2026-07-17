@@ -64,8 +64,8 @@ export function ImageUploader() {
       toast.success('Image uploaded successfully!');
       
       // Clear preview after successful upload
-      // setPreview(null);
-      // fileInputRef.current!.value = '';
+
+
     } catch (error: unknown) {
       const apiError = error as { data?: { message?: string } };
       toast.error(apiError?.data?.message || 'Upload failed');

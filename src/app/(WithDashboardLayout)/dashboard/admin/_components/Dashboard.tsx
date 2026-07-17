@@ -69,16 +69,15 @@ export default function Dashboard() {
             </div>
         );
     }
+    const raw = (data as { data?: DashboardData })?.data as DashboardData | undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const raw = (data as any)?.data ?? {};
     const dashboardData: DashboardData = {
-        totalEnrolled: raw.totalEnrolled ?? 0,
-        batchWiseEnrolled: raw.batchWiseEnrolled ?? [],
-        courseWiseStats: raw.courseWiseStats ?? [],
-        batchWiseIncome: raw.batchWiseIncome ?? [],
-        totalIncome: raw.totalIncome ?? 0,
-        dayWiseStats: raw.dayWiseStats ?? [],
+        totalEnrolled: raw?.totalEnrolled ?? 0,
+        batchWiseEnrolled: raw?.batchWiseEnrolled ?? [],
+        courseWiseStats: raw?.courseWiseStats ?? [],
+        batchWiseIncome: raw?.batchWiseIncome ?? [],
+        totalIncome: raw?.totalIncome ?? 0,
+        dayWiseStats: raw?.dayWiseStats ?? [],
     };
 
     const hasCourseData = dashboardData.courseWiseStats.length > 0;

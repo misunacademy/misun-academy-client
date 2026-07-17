@@ -5,8 +5,12 @@ import { CheckCircle2, PlayCircle, Calendar } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useGetCourseProgressQuery } from "@/redux/api/courseApi";
-import { EnrolledCourse } from "../types";
+import type { EnrolledCourse } from "../types";
 import { AnimatedBorder } from "@/components/shared/AnimatedBorder";
+
+interface CourseProgressData {
+  percentage: number;
+}
 
 export const CourseCard = memo(function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
   const { data: progressData } = useGetCourseProgressQuery(
@@ -16,8 +20,7 @@ export const CourseCard = memo(function CourseCard({ enrollment }: { enrollment:
 
   const isActive = enrollment.status === "active";
   const isCompleted = enrollment.status === "completed";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const apiProgress = (progressData?.data as any)?.percentage;
+  const apiProgress = (progressData?.data as CourseProgressData | undefined)?.percentage;
   const progress =
     typeof apiProgress === "number"
       ? Math.min(100, Math.max(0, Math.round(apiProgress)))
