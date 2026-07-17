@@ -3,8 +3,6 @@ import HeroSection from '@/components/module/home/HeroSection';
 import HomeDeferredSections from '@/components/module/home/HomeDeferredSections';
 import HomepageTracker from '@/components/analytics/HomepageTracker';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
-import OrganizationJsonLd from '@/components/seo/OrganizationJsonLd';
-import WebSiteJsonLd from '@/components/seo/WebSiteJsonLd';
 import CourseJsonLd from '@/components/seo/CourseJsonLd';
 import { generateMetadata } from '@/lib/generateMetadata';
 import PageBackground from '@/components/shared/PageBackground';
@@ -43,8 +41,6 @@ export const metadata = generateMetadata({
 export default function page() {
   return (
     <PageBackground gradient="bg-surface-darker" dotOpacity="opacity-[0.10]" dotSize="34px">
-      <OrganizationJsonLd />
-      <WebSiteJsonLd />
       <CourseJsonLd
         name="কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স"
         description="Learn graphic design from home and build a successful freelancing career with MISUN Academy. Complete Adobe Photoshop & Illustrator course in Bangla."

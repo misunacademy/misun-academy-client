@@ -11,6 +11,7 @@ import BackToTop from '@/components/shared/BackToTop';
 import OrganizationJsonLd from '@/components/seo/OrganizationJsonLd';
 import WebSiteJsonLd from '@/components/seo/WebSiteJsonLd';
 import './globals.css';
+import '../bones/registry';
 
 const monaSans = Mona_Sans({
   variable: '--font-mona-sans',
