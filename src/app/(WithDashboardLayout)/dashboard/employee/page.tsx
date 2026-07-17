@@ -33,10 +33,10 @@ const EmployeePage = () => {
     const { isLoading: authLoading } = useAuth();
 
     /* ── Server profile (extended fields) ─────────────────────────────────── */
-    const { data: serverProfile, isLoading: profileLoading } = useGetMyEmployeeProfileQuery();
+    const { data: serverProfile, isLoading: profileLoading, isError: profileError } = useGetMyEmployeeProfileQuery();
 
     /* ── Salary data ────────────────────────────────────────────────────────── */
-    const { data: salaryData, isLoading: salaryLoading } = useGetMySalariesQuery({
+    const { data: salaryData, isLoading: salaryLoading, isError: salaryError } = useGetMySalariesQuery({
         page: 1,
         limit: 12,
     });
@@ -82,6 +82,16 @@ const EmployeePage = () => {
     const designationLabel = extInfo.designation.trim() || 'Not provided';
 
     if (authLoading || profileLoading) return <DashboardLoader />;
+
+    if (profileError) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="flex flex-col items-center gap-3 text-destructive">
+                    <p className="text-sm">Failed to load employee profile</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <DashboardPageContainer

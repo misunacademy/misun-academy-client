@@ -59,7 +59,6 @@ const SettingsPage = () => {
             toast.success("Profile photo updated successfully.");
             if (profileFileInputRef.current) profileFileInputRef.current.value = "";
         } catch (error) {
-            console.error("Profile upload error", error);
             toast.error("Failed to upload profile photo.");
         }
     };

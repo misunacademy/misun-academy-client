@@ -32,7 +32,7 @@ interface Props {
 }
 
 export function MyLeaveHistory({ onApplyClick }: Props) {
-    const { data, isLoading } = useGetMyLeaveRequestsQuery({ page: 1, limit: 10 });
+    const { data, isLoading, isError } = useGetMyLeaveRequestsQuery({ page: 1, limit: 10 });
     const requests = data?.data?.requests ?? [];
 
     return (
@@ -62,6 +62,10 @@ export function MyLeaveHistory({ onApplyClick }: Props) {
                     <div className="flex items-center justify-center h-36 gap-2 text-muted-foreground">
                         <Loader2 className="w-5 h-5 animate-spin" />
                         <span className="text-sm">Loading leave requests…</span>
+                    </div>
+                ) : isError ? (
+                    <div className="flex items-center justify-center h-36 gap-2 text-destructive">
+                        <span className="text-sm">Failed to load leave requests</span>
                     </div>
                 ) : requests.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-36 gap-2 text-muted-foreground">
