@@ -1,7 +1,6 @@
-"use client"
-/* eslint-disable react-hooks/incompatible-library */
+"use client";
 
-import { useForm, useFieldArray, FormProvider, type Resolver } from "react-hook-form";
+import { useForm, useWatch, useFieldArray, FormProvider, type Control, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useCreateModuleLessonMutation, useUpdateModuleLessonMutation } from "@/redux/api/lessonApi";
@@ -111,7 +110,8 @@ const LessonFormDialog = ({ open, mode, moduleId, data, onClose, onSuccess }: {
         name: "resources",
     });
 
-    const watchedType = form.watch("type");
+    const watchedType = useWatch({ control: form.control, name: "type" });
+    const watchedVideoSource = useWatch({ control: form.control, name: "videoSource" });
 
     const handleSubmit = async (values: LessonFormValues) => {
         try {
@@ -161,9 +161,9 @@ const LessonFormDialog = ({ open, mode, moduleId, data, onClose, onSuccess }: {
                                 <SelectField name="videoSource" label="Video Source" options={VIDEO_SOURCE_OPTIONS} />
                                 <InputField
                                     name="videoId"
-                                    label={form.watch("videoSource") === 'youtube' ? 'YouTube Video ID' : 'Google Drive File ID'}
-                                    placeholder={form.watch("videoSource") === 'youtube' ? 'dQw4w9WgXcQ' : '1a2b3c4d5e6f7g8h9i0j'}
-                                    description={form.watch("videoSource") === 'youtube'
+                                    label={watchedVideoSource === 'youtube' ? 'YouTube Video ID' : 'Google Drive File ID'}
+                                    placeholder={watchedVideoSource === 'youtube' ? 'dQw4w9WgXcQ' : '1a2b3c4d5e6f7g8h9i0j'}
+                                    description={watchedVideoSource === 'youtube'
                                         ? 'YouTube URL: https://www.youtube.com/watch?v=VIDEO_ID'
                                         : 'Google Drive URL: https://drive.google.com/file/d/FILE_ID/view'}
                                 />
@@ -208,46 +208,12 @@ Create a composite image using at least 3 different selection techniques..."
                             ) : (
                                 <div className="space-y-3">
                                     {fields.map((field, index) => (
-                                        <Card key={field.id} className="p-3">
-                                            <div className="space-y-3">
-                                                <div className="flex items-center justify-between">
-                                                    <label className="text-sm font-medium">Resource {index + 1}</label>
-                                                    <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                                <InputField
-                                                    name={`resources.${index}.title`}
-                                                    label="Title"
-                                                    placeholder="Resource title"
-                                                    required
-                                                    rules={{ required: "Title is required" }}
-                                                />
-                                                <SelectField
-                                                    name={`resources.${index}.type`}
-                                                    label="Type"
-                                                    options={RESOURCE_TYPE_OPTIONS}
-                                                />
-                                                {form.watch(`resources.${index}.type`) === 'link' && (
-                                                    <InputField
-                                                        name={`resources.${index}.url`}
-                                                        label="URL"
-                                                        type="url"
-                                                        placeholder="https://example.com"
-                                                        rules={{ required: "URL is required" }}
-                                                    />
-                                                )}
-                                                {form.watch(`resources.${index}.type`) === 'text' && (
-                                                    <TextareaField
-                                                        name={`resources.${index}.textContent`}
-                                                        label="Text Content"
-                                                        placeholder="Enter text content here..."
-                                                        rows={3}
-                                                        rules={{ required: "Content is required" }}
-                                                    />
-                                                )}
-                                            </div>
-                                        </Card>
+                                        <ResourceCard
+                                            key={field.id}
+                                            control={form.control}
+                                            index={index}
+                                            onRemove={() => remove(index)}
+                                        />
                                     ))}
                                 </div>
                             )}
@@ -263,6 +229,56 @@ Create a composite image using at least 3 different selection techniques..."
                 </FormProvider>
             </DialogContent>
         </Dialog>
+    );
+}
+
+function ResourceCard({ control, index, onRemove }: {
+    control: Control<LessonFormValues>;
+    index: number;
+    onRemove: () => void;
+}) {
+    const resourceType = useWatch({ control, name: `resources.${index}.type` as const });
+    return (
+        <Card className="p-3">
+            <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Resource {index + 1}</label>
+                    <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </div>
+                <InputField
+                    name={`resources.${index}.title`}
+                    label="Title"
+                    placeholder="Resource title"
+                    required
+                    rules={{ required: "Title is required" }}
+                />
+                <SelectField
+                    name={`resources.${index}.type`}
+                    label="Type"
+                    options={RESOURCE_TYPE_OPTIONS}
+                />
+                {resourceType === 'link' && (
+                    <InputField
+                        name={`resources.${index}.url`}
+                        label="URL"
+                        type="url"
+                        placeholder="https://example.com"
+                        rules={{ required: "URL is required" }}
+                    />
+                )}
+                {resourceType === 'text' && (
+                    <TextareaField
+                        name={`resources.${index}.textContent`}
+                        label="Text Content"
+                        placeholder="Enter text content here..."
+                        rows={3}
+                        rules={{ required: "Content is required" }}
+                    />
+                )}
+            </div>
+        </Card>
     );
 }
 

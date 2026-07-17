@@ -1,7 +1,6 @@
 "use client";
-/* eslint-disable react-hooks/incompatible-library */
 
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -51,8 +50,8 @@ const RecordingForm = ({ defaultValues, courses, onSubmit, isLoading }: Recordin
     },
   });
 
-  const watchedCourseId = form.watch("courseId");
-  const watchedVideoSource = form.watch("videoSource");
+  const watchedCourseId = useWatch({ control: form.control, name: "courseId" });
+  const watchedVideoSource = useWatch({ control: form.control, name: "videoSource" });
   const selectedCourse = courses.find((course) => course._id === watchedCourseId);
   const batches = selectedCourse?.batches || [];
 

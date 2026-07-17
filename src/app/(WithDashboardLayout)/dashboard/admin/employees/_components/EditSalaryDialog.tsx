@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
-import { useForm, type Resolver } from "react-hook-form"
+import { useForm, useWatch, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useUpdateSalaryMutation } from "@/redux/api/employeeAdminApi"
@@ -91,9 +91,8 @@ export function EditSalaryDialog({ open, salary, onClose }: Props) {
     }
   }, [salary, form])
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const watchedAmount = form.watch("amount")
-  const watchedBonus = form.watch("bonus")
+  const watchedAmount = useWatch({ control: form.control, name: "amount" })
+  const watchedBonus = useWatch({ control: form.control, name: "bonus" })
 
   const handleSubmit = async (values: EditSalaryFormValues) => {
     if (!salary) return

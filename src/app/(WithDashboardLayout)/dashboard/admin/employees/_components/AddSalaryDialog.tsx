@@ -1,6 +1,6 @@
 "use client"
 
-import { useForm, Controller, type Resolver } from "react-hook-form"
+import { useForm, useWatch, Controller, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useGetAllEmployeesQuery, useAddSalaryMutation } from "@/redux/api/employeeAdminApi"
@@ -72,9 +72,8 @@ export function AddSalaryDialog({ open, onClose }: Props) {
     },
   })
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const watchedAmount = form.watch("amount")
-  const watchedBonus = form.watch("bonus")
+  const watchedAmount = useWatch({ control: form.control, name: "amount" })
+  const watchedBonus = useWatch({ control: form.control, name: "bonus" })
 
   const reset = () => form.reset({
     employeeId: "", jobTitle: "",

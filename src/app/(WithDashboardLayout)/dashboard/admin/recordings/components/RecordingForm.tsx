@@ -1,7 +1,6 @@
 "use client";
-/* eslint-disable react-hooks/incompatible-library */
 
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form } from "@/components/ui/form";
@@ -63,7 +62,8 @@ const RecordingForm = ({
     },
   });
 
-  const watchedVideoSource = form.watch("videoSource");
+  const watchedVideoSource = useWatch({ control: form.control, name: "videoSource" });
+  const watchedCourseId = useWatch({ control: form.control, name: "courseId" });
   const courseOptions = courses.map((c) => ({ value: c._id, label: c.title }));
   const batchOptions = batches.map((b) => ({ value: b._id, label: `${b.title} - ${b.status}` }));
 
@@ -89,7 +89,7 @@ const RecordingForm = ({
             label="Batch"
             options={batchOptions}
             placeholder="Select batch"
-            disabled={!form.watch("courseId")}
+            disabled={!watchedCourseId}
             required
           />
         </div>

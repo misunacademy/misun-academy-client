@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { useForm, Controller, type Resolver } from "react-hook-form"
+import { useForm, useWatch, Controller, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import type { ColumnDef } from "@tanstack/react-table"
@@ -55,9 +55,8 @@ const GrantCourseAccessPage = () => {
     defaultValues: { email: "", courseId: "", batchId: "" },
   })
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const watchedEmail = form.watch("email")
-  const watchedCourseId = form.watch("courseId")
+  const watchedEmail = useWatch({ control: form.control, name: "email" })
+  const watchedCourseId = useWatch({ control: form.control, name: "courseId" })
   const normalizedEmail = watchedEmail.trim().toLowerCase()
 
   const { data: batchesData, isLoading: isBatchesLoading } = useGetAllBatchesQuery(

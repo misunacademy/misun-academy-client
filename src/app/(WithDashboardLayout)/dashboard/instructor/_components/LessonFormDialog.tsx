@@ -1,7 +1,6 @@
 "use client"
-/* eslint-disable react-hooks/incompatible-library */
 
-import { useForm, useFieldArray, FormProvider, type Resolver } from "react-hook-form"
+import { useForm, useWatch, useFieldArray, FormProvider, type Control, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
@@ -93,7 +92,7 @@ export function LessonFormDialog({ open, mode, moduleId, data, onClose, onSucces
     name: "resources",
   })
 
-  const watchedType = form.watch("type")
+  const watchedType = useWatch({ control: form.control, name: "type" })
 
   const handleSubmit = async (values: LessonFormValues) => {
     try {
@@ -158,24 +157,12 @@ export function LessonFormDialog({ open, mode, moduleId, data, onClose, onSucces
               ) : (
                 <div className="space-y-3">
                   {fields.map((field, index) => (
-                    <Card key={field.id} className="p-3">
-                      <CardContent className="p-0 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm font-medium">Resource {index + 1}</label>
-                          <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <InputField name={`resources.${index}.title`} label="Title" placeholder="Resource title" required rules={{ required: "Title is required" }} />
-                        <SelectField name={`resources.${index}.type`} label="Type" options={RESOURCE_TYPE_OPTIONS} />
-                        {form.watch(`resources.${index}.type`) === "link" && (
-                          <InputField name={`resources.${index}.url`} label="URL" type="url" placeholder="https://example.com" rules={{ required: "URL is required" }} />
-                        )}
-                        {form.watch(`resources.${index}.type`) === "text" && (
-                          <TextareaField name={`resources.${index}.textContent`} label="Text Content" placeholder="Enter text content..." rows={3} rules={{ required: "Content is required" }} />
-                        )}
-                      </CardContent>
-                    </Card>
+                    <ResourceCard
+                      key={field.id}
+                      control={form.control}
+                      index={index}
+                      onRemove={() => remove(index)}
+                    />
                   ))}
                 </div>
               )}
@@ -191,5 +178,33 @@ export function LessonFormDialog({ open, mode, moduleId, data, onClose, onSucces
         </FormProvider>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function ResourceCard({ control, index, onRemove }: {
+  control: Control<LessonFormValues>;
+  index: number;
+  onRemove: () => void;
+}) {
+  const resourceType = useWatch({ control, name: `resources.${index}.type` as const });
+  return (
+    <Card className="p-3">
+      <CardContent className="p-0 space-y-3">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium">Resource {index + 1}</label>
+          <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+        <InputField name={`resources.${index}.title`} label="Title" placeholder="Resource title" required rules={{ required: "Title is required" }} />
+        <SelectField name={`resources.${index}.type`} label="Type" options={RESOURCE_TYPE_OPTIONS} />
+        {resourceType === "link" && (
+          <InputField name={`resources.${index}.url`} label="URL" type="url" placeholder="https://example.com" rules={{ required: "URL is required" }} />
+        )}
+        {resourceType === "text" && (
+          <TextareaField name={`resources.${index}.textContent`} label="Text Content" placeholder="Enter text content..." rows={3} rules={{ required: "Content is required" }} />
+        )}
+      </CardContent>
+    </Card>
   )
 }

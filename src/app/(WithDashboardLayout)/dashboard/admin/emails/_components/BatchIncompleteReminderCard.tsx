@@ -1,6 +1,6 @@
 "use client"
 
-import { Controller, useForm, type Resolver } from "react-hook-form"
+import { Controller, useForm, useWatch, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { skipToken } from "@reduxjs/toolkit/query"
@@ -30,8 +30,7 @@ export default function BatchIncompleteReminderCard({ courses }: { courses: Cour
     defaultValues: { courseId: "", batchId: "" },
   })
 
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const watchedCourseId = form.watch("courseId")
+  const watchedCourseId = useWatch({ control: form.control, name: "courseId" })
 
   const { data: batchesData } = useGetAllBatchesQuery(
     watchedCourseId ? { courseId: watchedCourseId } : skipToken,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm, type Resolver } from 'react-hook-form';
+import { useForm, useWatch, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAddLeaveRequestMutation } from '@/redux/api/employeeApi';
@@ -58,9 +58,8 @@ export function LeaveRequestDialog({ open, onClose }: Props) {
         },
     });
 
-    // eslint-disable-next-line react-hooks/incompatible-library
-    const watchedFrom = form.watch('from');
-    const watchedTo = form.watch('to');
+    const watchedFrom = useWatch({ control: form.control, name: 'from' });
+    const watchedTo = useWatch({ control: form.control, name: 'to' });
     const days = daysBetween(watchedFrom, watchedTo);
     const datesFilled = watchedFrom && watchedTo;
     const isDateValid = datesFilled && new Date(watchedTo) >= new Date(watchedFrom);
