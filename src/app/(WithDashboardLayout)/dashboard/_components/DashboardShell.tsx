@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import AuthGuard from "@/components/shared/AuthGuard"
 import NotificationBell from "@/components/shared/NotificationBell"
+import SocketProvider from "@/providers/SocketProvider"
 import { usePathname } from "next/navigation"
 
 const pageTitleMap: Record<string, string> = {
@@ -60,6 +61,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
 
     return (
         <AuthGuard>
+            <SocketProvider>
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset>
@@ -88,6 +90,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                     </main>
                 </SidebarInset>
             </SidebarProvider>
+            </SocketProvider>
         </AuthGuard>
     )
 }

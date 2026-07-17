@@ -23,6 +23,10 @@ const MAINTENANCE_ALLOWLIST_EXACT = new Set([
     '/sitemap-0.xml',
 ]);
 
+const CACHE_TTL_MS = 30_000;
+
+let cachedMaintenance: { enabled: boolean; expiry: number } | null = null;
+
 const BETTER_AUTH_COOKIE_KEYS = [
     'better-auth.session_token',
     '__Secure-better-auth.session_token',
@@ -49,6 +53,20 @@ function isMaintenanceAllowlisted(pathname: string) {
     return MAINTENANCE_ALLOWLIST_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
+async function fetchMaintenanceStatus(baseApiUrl: string): Promise<boolean> {
+    try {
+        const response = await fetch(`${baseApiUrl}/settings`, {
+            headers: { Accept: 'application/json' },
+            cache: 'no-store',
+        });
+        if (!response.ok) return false;
+        const payload = await response.json();
+        return payload?.data?.maintenanceEnabled === true;
+    } catch {
+        return false;
+    }
+}
+
 async function maybeRedirectToMaintenance(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
@@ -61,29 +79,18 @@ async function maybeRedirectToMaintenance(request: NextRequest) {
         return null;
     }
 
-    try {
-        const response = await fetch(`${baseApiUrl}/settings`, {
-            headers: {
-                Accept: 'application/json',
-            },
-            cache: 'no-store',
-        });
+    if (!cachedMaintenance || Date.now() > cachedMaintenance.expiry) {
+        cachedMaintenance = {
+            enabled: await fetchMaintenanceStatus(baseApiUrl),
+            expiry: Date.now() + CACHE_TTL_MS,
+        };
+    }
 
-        if (!response.ok) {
-            return null;
-        }
-
-        const payload = await response.json();
-        const maintenanceEnabled = payload?.data?.maintenanceEnabled === true;
-
-        if (maintenanceEnabled) {
-            const url = request.nextUrl.clone();
-            url.pathname = '/maintenance';
-            url.search = '';
-            return NextResponse.redirect(url);
-        }
-    } catch {
-        return null;
+    if (cachedMaintenance.enabled) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/maintenance';
+        url.search = '';
+        return NextResponse.redirect(url);
     }
 
     return null;
@@ -103,7 +110,7 @@ export async function proxy(request: NextRequest) {
     if (isProtectedRoute && !sessionCookie) {
         const url = request.nextUrl.clone();
         url.pathname = '/auth/login';
-        url.search = `?redirect=${encodeURIComponent(pathname)}`;
+        url.search = `?redirect_url=${encodeURIComponent(pathname)}`;
         return NextResponse.redirect(url);
     }
 

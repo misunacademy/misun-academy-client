@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useLenis } from 'lenis/react';
 
 interface ScrollProgress {
   isVisible: boolean;
@@ -9,10 +10,11 @@ interface ScrollProgress {
 export function useScrollProgress(threshold = 200): ScrollProgress {
   const [isVisible, setIsVisible] = useState(false);
   const [progress, setProgress] = useState(0);
+  const lenis = useLenis();
 
   useEffect(() => {
     const handleScroll = () => {
-      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const winScroll = window.scrollY;
       const height =
         document.documentElement.scrollHeight - document.documentElement.clientHeight;
 
@@ -21,11 +23,7 @@ export function useScrollProgress(threshold = 200): ScrollProgress {
         setProgress(scrolled);
       }
 
-      if (winScroll > threshold) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
+      setIsVisible(winScroll > threshold);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -34,9 +32,13 @@ export function useScrollProgress(threshold = 200): ScrollProgress {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [threshold]);
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const scrollToTop = useCallback(() => {
+    if (lenis) {
+      lenis.scrollTo(0, { duration: 1.2 });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [lenis]);
 
   return { isVisible, progress, scrollToTop };
 }
