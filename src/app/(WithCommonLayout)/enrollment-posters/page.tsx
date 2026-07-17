@@ -1,22 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
-import {
-  ArrowLeft, ArrowUp, ArrowDown, ArrowRight,
-  CheckCircle2, Download, LayoutTemplate, Share2, Sparkles,
-  Upload, ZoomIn, ZoomOut,
-} from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { FALLBACK_COURSE_TITLE } from "@/constants/courses";
-import { TEMPLATES, type PosterTemplate } from "@/constants/posterTemplates";
+import { TEMPLATES } from "@/constants/posterTemplates";
 import { getCourseType, getBatchNumber, getTemplatePriority } from "@/utils/posterHelpers";
 import { useAuth } from "@/hooks/useAuth";
 import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
@@ -24,6 +14,9 @@ import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
 import { useImageEditor } from "@/hooks/useImageEditor";
 import { usePosterGenerator } from "@/hooks/usePosterGenerator";
 import PageBackground from "@/components/shared/PageBackground";
+import PosterHeader from "./_components/PosterHeader";
+import CustomizationPanel from "./_components/CustomizationPanel";
+import PosterPreviewPanel from "./_components/PosterPreviewPanel";
 
 function CongratulationsPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -83,11 +76,11 @@ function CongratulationsPage() {
   const selectedCourseType = getCourseType(courseTitle);
   const templatePriority = getTemplatePriority(selectedCourseType, batchNumber);
 
-  const templateGroups: Record<string, PosterTemplate[]> = {
+  const templateGroups = {
     graphic: TEMPLATES.graphic,
     english: TEMPLATES.english.length > 0 ? TEMPLATES.english : TEMPLATES.graphic,
     general: TEMPLATES.graphic,
-  };
+  } as const;
   const activeTemplateGroup = templateGroups[selectedCourseType];
   const courseTemplates = templatePriority.map((i) => activeTemplateGroup[i]).filter(Boolean);
   const resolvedTemplates = courseTemplates.length > 0 ? courseTemplates : activeTemplateGroup;
@@ -179,159 +172,42 @@ function CongratulationsPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
-          <Card className="mb-8 border-primary/20 bg-[#0a1610]/90 shadow-[0_0_50px_hsl(156_70%_42%/0.08)]">
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 bg-primary/15 border border-primary/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="w-8 h-8 text-green-600" />
-              </div>
-              <h1 className="text-3xl font-bold text-white mb-2">Congratulations, {userName.split(" ")[0]}!</h1>
-              <p className="text-white/75 max-w-2xl mx-auto">
-                You have successfully enrolled in the <strong>{courseTitle || "Graphic Design with Freelancing"}</strong> course.
-                Download your welcome poster below and share your new journey!
-              </p>
-            </CardContent>
-          </Card>
+          <PosterHeader userName={userName} courseTitle={courseTitle} />
 
           <div className="grid lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-5 space-y-6">
-              <Card className="bg-[#0a1610]/90 border-white/10 text-white">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <LayoutTemplate className="w-4 h-4" />
-                    Choose Template
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-4">
-                  {resolvedTemplates.map((template, index) => (
-                    <div
-                      key={template.id}
-                      onClick={() => setSelectedTemplateIndex(index)}
-                      className={`cursor-pointer rounded-lg border-2 overflow-hidden relative aspect-square transition-all ${selectedTemplateIndex === index ? "border-green-500 ring-2 ring-green-500/30" : "border-white/10 hover:border-white/30"}`}
-                    >
-                      <Image src={template.src} alt={template.name} width={100} height={100} className="w-full h-full object-cover" />
-                      {selectedTemplateIndex === index && (
-                        <div className="absolute top-2 right-2 bg-green-600 text-white p-1 rounded-full">
-                          <CheckCircle2 className="w-3 h-3" />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
+            <CustomizationPanel
+              templates={resolvedTemplates}
+              selectedTemplateIndex={selectedTemplateIndex}
+              onSelectTemplate={setSelectedTemplateIndex}
+              enrollments={enrollments}
+              selectedEnrollmentValue={selectedEnrollmentValue}
+              onEnrollmentChange={setSelectedEnrollmentId}
+              userName={userName}
+              onUserNameChange={setUserName}
+              userImage={userImage}
+              onImageUpload={handleImageUpload}
+              batchNo={batchNo}
+              imageOffset={imageOffset}
+              imageZoom={imageZoom}
+              onMoveImage={moveImage}
+              onZoomIn={zoomIn}
+              onZoomOut={zoomOut}
+              onResetImage={resetImage}
+              onPreviewPointerDown={onPreviewPointerDown}
+              onPreviewPointerMove={onPreviewPointerMove}
+              onPreviewPointerUp={onPreviewPointerUp}
+              previewImgRef={previewImgRef}
+              MIN_ZOOM={MIN_ZOOM}
+              MAX_ZOOM={MAX_ZOOM}
+              ZOOM_STEP={ZOOM_STEP}
+              setImageZoom={setImageZoom}
+            />
 
-              <Card className="bg-[#0a1610]/90 border-white/10 text-white">
-                <CardHeader>
-                  <CardTitle className="text-lg">Customize Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-white/80">select Course</Label>
-                    <Select value={selectedEnrollmentValue} onValueChange={setSelectedEnrollmentId}>
-                      <SelectTrigger className="bg-[#0d1f12] border-primary/25 text-white data-[placeholder]:text-white/45">
-                        <SelectValue placeholder="Select a course" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[#0d1f12] border-primary/30 text-white">
-                        {enrollments.map((enrollment) => {
-                          const title = enrollment.batchId.courseId.title || enrollment.course?.title || enrollment.courseId?.title || "Unknown Course";
-                          return (
-                            <SelectItem key={enrollment._id} value={enrollment._id} className="text-white focus:bg-primary/15 focus:text-white">
-                              {title}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-white/80">Student Name</Label>
-                    <Input value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Enter your full name" className="bg-[#0d1f12] border-primary/25 text-white placeholder:text-white/40" />
-                  </div>
-
-                  <div className="space-y-2 hidden">
-                    <Label className="text-white/80">Batch ID</Label>
-                    <Input value={batchNo} readOnly placeholder="e.g. BATCH-06" className="bg-[#0d1f12] border-primary/25 text-white placeholder:text-white/40" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-white/80">Profile Photo</Label>
-                    <div className="border-2 border-dashed border-primary/20 rounded-lg p-6 hover:bg-primary/5 transition-colors text-center">
-                      <input type="file" id="image-upload" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                      <label htmlFor="image-upload" className="cursor-pointer block w-full h-full">
-                        {userImage ? (
-                          <div className="mx-auto">
-                            <div
-                              className="relative w-24 h-24 mx-auto rounded-full overflow-hidden touch-none cursor-grab"
-                              ref={previewImgRef}
-                              onPointerDown={onPreviewPointerDown}
-                              onPointerMove={onPreviewPointerMove}
-                              onPointerUp={onPreviewPointerUp}
-                              onPointerCancel={onPreviewPointerUp}
-                              style={{ touchAction: "none" }}
-                            >
-                              <Image src={userImage} alt="Preview" fill sizes="96px" className="object-cover" />
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 hover:opacity-100 transition-opacity">
-                                <Upload className="w-6 h-6 text-white" />
-                              </div>
-                            </div>
-
-                            <div className="mt-3 space-y-3">
-                              <div className="flex items-center justify-center gap-2">
-                                <div className="grid grid-cols-3 gap-2 items-center">
-                                  <div className="col-span-3 flex justify-center">
-                                    <Button size="sm" variant="outline" onClick={() => moveImage(0, -0.05)}><ArrowUp className="w-4 h-4" /></Button>
-                                  </div>
-                                  <Button size="sm" variant="outline" onClick={() => moveImage(-0.05, 0)}><ArrowLeft className="w-4 h-4" /></Button>
-                                  <div className="flex items-center justify-center space-x-2">
-                                    <Button size="sm" variant="ghost" onClick={resetImage}>Reset</Button>
-                                    <span className="text-xs text-white/55">X: {Math.round(imageOffset.x * 100)}% Y: {Math.round(imageOffset.y * 100)}% Zoom: {Math.round(imageZoom * 100)}%</span>
-                                  </div>
-                                  <Button size="sm" variant="outline" onClick={() => moveImage(0.05, 0)}><ArrowRight className="w-4 h-4" /></Button>
-                                  <div className="col-span-3 flex justify-center">
-                                    <Button size="sm" variant="outline" onClick={() => moveImage(0, 0.05)}><ArrowDown className="w-4 h-4" /></Button>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="flex items-center justify-center gap-2">
-                                <Button size="sm" variant="outline" onClick={zoomOut}><ZoomOut className="w-4 h-4" /></Button>
-                                <input type="range" min={MIN_ZOOM} max={MAX_ZOOM} step={ZOOM_STEP} value={imageZoom} onChange={(e) => setImageZoom(Number(e.target.value))} className="w-40" />
-                                <Button size="sm" variant="outline" onClick={zoomIn}><ZoomIn className="w-4 h-4" /></Button>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div>
-                            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2 text-green-500">
-                              <Upload className="w-6 h-6" />
-                            </div>
-                            <span className="text-sm font-medium text-white/70">Click to upload photo</span>
-                          </div>
-                        )}
-                      </label>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="lg:col-span-7">
-              <Card className="h-full border border-white/10 shadow-lg bg-[#0a1610]/90 backdrop-blur-sm sticky top-24 flex items-center justify-center">
-                <CardContent className="p-6">
-                  <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-[#0a1610] border border-white/10 shadow-inner mb-6">
-                    <canvas ref={canvasRef} className="w-full h-full object-contain" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button onClick={downloadPoster} className="w-full bg-green-600 hover:bg-green-700 sm:h-12 sm:text-lg">
-                      <Download className="w-5 h-5 mr-2" />Download Poster
-                    </Button>
-                    <Button onClick={sharePoster} variant="outline" className="w-full sm:h-12 sm:text-lg border-primary/35 text-primary hover:bg-primary/10">
-                      <Share2 className="w-5 h-5 mr-2" />Share
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <PosterPreviewPanel
+              canvasRef={canvasRef}
+              onDownload={downloadPoster}
+              onShare={sharePoster}
+            />
           </div>
         </div>
       </div>

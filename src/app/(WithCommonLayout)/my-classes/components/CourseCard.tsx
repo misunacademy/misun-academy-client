@@ -4,7 +4,7 @@ import { memo } from "react";
 import { CheckCircle2, PlayCircle, Calendar } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useGetCourseProgressQuery } from "@/redux/api/courseApi";
+import { useGetCourseProgressQuery } from "@/redux/api/courseEnrollmentApi";
 import type { EnrolledCourse } from "../types";
 import { AnimatedBorder } from "@/components/shared/AnimatedBorder";
 
