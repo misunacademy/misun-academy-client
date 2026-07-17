@@ -7,8 +7,6 @@ import AboutMissionVisionSection from './_components/AboutMissionVisionSection';
 import AboutCtaSection from './_components/AboutCtaSection';
 import { ajeful, debrotto, mehedi, mithun, neyemur, nur, nur_2, puspita, sakin } from "@/assets/teamMembers/index";
 
-export const revalidate = 86400;
-
 export const metadata = genMeta({
   title: 'আমাদের সম্পর্কে | MISUN Academy',
   description: 'MISUN Academy-র লক্ষ্য ও ভিশন। আমাদের টিম সম্পর্কে জানুন এবং ডিজিটাল শিক্ষার এই যাত্রায় অংশীদার হন। | Learn about MISUN Academy, our mission, vision, and the team behind Bangladesh\'s leading graphic design and freelancing courses.',

@@ -2,8 +2,6 @@ import { generateMetadata as genMeta } from '@/lib/generateMetadata';
 import type { Metadata } from 'next';
 import FeedbackClient from './FeedbackClient';
 
-export const revalidate = 3600;
-
 export const metadata: Metadata = genMeta({
   title: 'Student Feedback & Testimonials | MISUN Academy',
   description:

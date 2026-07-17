@@ -61,8 +61,6 @@ export async function generateMetadata({
   });
 }
 
-export const revalidate = 3600;
-
 // ─── Static Params (optional SSG) ───────────────────────────────────────────
 
 export function generateStaticParams() {
