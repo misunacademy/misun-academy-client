@@ -1,13 +1,23 @@
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function FeedbackLoading() {
-    return (
-        <div className="flex min-h-[60vh] items-center justify-center">
-            <div className="space-y-4 text-center">
-                <div className="relative h-16 w-16 mx-auto">
-                    <div className="absolute inset-0 rounded-full border-4 border-primary/20"></div>
-                    <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
-                </div>
-                <p className="text-muted-foreground">ফিডব্যাক ফর্ম লোড হচ্ছে...</p>
-            </div>
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center p-8">
+      <div className="w-full max-w-2xl space-y-6">
+        <div className="space-y-2 text-center">
+          <Skeleton className="mx-auto h-8 w-[300px]" />
+          <Skeleton className="mx-auto h-4 w-[400px]" />
         </div>
-    );
+        <div className="space-y-4 rounded-xl border p-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ))}
+          <Skeleton className="h-10 w-32" />
+        </div>
+      </div>
+    </div>
+  );
 }

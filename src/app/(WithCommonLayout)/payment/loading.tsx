@@ -1,13 +1,21 @@
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function PaymentLoading() {
-    return (
-        <div className="flex min-h-[60vh] items-center justify-center">
-            <div className="space-y-4 text-center">
-                <div className="relative h-16 w-16 mx-auto">
-                    <div className="absolute inset-0 rounded-full border-4 border-primary/20"></div>
-                    <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
-                </div>
-                <p className="text-muted-foreground">পেমেন্ট তথ্য লোড হচ্ছে...</p>
-            </div>
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center p-8">
+      <div className="w-full max-w-lg space-y-6">
+        <div className="space-y-2 text-center">
+          <Skeleton className="mx-auto h-8 w-[250px]" />
+          <Skeleton className="mx-auto h-4 w-[350px]" />
         </div>
-    );
+        <div className="space-y-4 rounded-xl border p-6">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+        <Skeleton className="mx-auto h-10 w-40" />
+      </div>
+    </div>
+  );
 }

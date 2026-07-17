@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Skeleton } from 'boneyard-js/react'
 import { useParams, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
@@ -103,15 +104,8 @@ function VerifyCertificateContent() {
         );
     }
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="w-10 h-10 animate-spin" />
-            </div>
-        );
-    }
-
     return (
+        <Skeleton name="VerifyCertificatePage" loading={isLoading}>
         <div className="max-w-5xl mx-auto p-6 md:p-8 space-y-5">
             <Card>
                 <CardHeader>
@@ -154,6 +148,7 @@ function VerifyCertificateContent() {
                 </CardContent>
             </Card>
         </div>
+        </Skeleton>
     );
 }
 
