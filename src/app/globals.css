@@ -93,7 +93,12 @@
     @apply bg-background text-foreground;
   }
 
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
   ::-webkit-scrollbar-thumb {
     background: hsl(var(--primary));
+    border-radius: 999px;
   }
 }
