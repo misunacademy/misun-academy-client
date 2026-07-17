@@ -1,5 +1,6 @@
 "use client";
 
+import { Skeleton } from 'boneyard-js/react'
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Loader2, ChevronLeft } from "lucide-react";
@@ -67,18 +68,9 @@ export default function MyClassesCertificatesPage() {
     }
   };
 
-  if (isLoading || isEnrollmentsLoading) {
-    return (
-      <AuthGuard>
-        <div className="min-h-[70vh] flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </AuthGuard>
-    );
-  }
-
   return (
     <AuthGuard>
+      <Skeleton name="CertificatesPage" loading={isLoading || isEnrollmentsLoading}>
       <PageBackground>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-6">
           <div className="flex items-center justify-between gap-3">
@@ -105,6 +97,7 @@ export default function MyClassesCertificatesPage() {
           <CertificateHistoryList certificates={certificates} getCourseTitle={getCourseTitle} getBatchTitle={getBatchTitle} />
         </div>
       </PageBackground>
+      </Skeleton>
     </AuthGuard>
   );
 }

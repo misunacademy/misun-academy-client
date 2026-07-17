@@ -1,5 +1,6 @@
 "use client";
 
+import { Skeleton } from 'boneyard-js/react'
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
@@ -40,34 +41,21 @@ const MyClassesPage = () => {
     (course) => course.accessType === "special"
   );
 
-  if (dashboardLoading) {
-    return (
-      <div
-        className="relative min-h-[60vh] flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-[#0a0f18] to-surface"
-      >
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-white/40 text-sm">Loading your classes…</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 bg-surface">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Failed to load your courses. Please try refreshing the page.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
   const firstName = user?.name?.split(" ")[0] ?? "Student";
 
   return (
     <AuthGuard>
+      <Skeleton name="MyClassesPage" loading={dashboardLoading}>
+      {error ? (
+        <div className="p-6 bg-surface">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Failed to load your courses. Please try refreshing the page.
+            </AlertDescription>
+          </Alert>
+        </div>
+      ) : (
       <div
         className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#0a0f18] via-surface to-surface-darker"
       >
@@ -181,6 +169,8 @@ const MyClassesPage = () => {
           </Tabs>
         </div>
       </div>
+      )}
+      </Skeleton>
     </AuthGuard>
   );
 };

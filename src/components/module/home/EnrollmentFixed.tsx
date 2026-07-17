@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type MouseEvent } from 'react';
+import { Skeleton } from 'boneyard-js/react'
 import Link from 'next/link';
 import { CalendarCheck, CalendarX, Rocket, X } from 'lucide-react';
 import { BatchResponse } from '@/redux/api/batchApi';
@@ -134,32 +135,15 @@ export default function EnrollmentFixed() {
     };
     const { batch, isLoading, isError } = useCurrentBatch();
 
-    if (isLoading) {
-        return (
-            <div
-                className="
-        fixed bottom-5 left-5
-        bg-[#07120d]/95 border border-primary/20
-        shadow-[0_12px_30px_hsl(156_70%_42%/0.18)] rounded-md
-        p-4 max-w-xs
-        font-bangla text-white/80
-        text-sm font-medium
-        z-50
-      "
-                style={{ backdropFilter: 'blur(6px)' }}
-            >
-                Loading enrollment details...
-            </div>
-        );
-    }
-
-    if (isError || !batch) return null;
-
     return (
-        <EnrollmentFixedContent
-            key={batch._id ?? 'batch'}
-            batch={batch}
-            onScrollToEnroll={scrollToEnrollSection}
-        />
+        <Skeleton name="EnrollmentFixed" loading={isLoading}>
+            {isError || !batch ? null : (
+                <EnrollmentFixedContent
+                    key={batch._id ?? 'batch'}
+                    batch={batch}
+                    onScrollToEnroll={scrollToEnrollSection}
+                />
+            )}
+        </Skeleton>
     );
 }

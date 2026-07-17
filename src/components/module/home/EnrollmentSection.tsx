@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from 'react';
+import { Skeleton } from 'boneyard-js/react'
 import { CalendarCheck, CalendarX, ArrowRight } from "lucide-react";
 import Countdown from "../course/Countdown";
 import { format } from "date-fns";
@@ -151,25 +152,14 @@ function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
 export const EnrollmentSection = () => {
     const { batch, isLoading } = useCurrentBatch();
 
-    if (isLoading) {
-        return (
-            <section id="enroll-now" className="relative scroll-mt-24 py-20 px-4 bg-surface font-bangla">
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-                <div className="max-w-4xl mx-auto text-center">
-                    <p className="text-white/40 text-sm animate-pulse">লোড হচ্ছে...</p>
-                </div>
-            </section>
-        );
-    }
-
-    if (!batch) return null;
-
     return (
-        <section
-            id="enroll-now"
-            data-dark-section
-            className="relative scroll-mt-24 py-24 px-4 bg-surface overflow-hidden font-bangla"
-        >
+        <Skeleton name="EnrollmentSection" loading={isLoading}>
+            {!batch ? null : (
+                <section
+                    id="enroll-now"
+                    data-dark-section
+                    className="relative scroll-mt-24 py-24 px-4 bg-surface overflow-hidden font-bangla"
+                >
             {/* ── Top edge ── */}
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
@@ -235,8 +225,9 @@ export const EnrollmentSection = () => {
 
             </div>
 
-            {/* ── Bottom edge ── */}
-            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        </section>
+                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+            </section>
+        )}
+    </Skeleton>
     );
 };

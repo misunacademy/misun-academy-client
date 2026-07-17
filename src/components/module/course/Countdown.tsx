@@ -1,4 +1,7 @@
+"use client";
+
 import { useEffect, useMemo, useState } from 'react';
+import { Skeleton } from 'boneyard-js/react'
 import { intervalToDuration, isBefore, isAfter } from "date-fns";
 import { FadeIn } from '@/components/ui/FadeIn';
 import { useCurrentBatch } from '@/hooks/useCurrentBatch';
@@ -142,39 +145,39 @@ const Countdown = ({ batch: batchProp, courseSlug }: CountdownProps = {}) => {
     return () => clearInterval(interval);
   }, [batch, enrollmentStart, enrollmentEnd]);
 
-  if (isLoading) return null;
-  if (!batch || !timeLeft || !label) return null;
-
   return (
-    <FadeIn delay={0.1} className="mt-8 mb-4" style={themeVars}>
-      <div className="text-center space-y-6">
-        {/* Status badge */}
-        <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full
-          bg-primary/10 border border-primary/25 backdrop-blur-sm
-          shadow-[0_0_20px_hsl(156_70%_42%/0.12)]">
-          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
-          <p className="text-xs font-semibold  uppercase text-primary/90 font-bangla">
-            {label}
-          </p>
-        </div>
+    <Skeleton name="Countdown" loading={isLoading}>
+      {!batch || !timeLeft || !label ? null : (
+        <FadeIn delay={0.1} className="mt-8 mb-4" style={themeVars}>
+          <div className="text-center space-y-6">
+            <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full
+              bg-primary/10 border border-primary/25 backdrop-blur-sm
+              shadow-[0_0_20px_hsl(156_70%_42%/0.12)]">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+              <p className="text-xs font-semibold  uppercase text-primary/90 font-bangla">
+                {label}
+              </p>
+            </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-          {timeLeft.months > 0 && (
-            <>
-              <TimeBlock value={timeLeft.months} label="মাস" />
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+              {timeLeft.months > 0 && (
+                <>
+                  <TimeBlock value={timeLeft.months} label="মাস" />
+                  <Colon />
+                </>
+              )}
+              <TimeBlock value={timeLeft.days} label="দিন" />
               <Colon />
-            </>
-          )}
-          <TimeBlock value={timeLeft.days} label="দিন" />
-          <Colon />
-          <TimeBlock value={timeLeft.hours} label="ঘণ্টা" />
-          <Colon />
-          <TimeBlock value={timeLeft.minutes} label="মিনিট" />
-          <Colon />
-          <TimeBlock value={timeLeft.seconds} label="সেকেন্ড" />
-        </div>
-      </div>
-    </FadeIn>
+              <TimeBlock value={timeLeft.hours} label="ঘণ্টা" />
+              <Colon />
+              <TimeBlock value={timeLeft.minutes} label="মিনিট" />
+              <Colon />
+              <TimeBlock value={timeLeft.seconds} label="সেকেন্ড" />
+            </div>
+          </div>
+        </FadeIn>
+      )}
+    </Skeleton>
   );
 };
 

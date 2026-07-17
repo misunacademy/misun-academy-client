@@ -1,5 +1,6 @@
 "use client"
 
+import { Skeleton } from 'boneyard-js/react'
 import { useGetCourseBySlugQuery } from "@/redux/api/courseApi"
 import { useGetCurrentEnrollmentBatchQuery, type BatchResponse } from "@/redux/api/batchApi"
 import { BannerBackground, BannerContent } from "./banner"
@@ -26,8 +27,6 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
 
   const isLoading = courseSlug ? (courseBySlugLoading || (!!slugCourseId && slugBatchLoading)) : false
 
-  if (isLoading) return null
-
   const batchNumber = Number(resolvedBatch?.title?.split(" ")[1] || 0)
 
   const formatDate = (dateStr: Date | string | undefined | null) =>
@@ -44,15 +43,17 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
   const price = resolvedBatch?.price
 
   return (
-    <section className="relative bg-surface overflow-hidden font-bangla">
-      <BannerBackground />
+    <Skeleton name="BannerSection" loading={isLoading}>
+      <section className="relative bg-surface overflow-hidden font-bangla">
+        <BannerBackground />
 
-      <BannerContent
-        batchNumber={batchNumber}
-        price={price ?? 0}
-        enrollmentPeriod={enrollmentPeriod}
-        courseSlug={courseSlug}
-      />
-    </section>
+        <BannerContent
+          batchNumber={batchNumber}
+          price={price ?? 0}
+          enrollmentPeriod={enrollmentPeriod}
+          courseSlug={courseSlug}
+        />
+      </section>
+    </Skeleton>
   )
 }

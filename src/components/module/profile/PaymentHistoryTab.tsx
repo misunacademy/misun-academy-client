@@ -1,3 +1,6 @@
+"use client";
+
+import { Skeleton } from 'boneyard-js/react'
 import { Loader2, CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useGetMyPaymentsQuery } from "@/redux/api/paymentApi";
 import type { PaymentResponse } from "@/redux/api/paymentApi";
@@ -59,23 +62,13 @@ export function PaymentHistoryTab() {
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
+    return (
+        <Skeleton name="PaymentHistoryTab" loading={isLoading}>
+        {error ? (
             <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
                 <p className="text-red-400">Failed to load payment history</p>
             </div>
-        );
-    }
-
-    return (
+        ) : (
         <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
             {/* Ambient glow inside right panel */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
@@ -224,5 +217,7 @@ export function PaymentHistoryTab() {
                 ))}
             </div>
         </div>
+        )}
+    </Skeleton>
     );
 }
