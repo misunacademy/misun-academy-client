@@ -50,7 +50,6 @@ export default function AdminSettingsContent() {
       }).unwrap();
       toast.success(`Popup ${value ? "enabled" : "disabled"}`);
     } catch (error) {
-      console.error("Popup toggle save error", error);
       toast.error("Unable to update popup status");
     }
   }, [popupImageUrl, popupLink, maintenanceEnabled, maintenanceTitle, maintenanceMessage, maFacebookGroupLink, maWhatsappGroupLink, epFacebookGroupLink, epWhatsappGroupLink, updateSettings]);
@@ -72,7 +71,6 @@ export default function AdminSettingsContent() {
       }).unwrap();
       toast.success(`Maintenance mode ${value ? "enabled" : "disabled"}`);
     } catch (error) {
-      console.error("Maintenance toggle save error", error);
       toast.error("Unable to update maintenance mode");
     }
   }, [popupEnabled, popupImageUrl, popupLink, maintenanceTitle, maintenanceMessage, maFacebookGroupLink, maWhatsappGroupLink, epFacebookGroupLink, epWhatsappGroupLink, updateSettings]);
@@ -86,7 +84,7 @@ export default function AdminSettingsContent() {
         maintenanceEnabled: false, maintenanceTitle: "", maintenanceMessage: "",
         maFacebookGroupLink: "", maWhatsappGroupLink: "",
         epFacebookGroupLink: "", epWhatsappGroupLink: "",
-      }).unwrap().catch((error) => { console.error("Seed default settings error", error); });
+      }).unwrap().catch(() => {});
       return;
     }
 
@@ -114,7 +112,6 @@ export default function AdminSettingsContent() {
       setPopupImageUrl(result.data.url);
       toast.success("Popup image uploaded");
     } catch (error) {
-      console.error("Upload image error", error);
       toast.error("Image upload failed");
     }
   }, [uploadImage]);
@@ -130,7 +127,6 @@ export default function AdminSettingsContent() {
       }).unwrap();
       toast.success("Settings saved successfully");
     } catch (error) {
-      console.error("Save settings error", error);
       toast.error("Failed to save settings");
     } finally {
       setSaving(false);
@@ -155,7 +151,6 @@ export default function AdminSettingsContent() {
       toast.success("Profile photo updated successfully.");
       if (profileFileInputRef.current) profileFileInputRef.current.value = "";
     } catch (error) {
-      console.error("Profile upload error", error);
       toast.error("Failed to upload profile photo.");
     }
   }, [uploadImage, updateProfile, updateUserProfile]);

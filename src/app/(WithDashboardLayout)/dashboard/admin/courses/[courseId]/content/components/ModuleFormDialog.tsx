@@ -1,3 +1,5 @@
+"use client"
+
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useCreateCourseModuleMutation, useUpdateCourseModuleMutation } from "@/redux/api/moduleApi";

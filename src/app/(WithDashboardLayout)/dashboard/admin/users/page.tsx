@@ -78,7 +78,7 @@ export default function AdminUsers() {
     : (roleFilter.toLowerCase() as GetAllUsersParams['role']), [roleFilter]);
   const statusParam = useMemo(() => statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'suspended' | 'deleted'), [statusFilter]);
 
-  const { data, isLoading, isFetching } = useGetAllUsersQuery(
+  const { data, isLoading, isFetching, isError } = useGetAllUsersQuery(
     {
       page,
       limit,
@@ -263,7 +263,6 @@ export default function AdminUsers() {
 
       toast.success('Excel sheet exported successfully', { id: toastId });
     } catch (error) {
-      console.error('Excel export failed:', error);
       toast.error('Failed to export Excel sheet', { id: toastId });
     } finally {
       setIsExporting(false);
@@ -281,6 +280,14 @@ export default function AdminUsers() {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-destructive">Failed to load users</p>
       </div>
     );
   }

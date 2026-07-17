@@ -72,9 +72,13 @@ export default function BatchIncompleteReminderCard({ courses }: { courses: Cour
               <SelectValue placeholder="Select course" />
             </SelectTrigger>
             <SelectContent>
-              {courses.map((course) => (
-                <SelectItem key={course._id} value={course._id}>{course.title}</SelectItem>
-              ))}
+              {courses.length === 0 ? (
+                <div className="px-2 py-4 text-sm text-muted-foreground text-center">No courses available</div>
+              ) : (
+                courses.map((course) => (
+                  <SelectItem key={course._id} value={course._id}>{course.title}</SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -90,11 +94,15 @@ export default function BatchIncompleteReminderCard({ courses }: { courses: Cour
               <SelectValue placeholder={courseId ? 'Select batch' : 'Select course first'} />
             </SelectTrigger>
             <SelectContent>
-              {batches.map((batch) => (
-                <SelectItem key={batch._id} value={batch._id}>
-                  {batch.title} ({batch.status})
-                </SelectItem>
-              ))}
+              {batches.length === 0 ? (
+                <div className="px-2 py-4 text-sm text-muted-foreground text-center">No batches available</div>
+              ) : (
+                batches.map((batch) => (
+                  <SelectItem key={batch._id} value={batch._id}>
+                    {batch.title} ({batch.status})
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>

@@ -24,11 +24,15 @@ export function BatchSelector({ batches, selectedBatchId, onChange }: BatchSelec
           <SelectValue placeholder="Select a batch" />
         </SelectTrigger>
         <SelectContent>
-          {batches.map((batch) => (
-            <SelectItem key={batch._id} value={batch._id}>
-              {batch.title} - {batch.status}
-            </SelectItem>
-          ))}
+          {batches.length === 0 ? (
+            <div className="px-2 py-4 text-sm text-muted-foreground text-center">No batches available</div>
+          ) : (
+            batches.map((batch) => (
+              <SelectItem key={batch._id} value={batch._id}>
+                {batch.title} - {batch.status}
+              </SelectItem>
+            ))
+          )}
         </SelectContent>
       </Select>
     </div>

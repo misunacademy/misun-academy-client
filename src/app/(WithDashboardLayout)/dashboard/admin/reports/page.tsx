@@ -180,7 +180,6 @@ export default function AdminReports() {
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error('Export failed:', error);
     } finally {
       setIsExporting(false);
     }

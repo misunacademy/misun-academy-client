@@ -1,3 +1,5 @@
+"use client"
+
 import { useDeleteModuleLessonMutation, useGetModuleLessonsQuery } from "@/redux/api/lessonApi";
 import { useState } from "react";
 import { toast } from "sonner";
