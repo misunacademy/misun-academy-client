@@ -200,7 +200,6 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                                                     fill
                                                     sizes="400px"
                                                     className="object-cover rounded-xl border group-hover:opacity-90 transition-opacity"
-                                                    unoptimized
                                                 />
                                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-xl">
                                                 <Button size="icon" variant="secondary" className="w-8 h-8 rounded-full shadow-sm pointer-events-none">
@@ -217,7 +216,6 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                                             width={800}
                                             height={600}
                                             className="w-full h-auto max-h-[85vh] object-contain rounded-xl"
-                                            unoptimized
                                         />
                                     </DialogContent>
                                 </Dialog>
@@ -242,8 +240,7 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                                                 fill
                                                 sizes="400px"
                                                 className="object-cover rounded-xl border group-hover:opacity-90 transition-opacity"
-                                                unoptimized
-                                            />
+                                                />
                                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-xl">
                                                 <Button size="icon" variant="secondary" className="w-8 h-8 rounded-full shadow-sm pointer-events-none">
                                                     <Maximize2 className="w-4 h-4 text-gray-200" />
@@ -259,7 +256,6 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                                             width={800}
                                             height={600}
                                             className="w-full h-auto max-h-[85vh] object-contain rounded-xl"
-                                            unoptimized
                                         />
                                     </DialogContent>
                                 </Dialog>
