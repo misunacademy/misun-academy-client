@@ -1,5 +1,6 @@
 "use client"
 
+import { useRef } from "react"
 import { useFormContext, Controller } from "react-hook-form"
 import { cn } from "@/lib/utils"
 import {
@@ -40,7 +41,16 @@ export function SelectField({
   onValueChange,
   labelClassName,
 }: SelectFieldProps) {
-  const { control, formState: { errors } } = useFormContext()
+  const { control, watch, formState: { errors } } = useFormContext()
+  const watchedValue = watch(name)
+  const mountedValueRef = useRef<string | undefined>(undefined)
+  const forceKeyRef = useRef(0)
+
+  if (mountedValueRef.current !== watchedValue) {
+    mountedValueRef.current = watchedValue
+    forceKeyRef.current += 1
+  }
+
   const error = name.split(".").reduce<unknown>((acc, key) => {
     if (acc && typeof acc === "object" && key in acc) {
       return (acc as Record<string, unknown>)[key]
@@ -63,11 +73,12 @@ export function SelectField({
         control={control}
         render={({ field }) => (
           <Select
+            key={forceKeyRef.current}
             onValueChange={(value) => {
               field.onChange(value)
               onValueChange?.(value)
             }}
-            value={field.value || ""}
+            value={watchedValue || ""}
             disabled={disabled}
           >
             <SelectTrigger
