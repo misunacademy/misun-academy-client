@@ -42,7 +42,7 @@ export function CommunityLinksTab({ onSave }: CommunityLinksTabProps) {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end mt-4">
         <SubmitButton>Save Settings</SubmitButton>
       </div>
     </form>

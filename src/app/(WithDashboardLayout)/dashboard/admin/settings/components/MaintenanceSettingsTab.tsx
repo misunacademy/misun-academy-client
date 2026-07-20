@@ -57,7 +57,7 @@ export function MaintenanceSettingsTab({ onMaintenanceEnabledChange, onSave }: M
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end mt-4">
         <SubmitButton>Save Settings</SubmitButton>
       </div>
     </form>
