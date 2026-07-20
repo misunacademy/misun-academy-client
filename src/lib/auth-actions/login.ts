@@ -88,9 +88,12 @@ export async function signInWithGoogleAction(
       ? `${callbackURL}${callbackURL.includes('?') ? '&' : '?'}redirect_url=${encodeURIComponent(validatedRedirect)}`
       : callbackURL;
 
+    const errorCallbackURL = `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/auth?error=login_cancelled`;
+
     const result = await authServerApi.signInSocial({
       provider: 'google',
       callbackURL: finalCallbackUrl,
+      errorCallbackURL,
     });
 
     if (result.error) {
