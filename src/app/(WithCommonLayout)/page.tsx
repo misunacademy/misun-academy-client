@@ -6,6 +6,7 @@ import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import CourseJsonLd from '@/components/seo/CourseJsonLd';
 import { generateMetadata } from '@/lib/generateMetadata';
 import PageBackground from '@/components/shared/PageBackground';
+import { BackToTop, FloatingChat } from '@/components/shared';
 
 export const metadata = generateMetadata({
   title: 'কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স | MISUN Academy',
@@ -53,6 +54,14 @@ export default function page() {
       <HeroSection />
       <HomeDeferredSections />
       <EnrollmentFixed />
+
+
+      {/* Global Tech Support Chat widget */}
+      <FloatingChat />
+
+      {/* Global Back to Top Button */}
+      <BackToTop variant="glass-glow" />
+
     </PageBackground>
   );
 }

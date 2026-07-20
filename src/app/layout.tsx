@@ -6,8 +6,6 @@ import Providers from '@/providers/Providers';
 import MetaPixelPageViewTracker from '@/components/analytics/MetaPixelPageViewTracker';
 import type { Metadata } from 'next';
 import { Hind_Siliguri, Mona_Sans } from 'next/font/google';
-import FloatingChat from '@/components/shared/FloatingChat';
-import BackToTop from '@/components/shared/BackToTop';
 import OrganizationJsonLd from '@/components/seo/OrganizationJsonLd';
 import WebSiteJsonLd from '@/components/seo/WebSiteJsonLd';
 import './globals.css';
@@ -96,12 +94,7 @@ export default function RootLayout({
           {/* Vercel Analytics (optional) */}
           <Analytics />
 
-          {/* Global Tech Support Chat widget */}
-          <FloatingChat />
-
-          {/* Global Back to Top Button */}
-          <BackToTop variant="glass-glow" />
-
+      
           <div id="main-content">{children}</div>
         </Providers>
       </body>
