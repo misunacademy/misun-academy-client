@@ -149,15 +149,24 @@ export default function BatchEdit() {
     }
 
     return (
-        <div className="space-y-6 p-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Edit Batch</CardTitle>
-                    <CardDescription>Update batch information</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Button variant="ghost" onClick={() => router.push('/dashboard/admin/batch')} className="mb-2">← Back to Batches</Button>
+                        <div>
+                            <h1 className="text-3xl font-bold">Edit Batch</h1>
+                            <p className="text-muted-foreground">Update batch information</p>
+                        </div>
+                    </div>
+                </div>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Batch Details</CardTitle>
+                        <CardDescription>Update the batch information below</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-6">
                             <SelectField
                                 name="selectedCourse"
                                 label="Course"
@@ -185,19 +194,18 @@ export default function BatchEdit() {
                                 <InputField name="enrollmentStartDate" label="Enrollment Start" type="date" />
                                 <InputField name="enrollmentEndDate" label="Enrollment End" type="date" />
                             </div>
-
-                            <div className="flex gap-2 justify-end">
-                                <Button variant="outline" onClick={() => router.back()} className="gap-2">
-                                    Cancel
-                                </Button>
-                                <SubmitButton disabled={isUpdating} loadingText="Updating...">
-                                    Update Batch
-                                </SubmitButton>
-                            </div>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
-        </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <div className="flex gap-2 justify-end">
+                    <Button variant="outline" onClick={() => router.back()} className="gap-2">
+                        Cancel
+                    </Button>
+                    <SubmitButton disabled={isUpdating} loadingText="Updating...">
+                        Update Batch
+                    </SubmitButton>
+                </div>
+            </form>
+        </Form>
     );
 }
