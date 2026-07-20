@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 import { ArrowLeft, BookOpen, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,6 +22,8 @@ const AuthPage = () => {
     const { signIn, signUp, user, isAuthenticated, isLoading } = useAuth();
     const searchParams = useSearchParams();
     const redirectUrl = searchParams.get('redirect_url') || searchParams.get('redirectTo');
+    // Guard against multiple redirect attempts (e.g. cross-port SSO loop)
+    const isRedirecting = useRef(false);
 
     // handlers passed to forms
     const handleLogin = async (data: { email: string; password: string }) => {
@@ -47,6 +49,11 @@ const AuthPage = () => {
         if (isLoading) return;
 
         if (isAuthenticated && user) {
+            // Prevent multiple simultaneous redirect attempts (e.g. cross-port SSO loop
+            // where :3001 has no session yet and bounces back to :3000/auth/login).
+            if (isRedirecting.current) return;
+            isRedirecting.current = true;
+
             // Redirect priority:
             // 1) validated redirect_url (respects cross-client SSO)
             // 2) role/home fallback
