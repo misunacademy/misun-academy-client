@@ -3,20 +3,22 @@
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
 import Image from "next/image";
 import { Wrench, Clock } from "lucide-react";
+import { Skeleton } from "boneyard-js/react";
 import PageBackground from "@/components/shared/PageBackground";
 
-const FALLBACK_TITLE = "We’ll Be Back Soon";
+const FALLBACK_TITLE = "We'll Be Back Soon";
 const FALLBACK_MESSAGE =
-	"Misun Academy is undergoing scheduled maintenance to improve your learning experience. We’ll be back shortly.";
+	"Misun Academy is undergoing scheduled maintenance to improve your learning experience. We'll be back shortly.";
 
 	
 export default function MaintenancePage() {
-	const { data } = useGetSettingsQuery();
+	const { data, isLoading } = useGetSettingsQuery();
 
 	const maintenanceTitle = data?.data?.maintenanceTitle?.trim() || FALLBACK_TITLE;
 	const maintenanceMessage = data?.data?.maintenanceMessage?.trim() || FALLBACK_MESSAGE;
 
 	return (
+		<Skeleton name="maintenance-page" loading={isLoading}>
 		<PageBackground
 			gradient="bg-surface flex items-center justify-center"
 			dotOpacity="opacity-[0.04]"
@@ -103,5 +105,6 @@ export default function MaintenancePage() {
 
 			</div>
 		</PageBackground>
+		</Skeleton>
 	);
 }
