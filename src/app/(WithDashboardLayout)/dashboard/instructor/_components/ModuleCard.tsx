@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +16,11 @@ import { toast } from "sonner";
 import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
 import {
   ChevronDown, ChevronRight, Edit, Trash2, Video, FileText,
-  GripVertical, ArrowUp, ArrowDown, Plus, Eye,
+  GripVertical, ArrowUp, ArrowDown, Plus, Eye, ClipboardCheck,
 } from "lucide-react";
 import {
   useGetInstructorModuleLessonsQuery,
+  useGetInstructorModuleQuizzesQuery,
   useDeleteInstructorLessonMutation,
   type InstructorModule,
   type InstructorLesson,
@@ -46,8 +48,11 @@ export function ModuleCard({
   const [lessonDialog, setLessonDialog] = useState<{ open: boolean; mode: "create" | "edit"; data?: InstructorLesson }>({ open: false, mode: "create" });
   const [deleteLessonId, setDeleteLessonId] = useState<string | null>(null);
   const [playingLesson, setPlayingLesson] = useState<InstructorLesson | null>(null);
+  const router = useRouter();
   const [deleteLesson] = useDeleteInstructorLessonMutation();
   const { data: lessonsData, refetch: refetchLessons } = useGetInstructorModuleLessonsQuery(module._id, { skip: !expanded });
+  const { data: quizzesData } = useGetInstructorModuleQuizzesQuery(module._id, { skip: !expanded });
+  const quizzes = (quizzesData?.data || []) as any[];
   const lessons = (lessonsData?.data || []) as InstructorLesson[];
 
   const resolveLessonUrl = (lesson: InstructorLesson): string | null => {
@@ -83,7 +88,7 @@ export function ModuleCard({
                 <CardTitle className="text-sm">Module {position}: {module.title}</CardTitle>
                 <Badge variant={module.status === "published" ? "default" : "secondary"} className="text-xs">{module.status}</Badge>
               </div>
-              <CardDescription className="text-xs mt-0.5">{module.description} • {module.lessonCount} lessons • {module.estimatedDuration}</CardDescription>
+              <CardDescription className="text-xs mt-0.5">{module.description || "No description"} • {module.lessonCount} lessons{quizzes.length > 0 ? ` • ${quizzes.length} quizzes` : ""} • {module.estimatedDuration || "—"}</CardDescription>
             </div>
           </div>
           <div className="flex items-center gap-1 ml-2" onClick={e => e.stopPropagation()}>
@@ -135,6 +140,38 @@ export function ModuleCard({
                       <Trash2 className="h-3 w-3 text-destructive" />
                     </Button>
                   </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mt-4 mb-3">
+            <h4 className="font-medium text-sm">Quizzes</h4>
+            <Button variant="outline" size="sm" onClick={() => router.push(`/dashboard/instructor/quizzes/create?moduleId=${module._id}`)}>
+              <Plus className="h-4 w-4 mr-1" />Add Quiz
+            </Button>
+          </div>
+          {quizzes.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">No quizzes yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {quizzes.map((quiz: any, qi: number) => (
+                <div
+                  key={quiz._id}
+                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/30 cursor-pointer"
+                  onClick={() => router.push(`/dashboard/instructor/quizzes/${quiz._id}`)}
+                >
+                  <div className="flex items-center gap-2">
+                    <ClipboardCheck className="h-4 w-4 text-orange-500" />
+                    <div>
+                      <p className="text-sm font-medium">Quiz {qi + 1}: {quiz.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {quiz.totalQuestions || 0} questions · {quiz.totalMarks || 0} marks
+                        {quiz.timeLimit ? ` · ${quiz.timeLimit} min` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={quiz.status === "published" ? "default" : "secondary"} className="text-xs">{quiz.status}</Badge>
                 </div>
               ))}
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import {
   BookOpen, Users, Layers, Plus, Book,
@@ -48,15 +48,15 @@ function StatCard({ icon: Icon, label, value, color }: {
 }
 
 export default function InstructorDashboardPage() {
-  const { user } = useAuth();
-  const { data: dashboardData, isLoading: dashLoading } = useGetInstructorDashboardQuery();
-  const { data: coursesData, isLoading: coursesLoading } = useGetInstructorCoursesQuery();
+  const { user, isLoading: authLoading } = useAuth();
+  const { data: dashboardData, isLoading: dashLoading } = useGetInstructorDashboardQuery(undefined, { skip: !user });
+  const { data: coursesData, isLoading: coursesLoading } = useGetInstructorCoursesQuery(undefined, { skip: !user });
 
   const [moduleDialog, setModuleDialog] = useState<{ open: boolean; mode: "create" | "edit"; data?: InstructorModule }>({ open: false, mode: "create" });
   const [deleteModuleId, setDeleteModuleId] = useState<string | null>(null);
   const [deleteModule] = useDeleteInstructorModuleMutation();
 
-  const dashData = dashboardData?.data as { course?: { instructorId?: { name?: string; image?: string; avatar?: string } | null }; enrolledStudents?: number; activeBatches?: number; totalBatches?: number } | undefined;
+  const dashData = dashboardData?.data as { course?: { instructorId?: { name?: string; image?: string } | null }; enrolledStudents?: number; activeBatches?: number; totalBatches?: number } | undefined;
   const course = (coursesData?.data?.[0]) as InstructorCourse | undefined;
   const courseId = course?._id || "";
   const [selectedBatchId, setSelectedBatchId] = useState<string>("");
@@ -71,13 +71,18 @@ export default function InstructorDashboardPage() {
   const modules = useMemo(() => (modulesData?.data || []) as InstructorModule[], [modulesData?.data]);
   const [orderedModules, setOrderedModules] = useState<InstructorModule[]>([]);
   const [reorderModules, { isLoading: reordering }] = useReorderInstructorModulesMutation();
+  const isReordering = useRef(false);
 
   const instructorRecord = dashData?.course?.instructorId;
   const instructorName = instructorRecord?.name || user?.name || "";
-  const avatarUrl = instructorRecord?.image || instructorRecord?.avatar || user?.image || user?.avatar;
+  const avatarUrl = instructorRecord?.image || user?.image || user?.avatar;
   const initials = (instructorName || "Instructor").split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
 
-  useEffect(() => { setOrderedModules(modules); }, [modules]);
+  useEffect(() => {
+    if (!isReordering.current) {
+      setOrderedModules(modules);
+    }
+  }, [modules]);
 
   const handleDeleteModule = async () => {
     if (!deleteModuleId) return;
@@ -85,7 +90,6 @@ export default function InstructorDashboardPage() {
       await deleteModule(deleteModuleId).unwrap();
       toast.success("Module deleted");
       setDeleteModuleId(null);
-      refetch();
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
       toast.error(error?.data?.message || "Delete failed");
@@ -95,6 +99,7 @@ export default function InstructorDashboardPage() {
 
   const handleMoveModule = async (fromIndex: number, toIndex: number) => {
     if (toIndex < 0 || toIndex >= orderedModules.length) return;
+    isReordering.current = true;
     const next = [...orderedModules];
     const [moved] = next.splice(fromIndex, 1);
     next.splice(toIndex, 0, moved);
@@ -106,10 +111,12 @@ export default function InstructorDashboardPage() {
     } catch {
       setOrderedModules(modules);
       toast.error("Reorder failed");
+    } finally {
+      isReordering.current = false;
     }
   };
 
-  const isLoading = dashLoading || coursesLoading;
+  const isLoading = authLoading || dashLoading || coursesLoading;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -163,9 +170,12 @@ export default function InstructorDashboardPage() {
               </div>
               {course.shortDescription && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{course.shortDescription}</p>}
               <div className="flex flex-wrap gap-1.5 mt-2">
-                {course.batches?.map(b => (
-                  <Badge key={b._id} variant="outline" className="text-xs">Batch #{b.title.split(' ')[1]} · {b.currentEnrollment} students</Badge>
-                ))}
+                {course.batches?.map(b => {
+                  const batchNumber = b.title?.split(' ')?.[1] || b.batchNumber || '';
+                  return (
+                    <Badge key={b._id} variant="outline" className="text-xs">Batch #{batchNumber} · {b.currentEnrollment} students</Badge>
+                  );
+                })}
               </div>
             </div>
           </CardContent>

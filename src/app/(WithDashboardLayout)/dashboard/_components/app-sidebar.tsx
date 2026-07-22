@@ -1,5 +1,5 @@
 "use client";
-import { BookOpen, CalendarDays, ChevronUp, FileText, Home, User2, Settings, Group, DollarSign, Users, LogOut, Video, CreditCard, ShieldCheck, TrendingUp, Mail, GraduationCap, LayoutDashboard, KeyRound } from "lucide-react";
+import { BookOpen, CalendarDays, ChevronUp, FileText, Home, User2, Settings, Group, DollarSign, Users, LogOut, Video, CreditCard, ShieldCheck, TrendingUp, Mail, GraduationCap, LayoutDashboard, KeyRound, ClipboardCheck, Trophy } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from 'next/link';
 import {
@@ -64,7 +64,12 @@ const instructorItems = [
         url: "/dashboard/instructor/students",
         icon: User2,
     },
-        {
+    {
+        title: "Quizzes",
+        url: "/dashboard/instructor/quizzes",
+        icon: ClipboardCheck,
+    },
+    {
         title: "Settings",
         url: "/dashboard/instructor/settings",
         icon: Settings,
@@ -101,6 +106,16 @@ const adminItems = [
         title: "Grant Course Access",
         url: "/dashboard/admin/grant-access",
         icon: KeyRound,
+    },
+    {
+        title: "Quiz Management",
+        url: "/dashboard/admin/quizzes",
+        icon: ClipboardCheck,
+    },
+    {
+        title: "Gamification",
+        url: "/dashboard/admin/gamification",
+        icon: Trophy,
     },
     {
         title: "Payment Management",
