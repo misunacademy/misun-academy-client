@@ -7,11 +7,20 @@ import {
 import { toast } from "sonner";
 import { authServerApi } from '@/lib/auth-server-api';
 
+function getCSRFToken(): string | null {
+    if (typeof document === 'undefined') return null;
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
 const baseQuery = fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_BASE_API_URL,
     credentials: "include",
     prepareHeaders: (headers) => {
-
+        const csrfToken = getCSRFToken();
+        if (csrfToken) {
+            headers.set("X-CSRF-Token", csrfToken);
+        }
         return headers;
     },
 });
@@ -71,6 +80,11 @@ export const baseApi = createApi({
         'Employees',
         'SpecialAccessEnrollments',
         'Notifications',
+        'Quizzes',
+        'Questions',
+        'Attempts',
+        'Leaderboard',
+        'Zames',
     ],
     endpoints: () => ({}),
 });
