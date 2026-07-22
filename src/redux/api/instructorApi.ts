@@ -190,6 +190,88 @@ const instructorApi = baseApi.injectEndpoints({
       query: (lessonId) => ({ url: `/instructor/lessons/${lessonId}`, method: "DELETE" }),
       invalidatesTags: ["Lessons", "Modules"],
     }),
+
+    // ── Quizzes (instructor-scoped) ───────────────────────────────────────────
+    getInstructorModuleQuizzes: build.query<{ data: unknown[] }, string>({
+      query: (moduleId) => ({ url: `/instructor/modules/${moduleId}/quizzes` }),
+      providesTags: ["Quizzes"],
+    }),
+
+    getInstructorQuizById: build.query({
+      query: (quizId: string) => ({ url: `/instructor/quizzes/${quizId}` }),
+      providesTags: ["Quizzes"],
+    }),
+
+    createInstructorQuiz: build.mutation({
+      query: ({ moduleId, data }: { moduleId: string; data: unknown }) => ({
+        url: `/instructor/modules/${moduleId}/quizzes`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Quizzes", "Modules"],
+    }),
+
+    updateInstructorQuiz: build.mutation({
+      query: ({ quizId, data }: { quizId: string; data: unknown }) => ({
+        url: `/instructor/quizzes/${quizId}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Quizzes"],
+    }),
+
+    deleteInstructorQuiz: build.mutation({
+      query: (quizId: string) => ({ url: `/instructor/quizzes/${quizId}`, method: "DELETE" }),
+      invalidatesTags: ["Quizzes", "Modules"],
+    }),
+
+    // ── Questions (instructor-scoped) ─────────────────────────────────────────
+    getInstructorQuizQuestions: build.query({
+      query: (quizId: string) => ({ url: `/instructor/quizzes/${quizId}/questions` }),
+      providesTags: ["Questions"],
+    }),
+
+    getInstructorQuestionById: build.query({
+      query: (questionId: string) => ({ url: `/instructor/questions/${questionId}` }),
+      providesTags: (_result, _err, questionId) => [{ type: "Questions", id: questionId }],
+    }),
+
+    createInstructorQuestion: build.mutation({
+      query: ({ quizId, data }: { quizId: string; data: unknown }) => ({
+        url: `/instructor/quizzes/${quizId}/questions`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Questions", "Quizzes"],
+    }),
+
+    updateInstructorQuestion: build.mutation({
+      query: ({ questionId, data }: { questionId: string; data: unknown }) => ({
+        url: `/instructor/questions/${questionId}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (_result, _err, { questionId }) => [{ type: "Questions", id: questionId }],
+    }),
+
+    deleteInstructorQuestion: build.mutation({
+      query: (questionId: string) => ({ url: `/instructor/questions/${questionId}`, method: "DELETE" }),
+      invalidatesTags: ["Questions", "Quizzes"],
+    }),
+
+    duplicateInstructorQuestion: build.mutation({
+      query: (questionId: string) => ({ url: `/instructor/questions/${questionId}/duplicate`, method: "POST" }),
+      invalidatesTags: ["Questions", "Quizzes"],
+    }),
+
+    reorderInstructorQuestions: build.mutation({
+      query: ({ quizId, questionOrders }: { quizId: string; questionOrders: { questionId: string; orderIndex: number }[] }) => ({
+        url: `/instructor/quizzes/${quizId}/questions/reorder`,
+        method: "PUT",
+        body: { questionOrders },
+      }),
+      invalidatesTags: ["Questions"],
+    }),
   }),
 });
 
@@ -212,4 +294,16 @@ export const {
   useCreateInstructorLessonMutation,
   useUpdateInstructorLessonMutation,
   useDeleteInstructorLessonMutation,
+  useGetInstructorModuleQuizzesQuery,
+  useGetInstructorQuizByIdQuery,
+  useCreateInstructorQuizMutation,
+  useUpdateInstructorQuizMutation,
+  useDeleteInstructorQuizMutation,
+  useGetInstructorQuizQuestionsQuery,
+  useGetInstructorQuestionByIdQuery,
+  useCreateInstructorQuestionMutation,
+  useUpdateInstructorQuestionMutation,
+  useDeleteInstructorQuestionMutation,
+  useDuplicateInstructorQuestionMutation,
+  useReorderInstructorQuestionsMutation,
 } = instructorApi;

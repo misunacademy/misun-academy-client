@@ -79,3 +79,26 @@ export enum Status {
 }
 
 export type PaymentStatus = 'pending' | 'success' | 'failed';
+
+export enum QuizStatus {
+    Draft = 'draft',
+    Published = 'published',
+}
+
+export enum QuestionType {
+    MCQ = 'mcq',
+    TrueFalse = 'true_false',
+}
+
+export enum ContentBlockType {
+    Text = 'text',
+    Image = 'image',
+    TextImage = 'text_image',
+    Audio = 'audio',
+    Video = 'video',
+}
+
+export enum AttemptStatus {
+    InProgress = 'in_progress',
+    Completed = 'completed',
+}
