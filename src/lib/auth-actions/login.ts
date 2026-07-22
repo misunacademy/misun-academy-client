@@ -78,9 +78,11 @@ export async function signInWithGoogleAction(
       return { success: false, error: 'Missing NEXT_PUBLIC_BASE_API_URL' };
     }
 
-    const callbackURL = process.env.NEXT_PUBLIC_AUTH_URL
-      ? `${process.env.NEXT_PUBLIC_AUTH_URL}/auth/callback`
-      : '/auth/callback';
+    const authUrl = process.env.NEXT_PUBLIC_AUTH_URL
+      || process.env.NEXT_PUBLIC_APP_URL
+      || (typeof window !== 'undefined' ? window.location.origin : undefined)
+      || '';
+    const callbackURL = `${authUrl}/auth/callback`;
 
     const redirectCandidate = redirectUrl || getRedirectUrlFromLocation();
     const validatedRedirect = isAllowedRedirectUrl(redirectCandidate) ? redirectCandidate : undefined;
