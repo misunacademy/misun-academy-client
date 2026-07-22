@@ -48,14 +48,14 @@ export default function CourseCard({ course }: { course: CourseConfig }) {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{ transformStyle: "preserve-3d", transition: "transform 0.15s ease, box-shadow 0.3s ease, border-color 0.3s ease" }}
-        className={`relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a1a10] via-[#0c2318] to-surface ${course.border} ${course.glow}`}
+        className={`relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a1a10] via-[#0c2318] to-surface border ${course.border} ${course.glow}`}
       >
         <div ref={glowRef} className="absolute inset-0 pointer-events-none rounded-3xl transition-all duration-100 z-10" />
         <div className={`absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent ${course.shimmer} to-transparent opacity-70`} />
-        <div className="absolute top-0 left-0 w-7 h-7 border-t-[1.5px] border-l-[1.5px] border-white/20 rounded-tl-3xl" style={{ transform: "translateZ(4px)" }} />
-        <div className="absolute top-0 right-0 w-7 h-7 border-t-[1.5px] border-r-[1.5px] border-white/20 rounded-tr-3xl" style={{ transform: "translateZ(4px)" }} />
-        <div className="absolute bottom-0 left-0 w-7 h-7 border-b-[1.5px] border-l-[1.5px] border-white/10 rounded-bl-3xl" />
-        <div className="absolute bottom-0 right-0 w-7 h-7 border-b-[1.5px] border-r-[1.5px] border-white/10 rounded-br-3xl" />
+        <div className="absolute top-0 left-0 w-7 h-7 border-t-[1.5px] border-l-[1.5px] border-border/60 rounded-tl-3xl" style={{ transform: "translateZ(4px)" }} />
+        <div className="absolute top-0 right-0 w-7 h-7 border-t-[1.5px] border-r-[1.5px] border-border/60 rounded-tr-3xl" style={{ transform: "translateZ(4px)" }} />
+        <div className="absolute bottom-0 left-0 w-7 h-7 border-b-[1.5px] border-l-[1.5px] border-border/30 rounded-bl-3xl" />
+        <div className="absolute bottom-0 right-0 w-7 h-7 border-b-[1.5px] border-r-[1.5px] border-border/30 rounded-br-3xl" />
 
         <div className="relative w-full h-56 overflow-hidden">
           <Image

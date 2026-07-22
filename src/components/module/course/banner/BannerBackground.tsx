@@ -157,7 +157,7 @@ function ThreeDElements() {
         </div>
       </div>
 
-      <div
+      {/* <div
         className="absolute bottom-[20%] left-[2%] lg:left-[5%] xl:left-[8%] hidden md:block pointer-events-none z-0"
         style={{ animation: "designFloat 18s ease-in-out infinite" }}
       >
@@ -175,7 +175,7 @@ function ThreeDElements() {
           <div className="absolute inset-x-10 inset-y-10 bg-primary/20 blur-[100px] rounded-full" />
           <Image src={designerImage} alt="3D Graphic Designer" fill className="object-contain drop-shadow-[0_15px_35px_rgba(0,0,0,0.5)] opacity-50 lg:opacity-75 xl:opacity-100" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" priority />
         </div>
-      </div>
+      </div> */}
     </>
   )
 }
