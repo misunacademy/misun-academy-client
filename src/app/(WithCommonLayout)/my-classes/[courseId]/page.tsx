@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { PlayCircle, ChevronLeft, FileText } from "lucide-react";
 import Link from "next/link";
 import AuthGuard from "@/components/shared/AuthGuard";
@@ -15,6 +16,7 @@ import CourseLessonNav from "./_components/CourseLessonNav";
 import CourseCompletionCard from "./_components/CourseCompletionCard";
 import CourseContentComingSoon from "./_components/CourseContentComingSoon";
 import CourseTabsSection from "./_components/CourseTabsSection";
+import { QuizPlayer } from "./_components/QuizPlayer";
 
 export default function CourseDetails() {
   const {
@@ -43,10 +45,28 @@ export default function CourseDetails() {
     toggleModule,
     selectLesson,
     setShowCongratulations,
+    courseId,
   } = useCourseNavigation();
 
+  const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
+
+  const handleSelectQuiz = (quizId: string) => {
+    setActiveQuizId(quizId);
+  };
+
+  const handleQuizComplete = () => {
+    setActiveQuizId(null);
+    if (currentLessonIndex < (currentModule?.lessons.length ?? 0) - 1) {
+      handleNextLesson();
+    }
+  };
+
+  const handleQuizBack = () => {
+    setActiveQuizId(null);
+  };
+
   if (isLoading) {
-    return <AuthGuard><LoadingState /></AuthGuard>;
+    return <LoadingState />;
   }
 
   if (!course) {
@@ -88,7 +108,16 @@ export default function CourseDetails() {
 
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-5">
-              {curriculum.length === 0 ? (
+              {activeQuizId ? (
+                <QuizPlayer
+                  key={activeQuizId}
+                  quizId={activeQuizId}
+                  courseId={courseId}
+                  moduleIndex={currentModuleIndex}
+                  onComplete={handleQuizComplete}
+                  onBack={handleQuizBack}
+                />
+              ) : curriculum.length === 0 ? (
                 <DarkCard className="p-10 sm:p-14 text-center flex flex-col items-center justify-center min-h-[360px]">
                   <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
                   <div className="w-20 h-20 bg-primary/10 border border-primary/20 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_hsl(156_70%_42%/0.2)]">
@@ -132,11 +161,11 @@ export default function CourseDetails() {
                 </DarkCard>
               ) : null}
 
-              {showCookingMessage && !isBatchCompleted && !hasCompletedCourse && (
+              {!activeQuizId && showCookingMessage && !isBatchCompleted && !hasCompletedCourse && (
                 <CourseContentComingSoon />
               )}
 
-              {isBatchCompleted && hasCompletedCourse && showCongratulations && (
+              {!activeQuizId && isBatchCompleted && hasCompletedCourse && showCongratulations && (
                 <CourseCompletionCard
                   courseTitle={course.title}
                   calculatedPercentage={calculatedPercentage}
@@ -154,7 +183,7 @@ export default function CourseDetails() {
                     currentLessonIndex === currentModule.lessons.length - 1 &&
                     isLessonCompleted(currentModule.moduleId, currentLesson?.lessonId || "")
                   )}
-                  lessonLabel={`Lesson ${currentLessonIndex + 1} / ${currentModule?.lessons.length}`}
+                  lessonLabel={activeQuizId ? "Quiz" : `Lesson ${currentLessonIndex + 1} / ${currentModule?.lessons.length}`}
                 />
               )}
 
@@ -170,13 +199,16 @@ export default function CourseDetails() {
 
             <ModuleSidebar
               curriculum={curriculum}
+              courseId={courseId}
+              activeQuizId={activeQuizId}
               currentModuleIndex={currentModuleIndex}
               currentLessonIndex={currentLessonIndex}
               expandedModules={expandedModules}
               toggleModule={toggleModule}
               isLessonCompleted={isLessonCompleted}
               isLessonUnlocked={isLessonUnlocked}
-              onSelectLesson={selectLesson}
+              onSelectLesson={(moduleIdx, lessonIdx) => { setActiveQuizId(null); selectLesson(moduleIdx, lessonIdx); }}
+              onSelectQuiz={handleSelectQuiz}
             />
           </div>
         </div>

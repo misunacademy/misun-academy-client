@@ -27,10 +27,21 @@ export type Lesson = {
   resources?: Array<{ type?: string; title?: string; url?: string; textContent?: string }>;
 };
 
+export type QuizItem = {
+  quizId: string;
+  title: string;
+  timeLimit?: number;
+  totalQuestions: number;
+  totalMarks: number;
+  passingPercentage: number;
+  orderIndex: number;
+};
+
 export type ModuleType = {
   moduleId: string;
   title: string;
   lessons: Lesson[];
+  quizzes?: QuizItem[];
 };
 
 export function useCurriculumProgress() {

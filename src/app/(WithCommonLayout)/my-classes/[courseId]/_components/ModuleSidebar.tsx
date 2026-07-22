@@ -1,4 +1,4 @@
-import { BookOpen, CheckCircle, PlayCircle, Lock, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { BookOpen, CheckCircle, PlayCircle, Lock, Clock, ChevronDown, ChevronUp, ClipboardCheck } from "lucide-react";
 import DarkCard from "./DarkCard";
 
 interface Lesson {
@@ -7,14 +7,25 @@ interface Lesson {
     duration?: number;
 }
 
+interface QuizItem {
+    quizId: string;
+    title: string;
+    timeLimit?: number;
+    totalQuestions: number;
+    totalMarks: number;
+}
+
 interface ModuleType {
     moduleId: string;
     title: string;
     lessons: Lesson[];
+    quizzes?: QuizItem[];
 }
 
 export default function ModuleSidebar({
     curriculum,
+    courseId,
+    activeQuizId,
     currentModuleIndex,
     currentLessonIndex,
     expandedModules,
@@ -22,8 +33,11 @@ export default function ModuleSidebar({
     isLessonCompleted,
     isLessonUnlocked,
     onSelectLesson,
+    onSelectQuiz,
 }: {
     curriculum: ModuleType[];
+    courseId: string;
+    activeQuizId?: string | null;
     currentModuleIndex: number;
     currentLessonIndex: number;
     expandedModules: Set<string>;
@@ -31,6 +45,7 @@ export default function ModuleSidebar({
     isLessonCompleted: (moduleId: string, lessonId: string) => boolean;
     isLessonUnlocked: (moduleIdx: number, lessonIdx: number) => boolean;
     onSelectLesson: (moduleIdx: number, lessonIdx: number) => void;
+    onSelectQuiz?: (quizId: string) => void;
 }) {
     const totalModules = curriculum.length;
 
@@ -120,6 +135,28 @@ export default function ModuleSidebar({
                                                     </button>
                                                 );
                                             })}
+                                            {module.quizzes && module.quizzes.length > 0 && (
+                                                <div className="pt-1 pb-1">
+                                                    <div className="text-[10px] font-semibold text-white/20 uppercase tracking-wider px-3 pb-1">Quizzes</div>
+                                                    {module.quizzes.map((quiz) => {
+                                                        const isActiveQuiz = activeQuizId === quiz.quizId;
+                                                        return (
+                                                            <button
+                                                                key={quiz.quizId}
+                                                                onClick={() => onSelectQuiz?.(quiz.quizId)}
+                                                                className={`w-full text-left px-3 py-2.5 rounded-xl border text-xs font-medium transition-all duration-200 flex items-center gap-2.5
+                                                                    ${isActiveQuiz
+                                                                        ? "bg-primary/12 border-primary/35 text-primary shadow-[0_0_10px_hsl(156_70%_42%/0.15)]"
+                                                                        : "bg-transparent border-transparent text-white/45 hover:bg-white/[0.03] hover:border-white/[0.08] hover:text-white/70"}`}
+                                                            >
+                                                                <ClipboardCheck className={`h-3.5 w-3.5 shrink-0 ${isActiveQuiz ? "text-primary" : "text-white/30"}`} />
+                                                                <span className="flex-1 truncate leading-snug">{quiz.title}</span>
+                                                                <span className="shrink-0 text-[10px] text-white/25">{quiz.totalQuestions} questions</span>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
