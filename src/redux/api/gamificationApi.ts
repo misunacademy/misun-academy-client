@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi';
-import { ILeaderboardEntry, IZamesStats, IZamesTransaction, IMotivationalMessage } from '@/types/quiz';
+import { ILeaderboardEntry, IZamesStats, IZamesTransaction } from '@/types/quiz';
 
 interface PaginatedResponse<T> {
     data: T[];
@@ -46,36 +46,7 @@ export const gamificationApi = baseApi.injectEndpoints({
             providesTags: ['Zames'],
         }),
 
-        getMotivationalMessages: builder.query<{ success: boolean; data: IMotivationalMessage[] }, void>({
-            query: () => ({ url: '/admin/gamification/messages' }),
-            providesTags: ['Settings'],
-        }),
 
-        createMotivationalMessage: builder.mutation<IMotivationalMessage, Partial<IMotivationalMessage>>({
-            query: (data) => ({
-                url: '/admin/gamification/messages',
-                method: 'POST',
-                body: data,
-            }),
-            invalidatesTags: ['Settings'],
-        }),
-
-        updateMotivationalMessage: builder.mutation<IMotivationalMessage, { messageId: string; data: Partial<IMotivationalMessage> }>({
-            query: ({ messageId, data }) => ({
-                url: `/admin/gamification/messages/${messageId}`,
-                method: 'PUT',
-                body: data,
-            }),
-            invalidatesTags: ['Settings'],
-        }),
-
-        deleteMotivationalMessage: builder.mutation<void, string>({
-            query: (messageId) => ({
-                url: `/admin/gamification/messages/${messageId}`,
-                method: 'DELETE',
-            }),
-            invalidatesTags: ['Settings'],
-        }),
     }),
 });
 
@@ -85,8 +56,4 @@ export const {
     useGetBatchLeaderboardQuery,
     useGetZamesStatsQuery,
     useGetZamesHistoryQuery,
-    useGetMotivationalMessagesQuery,
-    useCreateMotivationalMessageMutation,
-    useUpdateMotivationalMessageMutation,
-    useDeleteMotivationalMessageMutation,
 } = gamificationApi;

@@ -1,5 +1,5 @@
 "use client";
-import { BookOpen, CalendarDays, ChevronUp, FileText, Home, User2, Settings, Group, DollarSign, Users, LogOut, Video, CreditCard, ShieldCheck, TrendingUp, Mail, GraduationCap, LayoutDashboard, KeyRound, ClipboardCheck, Trophy } from "lucide-react";
+import { BookOpen, CalendarDays, ChevronUp, FileText, Home, User2, Settings, Group, DollarSign, Users, LogOut, Video, CreditCard, ShieldCheck, TrendingUp, Mail, GraduationCap, LayoutDashboard, KeyRound, ClipboardCheck } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from 'next/link';
 import {
@@ -111,11 +111,6 @@ const adminItems = [
         title: "Quiz Management",
         url: "/dashboard/admin/quizzes",
         icon: ClipboardCheck,
-    },
-    {
-        title: "Gamification",
-        url: "/dashboard/admin/gamification",
-        icon: Trophy,
     },
     {
         title: "Payment Management",

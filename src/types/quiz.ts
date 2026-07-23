@@ -170,16 +170,6 @@ export interface IZamesTransaction {
     createdAt: string;
 }
 
-export interface IMotivationalMessage {
-    _id: string;
-    minPercentage: number;
-    maxPercentage: number;
-    title: string;
-    message: string;
-    emoji?: string;
-    isActive: boolean;
-}
-
 export interface IAdminQuizStats {
     totalQuizzes: number;
     publishedCount: number;
