@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi';
-import { IQuiz, IAdminQuizListResponse } from '@/types/quiz';
+import { IQuiz, IAdminQuizListResponse, IQuestion } from '@/types/quiz';
 
 export const quizApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -69,6 +69,69 @@ export const quizApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: (_result, _err, { moduleId }) => [{ type: 'Quizzes', id: moduleId }],
         }),
+
+        // ── Questions (admin) ────────────────────────────────────────────────
+        getAdminQuizQuestions: builder.query<IQuestion[], string>({
+            query: (quizId) => ({ url: `/admin/quizzes/quizzes/${quizId}/questions` }),
+            providesTags: (_result, _err, quizId) => [{ type: 'Questions', id: quizId }],
+        }),
+
+        getAdminQuestionById: builder.query<IQuestion, string>({
+            query: (questionId) => ({ url: `/admin/quizzes/questions/${questionId}` }),
+            providesTags: (_result, _err, questionId) => [{ type: 'Questions', id: questionId }],
+        }),
+
+        createAdminQuestion: builder.mutation<IQuestion, { quizId: string; data: Partial<IQuestion> }>({
+            query: ({ quizId, data }) => ({
+                url: `/admin/quizzes/quizzes/${quizId}/questions`,
+                method: 'POST',
+                body: data,
+            }),
+            invalidatesTags: (_result, _err, { quizId }) => [
+                { type: 'Questions', id: quizId },
+                { type: 'Quizzes' },
+            ],
+        }),
+
+        updateAdminQuestion: builder.mutation<IQuestion, { questionId: string; data: Partial<IQuestion> }>({
+            query: ({ questionId, data }) => ({
+                url: `/admin/quizzes/questions/${questionId}`,
+                method: 'PUT',
+                body: data,
+            }),
+            invalidatesTags: (_result, _err, { questionId }) => [{ type: 'Questions', id: questionId }],
+        }),
+
+        deleteAdminQuestion: builder.mutation<void, string>({
+            query: (questionId) => ({
+                url: `/admin/quizzes/questions/${questionId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Questions'],
+        }),
+
+        duplicateAdminQuestion: builder.mutation<IQuestion, string>({
+            query: (questionId) => ({
+                url: `/admin/quizzes/questions/${questionId}/duplicate`,
+                method: 'POST',
+            }),
+            invalidatesTags: ['Questions'],
+        }),
+
+        reorderAdminQuestions: builder.mutation<IQuestion[], { quizId: string; questionOrders: { questionId: string; orderIndex: number }[] }>({
+            query: ({ quizId, questionOrders }) => ({
+                url: `/admin/quizzes/quizzes/${quizId}/questions/reorder`,
+                method: 'PUT',
+                body: { questionOrders },
+            }),
+            invalidatesTags: (_result, _err, { quizId }) => [{ type: 'Questions', id: quizId }],
+        }),
+
+        // ── Analytics (admin) ─────────────────────────────────────────────────
+        getAdminQuizAnalytics: builder.query<unknown, string>({
+            query: (quizId) => ({ url: `/admin/quizzes/quizzes/${quizId}/analytics` }),
+            providesTags: (_result, _err, quizId) => [{ type: 'Quizzes', id: quizId }],
+        }),
     }),
 });
 
@@ -80,4 +143,12 @@ export const {
     useUpdateQuizMutation,
     useDeleteQuizMutation,
     useReorderQuizzesMutation,
+    useGetAdminQuizQuestionsQuery,
+    useGetAdminQuestionByIdQuery,
+    useCreateAdminQuestionMutation,
+    useUpdateAdminQuestionMutation,
+    useDeleteAdminQuestionMutation,
+    useDuplicateAdminQuestionMutation,
+    useReorderAdminQuestionsMutation,
+    useGetAdminQuizAnalyticsQuery,
 } = quizApi;
