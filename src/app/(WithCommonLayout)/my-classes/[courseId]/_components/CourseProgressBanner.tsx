@@ -39,7 +39,7 @@ export default function CourseProgressBanner({
                         <span>{totalLessons - completedLessonsCount} remaining</span>
                     </div>
                 </div>
-                <div className="shrink-0 w-16 h-16 rounded-2xl bg-primary/10 border border-primary/25 flex flex-col items-center justify-center">
+                <div className="hidden shrink-0 w-16 h-16 rounded-2xl bg-primary/10 border border-primary/25 sm:flex items-center justify-center gap-1">
                     <span className="text-xl font-black text-primary">{calculatedPercentage}</span>
                     <span className="text-[10px] text-white/40 font-medium">%</span>
                 </div>

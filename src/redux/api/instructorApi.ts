@@ -225,6 +225,11 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Quizzes", "Modules"],
     }),
 
+    getInstructorQuizAnalytics: build.query({
+      query: (quizId: string) => ({ url: `/instructor/quizzes/${quizId}/analytics` }),
+      providesTags: ["Quizzes"],
+    }),
+
     // ── Questions (instructor-scoped) ─────────────────────────────────────────
     getInstructorQuizQuestions: build.query({
       query: (quizId: string) => ({ url: `/instructor/quizzes/${quizId}/questions` }),
@@ -296,6 +301,7 @@ export const {
   useDeleteInstructorLessonMutation,
   useGetInstructorModuleQuizzesQuery,
   useGetInstructorQuizByIdQuery,
+  useGetInstructorQuizAnalyticsQuery,
   useCreateInstructorQuizMutation,
   useUpdateInstructorQuizMutation,
   useDeleteInstructorQuizMutation,

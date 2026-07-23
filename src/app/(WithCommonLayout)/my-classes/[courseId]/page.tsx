@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { PlayCircle, ChevronLeft, FileText } from "lucide-react";
+import { PlayCircle, ChevronLeft, FileText, Gem, Trophy } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 import AuthGuard from "@/components/shared/AuthGuard";
 import NotificationBell from "@/components/shared/NotificationBell";
 import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
 import { useCourseNavigation } from "@/hooks/useCourseNavigation";
+import { useGetZamesStatsQuery } from "@/redux/api/gamificationApi";
 import DarkCard from "./_components/DarkCard";
 import OutlineBtn from "./_components/OutlineBtn";
 import CourseProgressBanner from "./_components/CourseProgressBanner";
@@ -17,8 +19,10 @@ import CourseCompletionCard from "./_components/CourseCompletionCard";
 import CourseContentComingSoon from "./_components/CourseContentComingSoon";
 import CourseTabsSection from "./_components/CourseTabsSection";
 import { QuizPlayer } from "./_components/QuizPlayer";
+import LeaderboardDrawer from "@/components/quiz/LeaderboardDrawer";
 
 export default function CourseDetails() {
+  const { user } = useAuth();
   const {
     course,
     isLoading,
@@ -46,9 +50,11 @@ export default function CourseDetails() {
     selectLesson,
     setShowCongratulations,
     courseId,
+    batchId,
   } = useCourseNavigation();
 
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   const handleSelectQuiz = (quizId: string) => {
     setActiveQuizId(quizId);
@@ -64,6 +70,10 @@ export default function CourseDetails() {
   const handleQuizBack = () => {
     setActiveQuizId(null);
   };
+
+  const { data: zamesStatsRaw } = useGetZamesStatsQuery();
+  const zamesStats = (zamesStatsRaw as any)?.data ?? zamesStatsRaw;
+  const totalZames = zamesStats?.totalZames ?? 0;
 
   if (isLoading) {
     return <LoadingState />;
@@ -96,15 +106,28 @@ export default function CourseDetails() {
               <h1 className="text-2xl sm:text-3xl font-bold text-white leading-snug truncate">{course.title}</h1>
               <p className="text-sm text-white/40 mt-0.5">by {instructorName}</p>
             </div>
-            <NotificationBell />
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowLeaderboard(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 hover:border-emerald-500/30 transition-all cursor-pointer"
+              >
+                <Gem className="h-4 w-4 text-emerald-400" />
+                <span className="text-sm font-semibold text-emerald-300">{totalZames}</span>
+                <div className="ml-1 w-[1px] h-4 bg-emerald-500/20" />
+                <Trophy className="h-3.5 w-3.5 text-yellow-400/60" />
+              </button>
+              <NotificationBell />
+            </div>
           </div>
 
-          <CourseProgressBanner
-            totalModules={totalModules}
-            totalLessons={totalLessons}
-            completedLessonsCount={completedLessonsCount}
-            calculatedPercentage={calculatedPercentage}
-          />
+          {!activeQuizId && (
+            <CourseProgressBanner
+              totalModules={totalModules}
+              totalLessons={totalLessons}
+              completedLessonsCount={completedLessonsCount}
+              calculatedPercentage={calculatedPercentage}
+            />
+          )}
 
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-5">
@@ -213,6 +236,13 @@ export default function CourseDetails() {
           </div>
         </div>
       </div>
+
+      <LeaderboardDrawer
+        isOpen={showLeaderboard}
+        onClose={() => setShowLeaderboard(false)}
+        batchId={batchId || ""}
+        currentUserId={user?.id}
+      />
     </AuthGuard>
   );
 }

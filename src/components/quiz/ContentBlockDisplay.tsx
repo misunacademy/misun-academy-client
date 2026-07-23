@@ -14,7 +14,7 @@ export function ContentBlockDisplay({ content, className = '' }: ContentBlockDis
     return (
         <div className={`space-y-2 ${className}`}>
             {(content.type === 'text' || content.type === 'text_image') && content.text && (
-                <p className="text-sm leading-relaxed">{content.text}</p>
+                <p className="text-sm leading-relaxed text-white/80">{content.text}</p>
             )}
             {(content.type === 'image' || content.type === 'text_image') && content.imageUrl && (
                 <div className="relative overflow-hidden rounded-lg">

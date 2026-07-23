@@ -267,7 +267,7 @@ export function QuizPlayer({ quizId, courseId, moduleIndex, onComplete, onBack }
                     <button
                       key={idx}
                       onClick={() => setCurrentIndex(idx)}
-                      className={`h-1 flex-1 rounded-full transition-all duration-200 ${
+                      className={` flex-1 rounded-full transition-all duration-200 ${
                         idx === currentIndex
                           ? "bg-primary"
                           : answers[questions[idx]._id] !== undefined

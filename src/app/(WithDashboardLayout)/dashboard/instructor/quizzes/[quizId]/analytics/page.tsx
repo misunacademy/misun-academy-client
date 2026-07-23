@@ -3,12 +3,28 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
-import { useGetInstructorQuizByIdQuery, useGetInstructorQuizQuestionsQuery } from "@/redux/api/instructorApi";
-import { IQuestion } from "@/types/quiz";
+import { useGetInstructorQuizByIdQuery, useGetInstructorQuizAnalyticsQuery } from "@/redux/api/instructorApi";
 import { use } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Users, CheckCircle2, XCircle, BarChart3, Clock } from "lucide-react";
+import { ArrowLeft, Users, CheckCircle2, BarChart3, Clock } from "lucide-react";
+
+interface PerQuestionStat {
+    _id: string;
+    content: { type: string; text?: string };
+    marks: number;
+    orderIndex: number;
+    attemptCount: number;
+    correctCount: number;
+    correctPercent: number;
+}
+
+interface AnalyticsData {
+    totalAttempts: number;
+    averageScore: number;
+    passRate: number;
+    perQuestion: PerQuestionStat[];
+}
 
 export default function QuizAnalyticsPage({ params }: { params: Promise<{ quizId: string }> }) {
     const router = useRouter();
@@ -16,11 +32,11 @@ export default function QuizAnalyticsPage({ params }: { params: Promise<{ quizId
 
     const { data: quizData } = useGetInstructorQuizByIdQuery(quizId);
     const quiz = (quizData as any)?.data;
-    const { data: questionsData } = useGetInstructorQuizQuestionsQuery(quizId);
-    const questions = ((questionsData as any)?.data || []) as any[];
+    const { data: analyticsData } = useGetInstructorQuizAnalyticsQuery(quizId);
+    const analytics = (analyticsData as any)?.data as AnalyticsData | undefined;
 
-    const totalQuestions = (questions as IQuestion[]).length;
-    const totalMarks = (questions as IQuestion[]).reduce((sum, q) => sum + q.marks, 0);
+    const totalQuestions = analytics?.perQuestion?.length || 0;
+    const totalMarks = analytics?.perQuestion?.reduce((sum, q) => sum + q.marks, 0) || 0;
 
     return (
         <DashboardPageContainer
@@ -43,7 +59,7 @@ export default function QuizAnalyticsPage({ params }: { params: Promise<{ quizId
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-3xl font-bold">--</p>
+                                <p className="text-3xl font-bold">{analytics?.totalAttempts ?? 0}</p>
                             </CardContent>
                         </Card>
                         <Card>
@@ -54,7 +70,7 @@ export default function QuizAnalyticsPage({ params }: { params: Promise<{ quizId
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-3xl font-bold text-green-600">--%</p>
+                                <p className="text-3xl font-bold text-green-600">{analytics?.passRate ?? 0}%</p>
                             </CardContent>
                         </Card>
                         <Card>
@@ -65,7 +81,7 @@ export default function QuizAnalyticsPage({ params }: { params: Promise<{ quizId
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-3xl font-bold">--%</p>
+                                <p className="text-3xl font-bold">{analytics?.averageScore ?? 0}%</p>
                             </CardContent>
                         </Card>
                         <Card>
@@ -91,13 +107,13 @@ export default function QuizAnalyticsPage({ params }: { params: Promise<{ quizId
                             <CardTitle>Question Analytics</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            {(questions as IQuestion[]).length === 0 ? (
+                            {totalQuestions === 0 ? (
                                 <div className="text-center py-12 text-muted-foreground">
                                     No questions in this quiz yet.
                                 </div>
                             ) : (
                                 <div className="space-y-3">
-                                    {(questions as IQuestion[]).map((question, index) => (
+                                    {analytics!.perQuestion.map((question, index) => (
                                         <Card key={question._id} className="border-l-2 border-l-muted">
                                             <CardContent className="p-4">
                                                 <div className="flex items-center justify-between">
@@ -113,8 +129,8 @@ export default function QuizAnalyticsPage({ params }: { params: Promise<{ quizId
                                                         </Badge>
                                                     </div>
                                                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                                        <span>Correct: --%</span>
-                                                        <span>Attempts: --</span>
+                                                        <span>Correct: {question.correctPercent}%</span>
+                                                        <span>Attempts: {question.attemptCount}</span>
                                                     </div>
                                                 </div>
                                             </CardContent>
