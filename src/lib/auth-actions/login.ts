@@ -49,7 +49,9 @@ export async function signInAction(
     if (result.data) {
       toast.success('Successfully logged in!');
       const responseUser = result.data?.user;
-      const signedInUser = (await refetchSession()) || responseUser;
+      const refetchedUser = await refetchSession();
+
+      const signedInUser = refetchedUser?.role ? refetchedUser : responseUser;
 
       const destination = getPostLoginDestination(
         signedInUser,
@@ -59,7 +61,7 @@ export async function signInAction(
 
       goToRedirect(destination);
 
-      return { success: true, user: responseUser || signedInUser || undefined };
+      return { success: true, user: responseUser || refetchedUser || undefined };
     }
 
     return { success: false, error: 'Login failed' };
