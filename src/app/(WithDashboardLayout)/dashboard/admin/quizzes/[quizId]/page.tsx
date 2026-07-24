@@ -100,7 +100,7 @@ export default function AdminQuizDetailPage({ params }: { params: Promise<{ quiz
                     <Button variant="outline" onClick={() => router.push(`/dashboard/admin/quizzes/${quizId}/analytics`)}>
                         Analytics
                     </Button>
-                    <Button onClick={() => router.push(`/dashboard/instructor/quizzes/create?quizId=${quizId}`)}>
+                    <Button onClick={() => router.push(`/dashboard/admin/quizzes/create?quizId=${quizId}`)}>
                         <Pencil className="h-4 w-4 mr-2" />
                         Edit Settings
                     </Button>
@@ -118,7 +118,7 @@ export default function AdminQuizDetailPage({ params }: { params: Promise<{ quiz
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>Questions</CardTitle>
                             <Button
-                                onClick={() => router.push(`/dashboard/instructor/quizzes/${quizId}/questions/new`)}
+                                onClick={() => router.push(`/dashboard/admin/quizzes/${quizId}/questions/new`)}
                                 size="sm"
                             >
                                 <Plus className="h-4 w-4 mr-2" />
@@ -194,9 +194,9 @@ export default function AdminQuizDetailPage({ params }: { params: Promise<{ quiz
                                                             size="icon"
                                                             className="h-8 w-8"
                                                             onClick={() =>
-                                                                router.push(
-                                                                    `/dashboard/instructor/quizzes/${quizId}/questions/${question._id}/edit`
-                                                                )
+                                                                    router.push(
+                                                                        `/dashboard/admin/quizzes/${quizId}/questions/${question._id}/edit`
+                                                                    )
                                                             }
                                                         >
                                                             <Pencil className="h-4 w-4" />
