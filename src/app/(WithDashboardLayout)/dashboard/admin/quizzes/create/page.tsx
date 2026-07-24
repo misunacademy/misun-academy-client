@@ -14,7 +14,8 @@ import {
     useUpdateQuizMutation,
     useGetQuizByIdQuery,
 } from "@/redux/api/quizApi";
-import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
+import { useGetAllCoursesQuery, CourseResponse } from "@/redux/api/courseApi";
+import { useGetAllBatchesQuery, BatchResponse } from "@/redux/api/batchApi";
 import { useGetModulesByCourseQuery } from "@/redux/api/courseContentApi";
 import {
     Select,
@@ -23,7 +24,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { CourseResponse } from "@/redux/api/courseApi";
 import { toast } from "sonner";
 import { ArrowLeft, Save, Plus } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
@@ -50,6 +50,7 @@ export default function AdminQuizBuilderPage() {
     const quizId = searchParams.get("quizId");
 
     const [selectedCourseId, setSelectedCourseId] = useState("");
+    const [selectedBatchId, setSelectedBatchId] = useState("");
     const [selectedModuleId, setSelectedModuleId] = useState(moduleIdParam);
 
     const { data: existingQuiz } = useGetQuizByIdQuery(quizId || "", { skip: !quizId });
@@ -58,6 +59,8 @@ export default function AdminQuizBuilderPage() {
 
     const { data: coursesData } = useGetAllCoursesQuery({});
     const courses = (coursesData?.data || []) as CourseResponse[];
+    const { data: batchesData } = useGetAllBatchesQuery({ courseId: selectedCourseId }, { skip: !selectedCourseId });
+    const batches = (batchesData?.data || []) as BatchResponse[];
     const { data: modulesData } = useGetModulesByCourseQuery(selectedCourseId || "", { skip: !selectedCourseId });
     const modules = (modulesData?.data || []) as { _id: string; title: string; orderIndex: number }[];
 
@@ -142,45 +145,66 @@ export default function AdminQuizBuilderPage() {
                             <CardContent className="space-y-4">
                                 <div>
                                     <Label>Course</Label>
-                                    <Select
-                                        value={selectedCourseId}
-                                        onValueChange={(v) => {
-                                            setSelectedCourseId(v);
-                                            setSelectedModuleId("");
-                                        }}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a course" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {courses.map((course) => (
-                                                <SelectItem key={course._id} value={course._id}>
-                                                    {course.title}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                {selectedCourseId && (
-                                    <div>
-                                        <Label>Module</Label>
-                                        <Select
-                                            value={selectedModuleId}
-                                            onValueChange={setSelectedModuleId}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a module" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {modules.map((mod) => (
-                                                    <SelectItem key={mod._id} value={mod._id}>
-                                                        {mod.title}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                )}
+    <Select
+        value={selectedCourseId}
+        onValueChange={(v) => {
+            setSelectedCourseId(v);
+            setSelectedBatchId("");
+            setSelectedModuleId("");
+        }}
+    >
+        <SelectTrigger>
+            <SelectValue placeholder="Select a course" />
+        </SelectTrigger>
+        <SelectContent>
+            {courses.map((course) => (
+                <SelectItem key={course._id} value={course._id}>
+                    {course.title}
+                </SelectItem>
+            ))}
+        </SelectContent>
+    </Select>
+</div>
+{selectedCourseId && (
+    <div>
+        <Label>Batch</Label>
+        <Select
+            value={selectedBatchId}
+            onValueChange={setSelectedBatchId}
+        >
+            <SelectTrigger>
+                <SelectValue placeholder="Select a batch" />
+            </SelectTrigger>
+            <SelectContent>
+                {batches.map((b) => (
+                    <SelectItem key={b._id} value={b._id}>
+                        {b.title}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    </div>
+)}
+{selectedBatchId && (
+    <div>
+        <Label>Module</Label>
+        <Select
+            value={selectedModuleId}
+            onValueChange={setSelectedModuleId}
+        >
+            <SelectTrigger>
+                <SelectValue placeholder="Select a module" />
+            </SelectTrigger>
+            <SelectContent>
+                {modules.map((mod) => (
+                    <SelectItem key={mod._id} value={mod._id}>
+                        {mod.title}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    </div>
+)}
                             </CardContent>
                         </Card>
                     )}
