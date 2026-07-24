@@ -16,7 +16,7 @@ import {
 } from "@/redux/api/quizApi";
 import { useGetAllCoursesQuery, CourseResponse } from "@/redux/api/courseApi";
 import { useGetAllBatchesQuery, BatchResponse } from "@/redux/api/batchApi";
-import { useGetModulesByCourseQuery } from "@/redux/api/courseContentApi";
+import { useGetAdminCourseModulesQuery, AdminModuleResponse } from "@/redux/api/admin/adminModuleApi";
 import {
     Select,
     SelectContent,
@@ -53,7 +53,8 @@ export default function AdminQuizBuilderPage() {
     const [selectedBatchId, setSelectedBatchId] = useState("");
     const [selectedModuleId, setSelectedModuleId] = useState(moduleIdParam);
 
-    const { data: existingQuiz } = useGetQuizByIdQuery(quizId || "", { skip: !quizId });
+    const { data: existingQuizData } = useGetQuizByIdQuery(quizId || "", { skip: !quizId });
+    const existingQuiz: any = (existingQuizData as any)?.data;
     const isEditing = !!quizId;
     const effectiveModuleId = isEditing ? existingQuiz?.moduleId : selectedModuleId;
 
@@ -61,8 +62,11 @@ export default function AdminQuizBuilderPage() {
     const courses = (coursesData?.data || []) as CourseResponse[];
     const { data: batchesData } = useGetAllBatchesQuery({ courseId: selectedCourseId }, { skip: !selectedCourseId });
     const batches = (batchesData?.data || []) as BatchResponse[];
-    const { data: modulesData } = useGetModulesByCourseQuery(selectedCourseId || "", { skip: !selectedCourseId });
-    const modules = (modulesData?.data || []) as { _id: string; title: string; orderIndex: number }[];
+    const { data: modulesData } = useGetAdminCourseModulesQuery(
+        { courseId: selectedCourseId, batchId: selectedBatchId },
+        { skip: !selectedCourseId || !selectedBatchId }
+    );
+    const modules = (modulesData?.data || []) as AdminModuleResponse[];
 
     const [createQuiz] = useCreateQuizMutation();
     const [updateQuiz] = useUpdateQuizMutation();
@@ -87,17 +91,17 @@ export default function AdminQuizBuilderPage() {
     useEffect(() => {
         if (existingQuiz) {
             reset({
-                title: (existingQuiz as any).title,
-                description: (existingQuiz as any).description || "",
-                instructions: (existingQuiz as any).instructions || "",
-                passingPercentage: (existingQuiz as any).passingPercentage,
-                timeLimit: (existingQuiz as any).timeLimit,
-                shuffleQuestions: (existingQuiz as any).shuffleQuestions,
-                shuffleOptions: (existingQuiz as any).shuffleOptions,
-                maxAttempts: (existingQuiz as any).maxAttempts,
-                showCorrectAnswers: (existingQuiz as any).showCorrectAnswers,
-                allowReview: (existingQuiz as any).allowReview,
-                status: (existingQuiz as any).status,
+                title: existingQuiz.title,
+                description: existingQuiz.description || "",
+                instructions: existingQuiz.instructions || "",
+                passingPercentage: existingQuiz.passingPercentage,
+                timeLimit: existingQuiz.timeLimit,
+                shuffleQuestions: existingQuiz.shuffleQuestions,
+                shuffleOptions: existingQuiz.shuffleOptions,
+                maxAttempts: existingQuiz.maxAttempts,
+                showCorrectAnswers: existingQuiz.showCorrectAnswers,
+                allowReview: existingQuiz.allowReview,
+                status: existingQuiz.status,
             });
         }
     }, [existingQuiz, reset]);
