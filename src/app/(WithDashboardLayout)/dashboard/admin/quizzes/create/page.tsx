@@ -14,8 +14,18 @@ import {
     useUpdateQuizMutation,
     useGetQuizByIdQuery,
 } from "@/redux/api/quizApi";
+import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
+import { useGetModulesByCourseQuery } from "@/redux/api/courseContentApi";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { CourseResponse } from "@/redux/api/courseApi";
 import { toast } from "sonner";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Plus } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { QuizStatus } from "@/types/enums";
 
@@ -36,10 +46,21 @@ interface QuizForm {
 export default function AdminQuizBuilderPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const moduleId = searchParams.get("moduleId") || "";
+    const moduleIdParam = searchParams.get("moduleId") || "";
     const quizId = searchParams.get("quizId");
 
+    const [selectedCourseId, setSelectedCourseId] = useState("");
+    const [selectedModuleId, setSelectedModuleId] = useState(moduleIdParam);
+
     const { data: existingQuiz } = useGetQuizByIdQuery(quizId || "", { skip: !quizId });
+    const isEditing = !!quizId;
+    const effectiveModuleId = isEditing ? existingQuiz?.moduleId : selectedModuleId;
+
+    const { data: coursesData } = useGetAllCoursesQuery({});
+    const courses = (coursesData?.data || []) as CourseResponse[];
+    const { data: modulesData } = useGetModulesByCourseQuery(selectedCourseId || "", { skip: !selectedCourseId });
+    const modules = (modulesData?.data || []) as { _id: string; title: string; orderIndex: number }[];
+
     const [createQuiz] = useCreateQuizMutation();
     const [updateQuiz] = useUpdateQuizMutation();
     const [isSaving, setIsSaving] = useState(false);
@@ -63,22 +84,26 @@ export default function AdminQuizBuilderPage() {
     useEffect(() => {
         if (existingQuiz) {
             reset({
-                title: existingQuiz.title,
-                description: existingQuiz.description || "",
-                instructions: existingQuiz.instructions || "",
-                passingPercentage: existingQuiz.passingPercentage,
-                timeLimit: existingQuiz.timeLimit,
-                shuffleQuestions: existingQuiz.shuffleQuestions,
-                shuffleOptions: existingQuiz.shuffleOptions,
-                maxAttempts: existingQuiz.maxAttempts,
-                showCorrectAnswers: existingQuiz.showCorrectAnswers,
-                allowReview: existingQuiz.allowReview,
-                status: existingQuiz.status,
+                title: (existingQuiz as any).title,
+                description: (existingQuiz as any).description || "",
+                instructions: (existingQuiz as any).instructions || "",
+                passingPercentage: (existingQuiz as any).passingPercentage,
+                timeLimit: (existingQuiz as any).timeLimit,
+                shuffleQuestions: (existingQuiz as any).shuffleQuestions,
+                shuffleOptions: (existingQuiz as any).shuffleOptions,
+                maxAttempts: (existingQuiz as any).maxAttempts,
+                showCorrectAnswers: (existingQuiz as any).showCorrectAnswers,
+                allowReview: (existingQuiz as any).allowReview,
+                status: (existingQuiz as any).status,
             });
         }
     }, [existingQuiz, reset]);
 
     const onSubmit = async (data: QuizForm) => {
+        if (!quizId && !selectedModuleId) {
+            toast.error("Please select a module");
+            return;
+        }
         setIsSaving(true);
         try {
             if (quizId) {
@@ -86,13 +111,9 @@ export default function AdminQuizBuilderPage() {
                 toast.success("Quiz updated successfully");
                 router.push(`/dashboard/admin/quizzes/${quizId}`);
             } else {
-                if (!moduleId) {
-                    toast.error("Module ID is required");
-                    return;
-                }
-                await createQuiz({ moduleId, data }).unwrap();
+                await createQuiz({ moduleId: selectedModuleId, data }).unwrap();
                 toast.success("Quiz created successfully");
-                router.back();
+                router.push("/dashboard/admin/quizzes");
             }
         } catch (err) {
             toast.error((err as Error)?.message || "Failed to save quiz");
@@ -104,7 +125,7 @@ export default function AdminQuizBuilderPage() {
     return (
         <DashboardPageContainer
             heading={quizId ? "Edit Quiz" : "Create Quiz"}
-            subheading="Configure quiz settings"
+            subheading={quizId ? "Modify quiz settings" : "Configure a new quiz for a module"}
             buttons={
                 <Button variant="ghost" onClick={() => router.back()}>
                     <ArrowLeft className="h-4 w-4 mr-2" />
@@ -112,186 +133,239 @@ export default function AdminQuizBuilderPage() {
                 </Button>
             }
             content={
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-3xl">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Basic Information</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <Label>Title</Label>
-                                <Controller
-                                    name="title"
-                                    control={control}
-                                    rules={{ required: true }}
-                                    render={({ field }) => (
-                                        <Input {...field} placeholder="e.g., Module 1 Quiz" />
-                                    )}
-                                />
-                            </div>
-                            <div>
-                                <Label>Description</Label>
-                                <Controller
-                                    name="description"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Textarea {...field} placeholder="Brief description of the quiz" />
-                                    )}
-                                />
-                            </div>
-                            <div>
-                                <Label>Instructions</Label>
-                                <Controller
-                                    name="instructions"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Textarea
-                                            {...field}
-                                            placeholder="Instructions shown to students before starting"
-                                            className="min-h-[100px]"
-                                        />
-                                    )}
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Grading & Time</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-6 max-w-3xl">
+                    {!quizId && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Select Course & Module</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
                                 <div>
-                                    <Label>Passing Percentage (%)</Label>
+                                    <Label>Course</Label>
+                                    <Select
+                                        value={selectedCourseId}
+                                        onValueChange={(v) => {
+                                            setSelectedCourseId(v);
+                                            setSelectedModuleId("");
+                                        }}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a course" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {courses.map((course) => (
+                                                <SelectItem key={course._id} value={course._id}>
+                                                    {course.title}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                {selectedCourseId && (
+                                    <div>
+                                        <Label>Module</Label>
+                                        <Select
+                                            value={selectedModuleId}
+                                            onValueChange={setSelectedModuleId}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a module" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {modules.map((mod) => (
+                                                    <SelectItem key={mod._id} value={mod._id}>
+                                                        {mod.title}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Basic Information</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <Label>Title</Label>
                                     <Controller
-                                        name="passingPercentage"
+                                        name="title"
+                                        control={control}
+                                        rules={{ required: true }}
+                                        render={({ field }) => (
+                                            <Input {...field} placeholder="e.g., Module 1 Quiz" />
+                                        )}
+                                    />
+                                </div>
+                                <div>
+                                    <Label>Description</Label>
+                                    <Controller
+                                        name="description"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Textarea {...field} placeholder="Brief description of the quiz" />
+                                        )}
+                                    />
+                                </div>
+                                <div>
+                                    <Label>Instructions</Label>
+                                    <Controller
+                                        name="instructions"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Textarea
+                                                {...field}
+                                                placeholder="Instructions shown to students before starting"
+                                                className="min-h-[100px]"
+                                            />
+                                        )}
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Grading & Time</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Passing Percentage (%)</Label>
+                                        <Controller
+                                            name="passingPercentage"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Input
+                                                    type="number"
+                                                    min={0}
+                                                    max={100}
+                                                    {...field}
+                                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                                />
+                                            )}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label>Time Limit (minutes, optional)</Label>
+                                        <Controller
+                                            name="timeLimit"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Input
+                                                    type="number"
+                                                    min={0}
+                                                    placeholder="No limit"
+                                                    value={field.value || ""}
+                                                    onChange={(e) =>
+                                                        field.onChange(
+                                                            e.target.value ? Number(e.target.value) : undefined
+                                                        )
+                                                    }
+                                                />
+                                            )}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label>Max Attempts (0 = unlimited)</Label>
+                                    <Controller
+                                        name="maxAttempts"
                                         control={control}
                                         render={({ field }) => (
                                             <Input
                                                 type="number"
                                                 min={0}
-                                                max={100}
                                                 {...field}
                                                 onChange={(e) => field.onChange(Number(e.target.value))}
                                             />
                                         )}
                                     />
                                 </div>
-                                <div>
-                                    <Label>Time Limit (minutes, optional)</Label>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Options</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label>Shuffle Questions</Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Randomize question order for each attempt
+                                        </p>
+                                    </div>
                                     <Controller
-                                        name="timeLimit"
+                                        name="shuffleQuestions"
                                         control={control}
                                         render={({ field }) => (
-                                            <Input
-                                                type="number"
-                                                min={0}
-                                                placeholder="No limit"
-                                                value={field.value || ""}
-                                                onChange={(e) =>
-                                                    field.onChange(
-                                                        e.target.value ? Number(e.target.value) : undefined
-                                                    )
-                                                }
-                                            />
+                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
                                         )}
                                     />
                                 </div>
-                            </div>
-                            <div>
-                                <Label>Max Attempts (0 = unlimited)</Label>
-                                <Controller
-                                    name="maxAttempts"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Input
-                                            type="number"
-                                            min={0}
-                                            {...field}
-                                            onChange={(e) => field.onChange(Number(e.target.value))}
-                                        />
-                                    )}
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label>Shuffle Options</Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Randomize answer option order
+                                        </p>
+                                    </div>
+                                    <Controller
+                                        name="shuffleOptions"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                        )}
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label>Show Correct Answers</Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Display correct answers after submission
+                                        </p>
+                                    </div>
+                                    <Controller
+                                        name="showCorrectAnswers"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                        )}
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label>Allow Review</Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Allow students to review their answers
+                                        </p>
+                                    </div>
+                                    <Controller
+                                        name="allowReview"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                        )}
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Options</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <Label>Shuffle Questions</Label>
-                                    <p className="text-sm text-muted-foreground">
-                                        Randomize question order for each attempt
-                                    </p>
-                                </div>
-                                <Controller
-                                    name="shuffleQuestions"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                    )}
-                                />
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <Label>Shuffle Options</Label>
-                                    <p className="text-sm text-muted-foreground">
-                                        Randomize answer option order
-                                    </p>
-                                </div>
-                                <Controller
-                                    name="shuffleOptions"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                    )}
-                                />
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <Label>Show Correct Answers</Label>
-                                    <p className="text-sm text-muted-foreground">
-                                        Display correct answers after submission
-                                    </p>
-                                </div>
-                                <Controller
-                                    name="showCorrectAnswers"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                    )}
-                                />
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <Label>Allow Review</Label>
-                                    <p className="text-sm text-muted-foreground">
-                                        Allow students to review their answers
-                                    </p>
-                                </div>
-                                <Controller
-                                    name="allowReview"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                    )}
-                                />
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <div className="flex justify-end gap-3">
-                        <Button type="submit" disabled={isSaving}>
-                            <Save className="h-4 w-4 mr-2" />
-                            {isSaving ? "Saving..." : "Save Quiz"}
-                        </Button>
-                    </div>
-                </form>
+                        <div className="flex justify-end gap-3">
+                            <Button type="submit" disabled={isSaving || (!quizId && !selectedModuleId)}>
+                                <Save className="h-4 w-4 mr-2" />
+                                {isSaving ? "Saving..." : quizId ? "Update Quiz" : "Create Quiz"}
+                            </Button>
+                        </div>
+                    </form>
+                </div>
             }
         />
     );

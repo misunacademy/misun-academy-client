@@ -26,7 +26,7 @@ import { useGetAllQuizzesQuery, useDeleteQuizMutation } from "@/redux/api/quizAp
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { IAdminQuizResponse, IAdminQuizStats } from "@/types/quiz";
 import { Course } from "@/types/common";
-import { Search, ExternalLink, Trash2, ClipboardList, BarChart3 } from "lucide-react";
+import { Search, ExternalLink, Trash2, ClipboardList, BarChart3, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -74,6 +74,12 @@ export default function AdminQuizzes() {
         <DashboardPageContainer
             heading="Quiz Management"
             subheading={`${stats.totalQuizzes} quizzes across all courses`}
+            buttons={
+                <Button onClick={() => router.push("/dashboard/admin/quizzes/create")}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Quiz
+                </Button>
+            }
             content={
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
