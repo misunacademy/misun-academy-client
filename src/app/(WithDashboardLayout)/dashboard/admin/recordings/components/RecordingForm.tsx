@@ -65,7 +65,13 @@ const RecordingForm = ({
   const watchedVideoSource = useWatch({ control: form.control, name: "videoSource" });
   const watchedCourseId = useWatch({ control: form.control, name: "courseId" });
   const courseOptions = courses.map((c) => ({ value: c._id, label: c.title }));
-  const batchOptions = batches.map((b) => ({ value: b._id, label: `${b.title} - ${b.status}` }));
+  const filteredBatches = watchedCourseId
+    ? batches.filter((b) => {
+        const batchCourseId = typeof b.courseId === 'string' ? b.courseId : b.courseId?._id;
+        return batchCourseId === watchedCourseId;
+      })
+    : [];
+  const batchOptions = filteredBatches.map((b) => ({ value: b._id, label: `${b.title} - ${b.status}` }));
 
   const videoDescription =
     watchedVideoSource === "youtube"
