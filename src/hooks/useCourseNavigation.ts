@@ -8,21 +8,25 @@ export function useCourseNavigation() {
 
   const hasCompletedCourse = false;
 
-  const onNextLesson = useCallback(async () => {
+  const onNextLesson = useCallback(async (navigateToQuiz?: (quizId: string) => void) => {
     const m = nav.currentModule;
     const l = nav.currentLessonItem;
     if (!m || !l) return;
     if (!progress.isLessonCompleted(m.moduleId, l.lessonId)) {
       await progress.handleCompleteLesson(m.moduleId, l.lessonId);
     }
-    const isLastLesson = nav.currentModuleIndex === progress.curriculum.length - 1 &&
-      nav.currentLessonIndex === m.lessons.length - 1;
-    if (isLastLesson) { nav.setShowCookingMessage(true); return; }
+
+    const quizzes = m.quizzes || [];
+
     if (nav.currentLessonIndex < m.lessons.length - 1) {
       nav.setCurrentLessonIndex(nav.currentLessonIndex + 1);
+    } else if (quizzes.length > 0 && navigateToQuiz) {
+      navigateToQuiz(quizzes[0].quizId);
     } else if (nav.currentModuleIndex < progress.curriculum.length - 1) {
       nav.setCurrentModuleIndex(nav.currentModuleIndex + 1);
       nav.setCurrentLessonIndex(0);
+    } else {
+      nav.setShowCookingMessage(true);
     }
   }, [nav, progress]);
 
@@ -49,6 +53,9 @@ export function useCourseNavigation() {
     currentLessonIndex: nav.currentLessonIndex,
     isLessonCompleted: progress.isLessonCompleted,
     isLessonUnlocked: progress.isLessonUnlocked,
+    isQuizCompleted: progress.isQuizCompleted,
+    isQuizUnlocked: progress.isQuizUnlocked,
+    refetchProgress: progress.refetchProgress,
     handleNextLesson: onNextLesson,
     handlePrevLesson: nav.handlePrevLesson,
     toggleModule: nav.toggleModule,

@@ -32,7 +32,7 @@ export const attemptApi = baseApi.injectEndpoints({
                 method: 'POST',
                 body: data,
             }),
-            invalidatesTags: ['Attempts', 'Leaderboard', 'Zames'],
+            invalidatesTags: ['Attempts', 'Leaderboard', 'Zames', 'CourseEnrollments'],
         }),
 
         getAttemptResult: builder.query<IAttemptResult, { quizId: string; attemptId: string }>({

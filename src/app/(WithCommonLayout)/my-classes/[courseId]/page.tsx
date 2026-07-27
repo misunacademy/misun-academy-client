@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { PlayCircle, ChevronLeft, FileText, Gem, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
@@ -44,11 +44,15 @@ export default function CourseDetails() {
     currentLessonIndex,
     isLessonCompleted,
     isLessonUnlocked,
+    isQuizCompleted,
+    isQuizUnlocked,
+    refetchProgress,
     handleNextLesson,
     handlePrevLesson,
     toggleModule,
     selectLesson,
     setShowCongratulations,
+    setShowCookingMessage,
     courseId,
     batchId,
   } = useCourseNavigation();
@@ -60,16 +64,49 @@ export default function CourseDetails() {
     setActiveQuizId(quizId);
   };
 
-  const handleQuizComplete = () => {
-    setActiveQuizId(null);
-    if (currentLessonIndex < (currentModule?.lessons.length ?? 0) - 1) {
-      handleNextLesson();
+  const handleQuizComplete = useCallback(async () => {
+    const quizzes = currentModule?.quizzes || [];
+    const currentQuizIndex = activeQuizId ? quizzes.findIndex(q => q.quizId === activeQuizId) : -1;
+
+    await refetchProgress();
+
+    if (currentQuizIndex >= 0 && currentQuizIndex < quizzes.length - 1) {
+      setActiveQuizId(quizzes[currentQuizIndex + 1].quizId);
+    } else {
+      setActiveQuizId(null);
+      if (currentModuleIndex < curriculum.length - 1) {
+        selectLesson(currentModuleIndex + 1, 0);
+      } else {
+        setShowCookingMessage(true);
+      }
     }
-  };
+  }, [currentModule, activeQuizId, refetchProgress, currentModuleIndex, curriculum, selectLesson, setShowCookingMessage]); // prettier-ignore
 
   const handleQuizBack = () => {
     setActiveQuizId(null);
   };
+
+  const handleNextLessonWrapped = useCallback(() => {
+    handleNextLesson((quizId: string) => {
+      setActiveQuizId(quizId);
+    });
+  }, [handleNextLesson]);
+
+  const handleNextDuringQuiz = useCallback(() => {
+    const quizzes = currentModule?.quizzes || [];
+    const currentQuizIndex = quizzes.findIndex(q => q.quizId === activeQuizId);
+
+    if (currentQuizIndex >= 0 && currentQuizIndex < quizzes.length - 1) {
+      setActiveQuizId(quizzes[currentQuizIndex + 1].quizId);
+    } else if (currentModuleIndex < curriculum.length - 1) {
+      setActiveQuizId(null);
+      selectLesson(currentModuleIndex + 1, 0);
+    }
+  }, [currentModule, activeQuizId, currentModuleIndex, curriculum, selectLesson]);
+
+  const currentQuizIndex = activeQuizId
+    ? (currentModule?.quizzes || []).findIndex(q => q.quizId === activeQuizId)
+    : -1;
 
   const { data: zamesStatsRaw } = useGetZamesStatsQuery();
   const zamesStats = (zamesStatsRaw as any)?.data ?? zamesStatsRaw;
@@ -111,10 +148,10 @@ export default function CourseDetails() {
                 onClick={() => setShowLeaderboard(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 hover:border-emerald-500/30 transition-all cursor-pointer"
               >
-                <Gem className="h-4 w-4 text-emerald-400" />
+                <Gem className="h-4 w-4 text-amber-400" />
                 <span className="text-sm font-semibold text-emerald-300">{totalZames}</span>
                 <div className="ml-1 w-[1px] h-4 bg-emerald-500/20" />
-                <Trophy className="h-3.5 w-3.5 text-yellow-400/60" />
+                <Trophy className="h-3.5 w-3.5 text-amber-400" />
               </button>
               <NotificationBell />
             </div>
@@ -198,15 +235,20 @@ export default function CourseDetails() {
 
               {curriculum.length > 0 && !showCookingMessage && (
                 <CourseLessonNav
-                  onPrev={handlePrevLesson}
-                  onNext={handleNextLesson}
-                  canGoPrev={currentModuleIndex !== 0 || currentLessonIndex !== 0}
-                  canGoNext={!!course.curriculum && !!currentModule && !(
-                    currentModuleIndex === (course.curriculum as Record<string, unknown>[]).length - 1 &&
-                    currentLessonIndex === currentModule.lessons.length - 1 &&
-                    isLessonCompleted(currentModule.moduleId, currentLesson?.lessonId || "")
-                  )}
-                  lessonLabel={activeQuizId ? "Quiz" : `Lesson ${currentLessonIndex + 1} / ${currentModule?.lessons.length}`}
+                  onPrev={activeQuizId ? handleQuizBack : handlePrevLesson}
+                  onNext={activeQuizId ? handleNextDuringQuiz : handleNextLessonWrapped}
+                  canGoPrev={activeQuizId ? true : currentModuleIndex !== 0 || currentLessonIndex !== 0}
+                  canGoNext={activeQuizId
+                    ? currentQuizIndex < (currentModule?.quizzes?.length ?? 0) - 1 || currentModuleIndex < curriculum.length - 1
+                    : !!(course.curriculum && currentModule) && !(
+                        currentModuleIndex === (course.curriculum as Record<string, unknown>[]).length - 1 &&
+                        currentLessonIndex === currentModule.lessons.length - 1 &&
+                        isLessonCompleted(currentModule.moduleId, currentLesson?.lessonId || "") &&
+                        !((currentModule.quizzes?.length ?? 0) > 0)
+                      )}
+                  lessonLabel={activeQuizId
+                    ? `Quiz ${currentQuizIndex + 1} / ${currentModule?.quizzes?.length}`
+                    : `Lesson ${currentLessonIndex + 1} / ${currentModule?.lessons.length}`}
                 />
               )}
 
@@ -230,6 +272,8 @@ export default function CourseDetails() {
               toggleModule={toggleModule}
               isLessonCompleted={isLessonCompleted}
               isLessonUnlocked={isLessonUnlocked}
+              isQuizCompleted={isQuizCompleted}
+              isQuizUnlocked={isQuizUnlocked}
               onSelectLesson={(moduleIdx, lessonIdx) => { setActiveQuizId(null); selectLesson(moduleIdx, lessonIdx); }}
               onSelectQuiz={handleSelectQuiz}
             />

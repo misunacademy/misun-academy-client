@@ -32,6 +32,8 @@ export default function ModuleSidebar({
     toggleModule,
     isLessonCompleted,
     isLessonUnlocked,
+    isQuizCompleted,
+    isQuizUnlocked,
     onSelectLesson,
     onSelectQuiz,
 }: {
@@ -44,6 +46,8 @@ export default function ModuleSidebar({
     toggleModule: (moduleId: string) => void;
     isLessonCompleted: (moduleId: string, lessonId: string) => boolean;
     isLessonUnlocked: (moduleIdx: number, lessonIdx: number) => boolean;
+    isQuizCompleted?: (moduleId: string, quizId: string) => boolean;
+    isQuizUnlocked?: (moduleIdx: number, quizIdx: number) => boolean;
     onSelectLesson: (moduleIdx: number, lessonIdx: number) => void;
     onSelectQuiz?: (quizId: string) => void;
 }) {
@@ -69,9 +73,12 @@ export default function ModuleSidebar({
                         </div>
                     ) : (
                         curriculum.map((module, moduleIdx) => {
-                            const moduleCompleted = module.lessons.filter((l) => isLessonCompleted(module.moduleId, l.lessonId)).length;
+                            const moduleDoneLessons = module.lessons.filter((l) => isLessonCompleted(module.moduleId, l.lessonId)).length;
+                            const moduleDoneQuizzes = (module.quizzes || []).filter((q) => isQuizCompleted?.(module.moduleId, q.quizId) ?? false).length;
+                            const moduleTotalItems = module.lessons.length + (module.quizzes?.length || 0);
+                            const moduleCompletedItems = moduleDoneLessons + moduleDoneQuizzes;
                             const isExpanded = expandedModules.has(module.moduleId);
-                            const allDone = moduleCompleted === module.lessons.length;
+                            const allDone = moduleTotalItems > 0 && moduleCompletedItems === moduleTotalItems;
 
                             return (
                                 <div key={module.moduleId}>
@@ -86,7 +93,7 @@ export default function ModuleSidebar({
                                         <span className={`flex-1 text-xs font-semibold truncate ${allDone ? "text-primary" : "text-white/70"}`}>
                                             {module.title}
                                         </span>
-                                        <span className="shrink-0 text-[10px] text-white/30">{moduleCompleted}/{module.lessons.length}</span>
+                                        <span className="shrink-0 text-[10px] text-white/30">{moduleCompletedItems}/{moduleTotalItems}</span>
                                         {isExpanded
                                             ? <ChevronUp className="shrink-0 h-3.5 w-3.5 text-white/30" />
                                             : <ChevronDown className="shrink-0 h-3.5 w-3.5 text-white/30" />}
@@ -96,7 +103,7 @@ export default function ModuleSidebar({
                                         <div className="ml-3 pl-3 border-l border-white/[0.05] space-y-1 mt-1 mb-2">
                                             {module.lessons.map((lesson, lessonIdx) => {
                                                 const isCompleted = isLessonCompleted(module.moduleId, lesson.lessonId);
-                                                const isCurrent = moduleIdx === currentModuleIndex && lessonIdx === currentLessonIndex;
+                                                const isCurrent = !activeQuizId && moduleIdx === currentModuleIndex && lessonIdx === currentLessonIndex;
                                                 const isUnlocked = isLessonUnlocked(moduleIdx, lessonIdx) || isCurrent;
 
                                                 return (
@@ -138,18 +145,33 @@ export default function ModuleSidebar({
                                             {module.quizzes && module.quizzes.length > 0 && (
                                                 <div className="pt-1 pb-1">
                                                     <div className="text-[10px] font-semibold text-white/20 uppercase tracking-wider px-3 pb-1">Quizzes</div>
-                                                    {module.quizzes.map((quiz) => {
+                                                    {module.quizzes.map((quiz, quizIdx) => {
                                                         const isActiveQuiz = activeQuizId === quiz.quizId;
+                                                        const completed = isQuizCompleted?.(module.moduleId, quiz.quizId) ?? false;
+                                                        const unlocked = isQuizUnlocked?.(moduleIdx, quizIdx) ?? true;
                                                         return (
                                                             <button
                                                                 key={quiz.quizId}
                                                                 onClick={() => onSelectQuiz?.(quiz.quizId)}
+                                                                disabled={!unlocked}
                                                                 className={`w-full text-left px-3 py-2.5 rounded-xl border text-xs font-medium transition-all duration-200 flex items-center gap-2.5
                                                                     ${isActiveQuiz
                                                                         ? "bg-primary/12 border-primary/35 text-primary shadow-[0_0_10px_hsl(156_70%_42%/0.15)]"
-                                                                        : "bg-transparent border-transparent text-white/45 hover:bg-white/[0.03] hover:border-white/[0.08] hover:text-white/70"}`}
+                                                                        : completed
+                                                                            ? "bg-white/[0.02] border-white/[0.04] text-white/50 hover:bg-white/[0.04]"
+                                                                            : unlocked
+                                                                                ? "bg-transparent border-transparent text-white/45 hover:bg-white/[0.03] hover:border-white/[0.08] hover:text-white/70"
+                                                                                : "bg-transparent border-transparent text-white/20 cursor-not-allowed opacity-50"}`}
                                                             >
-                                                                <ClipboardCheck className={`h-3.5 w-3.5 shrink-0 ${isActiveQuiz ? "text-primary" : "text-white/30"}`} />
+                                                                <span className="shrink-0">
+                                                                    {completed ? (
+                                                                        <CheckCircle className="h-3.5 w-3.5 text-primary" />
+                                                                    ) : unlocked ? (
+                                                                        <ClipboardCheck className="h-3.5 w-3.5 text-white/30" />
+                                                                    ) : (
+                                                                        <Lock className="h-3.5 w-3.5 text-white/20" />
+                                                                    )}
+                                                                </span>
                                                                 <span className="flex-1 truncate leading-snug">{quiz.title}</span>
                                                                 <span className="shrink-0 text-[10px] text-white/25">{quiz.totalQuestions} questions</span>
                                                             </button>

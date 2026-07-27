@@ -13,6 +13,11 @@ interface CourseProgress {
     lessonId: string;
     completedAt: string;
   }>;
+  completedQuizzes?: Array<{
+    moduleId: string;
+    quizId: string;
+    completedAt: string;
+  }>;
   currentLesson?: {
     moduleId: string;
     lessonId: string;
@@ -74,6 +79,9 @@ export function useCurriculumProgress() {
   const isLessonCompleted = (moduleId: string, lessonId: string) =>
     progress?.completedLessons?.some((c) => c.moduleId === moduleId && c.lessonId === lessonId) || false;
 
+  const isQuizCompleted = (moduleId: string, quizId: string) =>
+    progress?.completedQuizzes?.some((c) => c.moduleId === moduleId && c.quizId === quizId) || false;
+
   const isLessonUnlocked = (moduleIdx: number, lessonIdx: number) => {
     for (let m = 0; m < moduleIdx; m++) {
       const mod = curriculum?.[m];
@@ -81,11 +89,36 @@ export function useCurriculumProgress() {
       for (const les of mod.lessons) {
         if (!isLessonCompleted(mod.moduleId, les.lessonId)) return false;
       }
+      for (const quiz of (mod.quizzes || [])) {
+        if (!isQuizCompleted(mod.moduleId, quiz.quizId)) return false;
+      }
     }
     const mod = curriculum?.[moduleIdx];
     if (!mod) return false;
     for (let l = 0; l < lessonIdx; l++) {
       if (!isLessonCompleted(mod.moduleId, mod.lessons[l].lessonId)) return false;
+    }
+    return true;
+  };
+
+  const isQuizUnlocked = (moduleIdx: number, quizIdx: number) => {
+    for (let m = 0; m < moduleIdx; m++) {
+      const mod = curriculum?.[m];
+      if (!mod) continue;
+      for (const les of mod.lessons) {
+        if (!isLessonCompleted(mod.moduleId, les.lessonId)) return false;
+      }
+      for (const quiz of (mod.quizzes || [])) {
+        if (!isQuizCompleted(mod.moduleId, quiz.quizId)) return false;
+      }
+    }
+    const mod = curriculum?.[moduleIdx];
+    if (!mod) return false;
+    for (const les of mod.lessons) {
+      if (!isLessonCompleted(mod.moduleId, les.lessonId)) return false;
+    }
+    for (let q = 0; q < quizIdx; q++) {
+      if (!isQuizCompleted(mod.moduleId, (mod.quizzes || [])[q].quizId)) return false;
     }
     return true;
   };
@@ -101,9 +134,13 @@ export function useCurriculumProgress() {
   };
 
   const totalLessons = curriculum?.reduce((t, m) => t + (m.lessons?.length || 0), 0) || 0;
+  const totalQuizzes = curriculum?.reduce((t, m) => t + (m.quizzes?.length || 0), 0) || 0;
   const completedLessonsCount = progress?.completedLessons?.length || 0;
+  const completedQuizzesCount = progress?.completedQuizzes?.length || 0;
   const totalModules = curriculum?.length || 0;
-  const calculatedPercentage = totalLessons > 0 ? Math.round((completedLessonsCount / totalLessons) * 100) : 0;
+  const totalItems = totalLessons + totalQuizzes;
+  const completedItems = completedLessonsCount + completedQuizzesCount;
+  const calculatedPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
   const allResources = curriculum?.flatMap((module_) =>
     module_.lessons?.flatMap((lesson) =>
@@ -129,6 +166,8 @@ export function useCurriculumProgress() {
     isBatchCompleted,
     isLessonCompleted,
     isLessonUnlocked,
+    isQuizCompleted,
+    isQuizUnlocked,
     handleCompleteLesson,
     refetchProgress,
     totalLessons,
