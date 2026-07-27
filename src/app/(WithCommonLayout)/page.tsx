@@ -57,7 +57,10 @@ export default function page() {
 
 
       {/* Global Tech Support Chat widget */}
-      <FloatingChat />
+      {
+        process.env.NEXT_PUBLIC_NODE_ENV === 'development' && 
+          <FloatingChat />
+      }
 
       {/* Global Back to Top Button */}
       <BackToTop variant="glass-glow" />
