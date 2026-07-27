@@ -33,7 +33,7 @@ const getCourseInfo = (courseId: CourseInfo | string): CourseInfo | null => {
 };
 
 // ── Per-course enrollment card ────────────────────────────────────────────────
-function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
+function CourseEnrollmentCard({ batch, serverTimestamp: cardServerTimestamp }: { batch: BatchResponse; serverTimestamp?: number; }) {
     const course = getCourseInfo(batch.courseId);
     const slug = course?.slug;
     const themeVars = useMemo(() => {
@@ -83,7 +83,7 @@ function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
 
                     {/* ── Countdown ── */}
                     {/* pass slug if available so countdown can theme itself */}
-                    <Countdown batch={batch} courseSlug={course.slug} />
+                    <Countdown batch={batch} courseSlug={course.slug} serverTimestamp={cardServerTimestamp} />
 
                     {/* ── Dates + Price row ── */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4
@@ -150,7 +150,7 @@ function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
 
 // ── Main Section ──────────────────────────────────────────────────────────────
 export const EnrollmentSection = () => {
-    const { batch, isLoading } = useCurrentBatch();
+    const { batch, isLoading, serverTimestamp } = useCurrentBatch();
 
     return (
         <Skeleton name="EnrollmentSection" loading={isLoading}>
@@ -210,7 +210,7 @@ export const EnrollmentSection = () => {
 
                 {/* ── Course cards ── */}
 
-                    <CourseEnrollmentCard batch={batch}  />
+                    <CourseEnrollmentCard batch={batch} serverTimestamp={serverTimestamp} />
 
         
 

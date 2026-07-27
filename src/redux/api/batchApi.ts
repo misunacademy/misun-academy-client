@@ -65,7 +65,7 @@ const batchApi = baseApi.injectEndpoints({
     }),
 
     // Get current enrollment batch
-    getCurrentEnrollmentBatch: build.query<{ data: BatchResponse | null }, { courseId?: string }>({
+    getCurrentEnrollmentBatch: build.query<{ data: BatchResponse | null; serverTimestamp?: number }, { courseId?: string }>({
       query: (params) => ({
         url: "/batches/current-enrollment",
         params,

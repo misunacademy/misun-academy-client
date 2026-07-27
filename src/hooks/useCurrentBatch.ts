@@ -7,6 +7,7 @@ interface UseCurrentBatchResult {
   courseId: string | undefined;
   course: Record<string, unknown> | undefined;
   batch: BatchResponse | null;
+  serverTimestamp?: number;
   upcomingBatches: BatchResponse[];
   isLoading: boolean;
   isError: boolean;
@@ -35,6 +36,7 @@ export function useCurrentBatch(courseSlug?: string): UseCurrentBatchResult {
     courseId,
     course,
     batch,
+    serverTimestamp: currentRes?.serverTimestamp,
     upcomingBatches: (upcomingRes?.data ?? []) as BatchResponse[],
     isLoading: courseLoading || (!!courseId && (currentLoading || upcomingLoading)),
     isError: courseError || currentError,
