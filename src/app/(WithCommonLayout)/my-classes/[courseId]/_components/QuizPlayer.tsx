@@ -296,13 +296,13 @@ export function QuizPlayer({ quizId, courseId, moduleIndex, onComplete, onBack }
                 <button
                   onClick={handlePrev}
                   disabled={!canGoPrev}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed enabled:hover:bg-white/[0.04] text-white/50 enabled:hover:text-white/80"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border border-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed enabled:hover:bg-white/[0.06] text-white/70 enabled:hover:text-white"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </button>
 
-                <span className="text-xs text-white/30">Question {currentIndex + 1}</span>
+                <span className="text-xs text-white/50">Question {currentIndex + 1}</span>
 
                 {isLastQuestion ? (
                   <button
@@ -316,7 +316,7 @@ export function QuizPlayer({ quizId, courseId, moduleIndex, onComplete, onBack }
                   <button
                     onClick={handleNext}
                     disabled={!canGoNext}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed enabled:hover:bg-white/[0.04] text-white/50 enabled:hover:text-white/80"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border border-white/[0.08] disabled:opacity-30 disabled:cursor-not-allowed enabled:hover:bg-white/[0.06] text-white/70 enabled:hover:text-white"
                   >
                     Next
                     <ChevronRight className="h-4 w-4" />
