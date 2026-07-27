@@ -39,6 +39,7 @@ export const quizApi = baseApi.injectEndpoints({
                 body: data,
             }),
             invalidatesTags: (_result, _err, { moduleId }) => [
+                'Quizzes',
                 { type: 'Quizzes', id: moduleId },
                 { type: 'Modules' },
             ],

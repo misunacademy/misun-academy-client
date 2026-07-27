@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
 import { useCreateAdminQuestionMutation, useUpdateAdminQuestionMutation, useGetAdminQuestionByIdQuery } from "@/redux/api/quizApi";
+import { QuestionImageUpload } from "@/components/quiz/QuestionImageUpload";
 import { IContentBlock } from "@/types/quiz";
 import { toast } from "sonner";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
@@ -218,14 +219,11 @@ export default function AdminQuestionEditorPage({
                             )}
 
                             {(contentType === 'image' || contentType === 'text_image') && (
-                                <div>
-                                    <Label>Image URL</Label>
-                                    <Input
-                                        value={questionImage}
-                                        onChange={(e) => setQuestionImage(e.target.value)}
-                                        placeholder="https://example.com/image.jpg"
-                                    />
-                                </div>
+                                <QuestionImageUpload
+                                    value={questionImage}
+                                    onChange={setQuestionImage}
+                                    label="Question Image"
+                                />
                             )}
 
                             <div>
@@ -311,10 +309,10 @@ export default function AdminQuestionEditorPage({
                                                     />
                                                 )}
                                                 {(option.type === 'image' || option.type === 'text_image') && (
-                                                    <Input
+                                                    <QuestionImageUpload
                                                         value={option.imageUrl}
-                                                        onChange={(e) => updateOption(index, 'imageUrl', e.target.value)}
-                                                        placeholder="Image URL"
+                                                        onChange={(url) => updateOption(index, 'imageUrl', url)}
+                                                        label={`Option ${String.fromCharCode(65 + index)} Image`}
                                                     />
                                                 )}
                                             </div>

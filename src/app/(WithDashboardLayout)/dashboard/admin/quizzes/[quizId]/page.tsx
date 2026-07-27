@@ -168,12 +168,12 @@ export default function AdminQuizDetailPage({ params }: { params: Promise<{ quiz
                                                                 {question.marks} mark{question.marks !== 1 ? 's' : ''}
                                                             </Badge>
                                                             {question.zamesPoints > 0 && (
-                                                                <Badge variant="secondary" className="text-xs">
+                                                                <Badge variant="secondary" className="text-xs text-amber-500">
                                                                     ★ {question.zamesPoints} Zames
                                                                 </Badge>
                                                             )}
                                                         </div>
-                                                        <ContentBlockDisplay content={question.content} />
+                                                        <ContentBlockDisplay content={question.content} variant="question" />
                                                         <div className="grid grid-cols-2 gap-2 mt-2">
                                                             {question.options.map((option: IContentBlock, oi: number) => (
                                                                 <div

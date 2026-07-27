@@ -6,15 +6,16 @@ import Image from 'next/image'
 interface ContentBlockDisplayProps {
     content: IContentBlock
     className?: string
+    variant?: 'default' | 'question'
 }
 
-export function ContentBlockDisplay({ content, className = '' }: ContentBlockDisplayProps) {
+export function ContentBlockDisplay({ content, className = '', variant = 'default' }: ContentBlockDisplayProps) {
     if (!content) return null
 
     return (
         <div className={`space-y-2 ${className}`}>
             {(content.type === 'text' || content.type === 'text_image') && content.text && (
-                <p className="text-sm leading-relaxed text-white/80">{content.text}</p>
+                <p className={variant === 'question' ? 'text-base font-semibold leading-relaxed text-white' : 'text-sm leading-relaxed text-white'}>{content.text}</p>
             )}
             {(content.type === 'image' || content.type === 'text_image') && content.imageUrl && (
                 <div className="relative overflow-hidden rounded-lg">

@@ -157,23 +157,27 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
                                                         </Button>
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <span className="text-sm font-medium text-muted-foreground">
+                                                        <div className="flex items-start gap-2 mb-2">
+                                                            <span className="text-sm font-medium text-muted-foreground shrink-0 mt-0.5">
                                                                 Q{index + 1}.
                                                             </span>
-                                                            <Badge variant="outline" className="text-xs">
-                                                                {question.questionType === 'mcq' ? 'MCQ' : 'True/False'}
-                                                            </Badge>
-                                                            <Badge variant="outline" className="text-xs">
-                                                                {question.marks} mark{question.marks !== 1 ? 's' : ''}
-                                                            </Badge>
-                                                            {question.zamesPoints > 0 && (
-                                                                <Badge variant="secondary" className="text-xs">
-                                                                    ★ {question.zamesPoints} Zames
+                                                            <div className="flex-1">
+                                                                <ContentBlockDisplay content={question.content} variant="question" />
+                                                            </div>
+                                                            <div className="flex items-center gap-2 shrink-0">
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    {question.questionType === 'mcq' ? 'MCQ' : 'True/False'}
                                                                 </Badge>
-                                                            )}
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    {question.marks} mark{question.marks !== 1 ? 's' : ''}
+                                                                </Badge>
+                                                                {question.zamesPoints > 0 && (
+                                                                    <Badge variant="secondary" className="text-xs text-amber-500">
+                                                                        ★ {question.zamesPoints} Zames
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <ContentBlockDisplay content={question.content} />
                                                         <div className="grid grid-cols-2 gap-2 mt-2">
                                                             {question.options.map((option: IContentBlock, oi: number) => (
                                                                 <div
