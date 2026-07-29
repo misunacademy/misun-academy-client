@@ -36,7 +36,7 @@ export function QuizPlayer({ quizId, courseId, moduleIndex, onComplete, onBack }
     () => (attempts || []).filter((a: any) => a.status === "completed"),
     [attempts]
   );
-  const lastAttempt = completedAttempts[completedAttempts.length - 1] as IQuizAttempt | undefined;
+  const lastAttempt = completedAttempts[0] as IQuizAttempt | undefined;
   const hasPreviousAttempts = completedAttempts.length > 0;
 
   const enrollment = React.useMemo(() => {
