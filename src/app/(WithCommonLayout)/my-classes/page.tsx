@@ -44,7 +44,7 @@ const MyClassesPage = () => {
   const firstName = user?.name?.split(" ")[0] ?? "Student";
 
   return (
-    <AuthGuard>
+    <AuthGuard>     
       <Skeleton name="MyClassesPage" loading={dashboardLoading}>
       {error ? (
         <div className="p-6 bg-surface">
