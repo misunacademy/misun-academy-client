@@ -1,5 +1,5 @@
 "use client";
-import { BookOpen, CalendarDays, ChevronUp, FileText, Home, User2, Settings, Group, DollarSign, Users, LogOut, Video, CreditCard, ShieldCheck, TrendingUp, Mail, GraduationCap, LayoutDashboard, KeyRound, ClipboardCheck } from "lucide-react";
+import { BookOpen, CalendarDays, ChevronUp, FileText, Home, User2, Settings, Group, DollarSign, Users, LogOut, Video, CreditCard, ShieldCheck, TrendingUp, Mail, GraduationCap, LayoutDashboard, KeyRound, ClipboardCheck, Trophy } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from 'next/link';
 import {
@@ -70,6 +70,11 @@ const instructorItems = [
         icon: ClipboardCheck,
     },
     {
+        title: "Leaderboard",
+        url: "/dashboard/instructor/leaderboard",
+        icon: Trophy,
+    },
+    {
         title: "Settings",
         url: "/dashboard/instructor/settings",
         icon: Settings,
@@ -111,6 +116,11 @@ const adminItems = [
         title: "Quiz Management",
         url: "/dashboard/admin/quizzes",
         icon: ClipboardCheck,
+    },
+    {
+        title: "Leaderboard",
+        url: "/dashboard/admin/leaderboard",
+        icon: Trophy,
     },
     {
         title: "Payment Management",
