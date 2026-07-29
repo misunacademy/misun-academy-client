@@ -108,7 +108,10 @@ export default function CourseDetails() {
     ? (currentModule?.quizzes || []).findIndex(q => q.quizId === activeQuizId)
     : -1;
 
-  const { data: zamesStatsRaw } = useGetZamesStatsQuery();
+  const { data: zamesStatsRaw } = useGetZamesStatsQuery(
+    { courseId, batchId: batchId || undefined },
+    { skip: !batchId }
+  );
   const zamesStats = (zamesStatsRaw as any)?.data ?? zamesStatsRaw;
   const totalZames = zamesStats?.totalZames ?? 0;
 

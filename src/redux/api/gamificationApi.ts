@@ -34,15 +34,26 @@ export const gamificationApi = baseApi.injectEndpoints({
             providesTags: ['Leaderboard'],
         }),
 
-        getZamesStats: builder.query<IZamesStats, void>({
-            query: () => ({ url: '/gamification/zames/stats' }),
+        getZamesStats: builder.query<IZamesStats, { courseId?: string; batchId?: string }>({
+            query: ({ courseId, batchId } = {}) => {
+                const params = new URLSearchParams();
+                if (courseId) params.set('courseId', courseId);
+                if (batchId) params.set('batchId', batchId);
+                const qs = params.toString();
+                return { url: `/gamification/zames/stats${qs ? `?${qs}` : ''}` };
+            },
             providesTags: ['Zames'],
         }),
 
-        getZamesHistory: builder.query<PaginatedResponse<IZamesTransaction>, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 20 } = {}) => ({
-                url: `/gamification/zames/history?page=${page}&limit=${limit}`,
-            }),
+        getZamesHistory: builder.query<PaginatedResponse<IZamesTransaction>, { courseId?: string; batchId?: string; page?: number; limit?: number }>({
+            query: ({ courseId, batchId, page = 1, limit = 20 } = {}) => {
+                const params = new URLSearchParams();
+                params.set('page', String(page));
+                params.set('limit', String(limit));
+                if (courseId) params.set('courseId', courseId);
+                if (batchId) params.set('batchId', batchId);
+                return { url: `/gamification/zames/history?${params.toString()}` };
+            },
             providesTags: ['Zames'],
         }),
 
