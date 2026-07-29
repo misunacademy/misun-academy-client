@@ -1,0 +1,53 @@
+{
+  "breakpoints": {
+    "375": {
+      "name": "EnrollmentFixed",
+      "viewportWidth": 375,
+      "width": 375,
+      "height": 0,
+      "bones": [
+        [
+          5.3333,
+          -10434,
+          9.0667,
+          74,
+          6,
+          true
+        ]
+      ]
+    },
+    "768": {
+      "name": "EnrollmentFixed",
+      "viewportWidth": 768,
+      "width": 768,
+      "height": 0,
+      "bones": [
+        [
+          2.6042,
+          -8058,
+          4.4271,
+          74,
+          6,
+          true
+        ]
+      ]
+    },
+    "1280": {
+      "name": "EnrollmentFixed",
+      "viewportWidth": 1280,
+      "width": 1280,
+      "height": 0,
+      "bones": [
+        [
+          1.5625,
+          -7314,
+          2.6563,
+          74,
+          6,
+          true
+        ]
+      ]
+    }
+  },
+  "_hash": "ba4cbb1a5f3ddc06994e98d7878393f4"
+}
