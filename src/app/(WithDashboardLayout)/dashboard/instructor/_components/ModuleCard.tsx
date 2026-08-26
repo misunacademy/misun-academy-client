@@ -24,6 +24,7 @@ import {
   useDeleteInstructorLessonMutation,
   type InstructorModule,
   type InstructorLesson,
+  type InstructorModuleQuiz,
 } from "@/redux/api/instructorApi";
 import { LessonFormDialog } from "./LessonFormDialog";
 
@@ -52,7 +53,7 @@ export function ModuleCard({
   const [deleteLesson] = useDeleteInstructorLessonMutation();
   const { data: lessonsData, refetch: refetchLessons } = useGetInstructorModuleLessonsQuery(module._id, { skip: !expanded });
   const { data: quizzesData } = useGetInstructorModuleQuizzesQuery(module._id, { skip: !expanded });
-  const quizzes = (quizzesData?.data || []) as any[];
+  const quizzes: InstructorModuleQuiz[] = quizzesData?.data ?? [];
   const lessons = (lessonsData?.data || []) as InstructorLesson[];
 
   const resolveLessonUrl = (lesson: InstructorLesson): string | null => {
@@ -155,7 +156,7 @@ export function ModuleCard({
             <p className="text-sm text-muted-foreground text-center py-4">No quizzes yet.</p>
           ) : (
             <div className="space-y-2">
-              {quizzes.map((quiz: any, qi: number) => (
+              {quizzes.map((quiz, qi) => (
                 <div
                   key={quiz._id}
                   className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/30 cursor-pointer"

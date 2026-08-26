@@ -1,11 +1,15 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo, Suspense } from "react";
 import type { Socket } from "socket.io-client";
 import { useAuth } from "@/hooks/useAuth";
-import { useMarkAllAsReadMutation } from "@/redux/api/notificationApi";
+import {
+  useMarkAllAsReadMutation,
+  useGetUnreadCountQuery,
+  useGetNotificationsQuery,
+} from "@/redux/api/notificationApi";
 
-interface NotificationEvent {
+export interface NotificationEvent {
   _id: string;
   userId: string;
   type: string;
@@ -27,7 +31,7 @@ interface SocketContextValue {
   markSingleRead: (id: string) => void;
 }
 
-const SocketContext = createContext<SocketContextValue>({
+const defaultContextValue: SocketContextValue = {
   isConnected: false,
   unreadCount: 0,
   recentNotifications: [],
@@ -36,18 +40,60 @@ const SocketContext = createContext<SocketContextValue>({
   clearRecent: () => {},
   markAllRead: () => {},
   markSingleRead: () => {},
-});
+};
+
+const SocketContext = createContext<SocketContextValue>(defaultContextValue);
 
 export const useSocketContext = () => useContext(SocketContext);
 
+/**
+ * cacheComponents requires a Suspense boundary above any client component that
+ * reads the current time during prerender (RTK Query session hooks do). The
+ * controller subtree is deferred; the fallback keeps the static shell fully
+ * rendered with default (disconnected) socket values.
+ */
 export default function SocketProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <SocketContext.Provider value={defaultContextValue}>
+          {children}
+        </SocketContext.Provider>
+      }
+    >
+      <SocketController>{children}</SocketController>
+    </Suspense>
+  );
+}
+
+function SocketController({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated } = useAuth();
   const socketRef = useRef<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [recentNotifications, setRecentNotifications] = useState<NotificationEvent[]>([]);
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [markAllAsRead] = useMarkAllAsReadMutation();
+
+  const { data: unreadData } = useGetUnreadCountQuery(undefined, {
+    skip: !isAuthenticated,
+    pollingInterval: 30000,
+  });
+
+  const { data: recentData } = useGetNotificationsQuery({ limit: 10 }, {
+    skip: !isAuthenticated,
+  });
+
+  useEffect(() => {
+    if (unreadData?.data?.count !== undefined) {
+      setUnreadCount(unreadData.data.count);
+    }
+  }, [unreadData]);
+
+  useEffect(() => {
+    if (recentData?.data) {
+      setRecentNotifications(recentData.data);
+    }
+  }, [recentData]);
 
   const baseApiUrl = process.env.NEXT_PUBLIC_BASE_API_URL;
 
@@ -58,34 +104,6 @@ export default function SocketProvider({ children }: { children: React.ReactNode
       return `${url.protocol}//${url.host}`;
     } catch {
       return baseApiUrl.replace('/api/v1/auth', '').replace('/api/v1', '');
-    }
-  }, [baseApiUrl]);
-
-  const fetchUnreadCount = useCallback(async () => {
-    if (!baseApiUrl) return;
-    try {
-      const res = await fetch(`${baseApiUrl}/notifications/unread-count`, {
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setUnreadCount(json.data?.count ?? 0);
-      }
-    } catch {
-    }
-  }, [baseApiUrl]);
-
-  const fetchRecentNotifications = useCallback(async () => {
-    if (!baseApiUrl) return;
-    try {
-      const res = await fetch(`${baseApiUrl}/notifications?limit=10`, {
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.data) setRecentNotifications(json.data);
-      }
-    } catch {
     }
   }, [baseApiUrl]);
 
@@ -114,8 +132,6 @@ export default function SocketProvider({ children }: { children: React.ReactNode
 
       socket.on('connect', () => {
         setIsConnected(true);
-        fetchUnreadCount();
-        fetchRecentNotifications();
       });
 
       socket.on('disconnect', () => {
@@ -128,11 +144,6 @@ export default function SocketProvider({ children }: { children: React.ReactNode
       });
 
       socketRef.current = socket;
-
-      if (pollingRef.current) clearInterval(pollingRef.current);
-      pollingRef.current = setInterval(() => {
-        fetchUnreadCount();
-      }, 30000);
     })();
 
     return () => {
@@ -141,12 +152,8 @@ export default function SocketProvider({ children }: { children: React.ReactNode
         socketRef.current.disconnect();
         socketRef.current = null;
       }
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-        pollingRef.current = null;
-      }
     };
-  }, [isAuthenticated, user, getBaseUrl, fetchUnreadCount, fetchRecentNotifications]);
+  }, [isAuthenticated, user, getBaseUrl]);
 
   const addNotification = useCallback((notification: NotificationEvent) => {
     setRecentNotifications((prev) => [notification, ...prev].slice(0, 10));

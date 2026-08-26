@@ -44,7 +44,7 @@ function CheckoutContent() {
     const enrollmentEnd = batch?.enrollmentEndDate as string | undefined;
     const enrollmentRunning = isWindowOpen(enrollmentStart, enrollmentEnd);
 
-    const courseFee = (batch?.price as number) ?? (course?.price as number) ?? 4000;
+    const courseFee = (batch?.price as number) ?? (course?.price as number) ?? 4500;
     const courseTitle = (course?.name as string) ?? 'MISUN Academy Course Enrollment';
 
     useEffect(() => {

@@ -10,6 +10,7 @@ import {
     CalendarDays, Briefcase, PencilRuler,
 } from 'lucide-react';
 import { InfoRow, CardIconHeader } from './shared';
+import { useNidPhotoSrc } from './NidPhoto';
 
 interface Props {
     name: string;
@@ -49,6 +50,8 @@ export function EmployeeInfoCard({
         : undefined;
     const designationValue = designation?.trim() || undefined;
     const tshirtValue = tshirtSize?.trim() ? tshirtSize.trim().toUpperCase() : undefined;
+    const nidFrontSrc = useNidPhotoSrc(nidPhotoFrontUrl);
+    const nidBackSrc = useNidPhotoSrc(nidPhotoBackUrl);
 
     const renderNidPhoto = (label: string, emptyText: string, url?: string | null) => (
         <div className="flex-1">
@@ -62,6 +65,7 @@ export function EmployeeInfoCard({
                                 alt={label}
                                 fill
                                 sizes="400px"
+                                unoptimized
                                 className="object-contain rounded-lg border border-gray-200 group-hover:opacity-90 transition-opacity"
                             />
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-lg">
@@ -78,6 +82,7 @@ export function EmployeeInfoCard({
                             alt={`${label} full`}
                             width={800}
                             height={600}
+                            unoptimized
                             className="w-full h-auto max-h-[85vh] object-contain rounded-xl"
                         />
                     </DialogContent>
@@ -170,8 +175,8 @@ export function EmployeeInfoCard({
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {renderNidPhoto('NID Front Photo', 'NID front photo not uploaded', nidPhotoFrontUrl)}
-                            {renderNidPhoto('NID Back Photo', 'NID back photo not uploaded', nidPhotoBackUrl)}
+                            {renderNidPhoto('NID Front Photo', 'NID front photo not uploaded', nidFrontSrc)}
+                            {renderNidPhoto('NID Back Photo', 'NID back photo not uploaded', nidBackSrc)}
                         </div>
                     </div>
                 </div>

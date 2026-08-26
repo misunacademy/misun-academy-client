@@ -1,6 +1,5 @@
 "use client";
-import { BookOpen, CalendarDays, ChevronUp, FileText, Home, User2, Settings, Group, DollarSign, Users, LogOut, Video, CreditCard, ShieldCheck, TrendingUp, Mail, GraduationCap, LayoutDashboard, KeyRound, ClipboardCheck, Trophy } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { BookOpen, CalendarDays, ChevronUp, FileText, Home, User2, Settings, Group, DollarSign, Users, LogOut, Video, CreditCard, ShieldCheck, TrendingUp, Mail, GraduationCap, LayoutDashboard, KeyRound, ClipboardCheck, Trophy, Bell, Rocket } from "lucide-react";import { usePathname, useRouter } from "next/navigation";
 import Link from 'next/link';
 import {
     Sidebar,
@@ -32,6 +31,11 @@ const employeeItems = [
         icon: Home,
     },
     {
+        title: "Notifications",
+        url: "/dashboard/notifications",
+        icon: Bell,
+    },
+    {
         title: "Leave Management",
         url: "/dashboard/employee/leave",
         icon: CalendarDays,
@@ -53,6 +57,11 @@ const instructorItems = [
         title: "Dashboard",
         url: "/dashboard/instructor",
         icon: LayoutDashboard,
+    },
+    {
+        title: "Notifications",
+        url: "/dashboard/notifications",
+        icon: Bell,
     },
     {
         title: "Live Class Recordings",
@@ -86,6 +95,11 @@ const adminItems = [
         title: "Dashboard",
         url: "/dashboard/admin",
         icon: Home,
+    },
+    {
+        title: "Notifications",
+        url: "/dashboard/notifications",
+        icon: Bell,
     },
     {
         title: "Course Management",
@@ -148,6 +162,11 @@ const adminItems = [
         icon: ShieldCheck,
     },
     {
+        title: "Bootcamp Registrations",
+        url: "/dashboard/admin/bootcamp",
+        icon: Rocket,
+    },
+    {
         title: "Email Management",
         url: "/dashboard/admin/emails",
         icon: Mail,
@@ -162,8 +181,6 @@ const adminItems = [
         url: "/dashboard/admin/settings",
         icon: Settings,
     },
-
-
 ];
 
 export function AppSidebar() {
@@ -182,7 +199,14 @@ export function AppSidebar() {
     const isEmployee = userRole === Role.EMPLOYEE.toLowerCase();
 
 
-    const items = !user ? [] : isAdmin ? adminItems : isInstructor ? instructorItems : isEmployee ? employeeItems : [];
+const baseItems = !user ? [] : isAdmin ? adminItems : isInstructor ? instructorItems : isEmployee ? employeeItems : [];
+const isSuperAdmin = userRole === Role.SUPERADMIN.toLowerCase();
+const auditLogItem = {
+    title: "Audit Logs",
+    url: "/dashboard/admin/audit-logs",
+    icon: ShieldCheck,
+};
+const items = isAdmin && isSuperAdmin ? [...baseItems, auditLogItem] : baseItems;
 
     const panelText = !user ? 'Loading...' : isAdmin ? 'Admin Panel' : isInstructor ? 'Instructor Panel' : isEmployee ? 'Employee Panel' : 'Student Panel';
 

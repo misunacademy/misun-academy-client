@@ -57,6 +57,13 @@ export default function AuthGuard({
             return;
         }
 
+        const status = (user as AuthUser | undefined)?.status;
+
+        if (status === 'suspended' && !pathname.startsWith('/auth/suspended')) {
+            router.replace('/auth/suspended');
+            return;
+        }
+
         const role = userRole?.toLowerCase() as Role | undefined || 'learner';
 
         if (requiredRoles && requiredRoles.length > 0 && !requiredRoles.includes(role)) {
@@ -89,7 +96,7 @@ export default function AuthGuard({
             router.replace('/my-classes');
             return;
         }
-    }, [isLoading, isAuthenticated, userRole, pathname, router, requiredRoles, unauthorizedRedirectTo]);
+    }, [isLoading, isAuthenticated, user, userRole, pathname, router, requiredRoles, unauthorizedRedirectTo]);
 
     if (isLoading || !isAuthenticated) {
         return <>{fallback || <LoadingFallback />}</>;

@@ -1,4 +1,32 @@
 import { baseApi } from "./baseApi";
+import type { IQuestion, IQuizAnalytics } from "@/types/quiz";
+
+export interface InstructorQuiz {
+  _id: string;
+  title: string;
+  description?: string;
+  instructions?: string;
+  status: "draft" | "published";
+  passingPercentage: number;
+  timeLimit?: number;
+  shuffleQuestions: boolean;
+  shuffleOptions: boolean;
+  maxAttempts: number;
+  showCorrectAnswers: boolean;
+  allowReview: boolean;
+  totalQuestions?: number;
+  totalMarks?: number;
+}
+
+export interface InstructorModuleQuiz {
+  _id: string;
+  title: string;
+  description?: string;
+  status: "draft" | "published";
+  totalQuestions?: number;
+  totalMarks?: number;
+  timeLimit?: number;
+}
 
 export interface InstructorProfileResponse {
   _id: string;
@@ -192,18 +220,18 @@ const instructorApi = baseApi.injectEndpoints({
     }),
 
     // ── Quizzes (instructor-scoped) ───────────────────────────────────────────
-    getInstructorModuleQuizzes: build.query<{ data: unknown[] }, string>({
+    getInstructorModuleQuizzes: build.query<{ data: InstructorModuleQuiz[] }, string>({
       query: (moduleId) => ({ url: `/instructor/modules/${moduleId}/quizzes` }),
       providesTags: ["Quizzes"],
     }),
 
-    getInstructorQuizById: build.query({
-      query: (quizId: string) => ({ url: `/instructor/quizzes/${quizId}` }),
+    getInstructorQuizById: build.query<{ data: InstructorQuiz }, string>({
+      query: (quizId) => ({ url: `/instructor/quizzes/${quizId}` }),
       providesTags: ["Quizzes"],
     }),
 
-    createInstructorQuiz: build.mutation({
-      query: ({ moduleId, data }: { moduleId: string; data: unknown }) => ({
+    createInstructorQuiz: build.mutation<unknown, { moduleId: string; data: Partial<InstructorQuiz> }>({
+      query: ({ moduleId, data }) => ({
         url: `/instructor/modules/${moduleId}/quizzes`,
         method: "POST",
         body: data,
@@ -211,8 +239,8 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Quizzes", "Modules"],
     }),
 
-    updateInstructorQuiz: build.mutation({
-      query: ({ quizId, data }: { quizId: string; data: unknown }) => ({
+    updateInstructorQuiz: build.mutation<unknown, { quizId: string; data: Partial<InstructorQuiz> }>({
+      query: ({ quizId, data }) => ({
         url: `/instructor/quizzes/${quizId}`,
         method: "PUT",
         body: data,
@@ -225,24 +253,24 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Quizzes", "Modules"],
     }),
 
-    getInstructorQuizAnalytics: build.query({
-      query: (quizId: string) => ({ url: `/instructor/quizzes/${quizId}/analytics` }),
+    getInstructorQuizAnalytics: build.query<IQuizAnalytics, string>({
+      query: (quizId) => ({ url: `/instructor/quizzes/${quizId}/analytics` }),
       providesTags: ["Quizzes"],
     }),
 
     // ── Questions (instructor-scoped) ─────────────────────────────────────────
-    getInstructorQuizQuestions: build.query({
-      query: (quizId: string) => ({ url: `/instructor/quizzes/${quizId}/questions` }),
+    getInstructorQuizQuestions: build.query<{ data: IQuestion[] }, string>({
+      query: (quizId) => ({ url: `/instructor/quizzes/${quizId}/questions` }),
       providesTags: ["Questions"],
     }),
 
-    getInstructorQuestionById: build.query({
+    getInstructorQuestionById: build.query<{ data: IQuestion }, string>({
       query: (questionId: string) => ({ url: `/instructor/questions/${questionId}` }),
       providesTags: (_result, _err, questionId) => [{ type: "Questions", id: questionId }],
     }),
 
-    createInstructorQuestion: build.mutation({
-      query: ({ quizId, data }: { quizId: string; data: unknown }) => ({
+    createInstructorQuestion: build.mutation<unknown, { quizId: string; data: Partial<IQuestion> }>({
+      query: ({ quizId, data }) => ({
         url: `/instructor/quizzes/${quizId}/questions`,
         method: "POST",
         body: data,
@@ -250,8 +278,8 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Questions", "Quizzes"],
     }),
 
-    updateInstructorQuestion: build.mutation({
-      query: ({ questionId, data }: { questionId: string; data: unknown }) => ({
+    updateInstructorQuestion: build.mutation<unknown, { questionId: string; data: Partial<IQuestion> }>({
+      query: ({ questionId, data }) => ({
         url: `/instructor/questions/${questionId}`,
         method: "PUT",
         body: data,

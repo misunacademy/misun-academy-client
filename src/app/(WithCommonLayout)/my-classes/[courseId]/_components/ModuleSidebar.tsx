@@ -24,7 +24,6 @@ interface ModuleType {
 
 export default function ModuleSidebar({
     curriculum,
-    courseId,
     activeQuizId,
     currentModuleIndex,
     currentLessonIndex,

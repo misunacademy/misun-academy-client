@@ -47,11 +47,19 @@ export default function HeroSection() {
 
             {/* Headings */}
             <div className="space-y-4">
-              <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white drop-shadow-lg">
-                  <span className="block bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent py-3">
-                  সঠিক সিদ্ধান্তে সফল 
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.2] text-white drop-shadow-lg">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-lg text-base font-bold tracking-wide text-neutral-900 mb-5">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-neutral-900">
+                    <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" />
+                    <path d="M19 14l.9 3.1L23 18l-3.1.9L19 22l-.9-3.1L15 18l3.1-.9L19 14z" />
+                  </svg>
+                  AI Powered
                 </span>
-                ক্যারিয়ার
+                <br />
+                <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_24px_hsl(156_70%_42%/0.35)]">
+                  কমপ্লিট গ্রাফিক ডিজাইন
+                </span>{" "}
+                উইথ ফ্রিল্যান্সিং
               </h1>
               <h2 className="text-2xl sm:text-3xl font-semibold text-white/90 leading-snug">
                 আপনার ক্রিয়েটিভ <span className="text-primary-glow">ক্যারিয়ার</span> শুরু করুন আজই!

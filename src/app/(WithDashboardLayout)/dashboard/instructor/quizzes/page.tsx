@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,16 +16,7 @@ import {
 } from "@/redux/api/instructorApi";
 
 import { IQuiz } from "@/types/quiz";
-import { Plus, Edit, Trash2, ListChecks, BarChart3, Eye } from "lucide-react";
-import { toast } from "sonner";
-import Link from "next/link";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
+import { Plus, ListChecks, BarChart3 } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -39,24 +29,24 @@ export default function InstructorQuizzes() {
     const router = useRouter();
     const { user } = useAuth();
     const { data: coursesData } = useGetInstructorCoursesQuery(undefined, { skip: !user });
-    const courses = (coursesData?.data || []) as any[];
+    const courses: InstructorCourse[] = coursesData?.data ?? [];
 
     const [selectedCourseId, setSelectedCourseId] = useState<string>("");
     const [selectedBatchId, setSelectedBatchId] = useState<string>("");
     const [selectedModuleId, setSelectedModuleId] = useState<string>("");
 
-    const selectedCourse = courses.find((c: InstructorCourse) => c._id === selectedCourseId) as InstructorCourse | undefined;
+    const selectedCourse = courses.find((c) => c._id === selectedCourseId);
 
     const { data: modulesData, isLoading: modulesLoading } = useGetInstructorCourseModulesQuery(
         { courseId: selectedCourseId, batchId: selectedBatchId },
         { skip: !selectedCourseId || !selectedBatchId },
     );
-    const modules = (modulesData?.data || []) as InstructorModule[];
+    const modules: InstructorModule[] = modulesData?.data ?? [];
 
     const { data: quizzesData, isLoading } = useGetInstructorModuleQuizzesQuery(selectedModuleId, {
         skip: !selectedModuleId,
     });
-    const quizzes = (quizzesData?.data || []) as IQuiz[];
+    const quizzes: IQuiz[] = (quizzesData?.data ?? []) as IQuiz[];
 
     return (
         <DashboardPageContainer
@@ -79,7 +69,7 @@ export default function InstructorQuizzes() {
                                     <SelectValue placeholder="Select a course" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {courses.map((course: any) => (
+                                    {courses.map((course) => (
                                         <SelectItem key={course._id} value={course._id}>
                                             {course.title}
                                         </SelectItem>

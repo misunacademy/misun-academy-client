@@ -166,8 +166,25 @@ export interface IZamesTransaction {
     points: number;
     balanceBefore: number;
     balanceAfter: number;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     createdAt: string;
+}
+
+export interface IPerQuestionStat {
+    _id: string;
+    content: { type: string; text?: string };
+    marks: number;
+    orderIndex: number;
+    attemptCount: number;
+    correctCount: number;
+    correctPercent: number;
+}
+
+export interface IQuizAnalytics {
+    totalAttempts: number;
+    averageScore: number;
+    passRate: number;
+    perQuestion: IPerQuestionStat[];
 }
 
 export interface IAdminQuizStats {

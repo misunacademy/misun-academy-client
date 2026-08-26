@@ -11,32 +11,17 @@ import { use } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Users, CheckCircle2, BarChart3, Clock } from "lucide-react";
-
-interface PerQuestionStat {
-    _id: string;
-    content: { type: string; text?: string };
-    marks: number;
-    orderIndex: number;
-    attemptCount: number;
-    correctCount: number;
-    correctPercent: number;
-}
-
-interface AnalyticsData {
-    totalAttempts: number;
-    averageScore: number;
-    passRate: number;
-    perQuestion: PerQuestionStat[];
-}
+import type { IQuiz, IQuizAnalytics } from "@/types/quiz";
+import { extractApiData } from "@/lib/api-helpers";
 
 export default function AdminQuizAnalyticsPage({ params }: { params: Promise<{ quizId: string }> }) {
     const router = useRouter();
     const { quizId } = use(params);
 
     const { data: quizData } = useGetQuizByIdQuery(quizId);
-    const quiz = (quizData as any)?.data;
+    const quiz = extractApiData<IQuiz>(quizData);
     const { data: analyticsData } = useGetAdminQuizAnalyticsQuery(quizId);
-    const analytics = (analyticsData as any)?.data as AnalyticsData | undefined;
+    const analytics = extractApiData<IQuizAnalytics>(analyticsData);
 
     const totalQuestions = analytics?.perQuestion?.length || 0;
     const totalMarks = analytics?.perQuestion?.reduce((sum, q) => sum + q.marks, 0) || 0;

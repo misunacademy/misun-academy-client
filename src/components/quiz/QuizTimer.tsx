@@ -11,8 +11,6 @@ interface QuizTimerProps {
 
 export function QuizTimer({ timeLimit, onTimeUp, className }: QuizTimerProps) {
     const [timeLeft, setTimeLeft] = useState(timeLimit * 60)
-    const [isWarning, setIsWarning] = useState(false)
-    const [isDanger, setIsDanger] = useState(false)
 
     useEffect(() => {
         if (timeLeft <= 0) {
@@ -27,15 +25,8 @@ export function QuizTimer({ timeLimit, onTimeUp, className }: QuizTimerProps) {
         return () => clearInterval(timer)
     }, [timeLeft, onTimeUp])
 
-    useEffect(() => {
-        if (timeLeft <= 60) {
-            setIsDanger(true)
-            setIsWarning(false)
-        } else if (timeLeft <= 300) {
-            setIsWarning(true)
-            setIsDanger(false)
-        }
-    }, [timeLeft])
+    const isDanger = timeLeft <= 60
+    const isWarning = !isDanger && timeLeft <= 300
 
     const formatTime = useCallback((seconds: number) => {
         const mins = Math.floor(seconds / 60)

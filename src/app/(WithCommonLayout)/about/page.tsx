@@ -1,7 +1,6 @@
 import { generateMetadata as genMeta } from '@/lib/generateMetadata';
 import { Users } from "lucide-react";
 import TeamMemberCard from './_components/TeamMemberCard';
-import AboutHeroSection from './_components/AboutHeroSection';
 import AboutStorySection from './_components/AboutStorySection';
 import AboutMissionVisionSection from './_components/AboutMissionVisionSection';
 import AboutCtaSection from './_components/AboutCtaSection';
@@ -29,7 +28,7 @@ const teamMembers = [
 const AboutUs = () => {
   return (
     <div className="min-h-screen bg-surface font-bangla overflow-hidden">
-      <AboutHeroSection />
+      {/* <AboutHeroSection /> */}
 
       <section className="relative bg-surface overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none"

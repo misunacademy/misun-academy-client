@@ -14,7 +14,18 @@ import PageBackground from '@/components/shared/PageBackground';
 
 
 const AuthPage = () => {
-    const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+    const searchParamsForMode = useSearchParams();
+    const [authMode, setAuthMode] = useState<'login' | 'register'>(
+        searchParamsForMode.get('mode') === 'register' ? 'register' : 'login'
+    );
+    const switchAuthMode = (mode: 'login' | 'register') => {
+        setAuthMode(mode);
+        if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.set('mode', mode);
+            window.history.replaceState(null, '', url.toString());
+        }
+    };
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [showVerificationModal, setShowVerificationModal] = useState(false);
     const [registeredEmail, setRegisteredEmail] = useState('');
@@ -33,6 +44,7 @@ const AuthPage = () => {
             import('@/lib/metaPixel').then(({ track }) => track('Lead'));
             // redirect/notification logic is handled inside useAuth
         }
+        return result;
     };
 
     const handleRegister = async (data: { name: string; email: string; password: string; confirmPassword: string }) => {
@@ -166,7 +178,7 @@ const AuthPage = () => {
                             {(['login', 'register'] as const).map((tab) => (
                                 <button
                                     key={tab}
-                                    onClick={() => setAuthMode(tab)}
+                                    onClick={() => switchAuthMode(tab)}
                                     className={`flex-1 py-3.5 text-sm font-semibold transition-all duration-200 relative ${authMode === tab ? 'text-primary' : 'text-white/40 hover:text-white/70'
                                         }`}
                                 >

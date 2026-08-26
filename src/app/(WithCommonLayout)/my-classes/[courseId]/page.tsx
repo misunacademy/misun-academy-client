@@ -9,6 +9,8 @@ import NotificationBell from "@/components/shared/NotificationBell";
 import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
 import { useCourseNavigation } from "@/hooks/useCourseNavigation";
 import { useGetZamesStatsQuery } from "@/redux/api/gamificationApi";
+import type { IZamesStats } from "@/types/quiz";
+import { extractApiData } from "@/lib/api-helpers";
 import DarkCard from "./_components/DarkCard";
 import OutlineBtn from "./_components/OutlineBtn";
 import CourseProgressBanner from "./_components/CourseProgressBanner";
@@ -112,7 +114,7 @@ export default function CourseDetails() {
     { courseId, batchId: batchId || undefined },
     { skip: !batchId }
   );
-  const zamesStats = (zamesStatsRaw as any)?.data ?? zamesStatsRaw;
+  const zamesStats = extractApiData<IZamesStats>(zamesStatsRaw);
   const totalZames = zamesStats?.totalZames ?? 0;
 
   if (isLoading) {
@@ -176,7 +178,6 @@ export default function CourseDetails() {
                   key={activeQuizId}
                   quizId={activeQuizId}
                   courseId={courseId}
-                  moduleIndex={currentModuleIndex}
                   onComplete={handleQuizComplete}
                   onBack={handleQuizBack}
                 />

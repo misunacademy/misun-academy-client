@@ -17,6 +17,7 @@ import {
     Droplets, CreditCard, IdCard, MessageCircle, PencilRuler, Maximize2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNidPhotoSrc } from '@/app/(WithDashboardLayout)/dashboard/employee/_components/NidPhoto';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface EmployeeListItem {
@@ -76,6 +77,11 @@ function InfoRow({
 
 // ─── Sheet ────────────────────────────────────────────────────────────────────
 export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
+    const nidFrontUrl = employee?.nidPhotoFrontUrl ?? employee?.nidPhotoUrl ?? null;
+    const nidBackUrl = employee?.nidPhotoBackUrl ?? null;
+    const nidFrontSrc = useNidPhotoSrc(nidFrontUrl);
+    const nidBackSrc = useNidPhotoSrc(nidBackUrl);
+
     if (!employee) return null;
 
     const initials = employee.name
@@ -90,8 +96,6 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
     const dobValue = dob && !Number.isNaN(dob.getTime())
         ? dob.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
         : null;
-    const nidFrontUrl = employee.nidPhotoFrontUrl ?? employee.nidPhotoUrl ?? null;
-    const nidBackUrl = employee.nidPhotoBackUrl ?? null;
 
     return (
         <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
@@ -190,12 +194,13 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
                                 NID Front
                             </p>
-                            {nidFrontUrl ? (
+                            {nidFrontSrc ? (
                                 <Dialog>
                                     <DialogTrigger asChild>
                                             <div className="relative group cursor-pointer h-32">
                                                 <Image
-                                                    src={nidFrontUrl}
+                                                    src={nidFrontSrc}
+                                                unoptimized
                                                     alt="NID Front"
                                                     fill
                                                     sizes="400px"
@@ -211,7 +216,8 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                                     <DialogContent className="max-w-3xl p-2 bg-transparent border-none shadow-none">
                                         <DialogTitle className="sr-only">NID Front Photo</DialogTitle>
                                         <Image
-                                            src={nidFrontUrl}
+                                            src={nidFrontSrc}
+                                                unoptimized
                                             alt="NID Front Full"
                                             width={800}
                                             height={600}
@@ -230,12 +236,13 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
                                 NID Back
                             </p>
-                            {nidBackUrl ? (
+                            {nidBackSrc ? (
                                 <Dialog>
                                     <DialogTrigger asChild>
                                         <div className="relative group cursor-pointer h-32">
                                             <Image
-                                                src={nidBackUrl}
+                                                src={nidBackSrc}
+                                                unoptimized
                                                 alt="NID Back"
                                                 fill
                                                 sizes="400px"
@@ -251,7 +258,8 @@ export function EmployeeDetailSheet({ employee, open, onClose }: Props) {
                                     <DialogContent className="max-w-3xl p-2 bg-transparent border-none shadow-none">
                                         <DialogTitle className="sr-only">NID Back Photo</DialogTitle>
                                         <Image
-                                            src={nidBackUrl}
+                                            src={nidBackSrc}
+                                                unoptimized
                                             alt="NID Back Full"
                                             width={800}
                                             height={600}

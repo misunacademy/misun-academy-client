@@ -28,6 +28,14 @@ export function BannerContent({ batchNumber, price, enrollmentPeriod, courseSlug
       </div>
 
       <h1 className="font-bold font-bangla text-[28px] md:text-3xl lg:text-5xl text-center uppercase pt-2 bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent leading-snug">
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-lg text-base font-bold tracking-wide text-neutral-900 mb-4">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-neutral-900">
+            <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" />
+            <path d="M19 14l.9 3.1L23 18l-3.1.9L19 22l-.9-3.1L15 18l3.1-.9L19 14z" />
+          </svg>
+          AI Powered
+        </span>
+        <br />
         কমপ্লিট{" "}
         <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.4)]">
           গ্রাফিক্স ডিজাইন
@@ -40,7 +48,7 @@ export function BannerContent({ batchNumber, price, enrollmentPeriod, courseSlug
       </h2>
 
       <p className="w-auto sm:w-10/12 text-[15px] leading-[170%] text-center max-w-3xl mt-6 mx-5 font-bangla text-white/65">
-        Complete Graphic Design With Freelancing (Batch-0{batchNumber}) – এই কোর্সটি আপনাকে বেসিক থেকে অ্যাডভান্স লেভেল পর্যন্ত গ্রাফিক্স ডিজাইন শেখাবে বাস্তব প্রজেক্ট ও ক্লাইন্ট হান্টিং স্ট্র্যাটেজির মাধ্যমে। ২৪/৭ সাপোর্ট, <strong>১:১</strong> মেন্টরশিপ, লাইভ ক্লাস এবং AI ইনটিগ্রেটেড ডিজাইনের সাহায্যে আপনি নিজেকে গড়ে তুলতে পারবেন একজন দক্ষ ফ্রিল্যান্স ডিজাইনার হিসেবে।
+        AI Powered Complete Graphic Design With Freelancing (Batch-0{batchNumber}) – এই কোর্সটি আপনাকে বেসিক থেকে অ্যাডভান্স লেভেল পর্যন্ত গ্রাফিক্স ডিজাইন শেখাবে বাস্তব প্রজেক্ট ও ক্লাইন্ট হান্টিং স্ট্র্যাটেজির মাধ্যমে। ২৪/৭ সাপোর্ট, <strong>১:১</strong> মেন্টরশিপ, লাইভ ক্লাস এবং AI ইনটিগ্রেটেড ডিজাইনের সাহায্যে আপনি নিজেকে গড়ে তুলতে পারবেন একজন দক্ষ ফ্রিল্যান্স ডিজাইনার হিসেবে।
       </p>
 
       <Countdown courseSlug={courseSlug} />
@@ -65,7 +73,8 @@ export function BannerContent({ batchNumber, price, enrollmentPeriod, courseSlug
 function PriceSection({ price }: { price: number }) {
   return (
     <div className="relative my-6 p-[1.5px] rounded-xl overflow-hidden">
-      <div className="relative rounded-xl px-8 py-4 font-bold font-bangla text-xl text-white shadow-[0_0_24px_hsl(156_70%_42%/0.4)]">
+      <AnimatedBorder variant="simple" speed="3s" />
+      <div className="relative rounded-xl px-8 py-4 font-bold font-bangla text-xl text-white bg-black shadow-[0_0_24px_hsl(156_70%_42%/0.4)]">
         কোর্স ফি: মাত্র{" "}
         <span className="text-primary text-bold">
           {price ? price.toLocaleString("bn-IN") : "--"}
@@ -115,7 +124,9 @@ function CTASection({ courseSlug }: { courseSlug?: string }) {
   return (
     <>
       <p className="text-sm text-white/50 mb-4 text-center w-5/6 mx-auto md:w-full font-bangla leading-relaxed">
-        কথা দিচ্ছি এত সাপোর্ট এবং পুরোপুরি লেগে থাকলে কোর্স শেষ হবার আগেই ক্লাইন্ট এর সাথে কাজ করার সুযোগ আর কোন কোর্সেই পাবেন না।
+        কথা দিচ্ছি এত সাপোর্ট এবং পুরোপুরি লেগে থাকলে কোর্স শেষ হবার আগেই{" "}
+        <span className="font-bold text-primary">ক্লাইন্ট এর সাথে কাজ করার সুযোগ</span>{" "}
+        আর কোন কোর্সেই পাবেন না।
       </p>
 
       <div className="mt-8 mb-10">

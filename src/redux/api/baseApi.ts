@@ -85,6 +85,8 @@ export const baseApi = createApi({
         'Attempts',
         'Leaderboard',
         'Zames',
+        'AuditLogs',
+        'Bootcamp',
     ],
     endpoints: () => ({}),
 });

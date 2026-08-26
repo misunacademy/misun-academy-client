@@ -25,8 +25,8 @@ export const courses: CourseConfig[] = [
     slug: COURSE_SLUGS.GRAPHIC_DESIGN,
     badge: "কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স",
     label: "Design",
-    title: "কমপ্লিট গ্রাফিক্স ডিজাইন উইথ ফ্রিল্যান্সিং",
-    titleEn: "Complete Graphic Design With Freelancing",
+    title: "AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন উইথ ফ্রিল্যান্সিং",
+    titleEn: "AI Powered Complete Graphic Design With Freelancing",
     description:
       "বেসিক থেকে অ্যাডভান্স লেভেল পর্যন্ত হাতে-কলমে প্রজেক্ট, ক্লায়েন্ট হান্টিং ও AI-ইন্টিগ্রেটেড ডিজাইন শিখুন।",
     highlights: ["৪ মাসের কোর্স", "লাইভ ক্লাস", "১:১ মেন্টরশিপ", "সার্টিফিকেট"],

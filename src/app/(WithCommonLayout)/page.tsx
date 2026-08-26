@@ -9,7 +9,7 @@ import PageBackground from '@/components/shared/PageBackground';
 import { BackToTop, FloatingChat } from '@/components/shared';
 
 export const metadata = generateMetadata({
-  title: 'কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স | MISUN Academy',
+  title: 'AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স | MISUN Academy',
   description:
     'ডিজিটাল যুগে সফল ক্যারিয়ারের জন্য সেরা গ্রাফিক্স ডিজাইন কোর্স। ঘরে বসেই ডিজাইন শিখুন এবং ফ্রিল্যান্সিং করে ক্যারিয়ার গড়ুন MISUN Academy-এর সাথে। | Learn graphic design from home and build a successful freelancing career with MISUN Academy.',
   keywords: [
@@ -17,7 +17,7 @@ export const metadata = generateMetadata({
     'Freelancing Graphic Course',
     'Graphic Design Online Course BD',
     'best graphic design course Bangladesh',
-    'কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স',
+    'AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স',
     'ফ্রিল্যান্সিং শেখা কোর্স',
     'misun academy graphic design',
     'graphic design course misun academy',
@@ -43,7 +43,7 @@ export default function page() {
   return (
     <PageBackground gradient="bg-surface-darker" dotOpacity="opacity-[0.10]" dotSize="34px">
       <CourseJsonLd
-        name="কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স"
+        name="AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স"
         description="Learn graphic design from home and build a successful freelancing career with MISUN Academy. Complete Adobe Photoshop & Illustrator course in Bangla."
         slug="graphic-design"
         image="/images/og-image.png"

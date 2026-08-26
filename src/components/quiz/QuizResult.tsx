@@ -11,10 +11,6 @@ interface QuizResultProps {
 }
 
 export function QuizResult({ attempt, className }: QuizResultProps) {
-    const averageTimePerQuestion = attempt.timeTaken
-        ? Math.round(attempt.timeTaken / (attempt.correctCount + attempt.wrongCount + attempt.unansweredCount))
-        : 0
-
     return (
         <Card className={cn('p-6 space-y-6', className)}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

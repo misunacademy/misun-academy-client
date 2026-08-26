@@ -25,9 +25,11 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Plus } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { QuizStatus } from "@/types/enums";
+import { IQuiz } from "@/types/quiz";
+import { extractApiData } from "@/lib/api-helpers";
 
 interface QuizForm {
     title: string;
@@ -54,9 +56,7 @@ export default function AdminQuizBuilderPage() {
     const [selectedModuleId, setSelectedModuleId] = useState(moduleIdParam);
 
     const { data: existingQuizData } = useGetQuizByIdQuery(quizId || "", { skip: !quizId });
-    const existingQuiz: any = (existingQuizData as any)?.data;
-    const isEditing = !!quizId;
-    const effectiveModuleId = isEditing ? existingQuiz?.moduleId : selectedModuleId;
+    const existingQuiz = extractApiData<IQuiz>(existingQuizData);
 
     const { data: coursesData } = useGetAllCoursesQuery({});
     const courses = (coursesData?.data || []) as CourseResponse[];

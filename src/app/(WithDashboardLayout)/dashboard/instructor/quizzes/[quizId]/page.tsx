@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, use } from "react";
+import { use } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,10 +14,9 @@ import {
     useDuplicateInstructorQuestionMutation,
     useReorderInstructorQuestionsMutation,
 } from "@/redux/api/instructorApi";
-import { IQuestion, IContentBlock } from "@/types/quiz";
-import { Plus, Pencil, Trash2, Copy, GripVertical, ArrowUp, ArrowDown } from "lucide-react";
+import { IQuestion } from "@/types/quiz";
+import { Plus, Pencil, Trash2, Copy, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
-import Link from "next/link";
 import { ContentBlockDisplay } from "@/components/quiz/ContentBlockDisplay";
 
 export default function QuizDetailPage({ params }: { params: Promise<{ quizId: string }> }) {
@@ -25,9 +24,9 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
     const { quizId } = use(params);
 
     const { data: quizData, isLoading: quizLoading } = useGetInstructorQuizByIdQuery(quizId);
-    const quiz = (quizData as any)?.data;
-    const { data: questionsData, isLoading: questionsLoading } = useGetInstructorQuizQuestionsQuery(quizId);
-    const questions = ((questionsData as any)?.data || []) as any[];
+    const quiz = quizData?.data;
+    const { data: questionsData } = useGetInstructorQuizQuestionsQuery(quizId);
+    const questions: IQuestion[] = questionsData?.data ?? [];
     const [updateQuiz] = useUpdateInstructorQuizMutation();
     const [deleteQuestion] = useDeleteInstructorQuestionMutation();
     const [duplicateQuestion] = useDuplicateInstructorQuestionMutation();
@@ -37,7 +36,7 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
         try {
             await deleteQuestion(questionId).unwrap();
             toast.success("Question deleted");
-        } catch (err) {
+        } catch {
             toast.error("Failed to delete question");
         }
     };
@@ -46,35 +45,35 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
         try {
             await duplicateQuestion(questionId).unwrap();
             toast.success("Question duplicated");
-        } catch (err) {
+        } catch {
             toast.error("Failed to duplicate question");
         }
     };
 
     const handleMoveUp = async (index: number) => {
         if (index === 0) return;
-        const newOrders = (questions as IQuestion[]).map((q, i) => ({
+        const newOrders = questions.map((q, i) => ({
             questionId: q._id,
             orderIndex: i === index ? index - 1 : i === index - 1 ? index : i,
         }));
         try {
             await reorderQuestions({ quizId, questionOrders: newOrders }).unwrap();
             toast.success("Questions reordered");
-        } catch (err) {
+        } catch {
             toast.error("Failed to reorder");
         }
     };
 
     const handleMoveDown = async (index: number) => {
-        if (index === (questions as IQuestion[]).length - 1) return;
-        const newOrders = (questions as IQuestion[]).map((q, i) => ({
+        if (index === questions.length - 1) return;
+        const newOrders = questions.map((q, i) => ({
             questionId: q._id,
             orderIndex: i === index ? index + 1 : i === index + 1 ? index : i,
         }));
         try {
             await reorderQuestions({ quizId, questionOrders: newOrders }).unwrap();
             toast.success("Questions reordered");
-        } catch (err) {
+        } catch {
             toast.error("Failed to reorder");
         }
     };
@@ -84,7 +83,7 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
             const newStatus = quiz?.status === 'published' ? 'draft' : 'published';
             await updateQuiz({ quizId, data: { status: newStatus } }).unwrap();
             toast.success(`Quiz ${newStatus === 'published' ? 'published' : 'unpublished'} successfully`);
-        } catch (err) {
+        } catch {
             toast.error("Failed to update quiz status");
         }
     };
@@ -126,13 +125,13 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
                             </Button>
                         </CardHeader>
                         <CardContent>
-                            {(questions as IQuestion[]).length === 0 ? (
+                            {questions.length === 0 ? (
                                 <div className="text-center py-12 text-muted-foreground">
                                     No questions yet. Add your first question!
                                 </div>
                             ) : (
                                 <div className="space-y-3">
-                                    {(questions as IQuestion[]).map((question, index) => (
+                                    {questions.map((question, index) => (
                                         <Card key={question._id} className="border-l-2 border-l-primary">
                                             <CardContent className="p-4">
                                                 <div className="flex items-start gap-3">
@@ -151,7 +150,7 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
                                                             size="icon"
                                                             className="h-5 w-5"
                                                             onClick={() => handleMoveDown(index)}
-                                                            disabled={index === (questions as IQuestion[]).length - 1}
+                                                            disabled={index === questions.length - 1}
                                                         >
                                                             <ArrowDown className="h-3 w-3" />
                                                         </Button>
@@ -179,7 +178,7 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
                                                             </div>
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-2 mt-2">
-                                                            {question.options.map((option: IContentBlock, oi: number) => (
+                                                            {question.options.map((option, oi) => (
                                                                 <div
                                                                     key={oi}
                                                                     className="flex items-center gap-2 p-2 rounded bg-muted/50"

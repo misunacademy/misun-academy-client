@@ -98,13 +98,19 @@ export function useUserColumns(
         const u = row.original
         return (
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => { setEditUser(u); setEditDialogOpen(true) }}>
+            <Button variant="ghost" size="sm" aria-label={`Edit user ${u.name}`} title={`Edit user ${u.name}`} onClick={() => { setEditUser(u); setEditDialogOpen(true) }}>
               <Edit className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => handleToggleStatus(u._id, u.status === "active")}>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={u.status === "active" ? `Suspend user ${u.name}` : `Activate user ${u.name}`}
+              title={u.status === "active" ? `Suspend user ${u.name}` : `Activate user ${u.name}`}
+              onClick={() => handleToggleStatus(u._id, u.status === "active")}
+            >
               {u.status !== "active" ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => { setUserToDelete(u._id); setDeleteDialogOpen(true) }}>
+            <Button variant="ghost" size="sm" aria-label={`Delete user ${u.name}`} title={`Delete user ${u.name}`} onClick={() => { setUserToDelete(u._id); setDeleteDialogOpen(true) }}>
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>

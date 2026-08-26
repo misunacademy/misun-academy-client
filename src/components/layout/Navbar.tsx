@@ -25,9 +25,10 @@ const NavbarAuthSection = dynamic(() => import('./NavbarAuthSection'), {
 
 const NAV_LINKS = [
   { name: 'হোম', path: '/' },
-  { name: 'কোর্সসমূহ', path: '/courses' },
+  { name: 'কোর্সের বিস্তারিত', path: '/courses' },
   { name: 'শিক্ষার্থীদের মতামত', path: '/feedback' },
   { name: 'আমাদের সম্পর্কে', path: '/about' },
+  { name: 'বুটক্যাম্প', path: '/bootcamp' },
   { name: 'প্রফেশনাল ইংলিশ', path: `${process.env.NEXT_PUBLIC_EP_FRONTEND_URL}/` },
 ] as const;
 

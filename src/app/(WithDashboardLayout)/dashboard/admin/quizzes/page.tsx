@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     Select,
     SelectContent,
@@ -26,7 +25,7 @@ import { useGetAllQuizzesQuery, useDeleteQuizMutation } from "@/redux/api/quizAp
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { IAdminQuizResponse, IAdminQuizStats } from "@/types/quiz";
 import { Course } from "@/types/common";
-import { Search, ExternalLink, Trash2, ClipboardList, BarChart3, Plus } from "lucide-react";
+import { Search, Trash2, ClipboardList, BarChart3, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";

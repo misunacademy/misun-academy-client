@@ -7,7 +7,9 @@ import {
 } from "lucide-react";
 import { useGetQuizInfoQuery, useStartAttemptMutation, useSubmitAttemptMutation, useGetAttemptResultQuery, useGetUserAttemptsQuery } from "@/redux/api/attemptApi";
 import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
-import type { IQuestionPlay, IQuizAttempt, IAttemptResult } from "@/types/quiz";
+import type { IQuestionPlay, IQuestionReview, IQuiz, IQuizAnswer, IQuizAttempt, IAttemptResult, IContentBlock, QuizAttemptStart } from "@/types/quiz";
+import type { EnrollmentResponse } from "@/redux/api/enrollmentApi";
+import { extractApiData, getApiErrorMessage } from "@/lib/api-helpers";
 import { ContentBlockDisplay } from "@/components/quiz/ContentBlockDisplay";
 import { QuestionCard } from "./QuestionCard";
 import DarkCard from "./DarkCard";
@@ -16,33 +18,35 @@ import OutlineBtn from "./OutlineBtn";
 interface QuizPlayerProps {
   quizId: string;
   courseId: string;
-  moduleIndex: number;
   onComplete: () => void;
   onBack: () => void;
 }
 
 type Phase = "loading" | "start" | "summary" | "active" | "submitting" | "result" | "review";
 
-export function QuizPlayer({ quizId, courseId, moduleIndex, onComplete, onBack }: QuizPlayerProps) {
+export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerProps) {
   const { data: quizInfoRaw, isLoading: infoLoading } = useGetQuizInfoQuery(quizId);
-  const quizInfo = quizInfoRaw?.data ?? quizInfoRaw;
+  const quizInfo = extractApiData<IQuiz>(quizInfoRaw);
   const { data: enrollments } = useGetEnrollmentsQuery(undefined);
   const { data: attemptsRaw } = useGetUserAttemptsQuery(quizId);
   const [startAttempt, { isLoading: starting }] = useStartAttemptMutation();
   const [submitAttempt, { isLoading: submitting }] = useSubmitAttemptMutation();
 
-  const attempts: IQuizAttempt[] = (attemptsRaw as any)?.data ?? attemptsRaw ?? [];
+  const attempts: IQuizAttempt[] = React.useMemo(() => {
+    return extractApiData<IQuizAttempt[]>(attemptsRaw) ?? [];
+  }, [attemptsRaw]);
   const completedAttempts = React.useMemo(
-    () => (attempts || []).filter((a: any) => a.status === "completed"),
+    () => attempts.filter((a) => a.status === "completed"),
     [attempts]
   );
   const lastAttempt = completedAttempts[0] as IQuizAttempt | undefined;
   const hasPreviousAttempts = completedAttempts.length > 0;
 
-  const enrollment = React.useMemo(() => {
+  const enrollment = React.useMemo<EnrollmentResponse | undefined>(() => {
     if (!enrollments?.data) return undefined;
-    return enrollments.data.find((e: any) => {
-      const cId = e.batchId?.courseId?._id || e.batchId?.courseId;
+    return enrollments.data.find((e) => {
+      const courseRef = e.batchId?.courseId;
+      const cId = typeof courseRef === "object" && courseRef !== null ? courseRef._id : courseRef;
       return cId === courseId;
     });
   }, [enrollments, courseId]);
@@ -64,7 +68,6 @@ export function QuizPlayer({ quizId, courseId, moduleIndex, onComplete, onBack }
   const [attemptId, setAttemptId] = React.useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = React.useState<number | null>(null);
   const [error, setError] = React.useState<string | null>(null);
-  const [lastResultId, setLastResultId] = React.useState<string | null>(null);
   const [reviewAttemptId, setReviewAttemptId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -90,12 +93,6 @@ export function QuizPlayer({ quizId, courseId, moduleIndex, onComplete, onBack }
     return () => clearInterval(timer);
   }, [timerActive]);
 
-  React.useEffect(() => {
-    if (timeRemaining === 0 && phase === "active") {
-      handleSubmit();
-    }
-  }, [timeRemaining]);
-
   const currentQuestion = questions[currentIndex];
   const selectedAnswer = currentQuestion ? answers[currentQuestion._id] ?? null : null;
   const answeredCount = Object.keys(answers).length;
@@ -111,8 +108,12 @@ export function QuizPlayer({ quizId, courseId, moduleIndex, onComplete, onBack }
     if (!enrollmentId) { setError("You are not enrolled in this course."); return; }
     setError(null);
     try {
-      const res: any = await startAttempt({ quizId, enrollmentId }).unwrap();
-      const data = res.data ?? res;
+      const res = await startAttempt({ quizId, enrollmentId }).unwrap();
+      const data = extractApiData<QuizAttemptStart>(res);
+      if (!data?.attempt?._id || !data.questions || !data.quiz) {
+        setError("Failed to start quiz");
+        return;
+      }
       setAttemptId(data.attempt._id);
       setQuestions(data.questions);
       setCurrentIndex(0);
@@ -121,9 +122,8 @@ export function QuizPlayer({ quizId, courseId, moduleIndex, onComplete, onBack }
         setTimeRemaining(data.quiz.timeLimit * 60);
       }
       setPhase("active");
-    } catch (err: any) {
-      const msg = err?.data?.message || err?.error || err?.message || "Failed to start quiz";
-      setError(msg);
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Failed to start quiz"));
     }
   };
 
@@ -144,7 +144,7 @@ export function QuizPlayer({ quizId, courseId, moduleIndex, onComplete, onBack }
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = React.useCallback(async () => {
     if (!attemptId) return;
     setPhase("submitting");
     try {
@@ -162,14 +162,18 @@ export function QuizPlayer({ quizId, courseId, moduleIndex, onComplete, onBack }
           timeTaken,
         },
       }).unwrap();
-      setLastResultId(attemptId);
       setPhase("result");
-    } catch (err: any) {
-      const msg = err?.data?.message || err?.error || err?.message || "Failed to submit quiz";
-      setError(msg);
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Failed to submit quiz"));
       setPhase("active");
     }
-  };
+  }, [attemptId, answers, quizInfo, quizId, submitAttempt, timeRemaining]);
+
+  React.useEffect(() => {
+    if (timeRemaining === 0 && phase === "active") {
+      handleSubmit();
+    }
+  }, [timeRemaining, phase, handleSubmit]);
 
   const handleViewSummary = () => {
     setPhase("summary");
@@ -358,7 +362,7 @@ export function QuizPlayer({ quizId, courseId, moduleIndex, onComplete, onBack }
   );
 }
 
-function QuizIntroScreen({ quizInfo, error, onStart, starting }: { quizInfo: any; error: string | null; onStart: () => void; starting: boolean }) {
+function QuizIntroScreen({ quizInfo, error, onStart, starting }: { quizInfo: IQuiz; error: string | null; onStart: () => void; starting: boolean }) {
   return (
     <div className="p-8 max-w-xl mx-auto">
       <div className="text-center mb-6">
@@ -411,7 +415,7 @@ function QuizSummaryScreen({
   quizInfo, lastAttempt, completedCount, maxAttempts, canReAttempt,
   onReAttempt, onReviewAnswers, onContinue, onBack, isStarting, error
 }: {
-  quizInfo: any;
+  quizInfo: IQuiz;
   lastAttempt: IQuizAttempt | undefined;
   completedCount: number;
   maxAttempts: number;
@@ -544,7 +548,7 @@ function QuizResultView({
 }) {
   const [showReview, setShowReview] = React.useState(false);
   const { data: resultRaw, isLoading } = useGetAttemptResultQuery({ quizId, attemptId });
-  const result: any = (resultRaw as any)?.data ?? resultRaw;
+  const result = extractApiData<IAttemptResult>(resultRaw);
 
   if (isLoading || !result) {
     return (
@@ -555,8 +559,10 @@ function QuizResultView({
   }
 
   const { attempt, motivationalMessage, questions: resultQuestions } = result;
-  const questions = resultQuestions?.length > 0 ? resultQuestions : attemptQuestions;
-  const answerMap = new Map((attempt.answers || []).map((a: any) => [a.questionId, a]));
+  const questions: IQuestionReview[] = resultQuestions?.length
+    ? resultQuestions
+    : (attemptQuestions as IQuestionReview[]);
+  const answerMap = new Map((attempt.answers || []).map((a: IQuizAnswer) => [a.questionId, a]));
   const canReview = questions && questions.length > 0;
 
   return (
@@ -622,8 +628,8 @@ function QuizResultView({
 
       {showReview && canReview && (
         <div className="space-y-4 text-left">
-          {questions.map((q: any, idx: number) => {
-            const ans: any = answerMap.get(q._id);
+          {questions.map((q: IQuestionReview, idx: number) => {
+            const ans = answerMap.get(q._id);
             const selectedIdx = ans?.selectedAnswer;
             const correctIdx = q.correctAnswer;
             const isCorrect = ans?.isCorrect;
@@ -642,7 +648,7 @@ function QuizResultView({
                 </div>
 
                 <div className="space-y-1.5 pl-9">
-                  {q.options.map((opt: any, optIdx: number) => {
+                  {q.options.map((opt: IContentBlock, optIdx: number) => {
                     const isSelected = String(optIdx) === selectedIdx;
                     const isRightAnswer = String(optIdx) === correctIdx;
                     let style = "border-white/[0.06] text-white/50";

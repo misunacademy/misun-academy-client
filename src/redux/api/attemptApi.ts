@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi';
-import { QuizAttemptStart, IQuizAttempt, IAttemptResult } from '@/types/quiz';
+import { QuizAttemptStart, IQuizAttempt, IAttemptResult, IQuiz, IModuleCurriculumItem } from '@/types/quiz';
 
 interface SubmitAnswerInput {
     questionId: string;
@@ -13,7 +13,7 @@ interface SubmitAttemptInput {
 
 export const attemptApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        getQuizInfo: builder.query<any, string>({
+        getQuizInfo: builder.query<IQuiz, string>({
             query: (quizId) => ({ url: `/quizzes/${quizId}/info` }),
             providesTags: (_result, _err, quizId) => [{ type: 'Quizzes', id: quizId }],
         }),
@@ -52,14 +52,14 @@ export const attemptApi = baseApi.injectEndpoints({
             providesTags: (_result, _err, attemptId) => [{ type: 'Attempts', id: attemptId }],
         }),
 
-        getModuleQuizzes: builder.query<any[], { batchId: string; moduleId: string }>({
+        getModuleQuizzes: builder.query<IQuiz[], { batchId: string; moduleId: string }>({
             query: ({ batchId, moduleId }) => ({
                 url: `/content/batches/${batchId}/modules/${moduleId}/quizzes`,
             }),
             providesTags: (_result, _err, { moduleId }) => [{ type: 'Quizzes', id: moduleId }],
         }),
 
-        getModuleCurriculum: builder.query<any[], { batchId: string; moduleId: string }>({
+        getModuleCurriculum: builder.query<IModuleCurriculumItem[], { batchId: string; moduleId: string }>({
             query: ({ batchId, moduleId }) => ({
                 url: `/content/batches/${batchId}/modules/${moduleId}/curriculum`,
             }),

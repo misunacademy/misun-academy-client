@@ -15,7 +15,7 @@ const stats = [
 
 export default function EnrollCtaSection({ courseSlug }: EnrollCtaSectionProps = {}) {
     return (
-        <section className="relative bg-surface overflow-hidden">
+        <section className="relative bg-surface overflow-hidden px-4">
 
             {/* Dot-grid texture */}
             <div

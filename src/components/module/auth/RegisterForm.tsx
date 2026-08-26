@@ -1,6 +1,7 @@
 'use client';
 
 import z from "zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
@@ -33,6 +34,7 @@ const INPUT_CLASSES = "h-11 !bg-[#0d1f12] !border-primary/25 text-white placehol
 
 const RegisterForm = ({ onRegister }: RegisterFormProps) => {
   const { signInWithGoogle } = useAuth();
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
   const registerForm = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
@@ -55,14 +57,20 @@ const RegisterForm = ({ onRegister }: RegisterFormProps) => {
       <Divider />
 
       <Form {...registerForm}>
-        <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
+        <form noValidate onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
           <InputField name="name" label="পূর্ণ নাম" labelClassName="text-white/70" type="text" placeholder="আপনার নাম" required className={INPUT_CLASSES} />
           <InputField name="email" label="ইমেইল" labelClassName="text-white/70" type="email" placeholder="your@email.com" required className={INPUT_CLASSES} />
           <PasswordField name="password" label="পাসওয়ার্ড" labelClassName="text-white/70" required className={INPUT_CLASSES} />
           <PasswordField name="confirmPassword" label="পাসওয়ার্ড নিশ্চিত করুন" labelClassName="text-white/70" required className={INPUT_CLASSES} />
 
-          <label className="flex items-start gap-2.5 cursor-pointer text-sm">
-            <input type="checkbox" className="mt-1 accent-primary" required />
+          <label htmlFor="register-terms" className="flex items-start gap-2.5 cursor-pointer text-sm">
+            <input
+              id="register-terms"
+              type="checkbox"
+              className="mt-1 size-4 shrink-0 accent-primary cursor-pointer"
+              checked={agreeToTerms}
+              onChange={(e) => setAgreeToTerms(e.target.checked)}
+            />
             <span className="text-white/45 leading-relaxed">
               আমি{' '}
               <Link href="/terms-and-conditions" target="_blank" className="text-primary/80 hover:text-primary underline underline-offset-2">শর্তাবলী</Link>
@@ -71,8 +79,13 @@ const RegisterForm = ({ onRegister }: RegisterFormProps) => {
               {' '}সম্মত
             </span>
           </label>
+          {!agreeToTerms && (
+            <p className="text-sm font-medium text-destructive" role="alert">
+              অনুগ্রহ করে শর্তাবলীতে সম্মতি দিন
+            </p>
+          )}
 
-          <AuthSubmitButton loadingText="অ্যাকাউন্ট তৈরি হচ্ছে...">
+          <AuthSubmitButton disabled={!agreeToTerms} loadingText="অ্যাকাউন্ট তৈরি হচ্ছে...">
             অ্যাকাউন্ট তৈরি করুন
           </AuthSubmitButton>
         </form>

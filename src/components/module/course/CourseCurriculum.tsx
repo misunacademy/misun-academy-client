@@ -13,6 +13,14 @@ const CourseCurriculum = () => (
         backgroundSize: "32px 32px",
       }}
     />
+    <div
+      aria-hidden="true"
+      className="absolute -top-40 right-[-120px] w-[520px] h-[520px] rounded-full bg-primary/[0.09] blur-[140px] pointer-events-none"
+    />
+    <div
+      aria-hidden="true"
+      className="absolute -bottom-48 left-[-140px] w-[460px] h-[460px] rounded-full bg-primary/[0.07] blur-[130px] pointer-events-none"
+    />
     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
     <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
@@ -71,24 +79,34 @@ function SummaryBar() {
   ]
 
   return (
-    <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3">
-      {items.map(({ icon: Icon, label, value }) => (
-        <div
-          key={label}
-          className="relative overflow-hidden flex items-center gap-3 px-5 py-4 rounded-2xl border border-primary/5 bg-primary/5 group hover:border-primary/30 hover:bg-primary/8 transition-all duration-300"
-        >
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-            <Icon size={24} className="text-primary" />
+    <div className="mt-10 relative overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-r from-primary/8 via-transparent to-primary/8">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+      <div className="grid grid-cols-2 lg:grid-cols-4">
+        {items.map(({ icon: Icon, label, value }, i) => (
+          <div
+            key={label}
+            className={`relative flex items-center gap-3.5 px-5 sm:px-6 py-5 border-white/5 ${
+              i === 0
+                ? "border-r border-b lg:border-b-0"
+                : i === 1
+                  ? "border-b lg:border-r lg:border-b-0"
+                  : i === 2
+                    ? "border-r"
+                    : ""
+            }`}
+          >
+            <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <Icon size={20} className="text-primary" />
+            </div>
+            <div>
+              <p className="text-2xl font-black bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
+                {value}
+              </p>
+              <p className="text-[15px] text-white/40 font-bangla tracking-wide">{label}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-3xl font-black bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
-              {value}
-            </p>
-            <p className="text-lg text-white/40 font-bangla tracking-wide">{label}</p>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }

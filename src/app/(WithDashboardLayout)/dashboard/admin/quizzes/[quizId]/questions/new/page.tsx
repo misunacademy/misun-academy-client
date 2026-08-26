@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
 import { useCreateAdminQuestionMutation, useUpdateAdminQuestionMutation, useGetAdminQuestionByIdQuery } from "@/redux/api/quizApi";
 import { QuestionImageUpload } from "@/components/quiz/QuestionImageUpload";
-import { IContentBlock } from "@/types/quiz";
+import { IContentBlock, IQuestion } from "@/types/quiz";
 import { toast } from "sonner";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
 import {
@@ -20,6 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { extractApiData } from "@/lib/api-helpers";
 
 interface OptionForm {
     type: 'text' | 'image' | 'text_image';
@@ -41,7 +42,7 @@ export default function AdminQuestionEditorPage({
     const questionId = resolvedSearchParams?.questionId;
 
     const { data: existingQuestionData } = useGetAdminQuestionByIdQuery(questionId || "", { skip: !questionId });
-    const existingQuestion = (existingQuestionData as any)?.data;
+    const existingQuestion = extractApiData<IQuestion>(existingQuestionData);
     const [createQuestion] = useCreateAdminQuestionMutation();
     const [updateQuestion] = useUpdateAdminQuestionMutation();
 
@@ -104,9 +105,7 @@ export default function AdminQuestionEditorPage({
     };
 
     const updateOption = (index: number, field: keyof OptionForm, value: string) => {
-        const newOptions = [...options];
-        (newOptions[index] as any)[field] = value;
-        setOptions(newOptions);
+        setOptions(options.map((opt, i) => (i === index ? { ...opt, [field]: value } : opt)));
     };
 
     const buildContentBlock = (): IContentBlock => {
@@ -122,8 +121,8 @@ export default function AdminQuestionEditorPage({
     const handleSubmit = async () => {
         setIsSaving(true);
         try {
-            const data: any = {
-                questionType,
+            const data: Partial<IQuestion> = {
+                questionType: questionType as IQuestion["questionType"],
                 content: buildContentBlock(),
                 options: options.map(o => {
                     if (o.type === 'image') return { type: 'image', imageUrl: o.imageUrl, altText: o.altText };

@@ -1,6 +1,7 @@
 'use client';
 
 import z from "zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
@@ -20,7 +21,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 interface LoginFormProps {
-  onLogin: (data: LoginFormData) => void;
+  onLogin: (data: LoginFormData) => Promise<{ success: boolean; error?: string } | void>;
   onForgotPassword: () => void;
 }
 
@@ -28,6 +29,7 @@ const INPUT_CLASSES = "h-11 !bg-[#0d1f12] !border-primary/25 text-white placehol
 
 const LoginForm = ({ onLogin, onForgotPassword }: LoginFormProps) => {
   const { signInWithGoogle } = useAuth();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
@@ -41,7 +43,11 @@ const LoginForm = ({ onLogin, onForgotPassword }: LoginFormProps) => {
   };
 
   const handleLogin = async (data: LoginFormData) => {
-    await onLogin(data);
+    setErrorMessage(null);
+    const result = await onLogin(data);
+    if (result && !result.success) {
+      setErrorMessage(result.error || "লগইন ব্যর্থ হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।");
+    }
   };
 
   return (
@@ -82,6 +88,16 @@ const LoginForm = ({ onLogin, onForgotPassword }: LoginFormProps) => {
           <AuthSubmitButton loadingText="লগইন হচ্ছে...">
             লগইন করুন
           </AuthSubmitButton>
+
+          {errorMessage && (
+            <p
+              role="alert"
+              aria-live="polite"
+              className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm font-medium text-red-400"
+            >
+              {errorMessage}
+            </p>
+          )}
         </form>
       </Form>
     </div>

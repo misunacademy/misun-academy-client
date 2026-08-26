@@ -21,6 +21,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, Trophy } from "lucide-react";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
+import type { CourseResponse } from "@/redux/api/courseApi";
+import type { BatchResponse } from "@/redux/api/batchApi";
+import type { InstructorCourse } from "@/redux/api/instructorApi";
+import { extractApiData } from "@/lib/api-helpers";
+
+type LeaderboardBatch = Pick<BatchResponse, "_id" | "title" | "batchNumber">;
 
 interface LeaderboardPageProps {
   isInstructor?: boolean;
@@ -39,9 +45,9 @@ export function LeaderboardPage({ isInstructor = false }: LeaderboardPageProps) 
 
   const courses = useMemo(() => {
     if (isInstructor) {
-      return (instructorCoursesData as any)?.data ?? [];
+      return instructorCoursesData?.data ?? [];
     }
-    return (adminCourses as any)?.data ?? [];
+    return extractApiData<CourseResponse[]>(adminCourses) ?? [];
   }, [isInstructor, instructorCoursesData, adminCourses]);
 
   const { data: adminBatchesData } = useGetAllBatchesQuery(
@@ -49,13 +55,14 @@ export function LeaderboardPage({ isInstructor = false }: LeaderboardPageProps) 
     { skip: isInstructor || !selectedCourseId }
   );
 
-  const batches = useMemo(() => {
+  const batches = useMemo<LeaderboardBatch[]>(() => {
     if (isInstructor) {
-      const course = courses.find((c: any) => c._id === selectedCourseId);
+      const instructorCourses: InstructorCourse[] = instructorCoursesData?.data ?? [];
+      const course = instructorCourses.find((c) => c._id === selectedCourseId);
       return course?.batches ?? [];
     }
-    return (adminBatchesData as any)?.data ?? [];
-  }, [isInstructor, courses, selectedCourseId, adminBatchesData]);
+    return extractApiData<BatchResponse[]>(adminBatchesData) ?? [];
+  }, [isInstructor, instructorCoursesData, selectedCourseId, adminBatchesData]);
 
   const globalLb = useGetGlobalLeaderboardQuery(
     { period: "all_time", page, limit },
@@ -72,16 +79,16 @@ export function LeaderboardPage({ isInstructor = false }: LeaderboardPageProps) 
 
   const lbResponse = scope === "global" ? globalLb : scope === "course" ? courseLb : batchLb;
   const { data: lbData, isLoading, isFetching } = lbResponse;
-  const entries = (lbData as any)?.data ?? [];
-  const totalPages = (lbData as any)?.meta?.totalPages ?? 1;
-  const total = (lbData as any)?.meta?.total ?? 0;
+  const entries = lbData?.data ?? [];
+  const totalPages = lbData?.meta?.totalPages ?? 1;
+  const total = lbData?.meta?.total ?? 0;
 
   const isFilterReady = scope === "global" ||
     (scope === "course" && selectedCourseId) ||
     (scope === "batch" && selectedBatchId);
 
   const handleScopeChange = (value: string) => {
-    setScope(value as any);
+    setScope(value as "global" | "course" | "batch");
     setSelectedCourseId("");
     setSelectedBatchId("");
     setPage(1);
@@ -127,7 +134,7 @@ export function LeaderboardPage({ isInstructor = false }: LeaderboardPageProps) 
                   <SelectValue placeholder="Select a course" />
                 </SelectTrigger>
                 <SelectContent>
-                  {courses.map((c: any) => (
+                  {courses.map((c) => (
                     <SelectItem key={c._id} value={c._id}>
                       {c.title}
                     </SelectItem>
@@ -151,7 +158,7 @@ export function LeaderboardPage({ isInstructor = false }: LeaderboardPageProps) 
                   <SelectValue placeholder="Select a batch" />
                 </SelectTrigger>
                 <SelectContent>
-                  {batches.map((b: any) => (
+                  {batches.map((b) => (
                     <SelectItem key={b._id} value={b._id}>
                       {b.title || `Batch #${b.batchNumber}`}
                     </SelectItem>
@@ -182,7 +189,7 @@ export function LeaderboardPage({ isInstructor = false }: LeaderboardPageProps) 
             <>
               <LeaderboardTable
                 entries={entries}
-                currentUserId={user?.id || (user as any)?._id}
+                currentUserId={user?.id}
               />
 
               {totalPages > 1 && (

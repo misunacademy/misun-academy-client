@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Trophy,
   Medal,
@@ -10,9 +10,9 @@ import {
   Flame,
   X,
   Loader2,
-  ChevronDown,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import { useGetBatchLeaderboardQuery } from "@/redux/api/gamificationApi";
 import type { ILeaderboardEntry } from "@/types/quiz";
 
@@ -32,58 +32,45 @@ export default function LeaderboardDrawer({
   currentUserId,
 }: LeaderboardDrawerProps) {
   const [period, setPeriod] = useState<Period>("all_time");
-  const [page, setPage] = useState(1);
-  const [allEntries, setAllEntries] = useState<ILeaderboardEntry[]>([]);
-  const [hasMore, setHasMore] = useState(true);
+  const [pages, setPages] = useState<number[]>([1]);
   const listRef = useRef<HTMLDivElement>(null);
   const currentUserRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading, isFetching } = useGetBatchLeaderboardQuery(
-    { batchId, period, page, limit: 20 },
+  const maxPage = pages[pages.length - 1] ?? 1;
+
+  const { data: firstPageData, isLoading } = useGetBatchLeaderboardQuery(
+    { batchId, period, page: 1, limit: 20 },
+    { skip: !batchId }
+  );
+  const { data: lastPageData, isFetching } = useGetBatchLeaderboardQuery(
+    { batchId, period, page: maxPage, limit: 20 },
     { skip: !batchId }
   );
 
-  const raw = data as any;
-  const entries: ILeaderboardEntry[] = useMemo(() => raw?.data ?? [], [raw]);
-  const totalPages: number = useMemo(() => raw?.meta?.totalPages ?? 1, [raw]);
+  const totalPages = lastPageData?.meta?.totalPages ?? 1;
+  const hasMore = maxPage < totalPages;
+  const firstPageEntries = firstPageData?.data ?? [];
 
-  // Reset when period changes
-  useEffect(() => {
-    setPage(1);
-    setAllEntries([]);
-    setHasMore(true);
-  }, [period]);
+  const handlePeriodChange = (p: Period) => {
+    if (p === period) return;
+    setPeriod(p);
+    setPages([1]);
+  };
 
-  // Accumulate entries across pages
-  useEffect(() => {
-    if (entries.length > 0) {
-      setAllEntries((prev) => {
-        if (page === 1) return entries;
-        const existingIds = new Set(prev.map((e) => e.userId._id));
-        const newEntries = entries.filter((e) => !existingIds.has(e.userId._id));
-        return [...prev, ...newEntries];
-      });
-      setHasMore(page < totalPages);
-    } else if (page === 1) {
-      setAllEntries([]);
-      setHasMore(false);
+  const handleLoadMore = useCallback(() => {
+    if (!isFetching && maxPage < totalPages) {
+      setPages((prev) => [...prev, (prev[prev.length - 1] ?? 1) + 1]);
     }
-  }, [entries, page, totalPages]);
+  }, [isFetching, maxPage, totalPages]);
 
-  // Scroll current user into view when drawer opens
+  // Scroll current user into view once the drawer opens and data has loaded
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => {
         currentUserRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
       }, 400);
     }
-  }, [isOpen, allEntries]);
-
-  const handleLoadMore = useCallback(() => {
-    if (!isFetching && hasMore) {
-      setPage((p) => p + 1);
-    }
-  }, [isFetching, hasMore]);
+  }, [isOpen, isLoading]);
 
   // Infinite scroll
   useEffect(() => {
@@ -143,7 +130,7 @@ export default function LeaderboardDrawer({
               {(["all_time", "monthly"] as Period[]).map((p) => (
                 <button
                   key={p}
-                  onClick={() => setPeriod(p)}
+                  onClick={() => handlePeriodChange(p)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     period === p
                       ? "bg-primary/20 text-primary border border-primary/30"
@@ -166,28 +153,26 @@ export default function LeaderboardDrawer({
                 <Users className="h-10 w-10 text-white/[0.06]" />
                 <p className="text-xs text-white/25">No batch enrollment found</p>
               </div>
-            ) : isLoading && page === 1 ? (
+            ) : isLoading && pages.length === 1 ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
                 <Loader2 className="h-7 w-7 text-primary animate-spin" />
                 <p className="text-xs text-white/30">Loading...</p>
               </div>
-            ) : allEntries.length === 0 ? (
+            ) : firstPageEntries.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
                 <Trophy className="h-10 w-10 text-white/[0.06]" />
                 <p className="text-xs text-white/25">No entries yet in this batch</p>
               </div>
             ) : (
               <div className="py-2 px-3 space-y-1">
-                {allEntries.map((entry) => (
-                  <LeaderboardRow
-                    key={`${entry.rank}-${entry.userId._id}`}
-                    entry={entry}
+                {pages.map((pageNumber) => (
+                  <LeaderboardPageSection
+                    key={`${period}-${pageNumber}`}
+                    batchId={batchId}
+                    period={period}
+                    pageNumber={pageNumber}
                     currentUserId={currentUserId}
-                    ref={
-                      currentUserId && entry.userId._id === currentUserId
-                        ? currentUserRef
-                        : undefined
-                    }
+                    currentUserRef={currentUserRef}
                   />
                 ))}
 
@@ -222,6 +207,44 @@ export default function LeaderboardDrawer({
   );
 }
 
+/* ───── Page Section ───── */
+function LeaderboardPageSection({
+  batchId,
+  period,
+  pageNumber,
+  currentUserId,
+  currentUserRef,
+}: {
+  batchId: string;
+  period: Period;
+  pageNumber: number;
+  currentUserId?: string;
+  currentUserRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const { data } = useGetBatchLeaderboardQuery(
+    { batchId, period, page: pageNumber, limit: 20 },
+    { skip: !batchId }
+  );
+  const entries: ILeaderboardEntry[] = data?.data ?? [];
+
+  return (
+    <>
+      {entries.map((entry) => (
+        <LeaderboardRow
+          key={`${entry.rank}-${entry.userId._id}`}
+          entry={entry}
+          currentUserId={currentUserId}
+          ref={
+            currentUserId && entry.userId._id === currentUserId
+              ? currentUserRef
+              : undefined
+          }
+        />
+      ))}
+    </>
+  );
+}
+
 /* ───── Row Component ───── */
 const LeaderboardRow = ({
   entry,
@@ -248,6 +271,8 @@ const LeaderboardRow = ({
     );
   };
 
+  const avatarUrl = entry.userId.avatar || entry.userId.image;
+
   return (
     <div
       ref={rowRef}
@@ -262,10 +287,13 @@ const LeaderboardRow = ({
 
       {/* Avatar */}
       <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 flex items-center justify-center shrink-0 ring-1 ring-white/10">
-        {entry.userId.avatar || entry.userId.image ? (
-          <img
-            src={entry.userId.avatar || entry.userId.image}
+        {avatarUrl ? (
+          <Image
+            src={avatarUrl}
             alt={entry.userId.name}
+            width={32}
+            height={32}
+            unoptimized
             className="w-full h-full object-cover"
           />
         ) : (

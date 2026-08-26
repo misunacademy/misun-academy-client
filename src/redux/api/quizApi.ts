@@ -1,5 +1,5 @@
 import { baseApi } from './baseApi';
-import { IQuiz, IAdminQuizListResponse, IQuestion } from '@/types/quiz';
+import { IQuiz, IAdminQuizListResponse, IQuestion, IQuizAnalytics } from '@/types/quiz';
 
 export const quizApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -129,7 +129,7 @@ export const quizApi = baseApi.injectEndpoints({
         }),
 
         // ── Analytics (admin) ─────────────────────────────────────────────────
-        getAdminQuizAnalytics: builder.query<unknown, string>({
+        getAdminQuizAnalytics: builder.query<IQuizAnalytics, string>({
             query: (quizId) => ({ url: `/admin/quizzes/quizzes/${quizId}/analytics` }),
             providesTags: (_result, _err, quizId) => [{ type: 'Quizzes', id: quizId }],
         }),

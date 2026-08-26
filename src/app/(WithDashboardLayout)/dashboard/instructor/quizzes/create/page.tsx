@@ -40,12 +40,12 @@ export default function QuizBuilderPage() {
     const quizId = searchParams.get("quizId");
 
     const { data: existingQuizData } = useGetInstructorQuizByIdQuery(quizId || "", { skip: !quizId });
-    const existingQuiz: any = existingQuizData?.data;
+    const existingQuiz = existingQuizData?.data;
     const [createQuiz] = useCreateInstructorQuizMutation();
     const [updateQuiz] = useUpdateInstructorQuizMutation();
     const [isSaving, setIsSaving] = useState(false);
 
-    const { control, handleSubmit, reset, watch } = useForm<QuizForm>({
+    const { control, handleSubmit, reset } = useForm<QuizForm>({
         defaultValues: {
             title: "",
             description: "",
@@ -74,7 +74,7 @@ export default function QuizBuilderPage() {
                 maxAttempts: existingQuiz.maxAttempts,
                 showCorrectAnswers: existingQuiz.showCorrectAnswers,
                 allowReview: existingQuiz.allowReview,
-                status: existingQuiz.status,
+                status: existingQuiz.status as QuizStatus,
             });
         }
     }, [existingQuiz, reset]);

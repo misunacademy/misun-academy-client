@@ -8,7 +8,7 @@ import CourseJsonLd from '@/components/seo/CourseJsonLd';
 
 const courseConfig = {
   [COURSE_SLUGS.GRAPHIC_DESIGN]: {
-    title: 'কমপ্লিট গ্রাফিক্স ডিজাইন উইথ ফ্রিল্যান্সিং | MISUN Academy',
+    title: 'AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন উইথ ফ্রিল্যান্সিং | MISUN Academy',
     description:
       'বেসিক থেকে অ্যাডভান্স লেভেল পর্যন্ত গ্রাফিক্স ডিজাইন শিখুন। লাইভ ক্লাস, ১:১ মেন্টরশিপ এবং ফ্রিল্যান্সিং গাইডসহ সম্পূর্ণ কোর্স।',
     keywords: [
@@ -16,7 +16,7 @@ const courseConfig = {
       'Freelancing',
       'Graphic Design Bangladesh',
       'MISUN Academy',
-      'কমপ্লিট গ্রাফিক্স ডিজাইন',
+      'AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন',
       'ফ্রিল্যান্সিং শেখা',
       'অনলাইন ডিজাইন কোর্স',
     ],

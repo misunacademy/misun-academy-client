@@ -53,6 +53,12 @@ export async function signInAction(
 
       const signedInUser = refetchedUser?.role ? refetchedUser : responseUser;
 
+      if (signedInUser?.status === 'suspended') {
+        toast.error('আপনার অ্যাকাউন্টটি স্থগিত রয়েছে। সাপোর্টের সাথে যোগাযোগ করুন।');
+        goToRedirect('/auth/suspended');
+        return { success: false, error: 'Account suspended' };
+      }
+
       const destination = getPostLoginDestination(
         signedInUser,
         redirectUrl,

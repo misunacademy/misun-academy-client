@@ -27,7 +27,14 @@ export function CourseCurriculumContent({ courseConfigs }: CourseCurriculumConte
         <CourseSelector courses={courses} active={active} onSelect={setActive} configs={courseConfigs} />
         <StatsCard config={cfg} modules={modules.length} projects={projects.length} totalHours={totalHours} />
       </div>
-      <ContentPanel course={course} config={cfg} modules={modules} projects={projects} />
+      <ContentPanel
+        course={course}
+        config={cfg}
+        modules={modules}
+        projects={projects}
+        configs={courseConfigs}
+        activeCourse={active}
+      />
     </div>
   )
 }

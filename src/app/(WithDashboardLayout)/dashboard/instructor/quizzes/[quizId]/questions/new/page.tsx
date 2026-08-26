@@ -7,12 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
 import { useCreateInstructorQuestionMutation, useUpdateInstructorQuestionMutation, useGetInstructorQuestionByIdQuery } from "@/redux/api/instructorApi";
 import { QuestionImageUpload } from "@/components/quiz/QuestionImageUpload";
-import { IContentBlock } from "@/types/quiz";
+import { IContentBlock, IQuestion } from "@/types/quiz";
 import { toast } from "sonner";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
 import {
@@ -43,7 +41,7 @@ export default function QuestionEditorPage({
     const questionId = resolvedSearchParams?.questionId;
 
     const { data: existingQuestionData } = useGetInstructorQuestionByIdQuery(questionId || "", { skip: !questionId });
-    const existingQuestion = (existingQuestionData as any)?.data;
+    const existingQuestion = existingQuestionData?.data;
     const [createQuestion] = useCreateInstructorQuestionMutation();
     const [updateQuestion] = useUpdateInstructorQuestionMutation();
 
@@ -106,9 +104,7 @@ export default function QuestionEditorPage({
     };
 
     const updateOption = (index: number, field: keyof OptionForm, value: string) => {
-        const newOptions = [...options];
-        (newOptions[index] as any)[field] = value;
-        setOptions(newOptions);
+        setOptions(options.map((opt, i) => (i === index ? { ...opt, [field]: value } : opt)));
     };
 
     const buildContentBlock = (): IContentBlock => {
@@ -124,8 +120,8 @@ export default function QuestionEditorPage({
     const handleSubmit = async () => {
         setIsSaving(true);
         try {
-            const data: any = {
-                questionType,
+            const data: Partial<IQuestion> = {
+                questionType: questionType as IQuestion["questionType"],
                 content: buildContentBlock(),
                 options: options.map(o => {
                     if (o.type === 'image') return { type: 'image', imageUrl: o.imageUrl, altText: o.altText };

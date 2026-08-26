@@ -6,7 +6,8 @@ import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
-import { useUploadSingleImageMutation } from '@/redux/api/uploadApi';
+import { useUploadRestrictedImageMutation } from '@/redux/api/uploadApi';
+import { useNidPhotoSrc } from './NidPhoto';
 import { useUpdateMyEmployeeProfileMutation } from '@/redux/api/employeeApi';
 import { toast } from 'sonner';
 import {
@@ -209,7 +210,7 @@ interface Props {
 
 export function UpdateInfoDialog({ open, onClose, current, onSaved }: Props) {
     const { updateUserProfile } = useAuth();
-    const [uploadImage] = useUploadSingleImageMutation();
+    const [uploadRestrictedImage] = useUploadRestrictedImageMutation();
     const [updateProfile] = useUpdateMyEmployeeProfileMutation();
 
     const [saving, setSaving] = useState(false);
@@ -224,6 +225,9 @@ export function UpdateInfoDialog({ open, onClose, current, onSaved }: Props) {
     const [nidBackFile, setNidBackFile] = useState<File | null>(null);
     const [nidBackPreview, setNidBackPreview] = useState<string | null>(null);
     const [nidBackCleared, setNidBackCleared] = useState(false);
+
+    const currentFrontSrc = useNidPhotoSrc(current.nidPhotoFrontUrl);
+    const currentBackSrc = useNidPhotoSrc(current.nidPhotoBackUrl);
 
     const form = useForm<UpdateInfoFormValues>({
         resolver: zodResolver(updateInfoSchema) as Resolver<UpdateInfoFormValues>,
@@ -302,8 +306,8 @@ export function UpdateInfoDialog({ open, onClose, current, onSaved }: Props) {
                 setUploadingSide('front');
                 const fd = new FormData();
                 fd.append('image', nidFrontFile);
-                const res = await uploadImage(fd).unwrap();
-                resolvedFrontUrl = res.data.url;
+                const res = await uploadRestrictedImage(fd).unwrap();
+                resolvedFrontUrl = res.data.publicId;
             } else if (nidFrontCleared) {
                 resolvedFrontUrl = null;
             }
@@ -312,8 +316,8 @@ export function UpdateInfoDialog({ open, onClose, current, onSaved }: Props) {
                 setUploadingSide('back');
                 const fd = new FormData();
                 fd.append('image', nidBackFile);
-                const res = await uploadImage(fd).unwrap();
-                resolvedBackUrl = res.data.url;
+                const res = await uploadRestrictedImage(fd).unwrap();
+                resolvedBackUrl = res.data.publicId;
             } else if (nidBackCleared) {
                 resolvedBackUrl = null;
             }
@@ -614,7 +618,7 @@ export function UpdateInfoDialog({ open, onClose, current, onSaved }: Props) {
                             <NidUploadZone
                                 label="NID Front Photo"
                                 inputId="nid-front-photo-input"
-                                currentUrl={nidFrontCleared ? null : (current.nidPhotoFrontUrl ?? null)}
+                                currentUrl={nidFrontCleared ? null : (nidFrontFile ? nidFrontPreview : currentFrontSrc)}
                                 localFile={nidFrontFile}
                                 localPreview={nidFrontPreview}
                                 isUploading={uploadingSide === 'front'}
@@ -628,7 +632,7 @@ export function UpdateInfoDialog({ open, onClose, current, onSaved }: Props) {
                             <NidUploadZone
                                 label="NID Back Photo"
                                 inputId="nid-back-photo-input"
-                                currentUrl={nidBackCleared ? null : (current.nidPhotoBackUrl ?? null)}
+                                currentUrl={nidBackCleared ? null : (nidBackFile ? nidBackPreview : currentBackSrc)}
                                 localFile={nidBackFile}
                                 localPreview={nidBackPreview}
                                 isUploading={uploadingSide === 'back'}

@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import AuthGuard from "@/components/shared/AuthGuard"
 import NotificationBell from "@/components/shared/NotificationBell"
-import SocketProvider from "@/providers/SocketProvider"
 import { usePathname } from "next/navigation"
 
 const pageTitleMap: Record<string, string> = {
@@ -24,6 +23,7 @@ const pageTitleMap: Record<string, string> = {
     '/dashboard/admin/settings': 'Settings',
     '/dashboard/admin/students-progress-tracker': 'Students Progress Tracker',
     '/dashboard/admin/quizzes': 'Quiz Management',
+    '/dashboard/admin/bootcamp': 'Bootcamp Registrations',
     '/dashboard/instructor': 'Instructor Dashboard',
     '/dashboard/instructor/recordings': 'Live Class Recordings',
     '/dashboard/instructor/students': 'Student Management',
@@ -41,6 +41,7 @@ const pageTitleMap: Record<string, string> = {
     '/dashboard/employee/leave': 'Leave Management',
     '/dashboard/employee/profile': 'Profile',
     '/dashboard/employee/settings': 'Settings',
+    '/dashboard/notifications': 'Notifications',
 }
 
 function getPageTitle(path: string) {
@@ -62,7 +63,6 @@ export default function DashboardShell({ children }: { children: React.ReactNode
 
     return (
         <AuthGuard>
-            <SocketProvider>
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset>
@@ -91,7 +91,6 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                     </main>
                 </SidebarInset>
             </SidebarProvider>
-            </SocketProvider>
         </AuthGuard>
     )
 }

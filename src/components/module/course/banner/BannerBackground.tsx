@@ -1,7 +1,5 @@
 import Image from "next/image"
-import designerImage from "@/assets/3d-elements/abstract-graphic-designers.png"
 import tool1Image from "@/assets/3d-elements/tool_1.png"
-import tool2Image from "@/assets/3d-elements/tool_2.png"
 
 export function BannerBackground() {
   return (

@@ -14,6 +14,7 @@ import { ProfileSettingsTab } from "./ProfileSettingsTab"
 import { MaintenanceSettingsTab } from "./MaintenanceSettingsTab"
 import { CommunityLinksTab } from "./CommunityLinksTab"
 import { PopupBannerTab } from "./PopupBannerTab"
+import { HomeVideoTab } from "./HomeVideoTab"
 
 const settingsSchema = z.object({
   popupEnabled: z.boolean(),
@@ -26,6 +27,7 @@ const settingsSchema = z.object({
   maWhatsappGroupLink: z.string().optional(),
   epFacebookGroupLink: z.string().optional(),
   epWhatsappGroupLink: z.string().optional(),
+  homeWhyVideoUrl: z.string().optional(),
 })
 
 type SettingsFormValues = z.infer<typeof settingsSchema>
@@ -51,6 +53,7 @@ export default function AdminSettingsContent() {
       maWhatsappGroupLink: "",
       epFacebookGroupLink: "",
       epWhatsappGroupLink: "",
+      homeWhyVideoUrl: "",
     },
   })
 
@@ -74,6 +77,7 @@ export default function AdminSettingsContent() {
       maWhatsappGroupLink: s.maWhatsappGroupLink ?? "",
       epFacebookGroupLink: s.epFacebookGroupLink ?? "",
       epWhatsappGroupLink: s.epWhatsappGroupLink ?? "",
+      homeWhyVideoUrl: s.homeWhyVideoUrl ?? "",
     })
   }, [settingsData, hasSettings, form, updateSettings])
 
@@ -152,6 +156,7 @@ export default function AdminSettingsContent() {
     { value: "maintenance", label: "Maintenance" },
     { value: "community", label: "Community Links" },
     { value: "popup", label: "Popup Banner" },
+    { value: "home-video", label: "Home Video" },
   ], [])
 
   const tabContents = useMemo(() => [
@@ -191,6 +196,10 @@ export default function AdminSettingsContent() {
           onSave={handleSave}
         />
       ),
+    },
+    {
+      value: "home-video",
+      content: <HomeVideoTab onSave={handleSave} />,
     },
   ], [user, uploadLoading, profileUpdateLoading, handleProfilePhotoClick, handleProfilePhotoChange, handleMaintenanceEnabledChange, handleSave, handlePopupEnabledChange, onBannerFileChange])
 

@@ -23,6 +23,7 @@ export interface Course {
 
 export interface CourseConfig {
   abbr: string
+  stackLabel: string
   color: string
   glow: string
   glowStrong: string
@@ -37,6 +38,7 @@ export interface CourseConfig {
 export const COURSE_CONFIG: readonly CourseConfig[] = [
   {
     abbr: "Ps",
+    stackLabel: "Photoshop",
     color: "#31a8ff",
     glow: "rgba(49,168,255,0.22)",
     glowStrong: "rgba(49,168,255,0.45)",
@@ -49,6 +51,7 @@ export const COURSE_CONFIG: readonly CourseConfig[] = [
   },
   {
     abbr: "Ai",
+    stackLabel: "Illustrator",
     color: "#ff9a00",
     glow: "rgba(255,154,0,0.20)",
     glowStrong: "rgba(255,154,0,0.45)",
@@ -61,6 +64,7 @@ export const COURSE_CONFIG: readonly CourseConfig[] = [
   },
   {
     abbr: "✦",
+    stackLabel: "Client Hunt",
     color: "#20b486",
     glow: "rgba(32,180,134,0.20)",
     glowStrong: "rgba(32,180,134,0.45)",
