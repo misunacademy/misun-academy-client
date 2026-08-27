@@ -38,7 +38,7 @@ export function BannerContent({ batchNumber, price, enrollmentPeriod, courseSlug
         <br />
         কমপ্লিট{" "}
         <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.4)]">
-          গ্রাফিক্স ডিজাইন
+          গ্রাফিক ডিজাইন
         </span>{" "}
         উইথ ফ্রিল্যান্সিং
       </h1>
