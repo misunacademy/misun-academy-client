@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useMemo, useEffect } from "react";
 import {
@@ -73,27 +72,27 @@ const EnrolledStudentTable = () => {
             {
                 accessorKey: "studentId",
                 header: "Student ID",
-                cell: ({ row }) =>( row.original as any).studentId || row.original.userId || 'N/A',
+                cell: ({ row }) => row.original.studentId || row.original.userId || 'N/A',
             },
             {
-                accessorKey: "name",
-                header: "Name",
-                cell: ({ row }) => ( (row.original as any).student?.name ) || (row.original.userId as string) || 'N/A',
+                accessorKey: 'studentName',
+                header: "Student Name",
+                cell: ({ row }) => row.original.student?.name || row.original.userId || 'N/A',
             },
             {
-                accessorKey: "email",
+                accessorKey: 'email',
                 header: "Email",
-                cell: ({ row }) => ( (row.original as any).student?.email ) || 'N/A',
+                cell: ({ row }) => row.original.student?.email || 'N/A',
             },
             {
-                accessorKey: "phone",
+                accessorKey: 'phone',
                 header: "Phone",
-                cell: ({ row }) => ( (row.original as any).student?.phone ) || 'N/A',
+                cell: ({ row }) => row.original.student?.phone || 'N/A',
             },
             {
-                accessorKey: "address",
+                accessorKey: 'address',
                 header: "Address",
-                cell: ({ row }) => ( (row.original as any).student?.address ) || 'N/A',
+                cell: ({ row }) => row.original.student?.address || 'N/A',
             },
             {
                 accessorKey: "course",

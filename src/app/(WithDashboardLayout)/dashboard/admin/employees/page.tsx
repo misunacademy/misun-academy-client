@@ -9,10 +9,10 @@ import {
 } from '@/redux/api/employeeAdminApi';
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
 
-import { AdminEmployeeStats } from './(components)/AdminEmployeeStats';
-import { EmployeeListTab } from './(components)/EmployeeListTab';
-import { SalaryManagementTab } from './(components)/SalaryManagementTab';
-import { LeaveManagementTab } from './(components)/LeaveManagementTab';
+import { AdminEmployeeStats } from './_components/AdminEmployeeStats';
+import { EmployeeListTab } from './_components/EmployeeListTab';
+import { SalaryManagementTab } from './_components/SalaryManagementTab';
+import { LeaveManagementTab } from './_components/LeaveManagementTab';
 
 const AdminEmployeesPage = () => {
     /* ── Summary data for stats ─────────────────────────────────────────────── */

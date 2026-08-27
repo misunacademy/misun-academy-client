@@ -1,24 +1,46 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client';
+
 import { useState } from "react";
-import { Edit, Loader2 } from "lucide-react";
+import { Edit } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
-import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { InputField } from "@/components/forms/input-field";
+import { SubmitButton } from "@/components/forms/submit-button";
+import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
+import type { ProfileData } from "@/redux/api/profileApi";
+import { useAuth } from "@/hooks/useAuth";
+import type { AuthUser } from "@/types/auth";
+import { toast } from "sonner";
 import { format } from "date-fns";
 
+interface SessionInfo {
+    id: string;
+    token: string;
+    createdAt: string;
+    userAgent?: string;
+    isCurrent?: boolean;
+}
+
+interface ProfileFormData {
+    name?: string;
+    phone?: string;
+    wpnumber?: string;
+}
+
 interface ProfileMainTabProps {
-    profile: any;
-    user: any;
+    profile: ProfileData | undefined;
+    user: AuthUser;
     studentId: string;
     phone: string;
     wpnumber: string;
-    sessions: any[];
+    sessions: SessionInfo[];
     handleRevokeSession: (token: string) => void;
     refetch: () => void;
 }
+
+const INPUT_CLASSES = "bg-primary/5 border-primary/20 text-white placeholder:text-white/30";
 
 export function ProfileMainTab({
     profile,
@@ -31,10 +53,10 @@ export function ProfileMainTab({
     refetch
 }: ProfileMainTabProps) {
     const [isEditing, setIsEditing] = useState(false);
-    const [updateProfile, { isLoading }] = useUpdateUserProfileMutation();
-    const { updateUserProfile } = useAuth(); // for updating auth user info (like name)
+    const [updateProfile] = useUpdateUserProfileMutation();
+    const { updateUserProfile } = useAuth();
 
-    const { register, handleSubmit } = useForm({
+    const form = useForm<ProfileFormData>({
         defaultValues: {
             name: profile?.user?.name || "",
             phone: profile?.user?.phone || "",
@@ -42,36 +64,30 @@ export function ProfileMainTab({
         }
     });
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: ProfileFormData) => {
         try {
-            // Update the profile data (phone, wpnumber)
             await updateProfile({
                 phone: data.phone,
                 wpnumber: data.wpnumber,
             }).unwrap();
 
-            // Check if name changed to update the auth user
             if (data.name !== user.name) {
-                await updateUserProfile({
-                    name: data.name
-                });
+                await updateUserProfile({ name: data.name });
             }
 
             toast.success("Profile updated successfully");
             setIsEditing(false);
             refetch();
-        } catch (error: any) {
-            toast.error(error?.data?.message || "Failed to update profile");
+        } catch (error: unknown) {
+            const apiError = error as { data?: { message?: string } };
+            toast.error(apiError?.data?.message || "Failed to update profile");
         }
     };
 
     return (
-        <div className="flex-1 bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
-
-            {/* Ambient glow inside right panel */}
+        <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
-            {/* Header */}
             <div className="relative z-10 flex items-center justify-between border-b border-dashed border-primary/20 pb-6 mb-8">
                 <h2 className="text-primary text-2xl font-semibold">My Profile</h2>
                 <button
@@ -83,52 +99,32 @@ export function ProfileMainTab({
             </div>
 
             {isEditing ? (
-                <form onSubmit={handleSubmit(onSubmit)} className="relative z-10 flex flex-col gap-6 w-full max-w-2xl mb-16">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-white/70 text-sm">Full Name</label>
-                            <Input
-                                {...register("name")}
-                                className="bg-primary/5 border-primary/20 text-white"
-                                placeholder="Enter your full name"
-                            />
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="relative z-10 flex flex-col gap-6 w-full max-w-2xl mb-16">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <InputField name="name" label="Full Name" labelClassName="text-white/70" className={INPUT_CLASSES} />
+                            <div className="space-y-2">
+                                <label className="text-white/70 text-sm">Email <span className="text-xs text-white/30">(Cannot be changed)</span></label>
+                                <Input
+                                    value={profile?.user?.email}
+                                    disabled
+                                    className="bg-white/5 border-white/10 text-white/50 cursor-not-allowed"
+                                />
+                            </div>
+                            <InputField name="phone" label="Mobile Number" labelClassName="text-white/70" placeholder="e.g. +8801XXXXXXXXX" className={INPUT_CLASSES} />
+                            <InputField name="wpnumber" label="WhatsApp Number" labelClassName="text-white/70" placeholder="e.g. +8801XXXXXXXXX" className={INPUT_CLASSES} />
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-white/70 text-sm">Email <span className="text-xs text-white/30">(Cannot be changed)</span></label>
-                            <Input
-                                value={profile?.user?.email}
-                                disabled
-                                className="bg-white/5 border-white/10 text-white/50 cursor-not-allowed"
-                            />
+                        <div className="flex justify-end gap-4 mt-2">
+                            <Button type="button" variant="outline" onClick={() => setIsEditing(false)} className="bg-transparent border-primary/20 text-white hover:bg-white/5">
+                                Cancel
+                            </Button>
+                            <SubmitButton className="bg-primary hover:bg-primary-glow text-white">
+                                Save Changes
+                            </SubmitButton>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-white/70 text-sm">Mobile Number</label>
-                            <Input
-                                {...register("phone")}
-                                className="bg-primary/5 border-primary/20 text-white"
-                                placeholder="e.g. +8801XXXXXXXXX"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-white/70 text-sm">WhatsApp Number</label>
-                            <Input
-                                {...register("wpnumber")}
-                                className="bg-primary/5 border-primary/20 text-white"
-                                placeholder="e.g. +8801XXXXXXXXX"
-                            />
-                        </div>
-                    </div>
-                    <div className="flex justify-end gap-4 mt-2">
-                        <Button type="button" variant="outline" onClick={() => setIsEditing(false)} className="bg-transparent border-primary/20 text-white hover:bg-white/5">
-                            Cancel
-                        </Button>
-                        <Button type="submit" disabled={isLoading} className="bg-primary hover:bg-primary-glow text-white">
-                            {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null} Save Changes
-                        </Button>
-                    </div>
-                </form>
+                    </form>
+                </Form>
             ) : (
-                /* Info Grid */
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12 mb-16 relative z-10">
                     <div>
                         <p className="text-white/40 text-sm mb-1.5">Full Name</p>
@@ -153,10 +149,8 @@ export function ProfileMainTab({
                 </div>
             )}
 
-            {/* Device Activity Section */}
             <h2 className="relative z-10 text-primary text-xl font-semibold mb-4">Device Activity</h2>
             <div className="relative z-10 w-full border-t border-dashed border-primary/20 mb-6" />
-
             <div className="relative z-10 overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
@@ -169,11 +163,10 @@ export function ProfileMainTab({
                     </thead>
                     <tbody>
                         {sessions.length > 0 ? (
-                            sessions.map((sess, idx) => (
+                            sessions.map((sess: SessionInfo, idx: number) => (
                                 <tr key={sess.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02]">
                                     <td className="py-4 px-4 text-white/70 text-sm">{idx + 1}</td>
                                     <td className="py-4 px-4 text-white/70 text-sm">
-                                        {/* Guess OS from user agent if available, else show a default */}
                                         {sess.userAgent ? (
                                             sess.userAgent.includes('Windows') ? 'Windows 10' :
                                                 sess.userAgent.includes('Mac') ? 'macOS Safari' :
@@ -196,9 +189,7 @@ export function ProfileMainTab({
                             ))
                         ) : (
                             <tr>
-                                <td colSpan={4} className="py-8 text-center text-white/40">
-                                    No active sessions found.
-                                </td>
+                                <td colSpan={4} className="py-8 text-center text-white/40">No active sessions found.</td>
                             </tr>
                         )}
                     </tbody>

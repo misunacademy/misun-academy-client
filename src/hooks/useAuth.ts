@@ -1,30 +1,34 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { authServerApi } from '@/lib/auth-server-api';
 import { useRouter } from 'next/navigation';
+import { useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AuthUser } from '@/types/auth';
-import { getAuthErrorMessage } from '@/lib/auth-errors';
-import { getRedirectUrlFromLocation, isAllowedRedirectUrl } from '@/lib/auth-redirect';
+import {
+  signInAction,
+  signUpAction,
+  signInWithGoogleAction,
+  forgotPasswordAction,
+  resetPasswordAction,
+  verifyEmailTokenAction,
+  updateUserProfileAction,
+} from '@/lib/auth-actions';
+import { useGetSessionQuery } from '@/redux/api/authApi';
+import { authServerApi } from '@/lib/auth-server-api';
 
-/**
- * Centralized auth hook.
- * Session source of truth is backend GET /api/v1/auth/me.
- */
 export function useAuth() {
   const router = useRouter();
-  const [user, setUser] = useState<AuthUser | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const { data: sessionData, isLoading: isPending, error: sessionError, refetch: refetchSession } = useGetSessionQuery();
 
   const baseApiUrl = process.env.NEXT_PUBLIC_BASE_API_URL;
 
+  const user = useMemo(() => {
+    if (!sessionData?.user) return undefined;
+    return sessionData.user as AuthUser;
+  }, [sessionData]);
+
   const session = useMemo(() => (user ? { user } : null), [user]);
   const isAuthenticated = !!user;
-
-  const isAllowedRedirect = useCallback((target?: string | null) => {
-    return isAllowedRedirectUrl(target);
-  }, []);
+  const isLoading = isPending;
+  const error = sessionError as Error | null;
 
   const goToRedirect = useCallback((target: string) => {
     if (target.startsWith('/')) {
@@ -47,344 +51,79 @@ export function useAuth() {
     }
   }, [router]);
 
-  const refetchSession = useCallback(async () => {
-    if (!baseApiUrl) {
-      setUser(undefined);
-      setError(new Error('Missing NEXT_PUBLIC_BASE_API_URL'));
-      setIsLoading(false);
-      return null;
-    }
-
-    try {
-      setIsLoading(true);
-      const response = await fetch(`${baseApiUrl}/auth/me`, {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (response.status === 401) {
-        setUser(undefined);
-        setError(null);
-        setIsLoading(false);
-        return null;
-      }
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch auth user: ${response.status}`);
-      }
-
-      const payload = await response.json();
-      const nextUser = payload?.data?.user as AuthUser | undefined;
-      setUser(nextUser);
-      setError(null);
-      return nextUser || null;
-    } catch (err) {
-      setError(err as Error);
-      setUser(undefined);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [baseApiUrl]);
-
-  useEffect(() => {
-    refetchSession();
+  const refetchSessionTyped = useCallback(async () => {
+    const result = await refetchSession();
+    return (result.data?.user as AuthUser | null | undefined) ?? undefined;
   }, [refetchSession]);
 
-  /**
-   * Sign in with email and password
-   */
-  const signIn = async (email: string, password: string, redirectUrl?: string) => {
-    try {
-      const result = await authServerApi.signInEmail({
-        email,
-        password,
-      });
+  const signIn = useCallback(
+    (email: string, password: string, redirectUrl?: string) =>
+      signInAction(email, password, redirectUrl, refetchSessionTyped, goToRedirect),
+    [refetchSessionTyped, goToRedirect],
+  );
 
-      if (result.error) {
-        const errorMsg = getAuthErrorMessage(result.error.code, result.error.message);
-        toast.error(errorMsg);
-        return { success: false, error: errorMsg };
-      }
+  const signUp = useCallback(
+    (name: string, email: string, password: string) =>
+      signUpAction(name, email, password),
+    [],
+  );
 
-      if (result.data) {
-        toast.success('Successfully logged in!');
-
-        const responseUser = (result.data as any)?.user as AuthUser | undefined;
-        const signedInUser = (await refetchSession()) || responseUser;
-
-        const destination = getPostLoginDestination(
-          signedInUser,
-          redirectUrl,
-          isAllowedRedirect,
-        );
-
-        goToRedirect(destination);
-
-        return { success: true, user: responseUser || signedInUser || undefined };
-      }
-
-      return { success: false, error: 'Login failed' };
-    } catch (error: unknown) {
-      toast.error((error as Error).message || 'Login failed');
-      return { success: false, error: (error as Error).message };
-    }
-  };
-
-  /**
-   * Sign up with email and password
-   */
-  const signUp = async (name: string, email: string, password: string) => {
-    try {
-      const result = await authServerApi.signUpEmail({
-        email,
-        password,
-        name,
-      });
-
-      if (result.error) {
-        const errorMsg = getAuthErrorMessage(result.error.code, result.error.message);
-        toast.error(errorMsg);
-        return { success: false, error: errorMsg };
-      }
-
-      if (result.data) {
-        toast.success('Registration successful! Please check your email to verify your account.');
-        return { success: true, email };
-      }
-
-      return { success: false, error: 'Registration failed' };
-    } catch (error: unknown) {
-      toast.error((error as Error).message || 'Registration failed');
-      return { success: false, error: (error as Error).message };
-    }
-  };
-
-  /**
-   * Sign out
-   */
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       const result = await authServerApi.signOut();
       if (result.error) {
         throw new Error(result.error.message);
       }
-      setUser(undefined);
+      await refetchSession();
       toast.success('Successfully logged out');
       router.push('/');
       return { success: true };
-    } catch (error: unknown) {
+    } catch (error) {
       toast.error('Logout failed');
       return { success: false, error: (error as Error).message };
     }
-  };
+  }, [router, refetchSession]);
 
-  /**
-   * Sign in with Google
-   */
-  const signInWithGoogle = async (redirectUrl?: string) => {
-    try {
-      if (!baseApiUrl) {
-        return { success: false, error: 'Missing NEXT_PUBLIC_BASE_API_URL' };
-      }
+  const signInWithGoogle = useCallback(
+    (redirectUrl?: string) => signInWithGoogleAction(baseApiUrl, redirectUrl),
+    [baseApiUrl],
+  );
 
-      const callbackURL = process.env.NEXT_PUBLIC_AUTH_URL
-        ? `${process.env.NEXT_PUBLIC_AUTH_URL}/auth/callback`
-        : '/auth/callback';
+  const forgotPassword = useCallback(
+    (email: string) => forgotPasswordAction(email),
+    [],
+  );
 
-      const redirectCandidate = redirectUrl || getRedirectUrlFromLocation();
-      const validatedRedirect = isAllowedRedirect(redirectCandidate) ? redirectCandidate : undefined;
-      const finalCallbackUrl = validatedRedirect
-        ? `${callbackURL}${callbackURL.includes('?') ? '&' : '?'}redirect_url=${encodeURIComponent(validatedRedirect)}`
-        : callbackURL;
+  const resetPassword = useCallback(
+    (newPassword: string, token: string) =>
+      resetPasswordAction(newPassword, token, router.push),
+    [router.push],
+  );
 
-      const result = await authServerApi.signInSocial({
-        provider: 'google',
-        callbackURL: finalCallbackUrl,
-      });
+  const verifyEmail = useCallback(
+    (token: string) => verifyEmailTokenAction(token, router.push),
+    [router.push],
+  );
 
-      if (result.error) {
-        return { success: false, error: result.error.message };
-      }
-
-      const oauthRedirectUrl = (result.data as any)?.url as string | undefined;
-      if (!oauthRedirectUrl) {
-        return { success: false, error: 'No OAuth redirect URL returned by server' };
-      }
-
-      if (typeof window !== 'undefined') {
-        let finalOauthUrl = oauthRedirectUrl;
-
-        if (validatedRedirect) {
-          try {
-            const parsedOauthUrl = new URL(oauthRedirectUrl, window.location.origin);
-            if (!parsedOauthUrl.searchParams.get('redirect_url')) {
-              parsedOauthUrl.searchParams.set('redirect_url', validatedRedirect);
-            }
-            finalOauthUrl = parsedOauthUrl.toString();
-          } catch {
-            // Keep original URL when parsing fails.
-          }
-        }
-
-        window.location.assign(finalOauthUrl);
-      }
-
-      return { success: true };
-    } catch (error: unknown) {
-      toast.error('Google sign-in failed');
-      return { success: false, error: (error as Error).message };
-    }
-  };
-
-  /**
-   * Forgot password - send reset email
-   */
-  const forgotPassword = async (email: string) => {
-    try {
-
-      const result = await authServerApi.requestPasswordReset({
-        email,
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/reset-password`,
-      });
-
-      console.log('[forgotPassword] Result:', result);
-
-      if (result.error) {
-        const errorMsg = result.error.message || 'Failed to send reset email';
-        toast.error(errorMsg);
-        return { success: false, error: errorMsg };
-      }
-
-      toast.success('Password reset email sent! Check your inbox.');
-      return { success: true, error: null };
-    } catch (error: unknown) {
-      console.error('[forgotPassword] Error:', error);
-      const errorMsg = (error as Error).message || 'Failed to send reset email';
-      toast.error(errorMsg);
-      return { success: false, error: errorMsg };
-    }
-  };
-
-  /**
-   * Reset password with token
-   */
-  const resetPassword = async (newPassword: string, token: string) => {
-    try {
-      const result = await authServerApi.resetPassword({
-        newPassword,
-        token,
-      });
-
-      if (result.error) {
-        const errorMsg = getAuthErrorMessage(result.error.code, result.error.message);
-        toast.error(errorMsg);
-        return { success: false, error: errorMsg };
-      }
-
-      toast.success('Password reset successful! You can now log in.');
-      router.push('/auth');
-      return { success: true };
-    } catch (error: unknown) {
-      toast.error('Failed to reset password');
-      return { success: false, error: (error as Error).message };
-    }
-  };
-
-  /**
-   * Verify email with token
-   */
-  /**
-   * Verify email with token
-   */
-  const verifyEmailToken = useCallback(async (token: string) => {
-    try {
-      const result = await authServerApi.verifyEmail(token);
-
-      if (result.error) {
-        const errorMsg = getAuthErrorMessage(result.error.code, result.error.message);
-        toast.error(errorMsg);
-        return { success: false, error: errorMsg };
-      }
-
-      toast.success('Email verified successfully! You can now log in.');
-      router.push('/auth');
-      return { success: true };
-    } catch (error: unknown) {
-      toast.error('Email verification failed');
-      return { success: false, error: (error as Error).message };
-    }
-  }, [router]);
+  const updateUserProfile = useCallback(
+    (data: Partial<AuthUser>) => updateUserProfileAction(data, refetchSessionTyped),
+    [refetchSessionTyped],
+  );
 
   return {
-    // Session data
     user,
     session,
     isAuthenticated,
     isLoading,
     error,
-
-    // Auth actions
     signIn,
     signUp,
     signOut,
     signInWithGoogle,
     forgotPassword,
     resetPassword,
-    verifyEmail: verifyEmailToken,
-
-    // Manual session refresh
-    refetchSession,
-
-    // User update with automatic session refresh
-    updateUserProfile: async (data: Partial<AuthUser>) => {
-      try {
-        const result = await authServerApi.updateUser(data as Record<string, unknown>);
-
-        if (result.error) {
-          return { success: false, error: result.error.message };
-        }
-
-        // Automatically refresh session to get updated user data
-        await refetchSession();
-
-        return { success: true, data: result.data };
-      } catch (error: unknown) {
-        return { success: false, error: (error as Error).message };
-      }
-    },
+    verifyEmail,
+    refetchSession: refetchSessionTyped,
+    updateUserProfile,
   };
-}
-
-/**
- * Post-login redirect priority:
- * 1) validated redirect_url
- * 2) role landing or home
- */
-function getPostLoginDestination(
-  user: AuthUser | null | undefined,
-  redirectUrl: string | undefined,
-  isAllowedRedirectUrl: (target?: string | null) => boolean,
-): string {
-  // Priority 1: Respect cross-domain redirects (e.g., from Esun subdomain)
-  if (redirectUrl && isAllowedRedirectUrl(redirectUrl)) {
-    return redirectUrl;
-  }
-
-  // Priority 2: Role-based redirect
-  const role = user?.role || 'learner';
-
-  switch (role.toLowerCase()) {
-    case 'superadmin':
-    case 'admin':
-      return '/dashboard/admin';
-    case 'instructor':
-      return '/dashboard/instructor';
-    case 'employee':
-      return '/dashboard/employee';
-    case 'learner':
-      return '/my-classes';
-    default:
-      return '/my-classes';
-  }
 }

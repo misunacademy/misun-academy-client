@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+"use client"
+
+import { useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Edit, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { DataTable } from "@/components/ui/data-table";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -27,110 +28,82 @@ export function CoursesTable({ courses, onEditCourse, onDeleteCourse }: CoursesT
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
-  const openDeleteDialog = (course: Course) => {
+  const openDeleteDialog = useCallback((course: Course) => {
     setSelectedCourse(course);
     setIsDialogOpen(true);
-  };
+  }, []);
 
-  const closeDeleteDialog = () => {
+  const closeDeleteDialog = useCallback(() => {
     setSelectedCourse(null);
     setIsDialogOpen(false);
-  };
+  }, []);
 
-  const confirmDelete = () => {
+  const confirmDelete = useCallback(() => {
     if (onDeleteCourse && selectedCourse) {
       onDeleteCourse(selectedCourse._id);
     }
     closeDeleteDialog();
-  };
+  }, [onDeleteCourse, selectedCourse, closeDeleteDialog]);
+
+  const columns = useMemo<ColumnDef<Course>[]>(() => [
+    {
+      accessorKey: "title",
+      header: "Course Title",
+      cell: ({ row }) => (
+        <div>
+          <div className="font-medium">{row.original.title}</div>
+          <div className="text-xs text-muted-foreground">{row.original.slug}</div>
+        </div>
+      ),
+    },
+    { accessorKey: "category", header: "Category", cell: ({ row }) => <span>{row.original.category || '—'}</span> },
+    { accessorKey: "level", header: "Level", cell: ({ row }) => <Badge variant="outline" className="capitalize">{row.original.level || 'N/A'}</Badge> },
+    { accessorKey: "durationEstimate", header: "Duration", cell: ({ row }) => <span>{(row.original as Course & { durationEstimate?: string }).durationEstimate || '—'}</span> },
+    { accessorKey: "isCertificateAvailable", header: "Certificate", cell: ({ row }) => <Badge variant={row.original.isCertificateAvailable ? 'default' : 'destructive'}>{row.original.isCertificateAvailable ? 'Available' : 'Not Available'}</Badge> },
+    { accessorKey: "status", header: "Status", cell: ({ row }) => <Badge variant={row.original.status === 'published' ? 'default' : row.original.status === 'archived' ? 'destructive' : 'secondary'}>{row.original.status || 'draft'}</Badge> },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => onEditCourse(row.original)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => openDeleteDialog(row.original)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ], [onEditCourse, openDeleteDialog]);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>All Courses</CardTitle>
-        <CardDescription>View and manage all courses in the system</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <>
+      <DataTable
+        heading="All Courses"
+        subheading="View and manage all courses in the system"
+        columns={columns}
+        data={courses}
+        getRowId={(course) => String(course._id)}
+        emptyState="No courses found"
+      />
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Course Title</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Level</TableHead>
-              <TableHead>Duration</TableHead>
-              <TableHead>Certificate</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {courses.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                  No courses found
-                </TableCell>
-              </TableRow>
-            ) : (
-              courses.map((course: any) => (
-                <TableRow key={String(course._id)}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{course.title}</div>
-                      <div className="text-xs text-muted-foreground">{course.slug}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{course.category || '—'}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {course.level || 'N/A'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{course.durationEstimate || '—'}</TableCell>
-                  <TableCell>
-                    <Badge variant={course.isCertificateAvailable ? 'default' : 'destructive'}>
-                      {course.isCertificateAvailable ? 'Available' : 'Not Available'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={course.status === 'published' ? 'default' : course.status === 'archived' ? 'destructive' : 'secondary'}>
-                      {course.status || 'draft'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => onEditCourse(course)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => openDeleteDialog(course)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-
-        <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete course</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete <strong>{selectedCourse?.title}</strong>? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-      </CardContent>
-    </Card>
+      <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete course</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{selectedCourse?.title}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

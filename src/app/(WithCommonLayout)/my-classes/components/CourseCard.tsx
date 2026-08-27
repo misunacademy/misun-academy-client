@@ -1,12 +1,18 @@
 "use client";
 
+import { memo } from "react";
 import { CheckCircle2, PlayCircle, Calendar } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useGetCourseProgressQuery } from "@/redux/api/courseApi";
-import { EnrolledCourse } from "../types";
+import { useGetCourseProgressQuery } from "@/redux/api/courseEnrollmentApi";
+import type { EnrolledCourse } from "../types";
+import { AnimatedBorder } from "@/components/shared/AnimatedBorder";
 
-export function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
+interface CourseProgressData {
+  percentage: number;
+}
+
+export const CourseCard = memo(function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
   const { data: progressData } = useGetCourseProgressQuery(
     { courseId: enrollment.courseId, batchId: enrollment.batchId },
     { skip: !enrollment.courseId }
@@ -14,7 +20,7 @@ export function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
 
   const isActive = enrollment.status === "active";
   const isCompleted = enrollment.status === "completed";
-  const apiProgress = progressData?.data?.percentage;
+  const apiProgress = (progressData?.data as CourseProgressData | undefined)?.percentage;
   const progress =
     typeof apiProgress === "number"
       ? Math.min(100, Math.max(0, Math.round(apiProgress)))
@@ -27,18 +33,16 @@ export function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
       className="group relative p-[1.5px] rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-0.5"
     >
       {/* Spinning conic gradient border on hover */}
-      <span
-        className="absolute inset-[-100%] opacity-0 group-hover:opacity-100 animate-[spin_5s_linear_infinite] transition-opacity duration-800"
-        style={{
-          background:
-            "conic-gradient(from 0deg, transparent 20%, hsl(156 70% 42% / 0.5) 38%, hsl(156 80% 60%) 50%, hsl(156 70% 42% / 0.5) 62%, transparent 80%)",
-        }}
+      <AnimatedBorder
+        variant="course-card"
+        speed="5s"
+        className="opacity-0 group-hover:opacity-100 transition-opacity duration-800"
       />
       {/* Static border when not hovered */}
       <span className="absolute inset-0 rounded-2xl border border-primary/10  group-hover:border-transparent transition-all duration-300" />
 
       {/* Card body */}
-      <div className="relative flex flex-col sm:flex-row min-h-[160px] rounded-2xl bg-[#060f0a] overflow-hidden
+      <div className="relative flex flex-col sm:flex-row min-h-[160px] rounded-2xl bg-surface overflow-hidden
         group-hover:shadow-xl group-hover:shadow-primary/10 transition-all duration-500">
 
         {/* Corner accents */}
@@ -139,7 +143,7 @@ export function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
                   href={`/my-classes/${enrollment.courseId}${enrollment.batchId ? `?batchId=${enrollment.batchId}` : ""}`}
                 >
                   <button className="group/btn inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm
-                    bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white
+                    bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark text-white
                     shadow-[0_0_14px_hsl(156_70%_42%/0.35)] hover:shadow-[0_0_22px_hsl(156_70%_42%/0.55)]
                     transition-all duration-300 hover:-translate-y-px">
                     <PlayCircle className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
@@ -161,4 +165,4 @@ export function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
       </div>
     </div>
   );
-}
+});

@@ -1,16 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
+import { useForm, useWatch, useFieldArray, FormProvider, type Control, type Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useCreateModuleLessonMutation, useUpdateModuleLessonMutation } from "@/redux/api/lessonApi";
-import { useState } from "react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trash2 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { InputField } from "@/components/forms/input-field";
+import { TextareaField } from "@/components/forms/textarea-field";
+import { SelectField } from "@/components/forms/select-field";
+import { SwitchField } from "@/components/forms/switch-field";
+import { SubmitButton } from "@/components/forms/submit-button";
 
 interface Lesson {
     _id: string;
@@ -25,6 +28,7 @@ interface Lesson {
     videoDuration?: number;
     content?: string;
     isMandatory: boolean;
+    isPublished?: boolean;
     resources?: {
         title: string;
         type: 'link' | 'text';
@@ -32,6 +36,46 @@ interface Lesson {
         textContent?: string;
     }[];
 }
+
+const resourceSchema = z.object({
+    title: z.string().min(1, "Title is required"),
+    type: z.enum(["link", "text"]),
+    url: z.string().optional(),
+    textContent: z.string().optional(),
+});
+
+const lessonSchema = z.object({
+    title: z.string().min(1, "Title is required"),
+    description: z.string().optional(),
+    type: z.enum(["video", "reading", "quiz", "project"]),
+    videoSource: z.enum(["youtube", "googledrive"]).optional(),
+    videoId: z.string().optional(),
+    videoUrl: z.string().optional(),
+    videoDuration: z.coerce.number().optional(),
+    content: z.string().optional(),
+    isMandatory: z.boolean(),
+    isPublished: z.boolean(),
+    resources: z.array(resourceSchema),
+});
+
+type LessonFormValues = z.infer<typeof lessonSchema>;
+
+const LESSON_TYPE_OPTIONS = [
+    { value: "video", label: "Video" },
+    { value: "reading", label: "Reading" },
+    { value: "quiz", label: "Quiz" },
+    { value: "project", label: "Project" },
+];
+
+const VIDEO_SOURCE_OPTIONS = [
+    { value: "youtube", label: "YouTube" },
+    { value: "googledrive", label: "Google Drive" },
+];
+
+const RESOURCE_TYPE_OPTIONS = [
+    { value: "link", label: "Link" },
+    { value: "text", label: "Text" },
+];
 
 const LessonFormDialog = ({ open, mode, moduleId, data, onClose, onSuccess }: {
     open: boolean;
@@ -44,53 +88,52 @@ const LessonFormDialog = ({ open, mode, moduleId, data, onClose, onSuccess }: {
     const [createLesson, { isLoading: creating }] = useCreateModuleLessonMutation();
     const [updateLesson, { isLoading: updating }] = useUpdateModuleLessonMutation();
 
-    const [formData, setFormData] = useState({
-        title: data?.title || '',
-        description: data?.description || '',
-        type: data?.type || 'video',
-        videoSource: data?.videoSource || 'youtube',
-        videoId: data?.videoId || '',
-        videoUrl: data?.videoUrl || '',
-        videoDuration: data?.videoDuration || 0,
-        content: data?.content || '',
-        isMandatory: data?.isMandatory ?? true,
-        resources: data?.resources || [],
+    const form = useForm<LessonFormValues>({
+        resolver: zodResolver(lessonSchema) as Resolver<LessonFormValues>,
+        defaultValues: {
+            title: data?.title || '',
+            description: data?.description || '',
+            type: data?.type || 'video',
+            videoSource: data?.videoSource || 'youtube',
+            videoId: data?.videoId || '',
+            videoUrl: data?.videoUrl || '',
+            videoDuration: data?.videoDuration || 0,
+            content: data?.content || '',
+            isMandatory: data?.isMandatory ?? true,
+            isPublished: data?.isPublished ?? true,
+            resources: data?.resources || [],
+        },
     });
 
-    const handleAddResource = () => {
-        setFormData({
-            ...formData,
-            resources: [...formData.resources, { title: '', type: 'link', url: '', textContent: '' }]
-        });
-    };
+    const { fields, append, remove } = useFieldArray({
+        control: form.control,
+        name: "resources",
+    });
 
-    const handleUpdateResource = (index: number, field: string, value: string) => {
-        const updatedResources = [...formData.resources];
-        updatedResources[index] = { ...updatedResources[index], [field]: value };
-        setFormData({ ...formData, resources: updatedResources });
-    };
+    const watchedType = useWatch({ control: form.control, name: "type" });
+    const watchedVideoSource = useWatch({ control: form.control, name: "videoSource" });
 
-    const handleRemoveResource = (index: number) => {
-        setFormData({
-            ...formData,
-            resources: formData.resources.filter((_, i) => i !== index)
-        });
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
+    const handleSubmit = async (values: LessonFormValues) => {
         try {
+            const payload = { ...values };
+            if (payload.type !== 'video') {
+                delete payload.videoSource;
+                delete payload.videoId;
+                delete payload.videoUrl;
+                delete payload.videoDuration;
+            }
+
             if (mode === 'create') {
-                await createLesson({ moduleId: moduleId!, ...formData }).unwrap();
+                await createLesson({ moduleId: moduleId!, ...payload }).unwrap();
                 toast.success('Lesson created successfully');
             } else {
-                await updateLesson({ lessonId: data!._id, ...formData }).unwrap();
+                await updateLesson({ lessonId: data!._id, ...payload }).unwrap();
                 toast.success('Lesson updated successfully');
             }
             onSuccess();
-        } catch (error: any) {
-            toast.error(error?.data?.message || 'Operation failed');
+        } catch (error: unknown) {
+            const err = error as { data?: { message?: string } };
+            toast.error(err?.data?.message || 'Operation failed');
         }
     };
 
@@ -100,96 +143,38 @@ const LessonFormDialog = ({ open, mode, moduleId, data, onClose, onSuccess }: {
                 <DialogHeader>
                     <DialogTitle>{mode === 'create' ? 'Create New Lesson' : 'Edit Lesson'}</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <Label>Lesson Title *</Label>
-                        <Input
-                            value={formData.title}
-                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            placeholder="Photoshop Interface and Basic Tools"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <Label>Description</Label>
-                        <Textarea
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            placeholder="Master the Photoshop workspace, learn essential tools, and create your first design project..."
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <Label>Type *</Label>
-                            <Select value={formData.type} onValueChange={(value: any) => setFormData({ ...formData, type: value })}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="video">Video</SelectItem>
-                                    <SelectItem value="reading">Reading</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="flex items-center space-x-2 mt-8">
-                            <Switch
-                                checked={formData.isMandatory}
-                                onCheckedChange={(checked) => setFormData({ ...formData, isMandatory: checked })}
-                            />
-                            <Label>Mandatory</Label>
-                        </div>
-                    </div>
+                <FormProvider {...form}>
+                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                        <InputField name="title" label="Lesson Title" placeholder="Photoshop Interface and Basic Tools" required />
+                        <TextareaField name="description" label="Description" placeholder="Master the Photoshop workspace, learn essential tools, and create your first design project..." />
 
-                    {formData.type === 'video' && (
-                        <>
-                            <div>
-                                <Label>Video Source</Label>
-                                <Select value={formData.videoSource} onValueChange={(value: any) => setFormData({ ...formData, videoSource: value })}>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="youtube">YouTube</SelectItem>
-                                        <SelectItem value="googledrive">Google Drive</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                        <div className="grid grid-cols-2 gap-4">
+                            <SelectField name="type" label="Type" options={LESSON_TYPE_OPTIONS} required />
+                            <div className="flex items-end gap-4 pb-2">
+                                <SwitchField name="isMandatory" label="Mandatory" />
+                                <SwitchField name="isPublished" label="Published" />
                             </div>
-                            <div>
-                                <Label>{formData.videoSource === 'youtube' ? 'YouTube Video ID' : 'Google Drive File ID'} *</Label>
-                                <Input
-                                    value={formData.videoId}
-                                    onChange={(e) => setFormData({ ...formData, videoId: e.target.value })}
-                                    placeholder={formData.videoSource === 'youtube' ? 'dQw4w9WgXcQ' : '1a2b3c4d5e6f7g8h9i0j'}
-                                />
-                                {formData.videoSource === 'youtube' && (
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        YouTube URL: https://www.youtube.com/watch?v=<strong>VIDEO_ID</strong>
-                                    </p>
-                                )}
-                                {formData.videoSource === 'googledrive' && (
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        Google Drive URL: https://drive.google.com/file/d/<strong>FILE_ID</strong>/view
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <Label>Duration (seconds)</Label>
-                                <Input
-                                    type="number"
-                                    value={formData.videoDuration}
-                                    onChange={(e) => setFormData({ ...formData, videoDuration: parseInt(e.target.value) })}
-                                    placeholder="300"
-                                />
-                            </div>
-                        </>
-                    )}
+                        </div>
 
-                    {(formData.type === 'reading' || formData.type === 'project') && (
-                        <div>
-                            <Label>Content</Label>
-                            <Textarea
-                                value={formData.content}
-                                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                        {watchedType === 'video' && (
+                            <>
+                                <SelectField name="videoSource" label="Video Source" options={VIDEO_SOURCE_OPTIONS} />
+                                <InputField
+                                    name="videoId"
+                                    label={watchedVideoSource === 'youtube' ? 'YouTube Video ID' : 'Google Drive File ID'}
+                                    placeholder={watchedVideoSource === 'youtube' ? 'dQw4w9WgXcQ' : '1a2b3c4d5e6f7g8h9i0j'}
+                                    description={watchedVideoSource === 'youtube'
+                                        ? 'YouTube URL: https://www.youtube.com/watch?v=VIDEO_ID'
+                                        : 'Google Drive URL: https://drive.google.com/file/d/FILE_ID/view'}
+                                />
+                                <InputField name="videoDuration" label="Duration (seconds)" type="number" placeholder="300" />
+                            </>
+                        )}
+
+                        {(watchedType === 'reading' || watchedType === 'project') && (
+                            <TextareaField
+                                name="content"
+                                label="Content"
                                 placeholder="## Photoshop Tools Overview
 
 ### Essential Tools for Graphic Designers
@@ -208,101 +193,92 @@ const LessonFormDialog = ({ open, mode, moduleId, data, onClose, onSuccess }: {
 Create a composite image using at least 3 different selection techniques..."
                                 rows={8}
                             />
-                        </div>
-                    )}
-
-                    {/* Resources Section */}
-                    <div>
-                        <div className="flex items-center justify-between mb-2">
-                            <Label>Resources</Label>
-                            <Button type="button" variant="outline" size="sm" onClick={handleAddResource}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Add Resource
-                            </Button>
-                        </div>
-                        {formData.resources.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">No resources added yet</p>
-                        ) : (
-                            <div className="space-y-3">
-                                {formData.resources.map((resource, index) => (
-                                    <Card key={index} className="p-3">
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between">
-                                                <Label className="text-sm font-medium">Resource {index + 1}</Label>
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleRemoveResource(index)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                            <div>
-                                                <Label className="text-xs">Title *</Label>
-                                                <Input
-                                                    value={resource.title}
-                                                    onChange={(e) => handleUpdateResource(index, 'title', e.target.value)}
-                                                    placeholder="Resource title"
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label className="text-xs">Type *</Label>
-                                                <Select
-                                                    value={resource.type}
-                                                    onValueChange={(value) => handleUpdateResource(index, 'type', value)}
-                                                >
-                                                    <SelectTrigger>
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="link">Link</SelectItem>
-                                                        <SelectItem value="text">Text</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                            {resource.type === 'link' && (
-                                                <div>
-                                                    <Label className="text-xs">URL *</Label>
-                                                    <Input
-                                                        value={resource.url}
-                                                        onChange={(e) => handleUpdateResource(index, 'url', e.target.value)}
-                                                        placeholder="https://example.com"
-                                                        type="url"
-                                                        required
-                                                    />
-                                                </div>
-                                            )}
-                                            {resource.type === 'text' && (
-                                                <div>
-                                                    <Label className="text-xs">Text Content *</Label>
-                                                    <Textarea
-                                                        value={resource.textContent}
-                                                        onChange={(e) => handleUpdateResource(index, 'textContent', e.target.value)}
-                                                        placeholder="Enter text content here..."
-                                                        rows={3}
-                                                        required
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
                         )}
-                    </div>
 
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-                        <Button type="submit" disabled={creating || updating}>
-                            {(creating || updating) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                            {mode === 'create' ? 'Create Lesson' : 'Update Lesson'}
-                        </Button>
-                    </DialogFooter>
-                </form>
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="text-sm font-medium">Resources</label>
+                                <Button type="button" variant="outline" size="sm" onClick={() => append({ title: '', type: 'link', url: '', textContent: '' })}>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Add Resource
+                                </Button>
+                            </div>
+                            {fields.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">No resources added yet</p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {fields.map((field, index) => (
+                                        <ResourceCard
+                                            key={field.id}
+                                            control={form.control}
+                                            index={index}
+                                            onRemove={() => remove(index)}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+                            <SubmitButton disabled={creating || updating} loadingText="Saving...">
+                                {mode === 'create' ? 'Create Lesson' : 'Update Lesson'}
+                            </SubmitButton>
+                        </DialogFooter>
+                    </form>
+                </FormProvider>
             </DialogContent>
         </Dialog>
+    );
+}
+
+function ResourceCard({ control, index, onRemove }: {
+    control: Control<LessonFormValues>;
+    index: number;
+    onRemove: () => void;
+}) {
+    const resourceType = useWatch({ control, name: `resources.${index}.type` as const });
+    return (
+        <Card className="p-3">
+            <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Resource {index + 1}</label>
+                    <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </div>
+                <InputField
+                    name={`resources.${index}.title`}
+                    label="Title"
+                    placeholder="Resource title"
+                    required
+                    rules={{ required: "Title is required" }}
+                />
+                <SelectField
+                    name={`resources.${index}.type`}
+                    label="Type"
+                    options={RESOURCE_TYPE_OPTIONS}
+                />
+                {resourceType === 'link' && (
+                    <InputField
+                        name={`resources.${index}.url`}
+                        label="URL"
+                        type="url"
+                        placeholder="https://example.com"
+                        rules={{ required: "URL is required" }}
+                    />
+                )}
+                {resourceType === 'text' && (
+                    <TextareaField
+                        name={`resources.${index}.textContent`}
+                        label="Text Content"
+                        placeholder="Enter text content here..."
+                        rows={3}
+                        rules={{ required: "Content is required" }}
+                    />
+                )}
+            </div>
+        </Card>
     );
 }
 

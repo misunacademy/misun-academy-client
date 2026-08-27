@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { GraduationCap } from "lucide-react";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
-import DashboardPageTableWithPagination from "@/components/layout/DashboardPageTableWithPagination";
+import { DataTable } from "@/components/ui/data-table";
 import StudentsFiltersCard from "./StudentsFiltersCard";
 import StudentsStatsCards from "./StudentsStatsCards";
-import StudentsTableRow, { StudentRow } from "./StudentsTableRow";
+import { useStudentColumns, type StudentRow } from "./studentColumns";
 import {
     useGetInstructorCoursesQuery,
     useGetInstructorEnrolledStudentsQuery,
@@ -55,23 +54,31 @@ export default function StudentsPage() {
     });
 
     const studentsData = useMemo(() => studentsDataResponse?.data || [], [studentsDataResponse?.data]);
-    const metaData = studentsDataResponse?.meta;
+    const metaData = studentsDataResponse?.meta as { total?: number; totalPages?: number } | undefined;
     const totalStudentsData = metaData?.total || 0;
     const totalPages = metaData?.totalPages || 1;
 
     const allStudents: StudentRow[] = useMemo(() => {
-        return studentsData.map((enrollment: any, index: number) => ({
-            _id: enrollment._id || enrollment.userId?._id || enrollment.enrollmentId || `row-${index}`,
-            enrollmentId: enrollment.enrollmentId,
-            name: enrollment.userId?.name || "Unknown",
-            email: enrollment.userId?.email || "-",
-            phone: enrollment.userId?.phone || "-",
-            image: enrollment.userId?.image,
-            status: enrollment.status || "-",
-            enrolledAt: enrollment.enrolledAt || enrollment.createdAt || "",
-            batchTitle: enrollment.batchTitle || "-",
-            courseTitle: enrollment.courseTitle || "-",
-        }));
+        interface EnrolledStudentRaw {
+          _id?: string; enrollmentId?: string; status?: string; enrolledAt?: string; createdAt?: string;
+          batchTitle?: string; courseTitle?: string;
+          userId?: { _id?: string; name?: string; email?: string; phone?: string; image?: string };
+        }
+        return studentsData.map((enrollment: unknown, index: number) => {
+          const e = enrollment as EnrolledStudentRaw;
+          return {
+            _id: e._id || e.userId?._id || e.enrollmentId || `row-${index}`,
+            enrollmentId: e.enrollmentId,
+            name: e.userId?.name || "Unknown",
+            email: e.userId?.email || "-",
+            phone: e.userId?.phone || "-",
+            image: e.userId?.image,
+            status: e.status || "-",
+            enrolledAt: e.enrolledAt || e.createdAt || "",
+            batchTitle: e.batchTitle || "-",
+            courseTitle: e.courseTitle || "-",
+          };
+        });
     }, [studentsData]);
 
     const totalStudentsStats = courses.reduce(
@@ -79,6 +86,8 @@ export default function StudentsPage() {
         0
     );
     const totalBatches = courses.reduce((sum, course) => sum + (course.batches || []).length, 0);
+
+    const columns = useStudentColumns();
 
     const pagination = totalStudentsData > 0
         ? { page, totalPages, total: totalStudentsData, limit: PAGE_SIZE, onPageChange: setPage }
@@ -95,7 +104,7 @@ export default function StudentsPage() {
                         <StudentsStatsCards totalBatches={totalBatches} totalStudents={totalStudentsStats} />
                     )}
 
-                    <DashboardPageTableWithPagination
+                    <DataTable
                         heading="Enrolled Students"
                         subheading="Students across your assigned courses and batches"
                         filters={
@@ -115,19 +124,9 @@ export default function StudentsPage() {
                                 }}
                             />
                         }
-                        columns={[
-                            "Student",
-                            "Enrollment ID",
-                            "Email",
-                            "Phone",
-                            "Course",
-                            "Batch",
-                            "Status",
-                            "Enrolled Date",
-                        ]}
+                        columns={columns}
                         data={allStudents}
-                        renderRow={(student) => <StudentsTableRow student={student} />}
-                        getRowKey={(student) => student._id}
+                        getRowId={(student) => student._id}
                         isLoading={studentsLoading}
                         emptyState="No students found."
                         pagination={pagination}

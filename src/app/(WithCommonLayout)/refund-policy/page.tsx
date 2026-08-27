@@ -1,19 +1,23 @@
-﻿// app/refund-policy/page.tsx
+﻿import { generateMetadata as genMeta } from '@/lib/generateMetadata';
+import PageBackground from "@/components/shared/PageBackground";
+
+export const metadata = genMeta({
+  title: 'Refund Policy | MISUN Academy',
+  description: 'MISUN Academy-এর রিফান্ড নীতিমালা। কিভাবে রিফান্ডের জন্য আবেদন করবেন এবং আমাদের রিফান্ড শর্তাবলি সম্পর্কে জানুন। | Understand MISUN Academy\'s refund policy, eligibility, and the refund request process.',
+  slug: 'refund-policy',
+});
+
 export default function RefundPolicyPage() {
     return (
-        <div className="min-h-screen bg-[#060f0a] relative overflow-hidden">
-            {/* Dot-grid */}
-            <div
-                className="absolute inset-0 opacity-[0.04] pointer-events-none"
-                style={{
-                    backgroundImage: "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)",
-                    backgroundSize: "32px 32px",
-                }}
-            />
-            <div className="absolute -top-24 left-1/4 w-[500px] h-[500px] bg-primary/7 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="relative z-10 max-w-4xl mx-auto px-4 py-16 mb-16">
+        <PageBackground
+            gradient="bg-surface"
+            dotOpacity="opacity-[0.04]"
+            orbs={[
+                { position: "-top-24 left-1/4", size: "w-[500px] h-[500px]", opacity: "bg-primary/7", blur: "blur-[120px]" },
+                { position: "bottom-0 right-1/4", size: "w-80 h-80", opacity: "bg-primary/5", blur: "blur-3xl" },
+            ]}
+        >
+            <div className="max-w-4xl mx-auto px-4 py-16 mb-16">
                 {/* Header */}
                 <div className="mb-12">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-6">
@@ -87,7 +91,7 @@ export default function RefundPolicyPage() {
                     </div>
                 </div>
             </div>
-        </div>
+        </PageBackground>
     );
 }
 //       

@@ -1,0 +1,132 @@
+.radial-image-mask {
+  mask-image: radial-gradient(circle, black 0%, transparent 75%);
+}
+
+.linear-image-mask {
+  mask-image: linear-gradient(180deg, black 80%, transparent 85%);
+}
+
+.nav-mask-bg {
+  mask-image: linear-gradient(black 20%, transparent 90%);
+}
+
+.nav-mask-sm {
+  mask-image: linear-gradient(black 50%, transparent 100%);
+}
+
+.nav-mask-md {
+  mask-image: linear-gradient(black 30%, transparent 80%);
+}
+
+.nav-mask-lg {
+  mask-image: linear-gradient(black 10%, transparent 60%);
+}
+
+.h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.h2 {
+  font-size: clamp(1.8rem, 5vw, 2rem);
+}
+
+.icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  width: 100px;
+}
+
+@keyframes glow-move-horizontal {
+  0% { left: 0%; width: 0%; opacity: 0.3; }
+  50% { left: 50%; width: 50%; opacity: 1; }
+  100% { left: 100%; width: 0%; opacity: 0.3; }
+}
+
+@keyframes glow-move-vertical {
+  0% { top: 0%; height: 0%; opacity: 0.3; }
+  50% { top: 50%; height: 50%; opacity: 1; }
+  100% { top: 100%; height: 0%; opacity: 0.3; }
+}
+
+/* ── Design tool floating animations (BannerSection 3D decorations) ── */
+@keyframes designToolFloat {
+  0%, 100% { transform: perspective(500px) rotateY(-18deg) rotateX(12deg) translateY(0px); }
+  50%       { transform: perspective(500px) rotateY(-10deg) rotateX(6deg)  translateY(-14px); }
+}
+@keyframes designToolFloat2 {
+  0%, 100% { transform: perspective(500px) rotateY(18deg) rotateX(12deg) translateY(-8px); }
+  50%       { transform: perspective(500px) rotateY(10deg) rotateX(6deg)  translateY(8px); }
+}
+@keyframes designFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+@keyframes designFloat2 {
+  0%, 100% { transform: translateY(-6px); }
+  50%       { transform: translateY(8px); }
+}
+
+/* Horizontal Glow Effect */
+.glow-border-horizontal::after {
+  content: "";
+  position: absolute;
+  height: 2px;
+  background: rgba(249, 85, 2, 0.8);
+  box-shadow: 0 0 8px rgba(235, 103, 3, 0.8);
+  animation: glow-move-horizontal 2s linear infinite alternate;
+}
+
+/* Vertical Glow Effect */
+.glow-border-vertical::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  background: rgba(252, 82, 9, 0.8);
+  box-shadow: 0 0 8px rgba(243, 119, 4, 0.8);
+  animation: glow-move-vertical 2s linear infinite alternate;
+}
+
+@keyframes ring {
+  0%   { transform: rotate(0deg); }
+  10%  { transform: rotate(12deg); }
+  20%  { transform: rotate(-12deg); }
+  30%  { transform: rotate(10deg); }
+  40%  { transform: rotate(-10deg); }
+  50%  { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes rail-flow {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateY(1000%); opacity: 0; }
+}
+
+@keyframes iso-float {
+  0%   { transform: translateY(0px); }
+  100% { transform: translateY(-5px); }
+}
+
+.animate-ring {
+  animation: ring 1s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

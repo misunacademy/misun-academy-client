@@ -66,6 +66,14 @@ const employeeApi = baseApi.injectEndpoints({
             query: (body) => ({ url: '/employee/profile', method: 'PATCH', body }),
             invalidatesTags: ['Employees'],
         }),
+        // Signed delivery URL for a restricted NID document
+        getNidPhotoUrl: build.query<{ data: { url: string } }, { publicId?: string | null }>({
+            query: ({ publicId }) => ({
+                url: '/employee/nid-photo',
+                params: { publicId: publicId ?? '' },
+            }),
+            keepUnusedDataFor: 300,
+        }),
         // Dashboard
         getEmployeeDashboardData: build.query<{ data: EmployeeDashboardData }, void>({
             query: () => ({ url: '/dashboard/employee' }),
@@ -92,6 +100,7 @@ const employeeApi = baseApi.injectEndpoints({
 export const {
     useGetMyEmployeeProfileQuery,
     useUpdateMyEmployeeProfileMutation,
+    useGetNidPhotoUrlQuery,
     useGetEmployeeDashboardDataQuery,
     useGetMySalariesQuery,
     useGetMyLeaveRequestsQuery,

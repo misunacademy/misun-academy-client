@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import Image from 'next/image';
@@ -6,10 +5,20 @@ import { useState, useRef } from 'react';
 import { useUploadSingleImageMutation } from '@/redux/api/uploadApi';
 import { toast } from 'sonner';
 
+interface UploadedImage {
+  url: string;
+  fileName: string;
+  format: string;
+  width: number;
+  height: number;
+  size: number;
+  publicId: string;
+}
+
 export function ImageUploader() {
   const [uploadImage, { isLoading }] = useUploadSingleImageMutation();
   const [preview, setPreview] = useState<string | null>(null);
-  const [uploadedImage, setUploadedImage] = useState<any>(null);
+  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,11 +64,11 @@ export function ImageUploader() {
       toast.success('Image uploaded successfully!');
       
       // Clear preview after successful upload
-      // setPreview(null);
-      // fileInputRef.current!.value = '';
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Upload failed');
-      console.error('Upload error:', error);
+
+
+    } catch (error: unknown) {
+      const apiError = error as { data?: { message?: string } };
+      toast.error(apiError?.data?.message || 'Upload failed');
     }
   };
 

@@ -1,5 +1,32 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "./baseApi";
+import type { IQuestion, IQuizAnalytics } from "@/types/quiz";
+
+export interface InstructorQuiz {
+  _id: string;
+  title: string;
+  description?: string;
+  instructions?: string;
+  status: "draft" | "published";
+  passingPercentage: number;
+  timeLimit?: number;
+  shuffleQuestions: boolean;
+  shuffleOptions: boolean;
+  maxAttempts: number;
+  showCorrectAnswers: boolean;
+  allowReview: boolean;
+  totalQuestions?: number;
+  totalMarks?: number;
+}
+
+export interface InstructorModuleQuiz {
+  _id: string;
+  title: string;
+  description?: string;
+  status: "draft" | "published";
+  totalQuestions?: number;
+  totalMarks?: number;
+  timeLimit?: number;
+}
 
 export interface InstructorProfileResponse {
   _id: string;
@@ -77,39 +104,39 @@ const instructorApi = baseApi.injectEndpoints({
       providesTags: ["Instructors"],
     }),
 
-    updateInstructorProfile: build.mutation<any, Partial<InstructorProfileResponse>>({
+    updateInstructorProfile: build.mutation<unknown, Partial<InstructorProfileResponse>>({
       query: (data) => ({ url: "/instructor/profile", method: "PUT", body: data }),
       invalidatesTags: ["Instructors"],
     }),
 
     // ── Dashboard ─────────────────────────────────────────────────────────────
-    getInstructorDashboard: build.query<{ data: any }, void>({
+    getInstructorDashboard: build.query<{ data: unknown }, void>({
       query: () => ({ url: "/instructor/dashboard" }),
       providesTags: ["Instructors"],
     }),
 
     // ── Batches ───────────────────────────────────────────────────────────────
-    getAssignedBatches: build.query<{ data: any[] }, { status?: string }>({
+    getAssignedBatches: build.query<{ data: unknown[] }, { status?: string }>({
       query: (params) => ({ url: "/instructor/batches", params }),
       providesTags: ["Batches", "Instructors"],
     }),
 
-    getBatchStudents: build.query<{ data: any[] }, string>({
+    getBatchStudents: build.query<{ data: unknown[] }, string>({
       query: (batchId) => ({ url: `/instructor/batches/${batchId}/students` }),
       providesTags: ["Students", "Instructors"],
     }),
 
-    getBatchStatistics: build.query<{ data: any }, string>({
+    getBatchStatistics: build.query<{ data: unknown }, string>({
       query: (batchId) => ({ url: `/instructor/batches/${batchId}/statistics` }),
       providesTags: ["Batches", "Instructors"],
     }),
 
-    getPendingSubmissions: build.query<{ data: any[] }, void>({
+    getPendingSubmissions: build.query<{ data: unknown[] }, void>({
       query: () => ({ url: "/instructor/submissions/pending" }),
       providesTags: ["Instructors"],
     }),
 
-    getInstructorEnrolledStudents: build.query<{ data: any[], meta: any }, Record<string, any>>({
+    getInstructorEnrolledStudents: build.query<{ data: unknown[], meta: unknown }, Record<string, unknown>>({
       query: (params) => ({ url: "/instructor/students", params }),
       providesTags: ["Students", "Instructors"],
     }),
@@ -129,7 +156,7 @@ const instructorApi = baseApi.injectEndpoints({
       providesTags: ["Modules"],
     }),
 
-    createInstructorModule: build.mutation<any, { courseId: string; batchId: string } & Partial<InstructorModule>>({
+    createInstructorModule: build.mutation<unknown, { courseId: string; batchId: string } & Partial<InstructorModule>>({
       query: ({ courseId, batchId, ...data }) => ({
         url: `/instructor/courses/${courseId}/modules`,
         method: "POST",
@@ -139,7 +166,7 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Modules"],
     }),
 
-    reorderInstructorModules: build.mutation<any, { courseId: string; batchId: string; moduleOrders: { moduleId: string; orderIndex: number }[] }>({
+    reorderInstructorModules: build.mutation<unknown, { courseId: string; batchId: string; moduleOrders: { moduleId: string; orderIndex: number }[] }>({
       query: ({ courseId, batchId, moduleOrders }) => ({
         url: `/instructor/courses/${courseId}/modules/reorder`,
         method: "PUT",
@@ -149,7 +176,7 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Modules"],
     }),
 
-    updateInstructorModule: build.mutation<any, { moduleId: string } & Partial<InstructorModule>>({
+    updateInstructorModule: build.mutation<unknown, { moduleId: string } & Partial<InstructorModule>>({
       query: ({ moduleId, ...data }) => ({
         url: `/instructor/modules/${moduleId}`,
         method: "PUT",
@@ -158,7 +185,7 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Modules"],
     }),
 
-    deleteInstructorModule: build.mutation<any, string>({
+    deleteInstructorModule: build.mutation<unknown, string>({
       query: (moduleId) => ({ url: `/instructor/modules/${moduleId}`, method: "DELETE" }),
       invalidatesTags: ["Modules", "Lessons"],
     }),
@@ -169,7 +196,7 @@ const instructorApi = baseApi.injectEndpoints({
       providesTags: ["Lessons"],
     }),
 
-    createInstructorLesson: build.mutation<any, { moduleId: string } & Partial<InstructorLesson>>({
+    createInstructorLesson: build.mutation<unknown, { moduleId: string } & Partial<InstructorLesson>>({
       query: ({ moduleId, ...data }) => ({
         url: `/instructor/modules/${moduleId}/lessons`,
         method: "POST",
@@ -178,7 +205,7 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Lessons", "Modules"],
     }),
 
-    updateInstructorLesson: build.mutation<any, { lessonId: string } & Partial<InstructorLesson>>({
+    updateInstructorLesson: build.mutation<unknown, { lessonId: string } & Partial<InstructorLesson>>({
       query: ({ lessonId, ...data }) => ({
         url: `/instructor/lessons/${lessonId}`,
         method: "PUT",
@@ -187,9 +214,96 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Lessons"],
     }),
 
-    deleteInstructorLesson: build.mutation<any, string>({
+    deleteInstructorLesson: build.mutation<unknown, string>({
       query: (lessonId) => ({ url: `/instructor/lessons/${lessonId}`, method: "DELETE" }),
       invalidatesTags: ["Lessons", "Modules"],
+    }),
+
+    // ── Quizzes (instructor-scoped) ───────────────────────────────────────────
+    getInstructorModuleQuizzes: build.query<{ data: InstructorModuleQuiz[] }, string>({
+      query: (moduleId) => ({ url: `/instructor/modules/${moduleId}/quizzes` }),
+      providesTags: ["Quizzes"],
+    }),
+
+    getInstructorQuizById: build.query<{ data: InstructorQuiz }, string>({
+      query: (quizId) => ({ url: `/instructor/quizzes/${quizId}` }),
+      providesTags: ["Quizzes"],
+    }),
+
+    createInstructorQuiz: build.mutation<unknown, { moduleId: string; data: Partial<InstructorQuiz> }>({
+      query: ({ moduleId, data }) => ({
+        url: `/instructor/modules/${moduleId}/quizzes`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Quizzes", "Modules"],
+    }),
+
+    updateInstructorQuiz: build.mutation<unknown, { quizId: string; data: Partial<InstructorQuiz> }>({
+      query: ({ quizId, data }) => ({
+        url: `/instructor/quizzes/${quizId}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Quizzes"],
+    }),
+
+    deleteInstructorQuiz: build.mutation({
+      query: (quizId: string) => ({ url: `/instructor/quizzes/${quizId}`, method: "DELETE" }),
+      invalidatesTags: ["Quizzes", "Modules"],
+    }),
+
+    getInstructorQuizAnalytics: build.query<IQuizAnalytics, string>({
+      query: (quizId) => ({ url: `/instructor/quizzes/${quizId}/analytics` }),
+      providesTags: ["Quizzes"],
+    }),
+
+    // ── Questions (instructor-scoped) ─────────────────────────────────────────
+    getInstructorQuizQuestions: build.query<{ data: IQuestion[] }, string>({
+      query: (quizId) => ({ url: `/instructor/quizzes/${quizId}/questions` }),
+      providesTags: ["Questions"],
+    }),
+
+    getInstructorQuestionById: build.query<{ data: IQuestion }, string>({
+      query: (questionId: string) => ({ url: `/instructor/questions/${questionId}` }),
+      providesTags: (_result, _err, questionId) => [{ type: "Questions", id: questionId }],
+    }),
+
+    createInstructorQuestion: build.mutation<unknown, { quizId: string; data: Partial<IQuestion> }>({
+      query: ({ quizId, data }) => ({
+        url: `/instructor/quizzes/${quizId}/questions`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Questions", "Quizzes"],
+    }),
+
+    updateInstructorQuestion: build.mutation<unknown, { questionId: string; data: Partial<IQuestion> }>({
+      query: ({ questionId, data }) => ({
+        url: `/instructor/questions/${questionId}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (_result, _err, { questionId }) => [{ type: "Questions", id: questionId }],
+    }),
+
+    deleteInstructorQuestion: build.mutation({
+      query: (questionId: string) => ({ url: `/instructor/questions/${questionId}`, method: "DELETE" }),
+      invalidatesTags: ["Questions", "Quizzes"],
+    }),
+
+    duplicateInstructorQuestion: build.mutation({
+      query: (questionId: string) => ({ url: `/instructor/questions/${questionId}/duplicate`, method: "POST" }),
+      invalidatesTags: ["Questions", "Quizzes"],
+    }),
+
+    reorderInstructorQuestions: build.mutation({
+      query: ({ quizId, questionOrders }: { quizId: string; questionOrders: { questionId: string; orderIndex: number }[] }) => ({
+        url: `/instructor/quizzes/${quizId}/questions/reorder`,
+        method: "PUT",
+        body: { questionOrders },
+      }),
+      invalidatesTags: ["Questions"],
     }),
   }),
 });
@@ -213,4 +327,17 @@ export const {
   useCreateInstructorLessonMutation,
   useUpdateInstructorLessonMutation,
   useDeleteInstructorLessonMutation,
+  useGetInstructorModuleQuizzesQuery,
+  useGetInstructorQuizByIdQuery,
+  useGetInstructorQuizAnalyticsQuery,
+  useCreateInstructorQuizMutation,
+  useUpdateInstructorQuizMutation,
+  useDeleteInstructorQuizMutation,
+  useGetInstructorQuizQuestionsQuery,
+  useGetInstructorQuestionByIdQuery,
+  useCreateInstructorQuestionMutation,
+  useUpdateInstructorQuestionMutation,
+  useDeleteInstructorQuestionMutation,
+  useDuplicateInstructorQuestionMutation,
+  useReorderInstructorQuestionsMutation,
 } = instructorApi;

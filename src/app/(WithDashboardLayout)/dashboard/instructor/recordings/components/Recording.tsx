@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useMemo, useState } from "react";
@@ -6,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Plus, Video } from "lucide-react";
 import { toast } from "sonner";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
-import DashboardPageTableWithPagination from "@/components/layout/DashboardPageTableWithPagination";
+import { DataTable } from "@/components/ui/data-table";
 import RecordingFiltersCard, { RecordingFilters } from "./RecordingFiltersCard";
 import RecordingFormDialog from "./RecordingFormDialog";
 import RecordingPreviewDialog from "./RecordingPreviewDialog";
 import RecordingDeleteDialog from "./RecordingDeleteDialog";
-import RecordingTableRow from "./RecordingTableRow";
-import { EMPTY_RECORDING_FORM, type RecordingFormData } from "./RecordingForm";
+import { useRecordingColumns } from "./recordingColumns";
+import { type RecordingFormValues } from "./RecordingForm";
 import {
   useGetRecordingsQuery,
   useCreateRecordingMutation,
@@ -33,17 +32,19 @@ const resolveUrl = (recording: Recording): string | null => {
   return null;
 };
 
+const EMPTY_DEFAULTS: Partial<RecordingFormValues> = {};
+
 export default function RecordingPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedRecording, setSelectedRecording] = useState<Recording | null>(null);
+  const [editDefaults, setEditDefaults] = useState<Partial<RecordingFormValues>>({});
   const [playingRecording, setPlayingRecording] = useState<Recording | null>(null);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [filters, setFilters] = useState<RecordingFilters>({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [recordingToDelete, setRecordingToDelete] = useState<Recording | null>(null);
-  const [formData, setFormData] = useState<RecordingFormData>(EMPTY_RECORDING_FORM);
 
   const { data: recordingsData, isLoading } = useGetRecordingsQuery({
     ...filters,
@@ -83,31 +84,24 @@ export default function RecordingPage() {
     </div>
   );
 
-  const resetForm = () => setFormData(EMPTY_RECORDING_FORM);
-
-  const handleCreate = async () => {
-    if (!formData.courseId || !formData.batchId || !formData.title || !formData.sessionDate || !formData.videoId) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
+  const handleCreate = async (values: RecordingFormValues) => {
     try {
       await createRecording({
-        ...formData,
-        duration: formData.duration ? parseInt(formData.duration) : undefined,
+        ...values,
+        duration: values.duration ? parseInt(values.duration) : undefined,
       }).unwrap();
       toast.success("Recording created successfully");
       setIsCreateOpen(false);
-      resetForm();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to create recording");
+    } catch (err: unknown) {
+      toast.error((err as { data?: { message?: string } })?.data?.message || "Failed to create recording");
     }
   };
 
   const openEditDialog = (recording: Recording) => {
     setSelectedRecording(recording);
-    setFormData({
-      courseId: !recording.courseId ? "" : typeof recording.courseId === "string" ? recording.courseId : recording.courseId._id,
-      batchId: !recording.batchId ? "" : typeof recording.batchId === "string" ? recording.batchId : recording.batchId._id,
+    setEditDefaults({
+      courseId: typeof recording.courseId === "string" ? recording.courseId : recording.courseId._id,
+      batchId: typeof recording.batchId === "string" ? recording.batchId : recording.batchId._id,
       title: recording.title,
       description: recording.description || "",
       sessionDate: recording.sessionDate.split("T")[0],
@@ -119,22 +113,22 @@ export default function RecordingPage() {
     setIsEditOpen(true);
   };
 
-  const handleEdit = async () => {
+  const handleEdit = async (values: RecordingFormValues) => {
     if (!selectedRecording) return;
     try {
       await updateRecording({
         id: selectedRecording._id,
         data: {
-          ...formData,
-          duration: formData.duration ? parseInt(formData.duration) : undefined,
+          ...values,
+          duration: values.duration ? parseInt(values.duration) : undefined,
         },
       }).unwrap();
       toast.success("Recording updated successfully");
       setIsEditOpen(false);
       setSelectedRecording(null);
-      resetForm();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to update recording");
+      setEditDefaults({});
+    } catch (err: unknown) {
+      toast.error((err as { data?: { message?: string } })?.data?.message || "Failed to update recording");
     }
   };
 
@@ -150,10 +144,18 @@ export default function RecordingPage() {
       toast.success("Recording deleted successfully");
       setDeleteDialogOpen(false);
       setRecordingToDelete(null);
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to delete recording");
+    } catch (err: unknown) {
+      toast.error((err as { data?: { message?: string } })?.data?.message || "Failed to delete recording");
     }
   };
+
+  const columns = useRecordingColumns(
+    setPlayingRecording,
+    openEditDialog,
+    handleDelete,
+    resolveUrl,
+    isDeleting,
+  );
 
   return (
     <DashboardPageContainer
@@ -162,16 +164,15 @@ export default function RecordingPage() {
       buttons={
         <RecordingFormDialog
           open={isCreateOpen}
-          onOpenChange={setIsCreateOpen}
+          onOpenChange={(open) => { setIsCreateOpen(open); if (!open) setEditDefaults({}); }}
           title="Upload Live Class Recording"
           description="Add a new recorded session from a live class"
           trigger={
-            <Button onClick={resetForm}>
+            <Button onClick={() => setEditDefaults({})}>
               <Plus className="h-4 w-4 mr-2" /> Upload Recording
             </Button>
           }
-          formData={formData}
-          setFormData={setFormData}
+          defaultValues={EMPTY_DEFAULTS}
           courses={courses}
           onSubmit={handleCreate}
           isLoading={isCreating}
@@ -179,7 +180,7 @@ export default function RecordingPage() {
       }
       content={
         <div className="space-y-6">
-          <DashboardPageTableWithPagination
+          <DataTable
             heading={`Recordings (${meta.total})`}
             filters={
               <RecordingFiltersCard
@@ -189,27 +190,9 @@ export default function RecordingPage() {
                 onPageReset={() => setPage(1)}
               />
             }
-            columns={[
-              "Title",
-              "Course / Batch",
-              "Session Date",
-              "Duration",
-              "Status",
-              "Preview",
-              "Actions",
-            ]}
+            columns={columns}
             data={recordings}
-            renderRow={(recording) => (
-              <RecordingTableRow
-                recording={recording}
-                onPreview={setPlayingRecording}
-                onEdit={openEditDialog}
-                onDelete={handleDelete}
-                getPreviewUrl={resolveUrl}
-                isDeleting={isDeleting}
-              />
-            )}
-            getRowKey={(recording) => recording._id}
+            getRowId={(recording) => recording._id}
             isLoading={isLoading}
             emptyState={emptyState}
             pagination={pagination}
@@ -232,11 +215,10 @@ export default function RecordingPage() {
 
           <RecordingFormDialog
             open={isEditOpen}
-            onOpenChange={setIsEditOpen}
+            onOpenChange={(open) => { setIsEditOpen(open); if (!open) { setSelectedRecording(null); setEditDefaults({}); } }}
             title="Edit Recording"
             description="Update recording details"
-            formData={formData}
-            setFormData={setFormData}
+            defaultValues={editDefaults}
             courses={courses}
             onSubmit={handleEdit}
             isLoading={isUpdating}

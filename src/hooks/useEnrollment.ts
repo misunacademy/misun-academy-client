@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useAuth } from '@/hooks/useAuth';
 import { useGetEnrollmentsQuery } from '@/redux/api/enrollmentApi';
+import type { EnrollmentResponse } from '@/redux/api/enrollmentApi';
 
 interface EnrollmentStatus {
   hasEnrollments: boolean;
@@ -47,14 +47,16 @@ export function useEnrollment(): EnrollmentStatus {
     };
   }
 
-  const enrollments = data?.data || [];
+  const enrollments = data?.data ?? [];
   const activeEnrollments = enrollments.filter(
-    (enrollment: any) => enrollment.status === 'active'
+    (enrollment: EnrollmentResponse) => enrollment.status === 'active'
   );
 
   return {
     hasEnrollments: activeEnrollments.length > 0,
-    enrolledBatchIds: activeEnrollments.map((e: any) => e.batchId),
+    enrolledBatchIds: activeEnrollments.map(
+      (e: EnrollmentResponse) => e.batchId._id
+    ),
     isLoading: false,
     error: null,
   };

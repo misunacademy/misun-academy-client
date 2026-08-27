@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "./baseApi";
 
 export interface CourseInfo {
@@ -66,7 +65,7 @@ const batchApi = baseApi.injectEndpoints({
     }),
 
     // Get current enrollment batch
-    getCurrentEnrollmentBatch: build.query<{ data: BatchResponse | null }, { courseId?: string }>({
+    getCurrentEnrollmentBatch: build.query<{ data: BatchResponse | null; serverTimestamp?: number }, { courseId?: string }>({
       query: (params) => ({
         url: "/batches/current-enrollment",
         params,
@@ -91,7 +90,7 @@ const batchApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Create batch
-    createBatch: build.mutation<any, Partial<BatchResponse>>({
+    createBatch: build.mutation<unknown, Partial<BatchResponse>>({
       query: (data) => ({
         url: "/batches",
         method: "POST",
@@ -101,7 +100,7 @@ const batchApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Update batch
-    updateBatch: build.mutation<any, { id: string; data: Partial<BatchResponse> }>({
+    updateBatch: build.mutation<unknown, { id: string; data: Partial<BatchResponse> }>({
       query: ({ id, data }) => ({
         url: `/batches/${id}`,
         method: "PUT",
@@ -111,7 +110,7 @@ const batchApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Delete batch
-    deleteBatch: build.mutation<any, string>({
+    deleteBatch: build.mutation<unknown, string>({
       query: (id) => ({
         url: `/batches/${id}`,
         method: "DELETE",
@@ -120,7 +119,7 @@ const batchApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Update batch status
-    updateBatchStatus: build.mutation<any, { id: string; status: string }>({
+    updateBatchStatus: build.mutation<unknown, { id: string; status: string }>({
       query: ({ id, status }) => ({
         url: `/batches/${id}/transition`,
         method: "POST",

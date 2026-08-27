@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://misun-academy-client.vercel.app
+Host: https://mehedi2026x7k9.dpdns.org
 
 # Sitemaps
-Sitemap: https://misun-academy-client.vercel.app/sitemap.xml
+Sitemap: https://mehedi2026x7k9.dpdns.org/sitemap.xml

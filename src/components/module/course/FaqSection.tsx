@@ -35,7 +35,7 @@ const faqs = [
 
 const FaqSection = () => {
     return (
-        <section className="relative bg-[#060f0a] overflow-hidden">
+        <section className="relative bg-surface overflow-hidden px-4">
 
             {/* Dot-grid texture */}
             <div
@@ -94,7 +94,7 @@ const FaqSection = () => {
                     {/* Outer glow ring */}
                     <div className="absolute -inset-px rounded-3xl bg-gradient-to-b from-primary/20 via-primary/5 to-transparent pointer-events-none" />
 
-                    <div className="relative rounded-3xl bg-[#060f0a] border border-primary/15
+                    <div className="relative rounded-3xl bg-surface border border-primary/15
                         p-6 md:p-10
                         shadow-[0_0_60px_hsl(156_70%_42%/0.10)]">
 

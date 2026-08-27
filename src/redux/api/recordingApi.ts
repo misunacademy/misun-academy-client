@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from '@/redux/api/baseApi';
 
 export interface Recording {
@@ -22,6 +21,7 @@ export interface Recording {
 }
 
 export const recordingApi = baseApi.injectEndpoints({
+    overrideExisting: true,
     endpoints: (builder) => ({
         createRecording: builder.mutation<Recording, Partial<Recording>>({
             query: (data) => ({
@@ -47,7 +47,7 @@ export const recordingApi = baseApi.injectEndpoints({
                 url: `/recordings/${id}`,
                 method: 'GET',
             }),
-            transformResponse: (response: any) => (response as any).data as Recording,
+            transformResponse: (response: { data: Recording }) => response.data,
             providesTags: ['Recordings'],
         }),
         getBatchRecordings: builder.query<Recording[], string>({
@@ -55,7 +55,7 @@ export const recordingApi = baseApi.injectEndpoints({
                 url: `/recordings/batch/${batchId}`,
                 method: 'GET',
             }),
-            transformResponse: (response: any) => (response as any).data as Recording[],
+            transformResponse: (response: { data: Recording[] }) => response.data,
             providesTags: ['Recordings'],
         }),
         getStudentRecordings: builder.query<Recording[], void>({
@@ -63,7 +63,7 @@ export const recordingApi = baseApi.injectEndpoints({
                 url: '/recordings/student/my-recordings',
                 method: 'GET',
             }),
-            transformResponse: (response: any) => (response as any).data as Recording[],
+            transformResponse: (response: { data: Recording[] }) => response.data,
             providesTags: ['Recordings'],
         }),
         updateRecording: builder.mutation<Recording, { id: string; data: Partial<Recording> }>({

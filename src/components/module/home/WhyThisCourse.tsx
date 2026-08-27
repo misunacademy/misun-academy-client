@@ -7,108 +7,28 @@ import WhyThisCourseModal from './WhyThisCourseModal';
 import { VideoThumb } from '@/assets/images';
 import AbstractLiquid from '@/assets/3d-elements/3d-abstract-colorful-twisted-liquid-shapes.png';
 import FluidShape from '@/assets/3d-elements/3d-abstract-fluid-shape-icon.png';
-import { FolderArchive, NotebookPen, Projector } from 'lucide-react';
 import PlayButton from '@/components/shared/PlayButton';
 import { FadeIn } from '@/components/ui/FadeIn';
 import { StaggerContainer } from '@/components/ui/StaggerContainer';
+import { StatCard } from './StatCard';
+import { stats } from './statsData';
+// import { useGetSettingsQuery } from '@/redux/api/settingsApi';
+// import { toYouTubeEmbedUrl } from './WhyThisCourseModal';
 
-// ── Count-up hook ──────────────────────────────────────────────────────────────
-function useCountUp(target: number, duration = 1800, start = false) {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!start) return;
-    let startTime: number | null = null;
-    const step = (timestamp: number) => {
-      if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      // ease-out cubic
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.floor(eased * target));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [start, target, duration]);
-
-  return count;
-}
-
-// ── Stat card ─────────────────────────────────────────────────────────────────
-interface StatCardProps {
-  icon: React.ReactNode;
-  target: number;
-  suffix: string;
-  label: string;
-  animate: boolean;
-  delay?: number;
-}
-
-function StatCard({ icon, target, suffix, label, animate, delay = 0 }: StatCardProps) {
-  const count = useCountUp(target, 1800, animate);
-
-  return (
-    <div
-      className="relative p-[2px] rounded-2xl overflow-hidden mx-12 md:mx-0 group
-        transition-all duration-500 hover:-translate-y-3"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      {/* ── Spinning comet border ── */}
-      <span
-        className="absolute inset-[-100%] animate-[spin_4s_linear_infinite]"
-        style={{
-          background:
-            'conic-gradient(from 0deg, transparent 0%, transparent 25%, hsl(156 70% 42% / 0.6) 38%, hsl(156 80% 58%) 48%, hsl(156 90% 80%) 53%, hsl(0 0% 100% / 0.9) 56%, hsl(156 90% 80%) 59%, hsl(156 80% 58%) 64%, hsl(156 70% 42% / 0.4) 72%, transparent 82%)',
-        }}
-      />
-
-      {/* ── Card body ── */}
-      <div className="relative flex flex-col items-center justify-center pt-10 pb-10 px-6 rounded-2xl bg-[#060f0a] border border-primary/10 overflow-hidden
-        group-hover:border-primary/30 group-hover:shadow-2xl group-hover:shadow-primary/20 transition-all duration-500">
-
-        {/* Corner accents */}
-        <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/40 rounded-tl-2xl" />
-        <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/40 rounded-tr-2xl" />
-        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/20 rounded-bl-2xl" />
-        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/20 rounded-br-2xl" />
-
-        {/* Background glow blob */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/6 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
-        {/* Icon badge */}
-        <div className="relative z-10 w-16 h-16 rounded-2xl
-          bg-gradient-to-br from-[#0d5c36] via-primary to-[#0a5f38]
-          flex items-center justify-center
-          shadow-lg shadow-primary/40
-          group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-primary/50
-          transition-all duration-500 rotate-3 group-hover:rotate-0">
-          <div className="text-white">{icon}</div>
-        </div>
-
-        {/* Animated number */}
-        <span className="relative z-10 text-5xl md:text-6xl font-bold mt-5 tabular-nums
-          bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
-          {count}{suffix}
-        </span>
-
-        {/* Label */}
-        <span className="relative z-10 mt-3 text-base md:text-lg font-medium text-white/60 group-hover:text-white/90 transition-colors duration-300 font-bangla text-center leading-relaxed">
-          {label}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ── Main section ──────────────────────────────────────────────────────────────
-const stats = [
-  { icon: <Projector size={28} />, target: 60, suffix: '+', label: 'অনলাইন ক্লাস' },
-  { icon: <NotebookPen size={28} />, target: 35, suffix: '+', label: 'অ্যাসাইনমেন্ট' },
-  { icon: <FolderArchive size={28} />, target: 20, suffix: '+', label: 'রিসোর্স ফোল্ডার' },
-];
+// function extractVideoId(embedUrl: string): string | null {
+//   const match = embedUrl.match(/\/embed\/([^/?#]+)/);
+//   return match ? match[1] : null;
+// }
 
 export default function WhyThisCourse() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [animate, setAnimate] = useState(false);
+  // const { data: settingsData } = useGetSettingsQuery();
+  // const embedUrl = toYouTubeEmbedUrl(settingsData?.data?.homeWhyVideoUrl);
+  // const videoId = embedUrl ? extractVideoId(embedUrl) : null;
+  // const thumbnailUrl = videoId
+  //   ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+  //   : null;
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -123,13 +43,12 @@ export default function WhyThisCourse() {
     if (sectionRef.current) observer.observe(sectionRef.current);
     return () => observer.disconnect();
   }, []);
-  // section background now matches other modules (used to be #060f0a)
+
   return (
     <section
       data-dark-section
-      className="relative overflow-hidden bg-[#040a07]"
+      className="relative overflow-hidden bg-surface-darker"
       style={{
-        // backgroundImage: `url(${Bg1.src})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
@@ -267,7 +186,7 @@ export default function WhyThisCourse() {
                     style={{ backgroundImage: `url(${VideoThumb.src})` }}
                   >
                     {/* Bottom gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#060f0a]/85 via-[#060f0a]/20 to-transparent pointer-events-none rounded-2xl" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-surface/85 via-surface/20 to-transparent pointer-events-none rounded-2xl" />
 
                     {/* Text content */}
                     <div className="w-[132px] md:w-72 lg:w-[410px] text-white mx-6 md:mx-12 lg:mx-24 mt-12 md:mt-20 lg:mt-24 relative z-10">

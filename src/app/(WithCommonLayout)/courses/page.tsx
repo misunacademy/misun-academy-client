@@ -1,5 +1,5 @@
 import { generateMetadata } from '@/lib/generateMetadata';
-import CoursesListClient from './CoursesListClient';
+import CourseDetails from './GraphicDesignCourseDetails';
 
 export const metadata = generateMetadata({
   title: 'কোর্সসমূহ | MISUN Academy',
@@ -20,5 +20,6 @@ export const metadata = generateMetadata({
 });
 
 export default function CoursesPage() {
-  return <CoursesListClient />;
+  // return <CoursesListClient />;
+  return <CourseDetails/>
 }

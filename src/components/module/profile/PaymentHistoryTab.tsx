@@ -1,6 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Loader2, CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
+"use client";
+
+import { Skeleton } from 'boneyard-js/react'
+import { CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useGetMyPaymentsQuery } from "@/redux/api/paymentApi";
+import type { PaymentResponse } from "@/redux/api/paymentApi";
+
+interface GatewayResponse {
+    bank_tran_id?: string;
+    card_issuer?: string;
+    card_type?: string;
+    tran_date?: string;
+    senderNumber?: string;
+    phonePeTransactionId?: string;
+    verifiedAt?: string;
+    rejectedAt?: string;
+}
 
 
 export function PaymentHistoryTab() {
@@ -48,24 +62,14 @@ export function PaymentHistoryTab() {
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className="flex-1 bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="flex-1 bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
+    return (
+        <Skeleton name="PaymentHistoryTab" loading={isLoading}>
+        {error ? (
+            <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
                 <p className="text-red-400">Failed to load payment history</p>
             </div>
-        );
-    }
-
-    return (
-        <div className="flex-1 bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
+        ) : (
+        <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
             {/* Ambient glow inside right panel */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -90,7 +94,9 @@ export function PaymentHistoryTab() {
                         </p>
                     </div>
                 ) : (
-                    payments.map((payment: any) => (
+                    payments.map((payment: PaymentResponse) => {
+                        const gw = payment.gatewayResponse as GatewayResponse | undefined;
+                        return (
                         <div key={payment._id} className="flex flex-col gap-6 p-6 rounded-xl border border-primary/10 bg-primary/5 hover:bg-primary/10 transition-colors">
                             {/* Card Header equivalent */}
                             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/5 pb-4">
@@ -100,7 +106,8 @@ export function PaymentHistoryTab() {
                                     </h3>
                                     <p className="text-white/50 text-sm">
                                         Batch: <span className="text-white/80">{payment.batch?.title?.split(' ')[1] || 'N/A'}</span> 
-                                        {/* ({payment.batch?.batchNumber || 'N/A'}) */}
+
+
                                     </p>
                                 </div>
                                 <div>
@@ -156,33 +163,33 @@ export function PaymentHistoryTab() {
                                 )}
 
                                 {/* Gateway Response Details */}
-                                {payment.gatewayResponse && Object.keys(payment.gatewayResponse).length > 0 && (
+                                {gw && Object.keys(gw).length > 0 && (
                                     <div className="mt-4 p-4 bg-black/40 border border-white/5 rounded-lg text-xs">
                                         <p className="text-white/60 mb-3 font-medium border-b border-white/5 pb-2">Payment Details:</p>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            {payment.gatewayResponse.bank_tran_id && (
-                                                <p className="text-white/70"><span className="text-white/40 font-medium">Bank Transaction:</span> {payment.gatewayResponse.bank_tran_id}</p>
+                                            {gw.bank_tran_id && (
+                                                <p className="text-white/70"><span className="text-white/40 font-medium">Bank Transaction:</span> {gw.bank_tran_id}</p>
                                             )}
-                                            {payment.gatewayResponse.card_issuer && (
-                                                <p className="text-white/70"><span className="text-white/40 font-medium">Card Issuer:</span> {payment.gatewayResponse.card_issuer}</p>
+                                            {gw.card_issuer && (
+                                                <p className="text-white/70"><span className="text-white/40 font-medium">Card Issuer:</span> {gw.card_issuer}</p>
                                             )}
-                                            {payment.gatewayResponse.card_type && (
-                                                <p className="text-white/70"><span className="text-white/40 font-medium">Card Type:</span> {payment.gatewayResponse.card_type}</p>
+                                            {gw.card_type && (
+                                                <p className="text-white/70"><span className="text-white/40 font-medium">Card Type:</span> {gw.card_type}</p>
                                             )}
-                                            {payment.gatewayResponse.tran_date && (
-                                                <p className="text-white/70"><span className="text-white/40 font-medium">Transaction Date:</span> {payment.gatewayResponse.tran_date}</p>
+                                            {gw.tran_date && (
+                                                <p className="text-white/70"><span className="text-white/40 font-medium">Transaction Date:</span> {gw.tran_date}</p>
                                             )}
-                                            {payment.gatewayResponse.senderNumber && (
-                                                <p className="text-white/70"><span className="text-white/40 font-medium">Sender Number:</span> {payment.gatewayResponse.senderNumber}</p>
+                                            {gw.senderNumber && (
+                                                <p className="text-white/70"><span className="text-white/40 font-medium">Sender Number:</span> {gw.senderNumber}</p>
                                             )}
-                                            {payment.gatewayResponse.phonePeTransactionId && (
-                                                <p className="text-white/70"><span className="text-white/40 font-medium">PhonePe TXN:</span> {payment.gatewayResponse.phonePeTransactionId}</p>
+                                            {gw.phonePeTransactionId && (
+                                                <p className="text-white/70"><span className="text-white/40 font-medium">PhonePe TXN:</span> {gw.phonePeTransactionId}</p>
                                             )}
-                                            {payment.gatewayResponse.verifiedAt && (
-                                                <p className="text-white/70"><span className="text-white/40 font-medium">Verified At:</span> {new Date(payment.gatewayResponse.verifiedAt).toLocaleString('en-US')}</p>
+                                            {gw.verifiedAt && (
+                                                <p className="text-white/70"><span className="text-white/40 font-medium">Verified At:</span> {new Date(gw.verifiedAt).toLocaleString('en-US')}</p>
                                             )}
-                                            {payment.gatewayResponse.rejectedAt && (
-                                                <p className="text-red-400"><span className="text-red-500/70 font-medium">Rejected At:</span> {new Date(payment.gatewayResponse.rejectedAt).toLocaleString('en-US')}</p>
+                                            {gw.rejectedAt && (
+                                                <p className="text-red-400"><span className="text-red-500/70 font-medium">Rejected At:</span> {new Date(gw.rejectedAt).toLocaleString('en-US')}</p>
                                             )}
                                         </div>
                                     </div>
@@ -206,9 +213,11 @@ export function PaymentHistoryTab() {
                                 )}
                             </div>
                         </div>
-                    ))
-                )}
+                    )}
+                ))}
             </div>
         </div>
+        )}
+    </Skeleton>
     );
 }

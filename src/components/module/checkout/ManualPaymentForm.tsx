@@ -9,7 +9,8 @@ import { CheckCircle, ArrowLeft, User, Phone, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { phonePe } from "@/assets/images";
-import { paymentInfo } from "@/constants/enrollment";
+import { paymentInfo } from "@/constants/payment";
+import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 
 const paymentSchema = z.object({
     senderNumber: z.string().min(10, "Please enter a valid phone number"),
@@ -21,7 +22,7 @@ type PaymentForm = z.infer<typeof paymentSchema>;
 interface ManualPaymentFormProps {
     onBack: () => void;
     onPaymentComplete: (data: { senderNumber: string; transactionId: string }) => void;
-    manualAmount?: number;
+    manualAmount: number;
     manualCurrency?: string;
     batch:string
 }
@@ -52,7 +53,7 @@ const ManualPaymentForm = ({
         onPaymentComplete(data);
     };
 
-    const displayAmount = typeof manualAmount === 'number' ? manualAmount : paymentInfo.amount;
+    const displayAmount = manualAmount ?? 0;
     const dynamicInstructions = paymentInfo.instructions.map((instruction) => {
         if (instruction.toLowerCase().includes('enter the exact amount')) {
             return `Enter the exact amount: INR ${displayAmount.toLocaleString('en-IN')}`;
@@ -63,7 +64,7 @@ const ManualPaymentForm = ({
     return (
         <div className="space-y-5">
             {/* QR Code Section */}
-            <div className="relative overflow-hidden rounded-2xl bg-[#060f0a] border border-primary/15">
+            <div className="relative overflow-hidden rounded-2xl bg-surface border border-primary/15">
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
                 <div className="absolute top-0 left-0 w-5 h-5 border-t border-l border-primary/40 rounded-tl-2xl" />
                 <div className="absolute top-0 right-0 w-5 h-5 border-t border-r border-primary/40 rounded-tr-2xl" />
@@ -110,7 +111,7 @@ const ManualPaymentForm = ({
                                 >
                                     {copied ? <CheckCircle className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5 text-primary/70" />}
                                     {copied && (
-                                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#060f0a] border border-primary/25 text-primary text-[10px] rounded px-2 py-0.5 whitespace-nowrap">
+                                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-surface border border-primary/25 text-primary text-[10px] rounded px-2 py-0.5 whitespace-nowrap">
                                             Copied!
                                         </span>
                                     )}
@@ -146,7 +147,7 @@ const ManualPaymentForm = ({
             </div>
 
             {/* Payment Details Form */}
-            <div className="relative overflow-hidden rounded-2xl bg-[#060f0a] border border-primary/15">
+            <div className="relative overflow-hidden rounded-2xl bg-surface border border-primary/15">
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
                 <div className="p-5 border-b border-primary/10">
                     <h3 className="text-lg font-bold text-white/90">Confirm Your Payment</h3>
@@ -204,32 +205,8 @@ const ManualPaymentForm = ({
                                 )}
                             />
 
-                            {/* <FormField
-                                control={form.control}
-                                name="amount"
-                                disabled
-                                render={({ field, fieldState }) => (
-                                    <FormItem>
-                                        <FormLabel>Amount Paid (৳) *</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="number"
-                                                placeholder="2867.24"
-                                                {...field}
-                                                className={cn(
-                                                    "h-12",
-                                                    fieldState.invalid
-                                                        ? "border-red-500 focus-visible:ring-red-500"
-                                                        : fieldState.isTouched && field.value
-                                                            ? "border-green-500 focus-visible:ring-green-500"
-                                                            : ""
-                                                )}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            /> */}
+
+
 
                             <div className="flex gap-3 pt-2">
                                 <button type="button" onClick={onBack}
@@ -240,11 +217,11 @@ const ManualPaymentForm = ({
                                 <div className={`flex-1 relative p-[1.5px] rounded-xl overflow-hidden ${
                                     !form.formState.isValid ? 'opacity-50' : ''
                                 }`}>
-                                    <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
+                                    <AnimatedBorder variant="simple" speed="3s" />
                                     <button
                                         type="submit"
                                         disabled={!form.formState.isValid}
-                                        className="relative w-full bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41] disabled:cursor-not-allowed transition-all duration-300 text-white font-bold py-2.5 rounded-xl text-sm"
+                                        className="relative w-full bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep disabled:cursor-not-allowed transition-all duration-300 text-white font-bold py-2.5 rounded-xl text-sm"
                                     >
                                         Submit Payment Info
                                     </button>

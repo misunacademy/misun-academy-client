@@ -1,19 +1,18 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
-import { useState, useEffect, FormEvent } from "react";
-import { Loader2 } from "lucide-react";
-import { useGetAllUsersQuery, useLazyGetAllUsersQuery, useCreateAdminMutation, useUpdateUserMutation, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
+import { Download, Loader2 } from "lucide-react";
+import { useCallback, useMemo, useState, useEffect } from "react";
+import { useGetAllUsersQuery, useLazyGetAllUsersQuery, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import type { BatchResponse } from "@/redux/api/batchApi";
-import type { GetAllUsersParams, UsersListResponse, UpdateUserRequest } from "@/redux/api/adminApi";
+import type { GetAllUsersParams, UsersListResponse } from "@/redux/api/adminApi";
 import { toast } from 'sonner';
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
+import { DataTable } from "@/components/ui/data-table";
 import DeleteConfirmationDialog from "./components/DeleteConfirmationDialog";
 import EditingDialog from "./components/EditingDialog";
-import DashboardPageTableWithPagination from "@/components/layout/DashboardPageTableWithPagination";
-import TableRows from "./components/TableRows";
+import { useUserColumns } from "./components/userColumns";
 import UsersStatsCards from "./components/UsersStatsCards";
 import CreateUserDialog from "./components/CreateUserDialog";
 import UsersFilters from "./components/UsersFilters";
@@ -55,8 +54,6 @@ export default function AdminUsers() {
   const [isExporting, setIsExporting] = useState(false);
 
   // RTK Query mutations
-  const [createAdmin] = useCreateAdminMutation();
-  const [updateUserMutation] = useUpdateUserMutation();
   const [deleteUserMutation] = useDeleteUserMutation();
   const [updateUserStatusMutation] = useUpdateUserStatusMutation();
   const [triggerExportQuery] = useLazyGetAllUsersQuery();
@@ -73,12 +70,12 @@ export default function AdminUsers() {
   }, [debouncedSearch, roleFilter, statusFilter]);
 
   // Send role and status as lowercase strings to match server enum values
-  const roleParam: GetAllUsersParams['role'] = roleFilter === 'all'
+  const roleParam: GetAllUsersParams['role'] = useMemo(() => roleFilter === 'all'
     ? undefined
-    : (roleFilter.toLowerCase() as GetAllUsersParams['role']);
-  const statusParam = statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'suspended' | 'deleted');
+    : (roleFilter.toLowerCase() as GetAllUsersParams['role']), [roleFilter]);
+  const statusParam = useMemo(() => statusFilter === 'all' ? undefined : (statusFilter as 'active' | 'suspended' | 'deleted'), [statusFilter]);
 
-  const { data, isLoading, isFetching } = useGetAllUsersQuery(
+  const { data, isLoading, isFetching, isError } = useGetAllUsersQuery(
     {
       page,
       limit,
@@ -88,7 +85,7 @@ export default function AdminUsers() {
       batch: batchFilter === 'all' ? undefined : batchFilter,
       enrolled: enrolledFilter === 'all' ? undefined : (enrolledFilter === 'enrolled' ? 'true' : 'false'),
     },
-    { refetchOnMountOrArgChange: true }
+    {}
   );
 
   const resp = data as UsersListResponse | undefined;
@@ -113,48 +110,7 @@ export default function AdminUsers() {
   }, [resp]);
 
 
-  const handleCreateUser = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const payload = {
-      name: fd.get('name') as string,
-      email: fd.get('email') as string,
-      password: fd.get('password') as string,
-      role: fd.get('role') as string,
-    };
-    try {
-      await createAdmin(payload).unwrap();
-      toast.success('User created successfully');
-      setCreateDialogOpen(false);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to create user');
-    }
-  };
-
-  const handleUpdateUser = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const id = fd.get('id') as string;
-    const updateData: Partial<UpdateUserRequest> = {};
-    const name = fd.get('name') as string;
-    const email = fd.get('email') as string;
-    const role = fd.get('role') as string;
-    const status = fd.get('status') as string;
-    if (name) updateData.name = name;
-    if (email) updateData.email = email;
-    if (role) updateData.role = role.toLowerCase() as UpdateUserRequest['role'];
-    if (status) updateData.status = status as 'active' | 'suspended' | 'deleted';
-    try {
-      await updateUserMutation({ id, data: updateData }).unwrap();
-      toast.success('User updated successfully');
-      setEditDialogOpen(false);
-      setEditUser(null);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to update user');
-    }
-  };
-
-  const handleDeleteUser = async () => {
+  const handleDeleteUser = useCallback(async () => {
     if (!userToDelete) return;
     try {
       await deleteUserMutation(userToDelete).unwrap();
@@ -166,9 +122,9 @@ export default function AdminUsers() {
       setDeleteDialogOpen(false);
       setUserToDelete(null);
     }
-  };
+  }, [userToDelete, deleteUserMutation]);
 
-  const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+  const handleToggleStatus = useCallback(async (id: string, currentStatus: boolean) => {
     try {
       const status = !currentStatus ? 'active' : 'suspended';
       await updateUserStatusMutation({ id, status }).unwrap();
@@ -176,13 +132,13 @@ export default function AdminUsers() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to update status');
     }
-  };
+  }, [updateUserStatusMutation]);
 
   // Typed server response and current page rows
-  const filteredUsers: User[] = (resp?.data as User[] | undefined) || [];
-  const batches = (batchesData?.data as BatchResponse[] | undefined) || [];
+  const filteredUsers: User[] = useMemo(() => (resp?.data as User[] | undefined) || [], [resp]);
+  const batches: BatchResponse[] = useMemo(() => (batchesData?.data as BatchResponse[] | undefined) || [], [batchesData]);
 
-  const getRoleBadgeVariant = (role: string): "default" | "secondary" | "destructive" | "outline" => {
+  const getRoleBadgeVariant = useCallback((role: string): "default" | "secondary" | "destructive" | "outline" => {
     const lr = role?.toLowerCase?.() ?? '';
     switch (lr) {
       case 'superadmin': return 'destructive';
@@ -192,9 +148,18 @@ export default function AdminUsers() {
       case 'learner': return 'outline';
       default: return 'outline';
     }
-  };
+  }, []);
 
-  const handleExportExcel = async () => {
+  const columns = useUserColumns(
+    getRoleBadgeVariant,
+    setEditUser,
+    setEditDialogOpen,
+    handleToggleStatus,
+    setUserToDelete,
+    setDeleteDialogOpen,
+  );
+
+  const handleExportExcel = useCallback(async () => {
     if (filteredUsers.length === 0) {
       toast.error('No user data available to export');
       return;
@@ -262,25 +227,32 @@ export default function AdminUsers() {
       XLSX.writeFile(workbook, `users-${timestamp}.xlsx`);
 
       toast.success('Excel sheet exported successfully', { id: toastId });
-    } catch (error) {
-      console.error('Excel export failed:', error);
+    } catch {
       toast.error('Failed to export Excel sheet', { id: toastId });
     } finally {
       setIsExporting(false);
     }
-  };
+  }, [filteredUsers, roleParam, statusParam, debouncedSearch, batchFilter, enrolledFilter, triggerExportQuery]);
 
-  const activeUsersCount = filteredUsers.filter((u) => u.status === "active").length;
-  const instructorCount = filteredUsers.filter((u) => u.role?.toLowerCase() === "instructor").length;
-  const adminCount = filteredUsers.filter((u) => {
+  const activeUsersCount = useMemo(() => filteredUsers.filter((u) => u.status === "active").length, [filteredUsers]);
+  const instructorCount = useMemo(() => filteredUsers.filter((u) => u.role?.toLowerCase() === "instructor").length, [filteredUsers]);
+  const adminCount = useMemo(() => filteredUsers.filter((u) => {
     const r = u.role?.toLowerCase?.() ?? "";
     return r === "admin" || r === "superadmin";
-  }).length;
+  }).length, [filteredUsers]);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-destructive">Failed to load users</p>
       </div>
     );
   }
@@ -305,14 +277,14 @@ export default function AdminUsers() {
           <CreateUserDialog
             open={createDialogOpen}
             onOpenChange={setCreateDialogOpen}
-            onSubmit={handleCreateUser}
+            onSuccess={() => setCreateDialogOpen(false)}
           />
         </div>
       }
       content={
         <div>
           {/* Edit User Dialog */}
-          <EditingDialog editUser={editUser} editDialogOpen={editDialogOpen} onOpenChange={setEditDialogOpen} handleUpdateUser={handleUpdateUser} />
+          <EditingDialog user={editUser} open={editDialogOpen} onOpenChange={setEditDialogOpen} onSuccess={() => { setEditDialogOpen(false); setEditUser(null); }} />
 
           {/* Stats Cards */}
           <UsersStatsCards
@@ -324,7 +296,7 @@ export default function AdminUsers() {
 
 
           {/* User table */}
-          <DashboardPageTableWithPagination
+          <DataTable
             heading="All Users"
             subheading="View and manage all users in the system"
             filters={
@@ -342,12 +314,9 @@ export default function AdminUsers() {
                 onEnrolledChange={setEnrolledFilter}
               />
             }
-            columns={["User", "Role", "Status", "Enrolled", "Join Date", "Actions"]}
+            columns={columns}
             data={filteredUsers}
-            renderRow={(user) => (
-              <TableRows user={user} getRoleBadgeVariant={getRoleBadgeVariant} setEditUser={setEditUser} setEditDialogOpen={setEditDialogOpen} handleToggleStatus={handleToggleStatus} setUserToDelete={setUserToDelete} setDeleteDialogOpen={setDeleteDialogOpen} />
-            )}
-            getRowKey={(user) => user._id}
+            getRowId={(user) => user._id}
             isFetching={isFetching}
             emptyState="No users found."
             pagination={{

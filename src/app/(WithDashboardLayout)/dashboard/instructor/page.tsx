@@ -1,4 +1,4 @@
-import InstructorDashboardPage from "@/app/(WithDashboardLayout)/dashboard/instructor/(components)/Dashboard";
+import InstructorDashboardPage from "@/app/(WithDashboardLayout)/dashboard/instructor/_components/Dashboard";
 
 const page = () => {
     return (

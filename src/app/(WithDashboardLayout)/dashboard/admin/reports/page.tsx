@@ -1,22 +1,59 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { Download, RefreshCw } from "lucide-react";
-
-// import { useGetMetadataQuery } from "@/redux/api/studentApi";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { Loader2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useGetDashboardMetadataQuery } from "@/redux/api/dashboardApi";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
 import ReportKeymetricsCards from "./components/ReportKeymetricsCards";
-import DashboardPageTabs from "@/components/layout/DashboardPageTabs";
+import dynamic from "next/dynamic";
+
+const ReportCharts = dynamic(() => import("./components/ReportCharts"), { ssr: false });
 
 type TimePeriod = '7days' | '30days' | '90days' | '1year';
+
+interface DayWiseStat {
+  date: string;
+  totalIncome: number;
+  totalEnrollment: number;
+}
+
+interface CourseWiseStat {
+  courseId: string;
+  courseTitle: string;
+  courseSlug: string;
+  totalIncome: number;
+  totalEnrollments: number;
+}
+
+interface DashboardMetadata {
+  totalEnrolled: number;
+  totalIncome: number;
+  dayWiseStats: DayWiseStat[];
+  courseWiseStats: CourseWiseStat[];
+  batchWiseIncome: {
+    batchId: string;
+    batchTitle: string;
+    courseTitle: string;
+    batchNumber: string;
+    totalIncome: number;
+    totalEnrollments: number;
+  }[];
+}
+
+interface ProcessedData {
+  totalIncome: number;
+  totalEnrolled: number;
+  activeCoursesCount: number;
+  enrollmentData: { month: string; enrollments: number }[];
+  revenueData: { month: string; revenue: number }[];
+  coursePopularityData: { name: string; value: number; color: string }[];
+  courseWiseStats: CourseWiseStat[];
+  batchWiseIncome: DashboardMetadata["batchWiseIncome"];
+}
 
 export default function AdminReports() {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30days');
@@ -31,15 +68,13 @@ export default function AdminReports() {
   const isLoading = metadataLoading || coursesLoading;
   const error = metadataError;
 
-  // Calculate dynamic data - moved before early returns
   const processedData = useMemo(() => {
     if (!metadata?.data) return null;
 
-    const data = metadata.data;
+    const data = metadata.data as DashboardMetadata;
 
-    // Filter data based on selected period
     const now = new Date();
-    const periodDays = {
+    const periodDays: Record<TimePeriod, number> = {
       '7days': 7,
       '30days': 30,
       '90days': 90,
@@ -49,31 +84,27 @@ export default function AdminReports() {
     const cutoffDate = new Date();
     cutoffDate.setDate(now.getDate() - periodDays[selectedPeriod]);
 
-    const filteredDayWiseStats = (data.dayWiseStats || []).filter((stat: any) => {
+    const filteredDayWiseStats = (data.dayWiseStats || []).filter((stat) => {
       const statDate = new Date(stat.date);
       return statDate >= cutoffDate;
     });
 
-
-    // Get active courses count (for selected course, this becomes either 1 or 0)
-    const activeCourses = coursesData?.data?.filter((course: any) => (course.status || '').toLowerCase() === 'published') || [];
+    const activeCourses = (coursesData?.data || []).filter((course) => course.status === 'published');
     const activeCoursesCount = selectedCourseId === 'all'
       ? activeCourses.length
-      : activeCourses.filter((course: any) => course._id === selectedCourseId).length;
+      : activeCourses.filter((course) => course._id === selectedCourseId).length;
 
-    // Format data for charts
-    const enrollmentData = filteredDayWiseStats.map((stat: any) => ({
+    const enrollmentData = filteredDayWiseStats.map((stat) => ({
       month: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       enrollments: stat.totalEnrollment,
     }));
 
-    const revenueData = filteredDayWiseStats.map((stat: any) => ({
+    const revenueData = filteredDayWiseStats.map((stat) => ({
       month: new Date(stat.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       revenue: stat.totalIncome,
     }));
 
-    // For course popularity, use course-wise stats
-    const coursePopularityData = (data.courseWiseStats || []).map((course: any, index: number) => ({
+    const coursePopularityData = (data.courseWiseStats || []).map((course, index) => ({
       name: course.courseTitle || `Course ${index + 1}`,
       value: course.totalEnrollments || 0,
       color: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'][index % 5],
@@ -87,13 +118,13 @@ export default function AdminReports() {
       revenueData,
       coursePopularityData,
       courseWiseStats: data.courseWiseStats || [],
-      batchWiseIncome: data.batchWiseIncome || []
-    };
+      batchWiseIncome: data.batchWiseIncome || [],
+    } satisfies ProcessedData;
   }, [metadata, coursesData, selectedPeriod, selectedCourseId]);
 
   const selectedCourseTitle = useMemo(() => {
     if (selectedCourseId === 'all') return 'All Courses';
-    const found = (coursesData?.data || []).find((course: any) => course._id === selectedCourseId);
+    const found = (coursesData?.data || []).find((course) => course._id === selectedCourseId);
     return found?.title || 'Selected Course';
   }, [coursesData, selectedCourseId]);
 
@@ -118,26 +149,26 @@ export default function AdminReports() {
 
     setIsExporting(true);
     try {
-      // Create export data
+      const meta = metadata.data as DashboardMetadata;
+
       const exportData = {
         period: selectedPeriod,
         course: selectedCourseTitle,
         generatedAt: new Date().toISOString(),
         summary: {
-          totalRevenue: metadata?.data?.totalIncome || 0,
-          totalEnrollments: metadata?.data?.totalEnrolled || 0,
+          totalRevenue: meta?.totalIncome || 0,
+          totalEnrollments: meta?.totalEnrolled || 0,
           activeCourses: processedData?.activeCoursesCount || 0
         },
         courseWiseStats: processedData?.courseWiseStats || [],
         batchWiseIncome: processedData?.batchWiseIncome || [],
-        dailyStats: processedData?.enrollmentData.map((item: any, index: number) => ({
+        dailyStats: processedData?.enrollmentData.map((item, index) => ({
           date: item.month,
           enrollments: item.enrollments,
           revenue: processedData.revenueData[index]?.revenue || 0
         })) || []
       };
 
-      // Convert to CSV
       const csvContent = generateCSV(exportData);
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
@@ -148,38 +179,42 @@ export default function AdminReports() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (error) {
-      console.error('Export failed:', error);
+    } catch {
     } finally {
       setIsExporting(false);
     }
   };
 
-  const generateCSV = (data: any) => {
+  const generateCSV = (data: {
+    period: string;
+    course: string;
+    generatedAt: string;
+    summary: { totalRevenue: number; totalEnrollments: number; activeCourses: number };
+    courseWiseStats: CourseWiseStat[];
+    batchWiseIncome: { batchTitle: string; totalEnrollments: number; totalIncome: number }[];
+    dailyStats: { date: string; enrollments: number; revenue: number }[];
+  }) => {
     let csv = 'Academy Reports\n';
     csv += `Period: ${data.period}\n`;
     csv += `Course: ${data.course}\n`;
     csv += `Generated: ${data.generatedAt}\n\n`;
 
-    // Summary
     csv += 'Summary\n';
     csv += 'Metric,Value\n';
     csv += `Total Revenue,$${data.summary.totalRevenue}\n`;
     csv += `Total Enrollments,${data.summary.totalEnrollments}\n`;
     csv += `Active Courses,${data.summary.activeCourses}\n\n`;
 
-    // Course-wise stats
     csv += 'Course-wise Statistics\n';
     csv += 'Course,Enrollments,Revenue\n';
-    data.courseWiseStats.forEach((course: any) => {
+    data.courseWiseStats.forEach((course) => {
       csv += `"${course.courseTitle}",${course.totalEnrollments},"$${course.totalIncome}"\n`;
     });
     csv += '\n';
 
-    // Daily stats
     csv += 'Daily Statistics\n';
     csv += 'Date,Enrollments,Revenue\n';
-    data.dailyStats.forEach((day: any) => {
+    data.dailyStats.forEach((day) => {
       csv += `"${day.date}",${day.enrollments},"$${day.revenue}"\n`;
     });
 
@@ -199,7 +234,7 @@ export default function AdminReports() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Courses</SelectItem>
-              {(coursesData?.data || []).map((course: any) => (
+              {(coursesData?.data || []).map((course) => (
                 <SelectItem key={course._id} value={course._id}>
                   {course.title}
                 </SelectItem>
@@ -230,100 +265,11 @@ export default function AdminReports() {
       }
       content={
         <>
-          {/* Key Metrics */}
-          <ReportKeymetricsCards metadata={metadata} processedData={processedData} coursesLoading={coursesLoading} />
-          {/* Charts */}
-          <DashboardPageTabs
-            defaultValue="enrollment"
-            triggers={[
-              { value: "enrollment", label: "Enrollment Trends" },
-              { value: "revenue", label: "Revenue Analytics" },
-              { value: "courses", label: "Course Popularity" },
-            ]}
-            contents={[
-              {
-                value: "enrollment",
-                content: (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Enrollment Trends</CardTitle>
-                      <CardDescription>Student enrollment patterns over the selected period</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={processedData?.enrollmentData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="month" />
-                          <YAxis />
-                          <Tooltip />
-                          <Line type="monotone" dataKey="enrollments" stroke="#8884d8" strokeWidth={2} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
-                ),
-              },
-              {
-                value: "revenue",
-                content: (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Revenue Analytics</CardTitle>
-                      <CardDescription>Revenue breakdown and trends for the selected period</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={processedData?.revenueData}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="month" />
-                          <YAxis />
-                          <Tooltip formatter={(value) => [`$${value}`, "Revenue"]} />
-                          <Bar dataKey="revenue" fill="#82ca9d" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
-                ),
-              },
-              {
-                value: "courses",
-                content: (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Course Popularity Distribution</CardTitle>
-                      <CardDescription>Most popular courses by enrollment numbers</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                          <Pie
-                            data={processedData?.coursePopularityData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={({ name, value }) => `${name} (${value})`}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="value"
-                          >
-                            {processedData?.coursePopularityData.map((entry: any, index: number) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </CardContent>
-                  </Card>
-                ),
-              },
-            ]}
-          />
+          <ReportKeymetricsCards metadata={metadata as { data?: { totalIncome?: number; totalEnrolled?: number } }} processedData={processedData as { activeCoursesCount?: number } | undefined} coursesLoading={coursesLoading} />
+          <ReportCharts data={processedData} />
         </>
       }
     />
-
-
 
   );
 }

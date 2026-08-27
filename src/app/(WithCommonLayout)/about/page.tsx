@@ -1,492 +1,70 @@
+import { generateMetadata as genMeta } from '@/lib/generateMetadata';
+import { Users } from "lucide-react";
+import TeamMemberCard from './_components/TeamMemberCard';
+import AboutStorySection from './_components/AboutStorySection';
+import AboutMissionVisionSection from './_components/AboutMissionVisionSection';
+import AboutCtaSection from './_components/AboutCtaSection';
+import { ajeful, debrotto, mehedi, mithun, neyemur, nur, nur_2, puspita, sakin } from "@/assets/teamMembers/index";
 
-import { Target, Eye, Users, ArrowRight, Sparkles } from "lucide-react";
-import Image from "next/image";
-import { ajeful, debrotto, mehedi, mithun, neyemur, nur, nur_2, puspita,sakin } from "@/assets/teamMembers/index";
-import Link from "next/link";
+export const metadata = genMeta({
+  title: 'আমাদের সম্পর্কে | MISUN Academy',
+  description: 'MISUN Academy-র লক্ষ্য ও ভিশন। আমাদের টিম সম্পর্কে জানুন এবং ডিজিটাল শিক্ষার এই যাত্রায় অংশীদার হন। | Learn about MISUN Academy, our mission, vision, and the team behind Bangladesh\'s leading graphic design and freelancing courses.',
+  keywords: ['MISUN Academy', 'About MISUN', 'Graphic Design Team', 'MISUN Team', 'মিসুন একাডেমি', 'ডিজিটাল শিক্ষা', 'গ্রাফিক্স ডিজাইন টিম'],
+  slug: 'about',
+});
 
 const teamMembers = [
-    {
-        name: "Mithun Sarkar",
-        role: "Founder & CEO",
-        company: "MISUN Academy",
-        image: mithun,
-    },
-    {
-        name: "Puspita Singha",
-        role: "Lead Instructor, English For Professional Communication",
-        company: "MISUN Academy",
-        image: puspita,
-
-    },
-    {
-        name: "Debbroto Biswas",
-        role: "Senior Visualizer",
-        company: "MISUN Academy",
-        image: debrotto,
-
-    },
-    {
-        name: "Nurnobi Hossen Shagor",
-        role: "Senior Visualizer",
-        company: "MISUN Academy",
-        image: nur,
-
-    },
-    {
-        name: "MD.Nur Nobe Islam",
-        role: "Video Editor",
-        company: "MISUN Academy",
-        image: nur_2,
-
-    },
-    {
-        name: "Ajeful Mallick",
-        role: "Design And Social Media Coordinator",
-        company: "MISUN Academy",
-        image: ajeful,
-
-    },
-    {
-        name: "Mehedi Hasan",
-        role: "Web Developer",
-        company: "MISUN Academy",
-        image: mehedi,
-    },
-
-    {
-        name: "S. M. Nayemur Rahman",
-        role: "Marketing Executive",
-        company: "MISUN Academy",
-        image: neyemur,
-
-    },
-
-    {
-        name: "𝐍𝐚𝐟𝐢𝐮𝐧 𝐒𝐚𝐤𝐢𝐧",
-        role: "Community Growth Manager",
-        company: "MISUN Academy",
-        image: sakin,
-
-    },
-];
-
-const missionItems = [
-    "বাংলাদেশের যুব সমাজকে আন্তর্জাতিক মানের ডিজিটাল দক্ষতা শেখানো।",
-    "বাস্তব ভিত্তিক (hands-on) শেখার অভিজ্ঞতা প্রদান করা।",
-    "ফ্রিল্যান্সিং ও রিমোট ক্যারিয়ার গড়ার জন্য আত্মবিশ্বাসী করে তোলা।",
-    "প্রযুক্তি নির্ভর একটি আত্মনির্ভরশীল প্রজন্ম গড়ে তোলা।",
+  { name: "Mithun Sarkar", role: "Founder & CEO", company: "MISUN Academy", image: mithun },
+  { name: "Puspita Singha", role: "Lead Instructor, English For Professional Communication", company: "MISUN Academy", image: puspita },
+  { name: "Debbroto Biswas", role: "Senior Visualizer", company: "MISUN Academy", image: debrotto },
+  { name: "Nurnobi Hossen Shagor", role: "Senior Visualizer", company: "MISUN Academy", image: nur },
+  { name: "MD.Nur Nobe Islam", role: "Video Editor", company: "MISUN Academy", image: nur_2 },
+  { name: "Ajeful Mallick", role: "Design And Social Media Coordinator", company: "MISUN Academy", image: ajeful },
+  { name: "Mehedi Hasan", role: "Web Developer", company: "MISUN Academy", image: mehedi },
+  { name: "S. M. Nayemur Rahman", role: "Marketing Executive", company: "MISUN Academy", image: neyemur },
+  { name: "Nafiun Sakin", role: "Community Growth Manager", company: "MISUN Academy", image: sakin },
 ];
 
 const AboutUs = () => {
-    return (
-        <div className="min-h-screen bg-[#060f0a] font-bangla overflow-hidden">
+  return (
+    <div className="min-h-screen bg-surface font-bangla overflow-hidden">
+      {/* <AboutHeroSection /> */}
 
-            {/* ── HERO ── */}
-            <section className="relative bg-[#060f0a] overflow-hidden">
-                {/* Dot-grid */}
-                <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
-                    style={{ backgroundImage: "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+      <section className="relative bg-surface overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          style={{ backgroundImage: "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+        <div className="absolute -top-10 right-1/3 w-96 h-96 bg-primary/6 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
-                {/* Ambient glows */}
-                <div className="absolute -top-24 left-1/4 w-[500px] h-[500px] bg-primary/7 rounded-full blur-[120px] pointer-events-none" />
-                <div className="absolute top-10 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 py-20">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-6">
+              <Users className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">Our Team</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold leading-[140%]">
+              <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">Meet Our </span>
+              <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.45)]">Visionary Team</span>
+            </h2>
+            <p className="mt-4 text-white/50 max-w-2xl mx-auto">
+              ডিজিটাল শিক্ষার রূপান্তরের পেছনে MISUN Academy&apos;র প্রতিভাবান টিমের সদস্যরা
+            </p>
+          </div>
 
-                {/* Bottom separator */}
-                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-
-                <div className="relative z-10 max-w-5xl mx-auto px-4 py-28 text-center">
-                    {/* Icon ring */}
-                    <div className="flex justify-center mb-8">
-                        <div className="relative p-[1.5px] rounded-full overflow-hidden">
-                            <span className="absolute inset-[-100%] animate-[spin_5s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
-                            <div className="relative w-20 h-20 rounded-full bg-[#060f0a] flex items-center justify-center">
-                                <Sparkles className="w-8 h-8 text-primary" />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-6">
-                        <span className="relative flex h-1.5 w-1.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
-                        </span>
-                        <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">MISUN Academy</span>
-                    </div>
-
-                    <h1 className="text-4xl md:text-6xl font-bold leading-[140%] mb-6">
-                        <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">আমাদের </span>
-                        <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_24px_hsl(156_70%_42%/0.5)]">সম্পর্কে</span>
-                    </h1>
-
-                    <p className="text-lg md:text-xl text-white/55 max-w-2xl mx-auto leading-relaxed">
-                        ভবিষ্যৎ প্রজন্মের জন্য ডিজিটাল শিক্ষার নতুন দিগন্ত
-                    </p>
-
-                    {/* Decorative divider */}
-                    <div className="flex items-center gap-3 w-full max-w-xs mx-auto mt-10">
-                        <div className="flex-1 h-px bg-gradient-to-r from-transparent to-primary/40" />
-                        <div className="flex gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary/60" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary/60" />
-                        </div>
-                        <div className="flex-1 h-px bg-gradient-to-l from-transparent to-primary/40" />
-                    </div>
-                </div>
-            </section>
-
-            {/* ── TEAM ── */}
-            <section className="relative bg-[#060f0a] overflow-hidden">
-                <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
-                    style={{ backgroundImage: "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
-                <div className="absolute -top-10 right-1/3 w-96 h-96 bg-primary/6 rounded-full blur-[100px] pointer-events-none" />
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-
-                <div className="relative z-10 max-w-7xl mx-auto px-4 py-20">
-                    {/* Header */}
-                    <div className="text-center mb-16">
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-6">
-                            <Users className="w-3.5 h-3.5 text-primary" />
-                            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">Our Team</span>
-                        </div>
-                        <h2 className="text-3xl md:text-5xl font-bold leading-[140%]">
-                            <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">Meet Our </span>
-                            <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.45)]">Visionary Team</span>
-                        </h2>
-                        <p className="mt-4 text-white/50 max-w-2xl mx-auto">
-                            ডিজিটাল শিক্ষার রূপান্তরের পেছনে MISUN Academy&apos;র প্রতিভাবান টিমের সদস্যরা
-                        </p>
-                    </div>
-
-                    <div className="grid md:grid-cols-4 gap-6">
-                        {teamMembers.map((member, index) => (
-                            <div
-                                key={index}
-                                className="group relative rounded-2xl p-[1px] overflow-hidden flex flex-col
-  transition-all duration-500 ease-out
-  hover:-translate-y-2 hover:scale-[1.015]
-  hover:shadow-[0_20px_60px_hsl(156_70%_42%/0.35)]"
-                            >
-
-                                {/* Animated border container */}
-                                <div className="absolute inset-0 rounded-2xl overflow-hidden">
-                                    <span
-                                        className="absolute inset-0 animate-[spin_8s_linear_infinite]
-      bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%/0.8),transparent)]"
-                                    />
-                                    <span
-                                        className="absolute inset-0 animate-[spin_12s_linear_infinite_reverse]
-      bg-[conic-gradient(from_180deg,transparent_70%,hsl(156_85%_70%/0.4),transparent)]"
-                                    />
-                                </div>
-
-                                {/* Content card */}
-                                <div
-                                    className="relative z-10 rounded-2xl bg-[#060f0a] border border-primary/15
-    p-8 text-center transition-all duration-500 group-hover:border-primary/40 h-full"
-                                >
-
-                                    {/* Light sweep */}
-                                    <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
-                                        <span
-                                            className="absolute -left-[120%] top-0 h-full w-[60%]
-        bg-gradient-to-r from-transparent via-white/10 to-transparent
-        skew-x-12
-        group-hover:left-[120%]
-        transition-all duration-1000 ease-out"
-                                        />
-                                    </div>
-
-                                    {/* Hover glow */}
-                                    <div
-                                        className="absolute inset-0 rounded-2xl
-      bg-gradient-to-b from-primary/10 via-transparent to-transparent
-      opacity-0 group-hover:opacity-100
-      transition-opacity duration-500 pointer-events-none"
-                                    />
-
-                                    {/* Avatar */}
-                                    <div className="relative flex justify-center mb-8">
-                                        <div className="relative p-[2px] rounded-full overflow-hidden w-36 h-36
-      shadow-[0_0_30px_hsl(156_70%_42%/0.2)]">
-
-                                            <span className="absolute inset-[-100%] animate-[spin_6s_linear_infinite]
-        bg-[conic-gradient(from_0deg,transparent_50%,hsl(156_70%_42%/0.8),transparent)]" />
-
-                                            <span className="absolute inset-[-100%] animate-[spin_10s_linear_infinite_reverse]
-        bg-[conic-gradient(from_180deg,transparent_70%,hsl(156_85%_70%/0.4),transparent)]" />
-
-                                            <div className="relative rounded-full overflow-hidden w-full h-full bg-[#060f0a] p-[2px]">
-                                                <div className="relative rounded-full overflow-hidden w-full h-full">
-                                                    <Image
-                                                        src={member.image}
-                                                        alt={member.name}
-                                                        fill
-                                                        sizes="144px"
-                                                        className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-110"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                    </div>
-
-                                    {/* Text */}
-                                    <h3
-                                        className="text-xl font-bold text-white/90
-      transition-all duration-300
-      group-hover:text-white group-hover:tracking-wide mb-1"
-                                    >
-                                        {member.name}
-                                    </h3>
-
-                                    <p className="text-sm font-semibold text-primary/80 mb-1">
-                                        {member.role}
-                                    </p>
-
-                                    <p className="text-xs text-white/40">
-                                        {member.company}
-                                    </p>
-
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* ── OUR STORY ── */}
-            <section className="relative bg-[#060f0a] overflow-hidden">
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-                <div className="absolute -top-10 left-1/3 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-
-                <div className="relative z-10 max-w-4xl mx-auto px-4 py-20">
-                    <div className="text-center mb-12">
-                        {/* <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-6">
-                            <span className="relative flex h-1.5 w-1.5">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
-                            </span>
-                            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">আমাদের গল্প</span>
-                        </div> */}
-                        <h2 className="text-3xl md:text-4xl font-bold leading-[140%]">
-                            <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">আমাদের </span>
-                            <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_16px_hsl(156_70%_42%/0.4)]">গল্প</span>
-                        </h2>
-                    </div>
-
-                    {/* Story card */}
-                    <div className="relative overflow-hidden rounded-3xl bg-[#060f0a] border border-primary/15
-                        p-8 md:p-12
-                        shadow-[0_0_60px_hsl(156_70%_42%/0.10)]">
-
-                        <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/50 rounded-tl-3xl" />
-                        <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/50 rounded-tr-3xl" />
-                        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/50 rounded-bl-3xl" />
-                        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50 rounded-br-3xl" />
-                        <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
-
-                        <p className="text-base md:text-lg text-white/60 leading-relaxed mb-8">
-                            <strong className="text-primary font-semibold">MISUN Academy</strong> একটি উদ্ভাবনী ডিজিটাল লার্নিং প্ল্যাটফর্ম, যা ভবিষ্যৎ প্রজন্মকে দক্ষ ও কর্মক্ষম করে গড়ে তোলার লক্ষ্য নিয়ে প্রতিষ্ঠিত হয়েছে। আমাদের মূল লক্ষ্য—বাংলাদেশসহ বিশ্বের যে কোনো প্রান্তে থাকা শিক্ষার্থীদের আধুনিক প্রযুক্তি ও ডিজিটাল স্কিল (যেমন: গ্রাফিক ডিজাইন, ফ্রিল্যান্সিং, ডিজিটাল মার্কেটিং, ভিডিও এডিটিং ইত্যাদি) শেখার সুযোগ করে দেওয়া।
-                        </p>
-
-                        {/* Highlighted quote */}
-                        <div className="relative pl-5 border-l-2 border-primary/50">
-                            <div className="absolute -left-[5px] top-0 w-2.5 h-2.5 rounded-full bg-primary/70" />
-                            <p className="text-base md:text-lg text-white/70 leading-relaxed italic">
-                                আমরা বিশ্বাস করি, প্রত্যেকের মধ্যেই সৃজনশীলতা আছে—সঠিক দিকনির্দেশনা আর প্র্যাকটিক্যাল স্কিল শেখার মাধ্যমে সেই প্রতিভা জাগ্রত করা সম্ভব। MISUN Academy সেই লক্ষ্যেই কাজ করে যাচ্ছে।
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* ── MISSION & VISION ── */}
-            <section className="relative bg-[#060f0a] overflow-hidden">
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-                <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
-                    style={{ backgroundImage: "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
-                <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-primary/6 rounded-full blur-[100px] pointer-events-none" />
-                <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-primary/4 rounded-full blur-3xl pointer-events-none" />
-
-                <div className="relative z-10 max-w-6xl mx-auto px-4 py-20">
-                    {/* <div className="text-center mb-14">
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-6">
-                            <span className="relative flex h-1.5 w-1.5">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
-                            </span>
-                            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">Mission & Vision</span>
-                        </div>
-                        <h2 className="text-3xl md:text-4xl font-bold leading-[140%]">
-                            <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">আমাদের </span>
-                            <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_16px_hsl(156_70%_42%/0.4)]">লক্ষ্য ও দর্শন</span>
-                        </h2>
-                    </div> */}
-
-                    <div className="grid md:grid-cols-2 gap-6">
-
-                        {/* Mission */}
-                        <div className="group relative overflow-hidden rounded-3xl
-                            bg-gradient-to-br from-[#0a2016] via-[#0d2b1c] to-[#060f0a]
-                            border border-primary/25 p-10
-                            shadow-[0_0_50px_hsl(156_70%_42%/0.12)]
-                            transition-all duration-300 hover:shadow-[0_0_70px_hsl(156_70%_42%/0.22)] hover:-translate-y-1">
-
-                            <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/60 rounded-tl-3xl" />
-                            <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/60 rounded-tr-3xl" />
-                            <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/60 rounded-bl-3xl" />
-                            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/60 rounded-br-3xl" />
-                            <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
-                            <div className="absolute -top-8 -left-8 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-
-                            <div className="text-center mb-8">
-                                <div className="relative inline-flex p-[1.5px] rounded-full overflow-hidden mb-5">
-                                    <span className="absolute inset-[-100%] animate-[spin_5s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
-                                    <div className="relative w-16 h-16 rounded-full bg-[#0a2016] flex items-center justify-center">
-                                        <Target className="w-7 h-7 text-primary" />
-                                    </div>
-                                </div>
-                                <h3 className="text-2xl md:text-3xl font-bold">
-                                    <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">Our </span>
-                                    <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">Mission</span>
-                                </h3>
-                                <p className="text-primary/70 text-sm font-semibold mt-2 tracking-wide uppercase">Skill First, Career Next.</p>
-                            </div>
-
-                            <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-8" />
-
-                            <p className="text-white/55 text-sm mb-6">আমাদের মিশন হলো:</p>
-                            <ul className="space-y-4">
-                                {missionItems.map((item, i) => (
-                                    <li key={i} className="flex items-start gap-3">
-                                        <div className="flex-shrink-0 w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 flex items-center justify-center mt-0.5">
-                                            <ArrowRight className="w-3.5 h-3.5 text-primary" />
-                                        </div>
-                                        <span className="text-sm text-white/65 leading-relaxed">{item}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* Vision */}
-                        <div className="group relative overflow-hidden rounded-3xl
-                            bg-gradient-to-br from-[#0a2016] via-[#0d2b1c] to-[#060f0a]
-                            border border-primary/25 p-10
-                            shadow-[0_0_50px_hsl(156_70%_42%/0.12)]
-                            transition-all duration-300 hover:shadow-[0_0_70px_hsl(156_70%_42%/0.22)] hover:-translate-y-1">
-
-                            <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-primary/60 rounded-tl-3xl" />
-                            <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-primary/60 rounded-tr-3xl" />
-                            <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary/60 rounded-bl-3xl" />
-                            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/60 rounded-br-3xl" />
-                            <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
-                            <div className="absolute -top-8 -right-8 w-40 h-40 bg-primary/8 rounded-full blur-3xl pointer-events-none" />
-
-                            <div className="text-center mb-8">
-                                <div className="relative inline-flex p-[1.5px] rounded-full overflow-hidden mb-5">
-                                    <span className="absolute inset-[-100%] animate-[spin_5s_linear_infinite_reverse] bg-[conic-gradient(from_180deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
-                                    <div className="relative w-16 h-16 rounded-full bg-[#0a2016] flex items-center justify-center">
-                                        <Eye className="w-7 h-7 text-primary" />
-                                    </div>
-                                </div>
-                                <h3 className="text-2xl md:text-3xl font-bold">
-                                    <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">Our </span>
-                                    <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">Vision</span>
-                                </h3>
-                            </div>
-
-                            <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-8" />
-
-                            <p className="text-white/55 text-sm mb-6">আমাদের ভিশন হলো:</p>
-                            <p className="text-sm text-white/65 leading-relaxed mb-6">
-                                সবার জন্য সাশ্রয়ী, মানসম্মত এবং প্রাসঙ্গিক ডিজিটাল শিক্ষা নিশ্চিত করা, যা তাদের একটি স্বাধীন ও আত্মনির্ভরশীল জীবনের দিকে এগিয়ে নিতে পারে।
-                            </p>
-
-                            {/* Highlighted quote box */}
-                            <div className="relative overflow-hidden rounded-2xl bg-primary/8 border border-primary/20 p-6">
-                                <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-primary/40 rounded-tl-2xl" />
-                                <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-primary/40 rounded-tr-2xl" />
-                                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-                                <p className="text-sm text-white/60 leading-relaxed text-center italic">
-                                    আমরা এমন একটি কমিউনিটি গড়ে তুলতে চাই, যেখানে শেখা মানেই শুধু সার্টিফিকেট নয়, বরং বাস্তবে কাজ করার দক্ষতা অর্জন।
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* ── CTA ── */}
-            <section className="relative bg-[#060f0a] overflow-hidden">
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-                <div className="absolute -top-10 left-1/4 w-[400px] h-[400px] bg-primary/7 rounded-full blur-[100px] pointer-events-none" />
-                <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
-                    style={{ backgroundImage: "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
-
-                <div className="relative z-10 max-w-3xl mx-auto px-4 py-20 text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-6">
-                        <span className="relative flex h-1.5 w-1.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
-                        </span>
-                        <span className="text-xs font-semibold  uppercase text-primary/90">এখনই যোগ দিন</span>
-                    </div>
-
-                    <h2 className="text-3xl md:text-4xl font-bold leading-[145%] mb-5">
-                        <span className="bg-gradient-to-r from-white via-white/95 to-white/85 bg-clip-text text-transparent">আপনার ক্যারিয়ার </span>
-                        <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.5)]">এখনই শুরু করুন</span>
-                    </h2>
-
-                    <p className="text-white/50 mb-10 leading-relaxed">
-                        হাজারো শিক্ষার্থীর মতো আপনিও MISUN Academy-র সাথে যুক্ত হয়ে ডিজিটাল স্কিল অর্জন করুন এবং ফ্রিল্যান্সিং বা লোকাল মার্কেটে সফল হোন।
-                    </p>
-
-                    {/* Divider */}
-                    <div className="flex items-center gap-3 w-full max-w-xs mx-auto mb-10">
-                        <div className="flex-1 h-px bg-gradient-to-r from-transparent to-primary/40" />
-                        <div className="flex gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary/60" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary/60" />
-                        </div>
-                        <div className="flex-1 h-px bg-gradient-to-l from-transparent to-primary/40" />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link href="/checkout">
-                            <div className="inline-block relative p-[1.5px] rounded-xl overflow-hidden">
-                                <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_60%,hsl(156_70%_42%)_100%)]" />
-                                <button className="relative bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38]
-                                    hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]
-                                    transition-all duration-300 text-white font-bold text-base
-                                    px-8 py-3.5 rounded-xl
-                                    shadow-[0_0_24px_hsl(156_70%_42%/0.4)] hover:shadow-[0_0_36px_hsl(156_70%_42%/0.6)]
-                                    cursor-pointer flex items-center gap-2">
-                                    এখনই এনরোল করুন
-                                    <ArrowRight className="w-4 h-4 text-white/70 ml-2" />
-                                </button>
-                            </div>
-                        </Link>
-                        <Link href="/courses">
-                            <button className="inline-flex items-center gap-2
-                                bg-[#060f0a] border border-primary/30 text-white/70
-                                hover:border-primary/60 hover:text-white
-                                transition-all duration-300
-                                px-8 py-3.5 rounded-xl text-base font-semibold cursor-pointer">
-                                <ArrowRight className="w-4 h-4 text-primary/70" />
-                                কোর্স দেখুন
-                            </button>
-                        </Link>
-                    </div>
-                </div>
-            </section>
+          <div className="grid md:grid-cols-4 gap-6">
+            {teamMembers.map((member, index) => (
+              <TeamMemberCard key={index} member={member} />
+            ))}
+          </div>
         </div>
-    );
+      </section>
+
+      <AboutStorySection />
+      <AboutMissionVisionSection />
+      <AboutCtaSection />
+    </div>
+  );
 };
 
 export default AboutUs;

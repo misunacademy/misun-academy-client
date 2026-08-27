@@ -17,7 +17,7 @@ const RecordingPreviewDialog = ({
 }: RecordingPreviewDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-full bg-[#060f0a] border border-primary/25 text-white">
+      <DialogContent className="max-w-4xl w-full bg-surface border border-primary/25 text-white">
         <DialogHeader>
           <DialogTitle>{recording?.title}</DialogTitle>
         </DialogHeader>

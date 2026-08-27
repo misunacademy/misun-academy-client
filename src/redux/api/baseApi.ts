@@ -1,9 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
     BaseQueryApi,
-    BaseQueryFn,
-    DefinitionType,
     FetchArgs,
     createApi,
     fetchBaseQuery,
@@ -11,32 +7,37 @@ import {
 import { toast } from "sonner";
 import { authServerApi } from '@/lib/auth-server-api';
 
+function getCSRFToken(): string | null {
+    if (typeof document === 'undefined') return null;
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
 const baseQuery = fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_BASE_API_URL,
     credentials: "include",
     prepareHeaders: (headers) => {
-
+        const csrfToken = getCSRFToken();
+        if (csrfToken) {
+            headers.set("X-CSRF-Token", csrfToken);
+        }
         return headers;
     },
 });
 
-const baseQueryWithSessionHandling: BaseQueryFn<
-    FetchArgs,
-    BaseQueryApi,
-    DefinitionType
-> = async (args, api, extraOptions): Promise<any> => {
+const baseQueryWithSessionHandling = async (args: FetchArgs, api: BaseQueryApi, extraOptions: object) => {
     const result = await baseQuery(args, api, extraOptions);
 
-    if (result?.error?.status === 404) {
-        //@ts-ignore
-        toast.error(result.error.data.message || "Something went wrong");
+    const error = result.error as { status: number; data: { message?: string } } | undefined;
+    const errorData = error?.data;
+
+    if (error?.status === 404) {
+        toast.error(errorData?.message || "Something went wrong");
     }
-    if (result?.error?.status === 403) {
-        //@ts-ignore
-        toast.error(result.error.data.message);
+    if (error?.status === 403) {
+        toast.error(errorData?.message || "Forbidden");
     }
-    if (result?.error?.status === 401) {
-        console.warn('[baseApi] 401 Unauthorized - session expired or invalid');
+    if (error?.status === 401) {
 
         // Better Auth handles sessions via HTTP-only cookies
         // Sign out and redirect to login
@@ -59,26 +60,33 @@ const baseQueryWithSessionHandling: BaseQueryFn<
 export const baseApi = createApi({
     reducerPath: "baseApi",
     baseQuery: baseQueryWithSessionHandling,
+    keepUnusedDataFor: 300,
     tagTypes: [
-        'Users', 
-        'Students', 
-        'Batches', 
-        'Pricing-Plan', 
-        'Courses', 
-        'CourseEnrollments', 
-        'Profile', 
-        'Payments', 
+        'Users',
+        'Students',
+        'Batches',
+        'Courses',
+        'CourseEnrollments',
+        'Profile',
+        'Payments',
         'Recordings',
         'Certificates',
         'Instructors',
-        'Progress',
         'Dashboard',
         'Uploads',
         'Modules',
         'Lessons',
         'Settings',
         'Employees',
-        'SpecialAccessEnrollments'
+        'SpecialAccessEnrollments',
+        'Notifications',
+        'Quizzes',
+        'Questions',
+        'Attempts',
+        'Leaderboard',
+        'Zames',
+        'AuditLogs',
+        'Bootcamp',
     ],
     endpoints: () => ({}),
 });

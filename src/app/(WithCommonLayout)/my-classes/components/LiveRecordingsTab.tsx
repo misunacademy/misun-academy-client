@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { AlertCircle, BookOpen, Clock, Loader2, PlayCircle, Radio, Video } from "lucide-react";
+import { Skeleton } from 'boneyard-js/react'
+import { AlertCircle, BookOpen, Clock, PlayCircle, Radio, Video } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
@@ -80,63 +81,46 @@ export function LiveRecordingsTab() {
     }
   };
 
-  if (isLoading || isDashboardLoading) {
-    return (
-      <div className="relative rounded-2xl border border-primary/20 bg-[#060f0a] overflow-hidden py-14 px-6 flex flex-col items-center justify-center gap-3 text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-white/45">Loading live class recordings...</p>
-      </div>
-    );
-  }
+  return (
+    <Skeleton name="LiveRecordingsTab" loading={isLoading || isDashboardLoading}>
+      {isError ? (
+        <Alert variant="destructive" className="border-red-500/30 bg-red-500/10 text-red-100">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Failed to load class recordings. Please try again in a moment.
+          </AlertDescription>
+        </Alert>
+      ) : filteredRecordings.length === 0 ? (
+        <div className="relative rounded-2xl border border-primary/20 bg-surface overflow-hidden flex flex-col items-center justify-center py-20 gap-5 text-center px-6">
+          <div
+            className="absolute inset-0 opacity-[0.10] pointer-events-none"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)",
+              backgroundSize: "28px 28px",
+            }}
+          />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 
-  if (isError) {
-    return (
-      <Alert variant="destructive" className="border-red-500/30 bg-red-500/10 text-red-100">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Failed to load class recordings. Please try again in a moment.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  if (filteredRecordings.length === 0) {
-    return (
-      <div className="relative rounded-2xl border border-primary/20 bg-[#060f0a] overflow-hidden flex flex-col items-center justify-center py-20 gap-5 text-center px-6">
-        {/* Dot grid */}
-        <div
-          className="absolute inset-0 opacity-[0.10] pointer-events-none"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-          }}
-        />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Pulsing icon */}
-        <div className="relative">
-          <div className="absolute inset-0 rounded-2xl bg-primary/15 animate-ping opacity-20" />
-          <div className="relative p-5 rounded-2xl bg-primary/10 border border-primary/25">
-            <Video className="h-10 w-10 text-primary" />
+          <div className="relative">
+            <div className="absolute inset-0 rounded-2xl bg-primary/15 animate-ping opacity-20" />
+            <div className="relative p-5 rounded-2xl bg-primary/10 border border-primary/25">
+              <Video className="h-10 w-10 text-primary" />
+            </div>
+          </div>
+          <div className="relative">
+            <h3 className="text-xl font-bold text-white mb-2">No Recordings Yet</h3>
+            <p className="text-white/50 text-sm max-w-sm leading-relaxed">
+              Live class recordings will appear here once they are uploaded after each session.
+            </p>
+          </div>
+          <div className="relative flex items-center gap-2 text-xs text-white/30 bg-white/5 border border-primary/10 rounded-xl px-4 py-2.5">
+            <Clock className="w-3.5 h-3.5 shrink-0 text-primary/60" />
+            <span>Recordings are usually available within 24 hours of class</span>
           </div>
         </div>
-        <div className="relative">
-          <h3 className="text-xl font-bold text-white mb-2">No Recordings Yet</h3>
-          <p className="text-white/50 text-sm max-w-sm leading-relaxed">
-            Live class recordings will appear here once they are uploaded after each session.
-          </p>
-        </div>
-        <div className="relative flex items-center gap-2 text-xs text-white/30 bg-white/5 border border-primary/10 rounded-xl px-4 py-2.5">
-          <Clock className="w-3.5 h-3.5 shrink-0 text-primary/60" />
-          <span>Recordings are usually available within 24 hours of class</span>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <>
+      ) : (
+      <>
       <div className="space-y-5">
         <div className="overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex items-center gap-2 min-w-max">
@@ -149,7 +133,7 @@ export function LiveRecordingsTab() {
                   className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
                     active
                       ? "border-primary/50 bg-primary/15 text-primary"
-                      : "border-primary/20 bg-[#060f0a] text-white/60 hover:border-primary/35 hover:text-white"
+                      : "border-primary/20 bg-surface text-white/60 hover:border-primary/35 hover:text-white"
                   }`}
                 >
                   <BookOpen className="w-4 h-4" />
@@ -168,7 +152,7 @@ export function LiveRecordingsTab() {
             {activeCourseGroup.recordings.map((rec) => (
               <div
                 key={rec._id}
-                className="group relative rounded-2xl border border-primary/20 bg-[#060f0a] p-5 flex flex-col sm:flex-row sm:items-center gap-4
+                className="group relative rounded-2xl border border-primary/20 bg-surface p-5 flex flex-col sm:flex-row sm:items-center gap-4
                 hover:border-primary/30 transition-all duration-300"
               >
                 <div className="w-14 h-14 shrink-0 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -210,7 +194,7 @@ export function LiveRecordingsTab() {
           if (!open) setPlayingRecording(null);
         }}
       >
-        <DialogContent className="max-w-4xl w-full bg-[#060f0a] border border-primary/25 text-white">
+        <DialogContent className="max-w-4xl w-full bg-surface border border-primary/25 text-white">
           <DialogHeader>
             <DialogTitle>{playingRecording?.title}</DialogTitle>
           </DialogHeader>
@@ -225,5 +209,7 @@ export function LiveRecordingsTab() {
         </DialogContent>
       </Dialog>
     </>
+      )}
+    </Skeleton>
   );
 }

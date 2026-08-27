@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationControlsProps {
@@ -6,7 +7,7 @@ interface PaginationControlsProps {
     onPageChange: (page: number) => void;
 }
 
-export const PaginationControls = ({ currentPage, totalPages, onPageChange }: PaginationControlsProps) => {
+const PaginationControls = memo(({ currentPage, totalPages, onPageChange }: PaginationControlsProps) => {
     const getVisiblePages = () => {
         const pages = [];
         const maxVisible = 5;
@@ -25,13 +26,12 @@ export const PaginationControls = ({ currentPage, totalPages, onPageChange }: Pa
     const visiblePages = getVisiblePages();
 
     const btnBase = "inline-flex items-center justify-center h-9 min-w-[36px] px-3 rounded-xl text-sm font-medium transition-all duration-200 border";
-    const btnInactive = `${btnBase} bg-[#060f0a] border-primary/20 text-white/55 hover:border-primary/45 hover:text-white/85`;
-    const btnActive = `${btnBase} bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] border-transparent text-white shadow-[0_0_14px_hsl(156_70%_42%/0.4)]`;
-    const btnDisabled = `${btnBase} bg-[#060f0a] border-primary/10 text-white/20 cursor-not-allowed`;
+    const btnInactive = `${btnBase} bg-surface border-primary/20 text-white/55 hover:border-primary/45 hover:text-white/85`;
+    const btnActive = `${btnBase} bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark border-transparent text-white shadow-[0_0_14px_hsl(156_70%_42%/0.4)]`;
+    const btnDisabled = `${btnBase} bg-surface border-primary/10 text-white/20 cursor-not-allowed`;
 
     return (
         <div className="flex items-center justify-center gap-1.5 mt-12">
-            {/* Prev */}
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
@@ -71,7 +71,6 @@ export const PaginationControls = ({ currentPage, totalPages, onPageChange }: Pa
                 )}
             </div>
 
-            {/* Next */}
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages}
@@ -82,4 +81,6 @@ export const PaginationControls = ({ currentPage, totalPages, onPageChange }: Pa
             </button>
         </div>
     );
-};
+});
+PaginationControls.displayName = "PaginationControls";
+export { PaginationControls };

@@ -52,7 +52,8 @@ export default function AdminCourses() {
       content={
         <>
           <CourseStats />
-          {/* <CourseFiltersCard /> */}
+
+
           <CoursesTable courses={courses} onEditCourse={handleEditCourse} onDeleteCourse={(id) => handleDeleteCourse(id)} />
         </>
       }

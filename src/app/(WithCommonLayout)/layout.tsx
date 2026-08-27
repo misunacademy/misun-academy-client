@@ -1,5 +1,10 @@
 import CommonLayoutShell from '@/components/layout/CommonLayoutShell';
+import LenisProvider from '@/providers/LenisProvider';
 
 export default function layout({ children }: { children: React.ReactNode }) {
-  return <CommonLayoutShell>{children}</CommonLayoutShell>;
+  return (
+    <LenisProvider>
+      <CommonLayoutShell>{children}</CommonLayoutShell>
+    </LenisProvider>
+  );
 }

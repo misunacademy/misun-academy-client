@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ShoppingBagIcon } from "lucide-react";
 import { format, isValid } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import type { ProfileData, EnrollmentRef } from "@/redux/api/profileApi";
 
 interface EnrollmentsTabProps {
-    profile: any;
+    profile: ProfileData | undefined;
 }
 
 export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
@@ -46,7 +46,7 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
     };
 
     return (
-        <div className="flex-1 bg-[#060f0a] rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
+        <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
             {/* Ambient glow inside right panel */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -70,7 +70,7 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
 
             <div className="relative z-10 grid gap-6">
                 {enrollments.length > 0 ? (
-                    enrollments.map((enrollment: any, index: number) => (
+                    enrollments.map((enrollment: EnrollmentRef, index: number) => (
                         <div key={enrollment?.enrollmentId || enrollment?._id || index} className="flex flex-col md:flex-row gap-6 p-6 rounded-xl border border-primary/10 bg-primary/5 hover:bg-primary/10 transition-colors">
                             <div className="flex-1 space-y-4">
                                 <div className="flex flex-wrap justify-between items-start gap-4">
@@ -110,18 +110,14 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
                                     </div>
                                     <div>
                                         <p className="text-white/40 text-xs mb-1">Batch</p>
-                                        <p className="text-white/80 text-sm font-mono truncate" title={typeof enrollment?.batchId === 'object' ? enrollment?.batchId?.title : enrollment?.batchId?._id}>
-                                            {typeof enrollment?.batchId === 'object' && (enrollment?.batchId?.title) ? (
-                                                <span className="font-sans">{enrollment?.batchId?.title}</span>
-                                            ) : (
-                                                enrollment?.batchId?._id || 'N/A'
-                                            )}
+                                        <p className="text-white/80 text-sm font-mono truncate" title={enrollment?.batchId?.title ?? enrollment?.batchId?._id ?? 'N/A'}>
+                                            {enrollment?.batchId?.title ?? enrollment?.batchId?._id ?? 'N/A'}
                                         </p>
                                     </div>
                                     <div>
                                         <p className="text-white/40 text-xs mb-1">Course Fee</p>
-                                        <p className="text-white/80 text-sm font-mono truncate" title={typeof enrollment?.batchId === 'object' ? enrollment?.batchId?.title : enrollment?.batchId}>
-                                            {typeof enrollment?.batchId === 'object' && (enrollment?.batchId?.price || enrollment?.batchId?.price === 0) ? (
+                                        <p className="text-white/80 text-sm font-mono truncate" title={enrollment?.batchId?.title ?? 'N/A'}>
+                                            {enrollment?.batchId?.price !== undefined ? (
                                                 <span className="font-sans text-primary text-base"> <span className="text-white/50 text-lg">৳</span> {enrollment?.batchId?.price}</span>
                                             ) : (
                                                 'N/A'

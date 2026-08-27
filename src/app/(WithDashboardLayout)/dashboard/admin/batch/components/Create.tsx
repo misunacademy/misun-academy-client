@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { FormEvent, useState } from 'react';
+import { useForm, type Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
     Card,
     CardContent,
@@ -11,99 +10,92 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Form } from "@/components/ui/form";
+import { InputField } from "@/components/forms/input-field";
+import { TextareaField } from "@/components/forms/textarea-field";
+import { SelectField } from "@/components/forms/select-field";
+import { SubmitButton } from "@/components/forms/submit-button";
 import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCreateBatchMutation } from '@/redux/api/batchApi';
 
-const BATCH_STATUSES = [
-    { value: 'draft', label: 'Draft', className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100' },
-    { value: 'upcoming', label: 'Upcoming', className: 'bg-blue-100 text-blue-800 hover:bg-blue-100' },
-    { value: 'running', label: 'Running', className: 'bg-green-100 text-green-800 hover:bg-green-100' },
-    { value: 'completed', label: 'Completed', className: 'bg-gray-100 text-gray-800 hover:bg-gray-100' },
+const batchSchema = z.object({
+    title: z.string().min(1, "Title is required"),
+    price: z.string().min(1, "Price is required"),
+    manualPaymentPrice: z.string().optional(),
+    status: z.enum(["draft", "upcoming", "running", "completed"]),
+    selectedCourse: z.string().min(1, "Please select a course"),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    enrollmentStartDate: z.string().optional(),
+    enrollmentEndDate: z.string().optional(),
+    description: z.string().optional(),
+});
+
+type BatchFormValues = z.infer<typeof batchSchema>;
+
+const BATCH_STATUS_OPTIONS = [
+    { value: "draft", label: "Draft" },
+    { value: "upcoming", label: "Upcoming" },
+    { value: "running", label: "Running" },
+    { value: "completed", label: "Completed" },
 ];
 
-const INITIAL_FORM_STATE = {
-    title: '',
-    price: '',
-    manualPaymentPrice: '',
-    status: 'draft',
-    selectedCourse: '',
-    startDate: '',
-    endDate: '',
-    enrollmentStartDate: '',
-    enrollmentEndDate: '',
-    description: '',
-};
-
 export default function BatchCrate() {
-    const [formData, setFormData] = useState(INITIAL_FORM_STATE);
     const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({ status: "published" });
     const [createBatch, { isLoading: isCreating }] = useCreateBatchMutation();
     const router = useRouter();
     const courses = coursesData?.data || [];
+    const courseOptions = courses.map((c: { _id: string; title: string }) => ({ value: c._id, label: c.title }));
 
-    const handleInputChange = (field: any, value: any) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
+    const form = useForm<BatchFormValues>({
+        resolver: zodResolver(batchSchema) as Resolver<BatchFormValues>,
+        defaultValues: {
+            title: "",
+            price: "",
+            manualPaymentPrice: "",
+            status: "draft",
+            selectedCourse: "",
+            startDate: "",
+            endDate: "",
+            enrollmentStartDate: "",
+            enrollmentEndDate: "",
+            description: "",
+        },
+    });
 
-    const resetForm = () => {
-        setFormData(INITIAL_FORM_STATE);
-    };
-
-
-    const handleSubmit = async (e: FormEvent) => {
-        e.preventDefault();
-
-        if (!formData.selectedCourse) {
-            toast.error('Please select a course');
-            return;
-        }
-
+    const onSubmit = async (data: BatchFormValues) => {
         const batchData = {
-            title: formData.title,
-            price: Number(formData.price),
-            manualPaymentPrice: formData.manualPaymentPrice ? Number(formData.manualPaymentPrice) : undefined,
-            status: formData.status as 'draft' | 'upcoming' | 'running' | 'completed',
-            courseId: formData.selectedCourse,
-            startDate: formData.startDate ? new Date(formData.startDate) : undefined,
-            endDate: formData.endDate ? new Date(formData.endDate) : undefined,
-            enrollmentStartDate: formData.enrollmentStartDate ? new Date(formData.enrollmentStartDate) : undefined,
-            enrollmentEndDate: formData.enrollmentEndDate ? new Date(formData.enrollmentEndDate) : undefined,
-            description: formData.description || undefined,
+            title: data.title,
+            price: Number(data.price),
+            manualPaymentPrice: data.manualPaymentPrice ? Number(data.manualPaymentPrice) : undefined,
+            status: data.status as "draft" | "upcoming" | "running" | "completed",
+            courseId: data.selectedCourse,
+            startDate: data.startDate ? new Date(data.startDate) : undefined,
+            endDate: data.endDate ? new Date(data.endDate) : undefined,
+            enrollmentStartDate: data.enrollmentStartDate ? new Date(data.enrollmentStartDate) : undefined,
+            enrollmentEndDate: data.enrollmentEndDate ? new Date(data.enrollmentEndDate) : undefined,
+            description: data.description || undefined,
         };
 
         try {
-
             await createBatch(batchData).unwrap();
             toast.success("Batch created successfully");
-
-            resetForm();
             router.push('/dashboard/admin/batch');
-        } catch (err: any) {
-            toast.error(err?.data?.message || ("Failed to create batch"));
+        } catch (err: unknown) {
+            const error = err as { data?: { message?: string } };
+            toast.error(error?.data?.message || "Failed to create batch");
         }
     };
 
-
-
     return (
         <div className="space-y-6 p-6">
-
             <Card>
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <div>
-                            <CardTitle> Create New Batch</CardTitle>
+                            <CardTitle>Create New Batch</CardTitle>
                             <CardDescription>
                                 Add a new batch with all required details
                             </CardDescription>
@@ -111,163 +103,48 @@ export default function BatchCrate() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="course">Course *</Label>
-                            <Select
-                                value={formData.selectedCourse}
-                                onValueChange={(val) => handleInputChange('selectedCourse', val)}
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <SelectField
+                                name="selectedCourse"
+                                label="Course"
+                                options={courseOptions}
+                                placeholder={coursesLoading ? "Loading courses..." : "Select a course"}
+                                disabled={coursesLoading}
                                 required
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a course" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {coursesLoading ? (
-                                        <div className="flex items-center justify-center py-2">
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                        </div>
-                                    ) : courses.length > 0 ? (
-                                        courses.map((course: any) => (
-                                            <SelectItem key={course._id} value={course._id}>
-                                                {course.title}
-                                            </SelectItem>
-                                        ))
-                                    ) : (
-                                        <SelectItem value="no-courses" disabled>
-                                            No courses available
-                                        </SelectItem>
-                                    )}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="title">Batch Title *</Label>
-                                <Input
-                                    id="title"
-                                    value={formData.title}
-                                    onChange={(e) => handleInputChange('title', e.target.value)}
-                                    placeholder="e.g. Batch 6"
-                                    required
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="price">Price (BDT) *</Label>
-                                <Input
-                                    id="price"
-                                    type="number"
-                                    value={formData.price}
-                                    onChange={(e) => handleInputChange('price', e.target.value)}
-                                    placeholder="e.g. 4000"
-                                    required
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="manualPaymentPrice">Manual Payment Price (INR)</Label>
-                                <Input
-                                    id="manualPaymentPrice"
-                                    type="number"
-                                    min="0"
-                                    value={formData.manualPaymentPrice}
-                                    onChange={(e) => handleInputChange('manualPaymentPrice', e.target.value)}
-                                    placeholder="e.g. 3000"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="status">Status</Label>
-                                <Select
-                                    value={formData.status}
-                                    onValueChange={(val) => handleInputChange('status', val)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {BATCH_STATUSES.map(status => (
-                                            <SelectItem key={status.value} value={status.value}>
-                                                {status.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea
-                                id="description"
-                                value={formData.description}
-                                onChange={(e) => handleInputChange('description', e.target.value)}
-                                placeholder="Brief description of this batch"
-                                rows={3}
                             />
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="startDate">Batch Start Date *</Label>
-                                <Input
-                                    id="startDate"
-                                    type="date"
-                                    value={formData.startDate}
-                                    onChange={(e) => handleInputChange('startDate', e.target.value)}
-                                    required
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <InputField name="title" label="Batch Title" placeholder="e.g. Batch 6" required />
+                                <InputField name="price" label="Price (BDT)" type="number" placeholder="e.g. 4000" required />
+                                <InputField name="manualPaymentPrice" label="Manual Payment Price (INR)" type="number" placeholder="e.g. 3000" />
+                                <SelectField name="status" label="Status" options={BATCH_STATUS_OPTIONS} />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="endDate">Batch End Date *</Label>
-                                <Input
-                                    id="endDate"
-                                    type="date"
-                                    value={formData.endDate}
-                                    onChange={(e) => handleInputChange('endDate', e.target.value)}
-                                    required
-                                />
-                            </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="enrollmentStartDate">Enrollment Start *</Label>
-                                <Input
-                                    id="enrollmentStartDate"
-                                    type="date"
-                                    value={formData.enrollmentStartDate}
-                                    onChange={(e) => handleInputChange('enrollmentStartDate', e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="enrollmentEndDate">Enrollment End *</Label>
-                                <Input
-                                    id="enrollmentEndDate"
-                                    type="date"
-                                    value={formData.enrollmentEndDate}
-                                    onChange={(e) => handleInputChange('enrollmentEndDate', e.target.value)}
-                                    required
-                                />
-                            </div>
-                        </div>
+                            <TextareaField name="description" label="Description" placeholder="Brief description of this batch" rows={3} />
 
-                        <div className="flex justify-end gap-4">
-                            <Button variant="outline" onClick={() => router.back()} className="gap-2">
-                                Cancel
-                            </Button>
-                            <Button type="submit" disabled={isCreating}>
-                                {(isCreating) && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                                Create Batch
-                            </Button>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <InputField name="startDate" label="Batch Start Date" type="date" />
+                                <InputField name="endDate" label="Batch End Date" type="date" />
+                            </div>
 
-                        </div>
-                    </form>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <InputField name="enrollmentStartDate" label="Enrollment Start" type="date" />
+                                <InputField name="enrollmentEndDate" label="Enrollment End" type="date" />
+                            </div>
+
+                            <div className="flex justify-end gap-4">
+                                <Button variant="outline" onClick={() => router.back()} className="gap-2">
+                                    Cancel
+                                </Button>
+                                <SubmitButton disabled={isCreating} loadingText="Creating...">
+                                    Create Batch
+                                </SubmitButton>
+                            </div>
+                        </form>
+                    </Form>
                 </CardContent>
             </Card>
-
-
-
         </div>
     );
 }

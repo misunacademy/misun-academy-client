@@ -1,11 +1,15 @@
 import EnrollmentFixed from '@/components/module/home/EnrollmentFixed';
 import HeroSection from '@/components/module/home/HeroSection';
 import HomeDeferredSections from '@/components/module/home/HomeDeferredSections';
+import HomepageTracker from '@/components/analytics/HomepageTracker';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
+import CourseJsonLd from '@/components/seo/CourseJsonLd';
 import { generateMetadata } from '@/lib/generateMetadata';
+import PageBackground from '@/components/shared/PageBackground';
+import { BackToTop, FloatingChat } from '@/components/shared';
 
 export const metadata = generateMetadata({
-  title: 'কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স | MISUN Academy',
+  title: 'AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স | MISUN Academy',
   description:
     'ডিজিটাল যুগে সফল ক্যারিয়ারের জন্য সেরা গ্রাফিক্স ডিজাইন কোর্স। ঘরে বসেই ডিজাইন শিখুন এবং ফ্রিল্যান্সিং করে ক্যারিয়ার গড়ুন MISUN Academy-এর সাথে। | Learn graphic design from home and build a successful freelancing career with MISUN Academy.',
   keywords: [
@@ -13,7 +17,7 @@ export const metadata = generateMetadata({
     'Freelancing Graphic Course',
     'Graphic Design Online Course BD',
     'best graphic design course Bangladesh',
-    'কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স',
+    'AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স',
     'ফ্রিল্যান্সিং শেখা কোর্স',
     'misun academy graphic design',
     'graphic design course misun academy',
@@ -37,24 +41,30 @@ export const metadata = generateMetadata({
 
 export default function page() {
   return (
-    <div className="relative overflow-hidden bg-[#040a07]">
-      <div
-        className="absolute inset-0 opacity-[0.10] pointer-events-none"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)',
-          backgroundSize: '34px 34px',
-        }}
+    <PageBackground gradient="bg-surface-darker" dotOpacity="opacity-[0.10]" dotSize="34px">
+      <CourseJsonLd
+        name="AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স"
+        description="Learn graphic design from home and build a successful freelancing career with MISUN Academy. Complete Adobe Photoshop & Illustrator course in Bangla."
+        slug="graphic-design"
+        image="/images/og-image.png"
+        courseCode="GD-101"
       />
-      <div className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-[620px] h-[280px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-[8%] w-[300px] h-[200px] bg-primary/6 rounded-full blur-[90px] pointer-events-none" />
-
       <BreadcrumbJsonLd />
-      <div className="relative z-10">
-        <HeroSection />
-        <HomeDeferredSections />
-        <EnrollmentFixed />
-      </div>
-    </div>
+      <HomepageTracker />
+      <HeroSection />
+      <HomeDeferredSections />
+      <EnrollmentFixed />
+
+
+      {/* Global Tech Support Chat widget */}
+      {
+        process.env.NEXT_PUBLIC_NODE_ENV === 'development' && 
+          <FloatingChat />
+      }
+
+      {/* Global Back to Top Button */}
+      <BackToTop variant="glass-glow" />
+
+    </PageBackground>
   );
 }

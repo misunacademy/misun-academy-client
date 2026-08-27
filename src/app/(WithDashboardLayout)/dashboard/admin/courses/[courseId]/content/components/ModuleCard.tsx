@@ -1,12 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client"
+
 import { useDeleteModuleLessonMutation, useGetModuleLessonsQuery } from "@/redux/api/lessonApi";
+import { useGetModuleQuizzesQuery } from "@/redux/api/quizApi";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Video, FileText, ChevronDown, ChevronRight, Edit, Trash2, GripVertical, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Video, FileText, ChevronDown, ChevronRight, Edit, Trash2, GripVertical, ArrowUp, ArrowDown, ClipboardList } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import Link from "next/link";
 
 
 interface Module {
@@ -35,6 +38,7 @@ interface Lesson {
   videoDuration?: number;
   content?: string;
   isMandatory: boolean;
+  isPublished?: boolean;
   resources?: {
     title: string;
     type: 'link' | 'text';
@@ -74,8 +78,10 @@ const ModuleCard = ({
   onEditLesson: (lesson: Lesson) => void;
 }) => {
   const { data: lessonsData } = useGetModuleLessonsQuery(module._id, { skip: !expanded });
+  const { data: quizzesData } = useGetModuleQuizzesQuery(module._id, { skip: !expanded });
   const [deleteLesson] = useDeleteModuleLessonMutation();
   const lessons = (lessonsData?.data || []) as Lesson[];
+  const quizzes = ((quizzesData as { data?: Array<{ _id: string; title: string; status: string; totalQuestions: number; totalMarks: number; timeLimit?: number; orderIndex: number }> })?.data || []) as Array<{ _id: string; title: string; status: string; totalQuestions: number; totalMarks: number; timeLimit?: number; orderIndex: number }>;
   const [deleteLessonDialogOpen, setDeleteLessonDialogOpen] = useState(false);
   const [lessonToDelete, setLessonToDelete] = useState<string | null>(null);
 
@@ -87,8 +93,9 @@ const ModuleCard = ({
       toast.success('Lesson deleted successfully');
       setDeleteLessonDialogOpen(false);
       setLessonToDelete(null);
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Failed to delete lesson');
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || 'Failed to delete lesson');
       setDeleteLessonDialogOpen(false);
       setLessonToDelete(null);
     }
@@ -134,53 +141,105 @@ const ModuleCard = ({
 
       {expanded && (
         <CardContent>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium">Lessons</h4>
-              <Button variant="outline" size="sm" onClick={onAddLesson}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Lesson
-              </Button>
-            </div>
-            
-            {lessons.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No lessons yet</p>
-            ) : (
-              <div className="space-y-2">
-                {lessons.map((lesson, lessonIndex) => (
-                  <div
-                    key={lesson._id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <GripVertical className="h-4 w-4 text-muted-foreground" />
-                      {lesson.type === 'video' && <Video className="h-4 w-4" />}
-                      {lesson.type === 'reading' && <FileText className="h-4 w-4" />}
-                      <div>
-                        <p className="font-medium text-sm">
-                          Lesson {lessonIndex + 1}: {lesson.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {lesson.type} {lesson.videoDuration ? `• ${Math.round(lesson.videoDuration / 60)} min` : ''}
-                        </p>
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium">Lessons</h4>
+                <Button variant="outline" size="sm" onClick={onAddLesson}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Lesson
+                </Button>
+              </div>
+              
+              {lessons.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No lessons yet</p>
+              ) : (
+                <div className="space-y-2">
+                  {lessons.map((lesson, lessonIndex) => (
+                    <div
+                      key={lesson._id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <GripVertical className="h-4 w-4 text-muted-foreground" />
+                        {lesson.type === 'video' && <Video className="h-4 w-4" />}
+                        {lesson.type === 'reading' && <FileText className="h-4 w-4" />}
+                        <div>
+                          <p className="font-medium text-sm">
+                            Lesson {lessonIndex + 1}: {lesson.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {lesson.type} {lesson.videoDuration ? `• ${Math.round(lesson.videoDuration / 60)} min` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {lesson.isMandatory && <Badge variant="outline" className="text-xs">Required</Badge>}
+                        <Badge variant={lesson.isPublished ? 'default' : 'secondary'} className="text-xs">
+                          {lesson.isPublished ? 'Published' : 'Draft'}
+                        </Badge>
+                        <Button variant="ghost" size="sm" onClick={() => onEditLesson(lesson)}>
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => {
+                          setLessonToDelete(lesson._id);
+                          setDeleteLessonDialogOpen(true);
+                        }}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {lesson.isMandatory && <Badge variant="outline" className="text-xs">Required</Badge>}
-                      <Button variant="ghost" size="sm" onClick={() => onEditLesson(lesson)}>
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => {
-                        setLessonToDelete(lesson._id);
-                        setDeleteLessonDialogOpen(true);
-                      }}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium">Quizzes</h4>
+                <Link href={`/dashboard/admin/quizzes/create?moduleId=${module._id}`}>
+                  <Button variant="outline" size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Quiz
+                  </Button>
+                </Link>
               </div>
-            )}
+
+              {quizzes.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No quizzes yet</p>
+              ) : (
+                <div className="space-y-2">
+                  {quizzes.map((quiz, quizIndex) => (
+                    <div
+                      key={quiz._id}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <ClipboardList className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium text-sm">
+                            Quiz {quizIndex + 1}: {quiz.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {quiz.totalQuestions} questions • {quiz.totalMarks} marks{quiz.timeLimit ? ` • ${quiz.timeLimit} min` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={quiz.status === 'published' ? 'default' : 'secondary'} className="text-xs">
+                          {quiz.status}
+                        </Badge>
+                        <Link href={`/dashboard/admin/quizzes/${quiz._id}`}>
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
       )}

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "./baseApi";
 
 export interface SettingsResponse {
@@ -13,6 +12,7 @@ export interface SettingsResponse {
   maWhatsappGroupLink?: string;
   epFacebookGroupLink?: string;
   epWhatsappGroupLink?: string;
+  homeWhyVideoUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -29,7 +29,7 @@ const settingsApi = baseApi.injectEndpoints({
     }),
 
     // Update settings
-    updateSettings: build.mutation<any, Partial<SettingsResponse>>({
+    updateSettings: build.mutation<unknown, Partial<SettingsResponse>>({
       query: (data) => ({
         url: "/settings",
         method: "PATCH",

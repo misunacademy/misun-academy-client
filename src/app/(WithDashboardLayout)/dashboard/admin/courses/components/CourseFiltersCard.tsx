@@ -9,22 +9,10 @@ const CourseFiltersCard = () => {
                 <CardTitle>Filters</CardTitle>
             </CardHeader>
             <CardContent className="flex gap-4 justify-between">
-                {/* <div className="flex items-center justify-between gap-4 mb-6"> */}
                 <div className="relative flex-1 max-w-sm">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input placeholder="Search courses..." className="pl-9" />
                 </div>
-                {/* <Select>  
-                    <SelectTrigger className="w-40">
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="programming">Programming</SelectItem>
-                      <SelectItem value="design">Design</SelectItem>
-                      <SelectItem value="business">Business</SelectItem>
-                    </SelectContent>
-              </Select> */}
                 <Select>
                     <SelectTrigger className="w-40">
                         <SelectValue placeholder="Status" />
@@ -36,7 +24,6 @@ const CourseFiltersCard = () => {
                         <SelectItem value="archived">Archived</SelectItem>
                     </SelectContent>
                 </Select>
-                {/* </div> */}
             </CardContent>
         </Card>
     )

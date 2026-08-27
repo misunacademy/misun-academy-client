@@ -3,21 +3,23 @@ import { HeroBanner } from '@/assets/images';
 import { HeroBg } from '@/assets/svg';
 import { Briefcase, Video, UserCheck, Clock, Home, PenTool, Palette, Layers, Crop, MousePointer2 } from 'lucide-react';
 import Link from 'next/link';
+import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 
 export default function HeroSection() {
   return (
-    <div
-      className="relative min-h-screen border-b border-white/5 overflow-hidden"
+    <section
+      data-dark-section
+      className="relative w-full min-h-screen border-b border-white/5 overflow-hidden"
       style={{
         backgroundImage: `url(${HeroBg.src})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        backgroundColor: '#0a0f18', // Fallback deep navy
+        backgroundColor: '#060f0a', // Fallback surface
       }}
     >
       {/* ── Background Overlays & Animated Rings ── */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0a0f18]/80 via-[#0a0f18]/40 to-[#0a0f18] z-0" />
+      <div className="absolute inset-0 bg-gradient-to-b from-surface/80 via-surface/40 to-surface z-0" />
       <div className="absolute inset-x-0 top-0 h-[500px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent z-0" />
 
       <div className="absolute top-1/4 -left-20 lg:left-10 w-64 h-64 md:w-96 md:h-96 border-[8px] md:border-[16px] border-primary/10 rounded-full animate-zoom-in-out z-0 blur-xl md:blur-2xl" />
@@ -45,13 +47,19 @@ export default function HeroSection() {
 
             {/* Headings */}
             <div className="space-y-4">
-              <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white drop-shadow-lg">
-                <span className="block bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent py-3">
-                  {/* গ্রাফিক্স ডিজাইন */}
-                  সঠিক সিদ্ধান্তে সফল 
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.2] text-white drop-shadow-lg">
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-lg text-base font-bold tracking-wide text-neutral-900 mb-5">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-neutral-900">
+                    <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" />
+                    <path d="M19 14l.9 3.1L23 18l-3.1.9L19 22l-.9-3.1L15 18l3.1-.9L19 14z" />
+                  </svg>
+                  AI Powered
                 </span>
-                {/* কোর্স */}
-                ক্যারিয়ার
+                <br />
+                <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_24px_hsl(156_70%_42%/0.35)]">
+                  কমপ্লিট গ্রাফিক ডিজাইন
+                </span>{" "}
+                উইথ ফ্রিল্যান্সিং
               </h1>
               <h2 className="text-2xl sm:text-3xl font-semibold text-white/90 leading-snug">
                 আপনার ক্রিয়েটিভ <span className="text-primary-glow">ক্যারিয়ার</span> শুরু করুন আজই!
@@ -59,14 +67,14 @@ export default function HeroSection() {
             </div>
 
             {/* Paragraph */}
-            <p className="text-white/60 text-base sm:text-lg leading-relaxed max-w-[90%] font-light">
+            <p className="text-white/60 text-base sm:text-lg leading-relaxed max-w-xl font-light">
               ডিজিটাল এই যুগে সঠিক স্কিল শেখার মাধ্যমেই তৈরি হবে আপনার সফল ক্যারিয়ার। আর সেই পথটা সহজ করতে, শুরু থেকে শেষ পর্যন্ত আপনার পাশে থাকবে <strong className="text-primary font-medium tracking-wide">MISUN Academy</strong>। শুধু শেখানো নয়, আমরা বিশ্বাস করি একজন শিক্ষার্থীর পরিপূর্ণ ক্যারিয়ার গঠনে গাইড করাটাই সবচেয়ে গুরুত্বপূর্ণ।
             </p>
 
             {/* Platform Highlights (Glass Pill) */}
             <div className="inline-flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 bg-white/5 border border-white/10 backdrop-blur-md px-6 py-4 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.2)] w-full">
               {/* Highlight 1 */}
-              <div className="flex items-center gap-3  ">
+              <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
                   <UserCheck size={18} className="text-primary-glow" />
                 </div>
@@ -113,15 +121,14 @@ export default function HeroSection() {
                   hover:scale-105 hover:-translate-y-0.5
                   active:scale-95 active:translate-y-0
                   transition-all duration-300 ease-out">
-                  {/* Rotating conic-gradient border */}
-                  <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,hsl(156_70%_42%)_25%,hsl(156_85%_70%)_50%,hsl(156_70%_42%)_75%,transparent_100%)]" />
+                  <AnimatedBorder />
                   <button className="group relative overflow-hidden
                     inline-flex items-center gap-2
                     px-8 py-3.5
                     text-base font-bold tracking-wide rounded-[10px]
-                    bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38]
+                    bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
                     text-white
-                    hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]
+                    hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
                     transition-all duration-300 ease-out">
                     <span className="relative z-10 flex items-center gap-2">
                       আমাদের কোর্সসমূহ দেখুন
@@ -197,6 +204,6 @@ export default function HeroSection() {
 
         </div>
       </div>
-    </div>
+    </section>
   );
 }

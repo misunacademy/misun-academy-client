@@ -2,13 +2,10 @@
 
 import { usePathname } from 'next/navigation';
 import Script from 'next/script';
-import { useEffect } from 'react';
-import { trackCustom } from '@/lib/metaPixel';
 
 const BreadcrumbJsonLd = () => {
     const pathname = usePathname();
 
-    // Map routes to breadcrumb names and URLs
     const breadcrumbMap: { [key: string]: { name: string; item: string } } = {
         '/': {
             name: 'হোম',
@@ -31,10 +28,6 @@ const BreadcrumbJsonLd = () => {
             item: 'https://www.misun-academy.com/auth',
         }
     };
-    // Track page view for homepage
-    useEffect(() => {
-        trackCustom("HomepageView");
-    }, []);
 
     // Generate breadcrumb trail
     const breadcrumbs = Object.entries(breadcrumbMap)

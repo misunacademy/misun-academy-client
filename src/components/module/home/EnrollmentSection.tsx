@@ -1,22 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useMemo } from 'react';
+import { Skeleton } from 'boneyard-js/react'
 import { CalendarCheck, CalendarX, ArrowRight } from "lucide-react";
 import Countdown from "../course/Countdown";
 import { format } from "date-fns";
 import { FadeIn } from "../../ui/FadeIn";
-import {  BatchResponse, CourseInfo, useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
+import { BatchResponse, CourseInfo } from "@/redux/api/batchApi";
 import Link from "next/link";
-import { useGetCourseBySlugQuery } from '@/redux/api/courseApi';
+import { useCurrentBatch } from '@/hooks/useCurrentBatch';
+import { COURSE_SLUGS } from '@/constants/courses';
 
 export const formatDate = (date: Date | string) => {
     return format(new Date(date), 'dd MMM, yyyy');
 };
 
-// theme definitions matching Countdown
 const themeMap: Record<string, { primary: string; glow: string }> = {
-    'english-for-professional-communication': {
+    [COURSE_SLUGS.ENGLISH]: {
         primary: '217 91% 60%',
         glow: '217 91% 60%',
     },
@@ -33,7 +33,7 @@ const getCourseInfo = (courseId: CourseInfo | string): CourseInfo | null => {
 };
 
 // ── Per-course enrollment card ────────────────────────────────────────────────
-function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
+function CourseEnrollmentCard({ batch, serverTimestamp: cardServerTimestamp }: { batch: BatchResponse; serverTimestamp?: number; }) {
     const course = getCourseInfo(batch.courseId);
     const slug = course?.slug;
     const themeVars = useMemo(() => {
@@ -49,7 +49,7 @@ function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
 
     return (
         <FadeIn delay={0.1 + 0 * 0.08} direction="up" style={themeVars}>
-            <div style={themeVars} className="relative overflow-hidden rounded-[2rem] border border-primary/15 bg-[#060f0a]
+            <div style={themeVars} className="relative overflow-hidden rounded-[2rem] border border-primary/15 bg-surface
                 hover:border-primary/35 hover:shadow-[0_0_40px_hsl(var(--primary)/0.12)]
                 transition-all duration-500 group">
 
@@ -83,7 +83,7 @@ function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
 
                     {/* ── Countdown ── */}
                     {/* pass slug if available so countdown can theme itself */}
-                    <Countdown batch={batch} courseSlug={course.slug} />
+                    <Countdown batch={batch} courseSlug={course.slug} serverTimestamp={cardServerTimestamp} />
 
                     {/* ── Dates + Price row ── */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4
@@ -150,49 +150,23 @@ function CourseEnrollmentCard({ batch }: { batch: BatchResponse; }) {
 
 // ── Main Section ──────────────────────────────────────────────────────────────
 export const EnrollmentSection = () => {
-    const { data: gdCourseData, isLoading: gdCourseLoading } = useGetCourseBySlugQuery('complete-graphic-design-with-freelancing');
-    const gdCourseId = (gdCourseData?.data as any)?._id;
-    const { data: gdCurrentRes, isLoading: gdCurrentLoading } = useGetCurrentEnrollmentBatchQuery(
-        { courseId: gdCourseId }, { skip: !gdCourseId });
-
-
-    const batch = useMemo(() => (gdCurrentRes?.data ?? {}) as BatchResponse, [gdCurrentRes]);
-
-    if (gdCourseLoading || gdCurrentLoading) {
-        return (
-            <section id="enroll-now" className="relative scroll-mt-24 py-20 px-4 bg-[#060f0a] font-bangla">
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-                <div className="max-w-4xl mx-auto text-center">
-                    <p className="text-white/40 text-sm animate-pulse">লোড হচ্ছে...</p>
-                </div>
-            </section>
-        );
-    }
-
-
+    const { batch, isLoading, serverTimestamp } = useCurrentBatch();
 
     return (
-        <section
-            id="enroll-now"
-            data-dark-section
-            className="relative scroll-mt-24 py-24 px-4 bg-[#060f0a] overflow-hidden font-bangla"
-        >
-            {/* ── Top edge ── */}
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+        <Skeleton name="EnrollmentSection" loading={isLoading}>
+            {!batch ? null : (
+                <section
+                    id="enroll-now"
+                    data-dark-section
+                    className="relative scroll-mt-24 py-24 px-4 bg-surface-darker overflow-hidden font-bangla selection:bg-primary/30 selection:text-white"
+                >
 
-            {/* ── Dot-grid texture ── */}
-            <div
-                className="absolute inset-0 opacity-[0.15] pointer-events-none"
-                style={{
-                    backgroundImage: 'radial-gradient(circle, hsl(var(--primary)) 1px, transparent 1px)',
-                    backgroundSize: '32px 32px',
-                }}
-            />
+            {/* Elegant Background Meshes & Masks */}
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(32,180,134,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(32,180,134,0.04)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
 
-            {/* ── Ambient glows ── */}
-            <div className="absolute top-[-60px] left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-0 left-[10%] w-[300px] h-[200px] bg-primary/6 rounded-full blur-[90px] pointer-events-none" />
-            <div className="absolute bottom-0 right-[10%] w-[260px] h-[180px] bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
+            {/* Subtle Top Glow */}
+            <div className="pointer-events-none absolute left-1/2 top-[-10%] h-[400px] w-[800px] -translate-x-1/2 rounded-[100%] bg-primary/[0.06] blur-[100px]" />
+            <div className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[600px] -translate-x-1/2 rounded-[100%] bg-emerald-500/[0.04] blur-[120px]" />
 
             <div className="relative z-10 max-w-4xl mx-auto">
 
@@ -236,14 +210,15 @@ export const EnrollmentSection = () => {
 
                 {/* ── Course cards ── */}
 
-                    <CourseEnrollmentCard batch={batch}  />
+                    <CourseEnrollmentCard batch={batch} serverTimestamp={serverTimestamp} />
 
         
 
             </div>
 
-            {/* ── Bottom edge ── */}
-            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        </section>
+                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+            </section>
+        )}
+    </Skeleton>
     );
 };
