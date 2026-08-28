@@ -4,7 +4,7 @@ import TeamMemberCard from './_components/TeamMemberCard';
 import AboutStorySection from './_components/AboutStorySection';
 import AboutMissionVisionSection from './_components/AboutMissionVisionSection';
 import AboutCtaSection from './_components/AboutCtaSection';
-import { ajeful, debrotto, mehedi, mithun, neyemur, nur, nur_2, puspita, sakin } from "@/assets/teamMembers/index";
+import { ajeful, debrotto, mehedi, mithun, neyemur, rohan,ruponpaul ,puspita, sakin } from "@/assets/teamMembers/index";
 
 export const metadata = genMeta({
   title: 'আমাদের সম্পর্কে | MISUN Academy',
@@ -17,8 +17,8 @@ const teamMembers = [
   { name: "Mithun Sarkar", role: "Founder & CEO", company: "MISUN Academy", image: mithun },
   { name: "Puspita Singha", role: "Lead Instructor, English For Professional Communication", company: "MISUN Academy", image: puspita },
   { name: "Debbroto Biswas", role: "Senior Visualizer", company: "MISUN Academy", image: debrotto },
-  { name: "Nurnobi Hossen Shagor", role: "Senior Visualizer", company: "MISUN Academy", image: nur },
-  { name: "MD.Nur Nobe Islam", role: "Video Editor", company: "MISUN Academy", image: nur_2 },
+  { name: "Rupon Paul", role: "Graphic Designer", company: "MISUN Academy", image: ruponpaul },
+  { name: "Rohan", role: "Video Editor", company: "MISUN Academy", image: rohan },
   { name: "Ajeful Mallick", role: "Design And Social Media Coordinator", company: "MISUN Academy", image: ajeful },
   { name: "Mehedi Hasan", role: "Web Developer", company: "MISUN Academy", image: mehedi },
   { name: "S. M. Nayemur Rahman", role: "Marketing Executive", company: "MISUN Academy", image: neyemur },
@@ -29,7 +29,6 @@ const AboutUs = () => {
   return (
     <div className="min-h-screen bg-surface font-bangla overflow-hidden">
       {/* <AboutHeroSection /> */}
-
       <section className="relative bg-surface overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none"
           style={{ backgroundImage: "radial-gradient(circle, hsl(156 70% 42%) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
