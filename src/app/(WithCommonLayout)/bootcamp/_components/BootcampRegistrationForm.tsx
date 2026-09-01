@@ -12,14 +12,14 @@ import { useRegisterForBootcampMutation } from '@/redux/api/bootcampApi';
 import { bootcampFormFields } from './bootcampData';
 import headerImage from '@/assets/boocamp/paracetamol-for-photoshop-google-header.png';
 
-const bdMobile = /^01[3-9]\d{8}$/;
+const validWhatsAppMobile = /^(?:01[3-9]\d{8}|(?:\+?91|0)?[6789]\d{9})$/;
 
 const registrationSchema = z.object({
     name: z.string().trim().min(2, 'আপনার পুরো নাম লিখুন'),
     whatsapp: z
         .string()
         .trim()
-        .regex(bdMobile, 'সঠিক হোয়াটসঅ্যাপ নম্বর দিন (যেমন: 01712345678)')
+        .regex(validWhatsAppMobile, 'সঠিক হোয়াটসঅ্যাপ নম্বর দিন (যেমন: 01712345678 অথবা 9876543210)')
         .optional()
         .or(z.literal('')),
     address: z.string().trim().min(5, 'আপনার বর্তমান ঠিকানা লিখুন'),

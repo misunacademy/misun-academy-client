@@ -55,7 +55,7 @@ export const BootcampPayment = () => {
                                 >
                                     <div>
                                         <p className="font-bangla text-sm font-bold text-[#ffd60a]">
-                                            {method.label}
+                                            {method.label} {method.label === 'ফোনপে' && ' (PhonePe - India)'}
                                             <span className="ml-2 rounded bg-white/10 px-2 py-0.5 font-bangla text-[10px] font-semibold text-white/70">
                                                 {method.type}
                                             </span>

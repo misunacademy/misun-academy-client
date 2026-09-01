@@ -159,13 +159,16 @@ export default function BootcampManagementPage() {
 
   const handleExport = async () => {
     try {
-      const result = await fetchForExport({ status: "all", limit: 500 }, true).unwrap();
-      if (!result.data.length) {
-        toast.error("No registrations to export");
+      const result = await fetchForExport({ status: "verified", limit: 500 }, true).unwrap();
+      const verifiedRows = result.data.filter((row) => row.status === "verified");
+
+      if (!verifiedRows.length) {
+        toast.error("No verified registrations to export");
         return;
       }
-      exportToCsv(result.data);
-      toast.success(`CSV exported (${result.data.length} rows)`);
+
+      exportToCsv(verifiedRows);
+      toast.success(`CSV exported (${verifiedRows.length} verified rows)`);
     } catch (error) {
       const message =
         (error as { data?: { message?: string } })?.data?.message ||
