@@ -71,7 +71,11 @@ export const bootcampPaymentMethods = [
         label: 'নগদ',
         number: '01758689064',
         type: 'সেন্ড মানি',
-    },
+    },{
+        label: 'ফোনপে',
+        number: '9123944746',
+        type: 'সেন্ড মানি',
+    }
 ] as const;
 
 export const bootcampFaq = [
