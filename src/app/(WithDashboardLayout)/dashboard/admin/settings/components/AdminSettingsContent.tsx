@@ -28,6 +28,7 @@ const settingsSchema = z.object({
   epFacebookGroupLink: z.string().optional(),
   epWhatsappGroupLink: z.string().optional(),
   homeWhyVideoUrl: z.string().optional(),
+  epHomeWhyVideoUrl: z.string().optional(),
 })
 
 type SettingsFormValues = z.infer<typeof settingsSchema>
@@ -54,6 +55,7 @@ export default function AdminSettingsContent() {
       epFacebookGroupLink: "",
       epWhatsappGroupLink: "",
       homeWhyVideoUrl: "",
+      epHomeWhyVideoUrl: "",
     },
   })
 
@@ -78,6 +80,7 @@ export default function AdminSettingsContent() {
       epFacebookGroupLink: s.epFacebookGroupLink ?? "",
       epWhatsappGroupLink: s.epWhatsappGroupLink ?? "",
       homeWhyVideoUrl: s.homeWhyVideoUrl ?? "",
+      epHomeWhyVideoUrl: s.epHomeWhyVideoUrl ?? "",
     })
   }, [settingsData, hasSettings, form, updateSettings])
 

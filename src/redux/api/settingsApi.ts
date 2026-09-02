@@ -13,6 +13,7 @@ export interface SettingsResponse {
   epFacebookGroupLink?: string;
   epWhatsappGroupLink?: string;
   homeWhyVideoUrl?: string;
+  epHomeWhyVideoUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

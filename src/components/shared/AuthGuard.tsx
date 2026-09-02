@@ -98,6 +98,10 @@ export default function AuthGuard({
         }
     }, [isLoading, isAuthenticated, user, userRole, pathname, router, requiredRoles, unauthorizedRedirectTo]);
 
+    if (!mountedRef.current) {
+        return <>{children}</>;
+    }
+
     if (isLoading || !isAuthenticated) {
         return <>{fallback || <LoadingFallback />}</>;
     }
