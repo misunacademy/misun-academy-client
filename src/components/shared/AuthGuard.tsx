@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useSyncExternalStore, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import type { AuthUser } from '@/types/auth';
@@ -29,6 +29,10 @@ function LoadingFallback() {
     );
 }
 
+const subscribeToMounted = () => () => undefined;
+const getMountedSnapshot = () => true;
+const getMountedServerSnapshot = () => false;
+
 export default function AuthGuard({
     children,
     requiredRoles,
@@ -38,17 +42,12 @@ export default function AuthGuard({
     const router = useRouter();
     const pathname = usePathname();
     const { user, isLoading } = useAuth();
-    const mountedRef = useRef(false);
-
+    const isMounted = useSyncExternalStore(subscribeToMounted, getMountedSnapshot, getMountedServerSnapshot);
     const isAuthenticated = !!user;
     const userRole = (user as AuthUser | undefined)?.role || null;
 
     useEffect(() => {
-        mountedRef.current = true;
-    }, []);
-
-    useEffect(() => {
-        if (!mountedRef.current || isLoading) return;
+        if (!isMounted || isLoading) return;
 
         if (!isAuthenticated) {
             const currentPath = `${window.location.pathname}${window.location.search}`;
@@ -96,13 +95,9 @@ export default function AuthGuard({
             router.replace('/my-classes');
             return;
         }
-    }, [isLoading, isAuthenticated, user, userRole, pathname, router, requiredRoles, unauthorizedRedirectTo]);
+    }, [isMounted, isLoading, isAuthenticated, user, userRole, pathname, router, requiredRoles, unauthorizedRedirectTo]);
 
-    if (!mountedRef.current) {
-        return <>{children}</>;
-    }
-
-    if (isLoading || !isAuthenticated) {
+    if (!isMounted || isLoading || !isAuthenticated) {
         return <>{fallback || <LoadingFallback />}</>;
     }
 

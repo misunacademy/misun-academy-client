@@ -18,7 +18,6 @@ export async function forgotPasswordAction(email: string) {
     toast.success('Password reset email sent! Check your inbox.');
     return { success: true, error: null };
   } catch (error: unknown) {
-    console.error('[forgotPassword] Error:', error);
     const errorMsg = (error as Error).message || 'Failed to send reset email';
     toast.error(errorMsg);
     return { success: false, error: errorMsg };

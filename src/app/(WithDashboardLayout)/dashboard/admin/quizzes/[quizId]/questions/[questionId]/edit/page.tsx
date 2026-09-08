@@ -57,33 +57,39 @@ export default function AdminQuestionEditPage({
 
     useEffect(() => {
         if (existingQuestion) {
-            setQuestionType(existingQuestion.questionType as 'mcq' | 'true_false');
-            setContentType(existingQuestion.content.type as 'text' | 'image' | 'text_image');
-            setQuestionText(existingQuestion.content.text || "");
-            setQuestionImage(existingQuestion.content.imageUrl || "");
-            setExplanationText(existingQuestion.explanation?.text || "");
-            setMarks(existingQuestion.marks);
-            setZamesPoints(existingQuestion.zamesPoints);
-            setCorrectAnswer(existingQuestion.correctAnswer || "");
-            if (existingQuestion.options.length > 0) {
-                setOptions(
-                    existingQuestion.options.map((opt: IContentBlock) => ({
-                        type: (opt.type as 'text' | 'image' | 'text_image') || 'text',
-                        text: opt.text || "",
-                        imageUrl: opt.imageUrl || "",
-                        altText: opt.altText || "",
-                    }))
-                );
-            }
+            const frame = requestAnimationFrame(() => {
+                setQuestionType(existingQuestion.questionType as 'mcq' | 'true_false');
+                setContentType(existingQuestion.content.type as 'text' | 'image' | 'text_image');
+                setQuestionText(existingQuestion.content.text || "");
+                setQuestionImage(existingQuestion.content.imageUrl || "");
+                setExplanationText(existingQuestion.explanation?.text || "");
+                setMarks(existingQuestion.marks);
+                setZamesPoints(existingQuestion.zamesPoints);
+                setCorrectAnswer(existingQuestion.correctAnswer || "");
+                if (existingQuestion.options.length > 0) {
+                    setOptions(
+                        existingQuestion.options.map((opt: IContentBlock) => ({
+                            type: (opt.type as 'text' | 'image' | 'text_image') || 'text',
+                            text: opt.text || "",
+                            imageUrl: opt.imageUrl || "",
+                            altText: opt.altText || "",
+                        }))
+                    );
+                }
+            });
+            return () => cancelAnimationFrame(frame);
         }
     }, [existingQuestion]);
 
     useEffect(() => {
         if (questionType === 'true_false') {
-            setOptions([
-                { type: 'text', text: 'True', imageUrl: '', altText: '' },
-                { type: 'text', text: 'False', imageUrl: '', altText: '' },
-            ]);
+            const frame = requestAnimationFrame(() => {
+                setOptions([
+                    { type: 'text', text: 'True', imageUrl: '', altText: '' },
+                    { type: 'text', text: 'False', imageUrl: '', altText: '' },
+                ]);
+            });
+            return () => cancelAnimationFrame(frame);
         }
     }, [questionType]);
 

@@ -66,7 +66,8 @@ export default function AdminUsers() {
 
   // Reset to first page when filters or search change
   useEffect(() => {
-    setPage(1);
+    const frame = requestAnimationFrame(() => setPage(1));
+    return () => cancelAnimationFrame(frame);
   }, [debouncedSearch, roleFilter, statusFilter]);
 
   // Send role and status as lowercase strings to match server enum values
@@ -96,15 +97,19 @@ export default function AdminUsers() {
   // Update total & totalPages when server response changes (support both `pagination` and legacy `meta` shapes)
   useEffect(() => {
     const legacyMeta = (data as unknown as { meta?: { total?: number; totalPages?: number } })?.meta;
-    setTotal(resp?.meta?.total ?? legacyMeta?.total ?? 0);
-    setTotalPages(resp?.meta?.totalPages ?? legacyMeta?.totalPages ?? 1);
+    const frame = requestAnimationFrame(() => {
+      setTotal(resp?.meta?.total ?? legacyMeta?.total ?? 0);
+      setTotalPages(resp?.meta?.totalPages ?? legacyMeta?.totalPages ?? 1);
+    });
+    return () => cancelAnimationFrame(frame);
   }, [resp, data]);
 
   // If current page becomes empty (e.g., after delete), go back one page
   useEffect(() => {
     const items = resp?.data?.length ?? 0;
     if (items === 0 && page > 1) {
-      setPage((p) => Math.max(1, p - 1));
+      const frame = requestAnimationFrame(() => setPage((p) => Math.max(1, p - 1)));
+      return () => cancelAnimationFrame(frame);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resp]);

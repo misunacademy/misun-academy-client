@@ -169,9 +169,9 @@ export function DataTable<TData>({
   }
 
   return (
-    <>
+    <div className="rounded-lg border bg-white shadow-sm p-4">
       {filters && <div className="mb-6 flex flex-wrap items-center gap-4 w-full">{filters}</div>}
       {tableSection}
-    </>
+    </div>
   )
 }

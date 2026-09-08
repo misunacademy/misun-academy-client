@@ -51,12 +51,16 @@ export default function CourseContentPage() {
   useEffect(() => {
     if (batches.length === 0) return;
     if (!selectedBatchId || !batches.some((batch) => batch._id === selectedBatchId)) {
-      setSelectedBatchId(batches[0]._id);
+      const frame = requestAnimationFrame(() => setSelectedBatchId(batches[0]._id));
+      return () => cancelAnimationFrame(frame);
     }
   }, [batches, selectedBatchId]);
 
   useEffect(() => {
-    if (!legacyCourseId && courseId) setLegacyCourseId(courseId);
+    if (!legacyCourseId && courseId) {
+      const frame = requestAnimationFrame(() => setLegacyCourseId(courseId));
+      return () => cancelAnimationFrame(frame);
+    }
   }, [courseId, legacyCourseId]);
 
   const { data: modulesData, isLoading, refetch } = useGetCourseModulesQuery(
@@ -67,7 +71,10 @@ export default function CourseContentPage() {
   const [reorderModules, { isLoading: reordering }] = useReorderModulesMutation();
   const modules = useMemo(() => (modulesData?.data || []) as Module[], [modulesData?.data]);
 
-  useEffect(() => { setOrderedModules(modules); }, [modules]);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setOrderedModules(modules));
+    return () => cancelAnimationFrame(frame);
+  }, [modules]);
 
   const toggleModule = useCallback((moduleId: string) => {
     setExpandedModules((prev) => { const ns = new Set(prev); if (ns.has(moduleId)) ns.delete(moduleId); else ns.add(moduleId); return ns; });

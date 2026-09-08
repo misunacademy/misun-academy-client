@@ -84,15 +84,15 @@ function SocketController({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    if (unreadData?.data?.count !== undefined) {
-      setUnreadCount(unreadData.data.count);
-    }
+    if (unreadData?.data?.count === undefined) return;
+    const frame = requestAnimationFrame(() => setUnreadCount(unreadData.data.count));
+    return () => cancelAnimationFrame(frame);
   }, [unreadData]);
 
   useEffect(() => {
-    if (recentData?.data) {
-      setRecentNotifications(recentData.data);
-    }
+    if (!recentData?.data) return;
+    const frame = requestAnimationFrame(() => setRecentNotifications(recentData.data));
+    return () => cancelAnimationFrame(frame);
   }, [recentData]);
 
   const baseApiUrl = process.env.NEXT_PUBLIC_BASE_API_URL;

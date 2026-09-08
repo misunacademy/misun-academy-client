@@ -201,21 +201,21 @@ export default function AdminReports() {
 
     csv += 'Summary\n';
     csv += 'Metric,Value\n';
-    csv += `Total Revenue,$${data.summary.totalRevenue}\n`;
+    csv += `Total Revenue,BDT ${data.summary.totalRevenue}\n`;
     csv += `Total Enrollments,${data.summary.totalEnrollments}\n`;
     csv += `Active Courses,${data.summary.activeCourses}\n\n`;
 
     csv += 'Course-wise Statistics\n';
     csv += 'Course,Enrollments,Revenue\n';
     data.courseWiseStats.forEach((course) => {
-      csv += `"${course.courseTitle}",${course.totalEnrollments},"$${course.totalIncome}"\n`;
+      csv += `"${course.courseTitle}",${course.totalEnrollments},"BDT ${course.totalIncome}"\n`;
     });
     csv += '\n';
 
     csv += 'Daily Statistics\n';
     csv += 'Date,Enrollments,Revenue\n';
     data.dailyStats.forEach((day) => {
-      csv += `"${day.date}",${day.enrollments},"$${day.revenue}"\n`;
+      csv += `"${day.date}",${day.enrollments},"BDT ${day.revenue}"\n`;
     });
 
     return csv;

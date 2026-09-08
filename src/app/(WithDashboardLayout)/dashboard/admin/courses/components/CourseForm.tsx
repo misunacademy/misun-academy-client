@@ -93,9 +93,12 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
         instructor: c.instructor || "", features: c.features || [], highlights: c.highlights || [],
       });
 
-      setPreviews({ thumbnailImage: c.thumbnailImage || undefined, coverImage: c.coverImage || undefined });
-      setFeatures(c.features || []);
-      setHighlights(c.highlights || []);
+      const frame = requestAnimationFrame(() => {
+        setPreviews({ thumbnailImage: c.thumbnailImage || undefined, coverImage: c.coverImage || undefined });
+        setFeatures(c.features || []);
+        setHighlights(c.highlights || []);
+      });
+      return () => cancelAnimationFrame(frame);
     }
   }, [course, form]);
 

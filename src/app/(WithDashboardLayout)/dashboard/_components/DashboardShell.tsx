@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import AuthGuard from "@/components/shared/AuthGuard"
 import NotificationBell from "@/components/shared/NotificationBell"
+import AnnouncementBanner from "@/components/shared/AnnouncementBanner"
 import { usePathname } from "next/navigation"
 
 const pageTitleMap: Record<string, string> = {
@@ -15,8 +16,10 @@ const pageTitleMap: Record<string, string> = {
     '/dashboard/admin/recordings': 'Live Class Recordings',
     '/dashboard/admin/student': 'Student Management',
     '/dashboard/admin/payment': 'Payment Management',
+    '/dashboard/admin/refunds': 'Refund Management',
     '/dashboard/admin/batch': 'Batch Management',
     '/dashboard/admin/users': 'User Management',
+    '/dashboard/admin/roles': 'Roles & Permissions',
     '/dashboard/admin/employees': 'Employee Management',
     '/dashboard/admin/dynamic-updates': 'Dynamic Updates',
     '/dashboard/admin/reports': 'Reports',
@@ -81,6 +84,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                             </Button>
                         </div>
                     </header>
+                    <AnnouncementBanner />
                     <main className="flex-1 space-y-6 p-4 md:p-6 pt-6 bg-gray-50/50 min-h-screen">
                         <nav className="flex items-center space-x-1 text-sm text-muted-foreground" aria-label="Breadcrumb">
                             <span>Dashboard</span>

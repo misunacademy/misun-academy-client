@@ -25,6 +25,7 @@ export function useEnrollmentCheckout(courseSlug?: string) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [enrollmentData, setEnrollmentData] = useState<EnrollmentForm | null>(null);
+  const [now] = useState(() => Date.now());
 
   const [enrollStudent] = useInitiateEnrollmentMutation();
   const [enrollStudentManual] = useEnrollStudentManualMutation();
@@ -57,9 +58,8 @@ export function useEnrollmentCheckout(courseSlug?: string) {
 
   const isEnrollmentOpen = resolvedBatch
     ? (() => {
-        const now = Date.now();
-        const start = new Date((resolvedBatch as Record<string, string>).enrollmentStartDate).getTime();
-        const end = new Date((resolvedBatch as Record<string, string>).enrollmentEndDate).getTime();
+        const start = Date.parse(String((resolvedBatch as Record<string, string>).enrollmentStartDate || ""));
+        const end = Date.parse(String((resolvedBatch as Record<string, string>).enrollmentEndDate || ""));
         return now >= start && now <= end;
       })()
     : false;

@@ -121,7 +121,6 @@ export function SettingsTab() {
             toast.success("Password changed successfully.");
             passwordForm.reset();
         } catch (error) {
-            console.error("Password change error:", error);
             let errorMessage = "Failed to change password.";
 
             if (error && typeof error === 'object') {

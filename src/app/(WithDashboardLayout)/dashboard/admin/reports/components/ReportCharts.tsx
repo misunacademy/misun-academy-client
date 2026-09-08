@@ -56,7 +56,7 @@ export default function ReportCharts({ data }: { data: ChartData | null }) {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`$${value}`, "Revenue"]} />
+                    <Tooltip formatter={(value) => [`BDT ${value}`, "Revenue"]} />
                     <Bar dataKey="revenue" fill="#82ca9d" />
                   </BarChart>
                 </ResponsiveContainer>

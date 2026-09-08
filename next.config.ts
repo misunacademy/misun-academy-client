@@ -1,14 +1,18 @@
 
+import path from 'path';
 import type { NextConfig } from 'next';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: path.join(__dirname, '..'),
+  },
   reactStrictMode: true,
   cacheComponents: true,
 
   experimental: {
     viewTransition: true,
-  },
+  } as unknown as NextConfig['experimental'],
 
   images: {
     qualities: [65, 75],
@@ -41,6 +45,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'img.youtube.com',
+      },
+          {
+        protocol: 'https',
+        hostname: 'www.misun-academy.com',
       },
     ],
   },

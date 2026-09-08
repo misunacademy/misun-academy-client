@@ -14,7 +14,9 @@ import {
   LayoutDashboard,
   LogOut,
   Mail,
+  Megaphone,
   Rocket,
+  RotateCcw,
   Settings,
   ShieldCheck,
   TrendingUp,
@@ -104,6 +106,7 @@ const instructorGroups: NavGroup[] = [
 
 function getAdminGroups(isSuperAdmin: boolean): NavGroup[] {
   const platformItems: NavItem[] = [
+    { title: "Announcements", url: "/dashboard/admin/announcements", icon: Megaphone },
     { title: "Emails", url: "/dashboard/admin/emails", icon: Mail },
     { title: "Settings", url: "/dashboard/admin/settings", icon: Settings },
   ];
@@ -143,8 +146,13 @@ function getAdminGroups(isSuperAdmin: boolean): NavGroup[] {
       label: "Commerce",
       items: [
         { title: "Payments", url: "/dashboard/admin/payment", icon: CreditCard },
+        { title: "Refunds", url: "/dashboard/admin/refunds", icon: RotateCcw },
         { title: "Reports", url: "/dashboard/admin/reports", icon: FileText },
       ],
+    },
+    {
+      label: "Access",
+      items: [{ title: "Roles", url: "/dashboard/admin/roles", icon: ShieldCheck }],
     },
     {
       label: "Team",

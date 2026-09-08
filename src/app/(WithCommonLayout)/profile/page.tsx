@@ -33,8 +33,8 @@ export default function StudentProfile() {
                 const result = await authServerApi.listSessions();
                 if (result.error) throw new Error(result.error.message);
                 if (Array.isArray(result.data)) setSessions(result.data);
-            } catch (error) {
-                console.error("Failed to fetch sessions", error);
+            } catch {
+                return;
             }
         };
         fetchSessions();

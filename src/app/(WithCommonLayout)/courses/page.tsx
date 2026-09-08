@@ -20,6 +20,5 @@ export const metadata = generateMetadata({
 });
 
 export default function CoursesPage() {
-  // return <CoursesListClient />;
   return <CourseDetails/>
 }

@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/shared/AuthGuard';
 import EnrollmentCheckout from '@/components/module/checkout/EnrollmentCheckout';
+import BootcampCheckout from '@/components/module/checkout/BootcampCheckout';
+import { useGetBatchByIdQuery } from '@/redux/api/batchApi';
 import { useCurrentBatch } from '@/hooks/useCurrentBatch';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import { v4 as uuid } from "uuid";
@@ -30,8 +32,35 @@ function Spinner() {
     );
 }
 
+function BootcampBranch({ batchId }: { batchId: string }) {
+    const { user, isLoading: authLoading } = useAuth();
+    const { data, isLoading } = useGetBatchByIdQuery(batchId);
+
+    if (authLoading || isLoading) return <Spinner />;
+    if (!user) return null;
+    if (!data?.data) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-surface">
+                <p className="font-bangla text-white/70">ব্যাচ পাওয়া যায়নি।</p>
+            </div>
+        );
+    }
+
+    const batch = data.data as unknown as Record<string, unknown>;
+    const course = (batch.courseId ?? {}) as Record<string, unknown>;
+
+    return (
+        <div>
+            <BreadcrumbJsonLd />
+            <BootcampCheckout batchId={batchId} course={course} batch={batch} />
+        </div>
+    );
+}
+
 function CheckoutContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const bootcampBatchId = searchParams.get('batch');
     const courseSlug = COURSE_SLUGS.GRAPHIC_DESIGN;
 
     const { user, isLoading: authLoading } = useAuth();
@@ -42,25 +71,28 @@ function CheckoutContent() {
 
     const enrollmentStart = batch?.enrollmentStartDate as string | undefined;
     const enrollmentEnd = batch?.enrollmentEndDate as string | undefined;
-    const enrollmentRunning = isWindowOpen(enrollmentStart, enrollmentEnd);
+    const enrollmentRunning = bootcampBatchId ? true : isWindowOpen(enrollmentStart, enrollmentEnd);
 
-    const courseFee = (batch?.price as number) ?? (course?.price as number) ?? 4500;
+    const courseFee = (batch?.price as number) ?? (course?.price as number);
     const courseTitle = (course?.name as string) ?? 'MISUN Academy Course Enrollment';
 
     useEffect(() => {
+        if (bootcampBatchId) return;
         if (!allLoading && !enrollmentRunning && user) {
-            setOpenModal(true);
+            const frame = requestAnimationFrame(() => setOpenModal(true));
+            return () => cancelAnimationFrame(frame);
         }
-    }, [allLoading, enrollmentRunning, user]);
+    }, [allLoading, enrollmentRunning, user, bootcampBatchId]);
 
     useEffect(() => {
+        if (bootcampBatchId) return;
         if (!user?.email) return;
         if (hasTracked.current) return;
         hasTracked.current = true;
         const eventId = uuid();
-        track('Purchase', {
-            value: courseFee,
-            currency: 'BDT',
+        const knownFee = typeof courseFee === 'number' ? courseFee : undefined;
+        track('InitiateCheckout', {
+            ...(knownFee !== undefined ? { value: knownFee, currency: 'BDT' } : {}),
             content_name: courseTitle,
             content_type: 'course',
         }, { eventID: eventId });
@@ -68,9 +100,9 @@ function CheckoutContent() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                eventName: "Purchase",
+                eventName: "InitiateCheckout",
                 email: user.email,
-                value: courseFee,
+                value: knownFee,
                 currency: "BDT",
                 eventId,
             }),
@@ -85,6 +117,10 @@ function CheckoutContent() {
 
     if (authLoading || allLoading) return <Spinner />;
     if (!user) return null;
+
+    if (bootcampBatchId) {
+        return <BootcampBranch batchId={bootcampBatchId} />;
+    }
 
     if (!enrollmentRunning) {
         return (
@@ -108,7 +144,9 @@ function CheckoutContent() {
 export default function Page() {
     return (
         <AuthGuard>
-            <CheckoutContent />
+            <Suspense fallback={<Spinner />}>
+                <CheckoutContent />
+            </Suspense>
         </AuthGuard>
     );
 }

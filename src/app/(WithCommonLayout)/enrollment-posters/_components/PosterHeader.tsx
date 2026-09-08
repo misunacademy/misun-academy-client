@@ -10,10 +10,11 @@ interface PosterHeaderProps {
 
 export default function PosterHeader({ userName, courseTitle }: PosterHeaderProps) {
   return (
-    <Card className="mb-8 border-primary/20 bg-[#0a1610]/90 shadow-[0_0_50px_hsl(156_70%_42%/0.08)]">
-      <CardContent className="p-8 text-center">
-        <div className="w-16 h-16 bg-primary/15 border border-primary/30 rounded-full flex items-center justify-center mx-auto mb-4">
-          <CheckCircle2 className="w-8 h-8 text-green-600" />
+    <Card className="mb-8 overflow-hidden border-primary/20 bg-surface-darker/80 shadow-[0_0_50px_hsl(156_70%_42%/0.08)] backdrop-blur-sm">
+      <CardContent className="relative p-8 text-center">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10">
+          <CheckCircle2 className="h-8 w-8 text-emerald-400" />
         </div>
         <h1 className="text-3xl font-bold text-white mb-2">
           Congratulations, {userName.split(" ")[0]}!

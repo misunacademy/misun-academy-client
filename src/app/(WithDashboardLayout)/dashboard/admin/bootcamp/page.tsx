@@ -29,6 +29,7 @@ import {
   type BootcampRegistration,
 } from "@/redux/api/bootcampApi";
 import BootcampStatsCards from "./_components/BootcampStatsCards";
+import BootcampCatalogManager from "./_components/BootcampCatalogManager";
 import { bootcampColumns } from "./_components/bootcampColumns";
 import BootcampReviewDialog from "./_components/BootcampReviewDialog";
 
@@ -159,16 +160,30 @@ export default function BootcampManagementPage() {
 
   const handleExport = async () => {
     try {
-      const result = await fetchForExport({ status: "verified", limit: 500 }, true).unwrap();
-      const verifiedRows = result.data.filter((row) => row.status === "verified");
+      const rows: BootcampRegistration[] = [];
+      let page = 1;
+      let total = Number.MAX_SAFE_INTEGER;
+      const PAGE_LIMIT = 500;
 
-      if (!verifiedRows.length) {
+      while (rows.length < total && page <= 50) {
+        const result = await fetchForExport(
+          { status: "verified", page, limit: PAGE_LIMIT },
+          true
+        ).unwrap();
+        const data = result.data ?? [];
+        rows.push(...data.filter((row) => row.status === "verified"));
+        total = result.meta?.total ?? rows.length;
+        if (data.length < PAGE_LIMIT) break;
+        page += 1;
+      }
+
+      if (!rows.length) {
         toast.error("No verified registrations to export");
         return;
       }
 
-      exportToCsv(verifiedRows);
-      toast.success(`CSV exported (${verifiedRows.length} verified rows)`);
+      exportToCsv(rows);
+      toast.success(`CSV exported (${rows.length} verified rows)`);
     } catch (error) {
       const message =
         (error as { data?: { message?: string } })?.data?.message ||
@@ -253,7 +268,8 @@ export default function BootcampManagementPage() {
         </Button>
       }
       content={
-        <>
+      <>
+      <BootcampCatalogManager />
           <BootcampStatsCards stats={stats} activeTab={activeTab} onSelectTab={handleSelectTab} />
 
           <div className="flex flex-wrap items-center justify-between gap-3">

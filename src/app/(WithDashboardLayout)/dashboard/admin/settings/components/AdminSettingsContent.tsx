@@ -15,6 +15,7 @@ import { MaintenanceSettingsTab } from "./MaintenanceSettingsTab"
 import { CommunityLinksTab } from "./CommunityLinksTab"
 import { PopupBannerTab } from "./PopupBannerTab"
 import { HomeVideoTab } from "./HomeVideoTab"
+import { PaymentTutorialTab } from "./PaymentTutorialTab"
 
 const settingsSchema = z.object({
   popupEnabled: z.boolean(),
@@ -29,6 +30,8 @@ const settingsSchema = z.object({
   epWhatsappGroupLink: z.string().optional(),
   homeWhyVideoUrl: z.string().optional(),
   epHomeWhyVideoUrl: z.string().optional(),
+  maPaymentTutorialVideoUrl: z.string().optional(),
+  epPaymentTutorialVideoUrl: z.string().optional(),
 })
 
 type SettingsFormValues = z.infer<typeof settingsSchema>
@@ -56,6 +59,8 @@ export default function AdminSettingsContent() {
       epWhatsappGroupLink: "",
       homeWhyVideoUrl: "",
       epHomeWhyVideoUrl: "",
+      maPaymentTutorialVideoUrl: "",
+      epPaymentTutorialVideoUrl: "",
     },
   })
 
@@ -81,6 +86,8 @@ export default function AdminSettingsContent() {
       epWhatsappGroupLink: s.epWhatsappGroupLink ?? "",
       homeWhyVideoUrl: s.homeWhyVideoUrl ?? "",
       epHomeWhyVideoUrl: s.epHomeWhyVideoUrl ?? "",
+      maPaymentTutorialVideoUrl: s.maPaymentTutorialVideoUrl ?? "",
+      epPaymentTutorialVideoUrl: s.epPaymentTutorialVideoUrl ?? "",
     })
   }, [settingsData, hasSettings, form, updateSettings])
 
@@ -160,6 +167,7 @@ export default function AdminSettingsContent() {
     { value: "community", label: "Community Links" },
     { value: "popup", label: "Popup Banner" },
     { value: "home-video", label: "Home Video" },
+    { value: "payment-tutorial", label: "Payment Tutorial" },
   ], [])
 
   const tabContents = useMemo(() => [
@@ -203,6 +211,10 @@ export default function AdminSettingsContent() {
     {
       value: "home-video",
       content: <HomeVideoTab onSave={handleSave} />,
+    },
+    {
+      value: "payment-tutorial",
+      content: <PaymentTutorialTab onSave={handleSave} />,
     },
   ], [user, uploadLoading, profileUpdateLoading, handleProfilePhotoClick, handleProfilePhotoChange, handleMaintenanceEnabledChange, handleSave, handlePopupEnabledChange, onBannerFileChange])
 

@@ -9,11 +9,12 @@ export const metadata: Metadata = {
 
 function SuspendedContent() {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-2xl border bg-white p-8 text-center shadow-sm dark:bg-gray-900">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 dark:bg-red-950">
+    <div className="flex min-h-screen items-center justify-center bg-surface-darker p-4 font-bangla">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-primary/20 bg-surface-darker/80 p-8 text-center shadow-[0_0_60px_hsl(156_70%_42%/0.08)] backdrop-blur-sm">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+        <div className="relative mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10">
           <svg
-            className="h-7 w-7 text-red-600 dark:text-red-400"
+            className="h-7 w-7 text-red-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -27,14 +28,14 @@ function SuspendedContent() {
             />
           </svg>
         </div>
-        <h1 className="mb-2 text-xl font-bold">অ্যাকাউন্ট স্থগিত</h1>
-        <p className="mb-6 text-sm text-muted-foreground">
+        <h1 className="relative mb-2 text-xl font-bold text-white">অ্যাকাউন্ট স্থগিত</h1>
+        <p className="relative mb-6 text-sm leading-relaxed text-white/60">
           আপনার অ্যাকাউন্টটি বর্তমানে স্থগিত রয়েছে। কোর্সে ভর্তি ও ক্লাস অ্যাক্সেস সাময়িকভাবে বন্ধ আছে।
           বিস্তারিত জানতে অনুগ্রহ করে আমাদের সাপোর্ট টিমের সাথে যোগাযোগ করুন।
         </p>
         <Link
           href="/"
-          className="inline-flex h-10 items-center justify-center rounded-md bg-emerald-600 px-6 text-sm font-medium text-white transition-colors hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+          className="relative inline-flex h-10 items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-white transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-darker"
         >
           হোমপেজে ফিরে যান
         </Link>
