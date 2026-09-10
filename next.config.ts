@@ -10,10 +10,6 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   cacheComponents: true,
 
-  experimental: {
-    viewTransition: true,
-  } as unknown as NextConfig['experimental'],
-
   images: {
     qualities: [65, 75],
     formats: ['image/avif', 'image/webp'],
@@ -46,7 +42,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'img.youtube.com',
       },
-          {
+      {
         protocol: 'https',
         hostname: 'www.misun-academy.com',
       },

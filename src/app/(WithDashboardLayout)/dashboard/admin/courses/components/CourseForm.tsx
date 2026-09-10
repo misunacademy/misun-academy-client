@@ -12,7 +12,7 @@ import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { toast } from "sonner";
 import { Book } from "lucide-react";
-import { InstructorAssignDialog } from "../[courseId]/page";
+import { InstructorAssignDialog } from "../[courseId]/_components/CoursesCourseidClient";
 import { splitLines, splitTags } from "./CourseFormHelpers";
 import { CourseFormFields } from "./CourseFormFields";
 import { SubmitButton } from "@/components/forms/submit-button";
