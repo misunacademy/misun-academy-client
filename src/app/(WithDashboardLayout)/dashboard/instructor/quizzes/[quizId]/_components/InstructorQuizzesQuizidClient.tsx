@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,8 @@ import {
     useGetInstructorQuizByIdQuery,
     useGetInstructorQuizQuestionsQuery,
     useUpdateInstructorQuizMutation,
+    useCreateInstructorQuestionMutation,
+    useUpdateInstructorQuestionMutation,
     useDeleteInstructorQuestionMutation,
     useDuplicateInstructorQuestionMutation,
     useReorderInstructorQuestionsMutation,
@@ -18,6 +20,9 @@ import { IQuestion } from "@/types/quiz";
 import { Plus, Pencil, Trash2, Copy, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { ContentBlockDisplay } from "@/components/quiz/ContentBlockDisplay";
+import { QuestionDialog } from "@/components/quiz/QuestionDialog";
+import { QuestionFormValue } from "@/components/quiz/QuestionForm";
+import { getApiErrorMessage } from "@/lib/api-helpers";
 
 export default function QuizDetailPage({ params }: { params: Promise<{ quizId: string }> }) {
     const router = useRouter();
@@ -28,9 +33,39 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
     const { data: questionsData } = useGetInstructorQuizQuestionsQuery(quizId);
     const questions: IQuestion[] = questionsData?.data ?? [];
     const [updateQuiz] = useUpdateInstructorQuizMutation();
+    const [createQuestion, { isLoading: isCreating }] = useCreateInstructorQuestionMutation();
+    const [updateQuestion, { isLoading: isUpdating }] = useUpdateInstructorQuestionMutation();
     const [deleteQuestion] = useDeleteInstructorQuestionMutation();
     const [duplicateQuestion] = useDuplicateInstructorQuestionMutation();
     const [reorderQuestions] = useReorderInstructorQuestionsMutation();
+
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [editingQuestion, setEditingQuestion] = useState<IQuestion | null>(null);
+
+    const openAddDialog = () => {
+        setEditingQuestion(null);
+        setDialogOpen(true);
+    };
+
+    const openEditDialog = (question: IQuestion) => {
+        setEditingQuestion(question);
+        setDialogOpen(true);
+    };
+
+    const handleSaveQuestion = async (value: QuestionFormValue) => {
+        try {
+            if (editingQuestion) {
+                await updateQuestion({ questionId: editingQuestion._id, data: value }).unwrap();
+                toast.success("Question updated");
+            } else {
+                await createQuestion({ quizId, data: value }).unwrap();
+                toast.success("Question added");
+            }
+        } catch (err) {
+            toast.error(getApiErrorMessage(err, "Failed to save question"));
+            throw err;
+        }
+    };
 
     const handleDelete = async (questionId: string) => {
         try {
@@ -116,10 +151,7 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>Questions</CardTitle>
-                            <Button
-                                onClick={() => router.push(`/dashboard/instructor/quizzes/${quizId}/questions/new`)}
-                                size="sm"
-                            >
+                            <Button onClick={openAddDialog} size="sm">
                                 <Plus className="h-4 w-4 mr-2" />
                                 Add Question
                             </Button>
@@ -196,11 +228,7 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-8 w-8"
-                                                            onClick={() =>
-                                                                router.push(
-                                                                    `/dashboard/instructor/quizzes/${quizId}/questions/${question._id}/edit`
-                                                                )
-                                                            }
+                                                            onClick={() => openEditDialog(question)}
                                                         >
                                                             <Pencil className="h-4 w-4" />
                                                         </Button>
@@ -229,6 +257,14 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
                             )}
                         </CardContent>
                     </Card>
+
+                    <QuestionDialog
+                        open={dialogOpen}
+                        onOpenChange={setDialogOpen}
+                        editingQuestion={editingQuestion}
+                        onSave={handleSaveQuestion}
+                        isSaving={isCreating || isUpdating}
+                    />
                 </div>
             }
         />

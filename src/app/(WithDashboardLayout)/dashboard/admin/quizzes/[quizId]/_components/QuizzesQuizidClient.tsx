@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,8 @@ import {
     useGetQuizByIdQuery,
     useUpdateQuizMutation,
     useGetAdminQuizQuestionsQuery,
+    useCreateAdminQuestionMutation,
+    useUpdateAdminQuestionMutation,
     useDeleteAdminQuestionMutation,
     useDuplicateAdminQuestionMutation,
     useReorderAdminQuestionsMutation,
@@ -19,7 +21,9 @@ import { QuizStatus } from "@/types/enums";
 import { Plus, Pencil, Trash2, Copy, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { ContentBlockDisplay } from "@/components/quiz/ContentBlockDisplay";
-import { extractApiData } from "@/lib/api-helpers";
+import { extractApiData, getApiErrorMessage } from "@/lib/api-helpers";
+import { QuestionDialog } from "@/components/quiz/QuestionDialog";
+import { QuestionFormValue } from "@/components/quiz/QuestionForm";
 
 export default function AdminQuizDetailPage({ params }: { params: Promise<{ quizId: string }> }) {
     const router = useRouter();
@@ -30,9 +34,39 @@ export default function AdminQuizDetailPage({ params }: { params: Promise<{ quiz
     const { data: questionsData } = useGetAdminQuizQuestionsQuery(quizId);
     const questions: IQuestion[] = extractApiData<IQuestion[]>(questionsData) ?? [];
     const [updateQuiz] = useUpdateQuizMutation();
+    const [createQuestion, { isLoading: isCreating }] = useCreateAdminQuestionMutation();
+    const [updateQuestion, { isLoading: isUpdating }] = useUpdateAdminQuestionMutation();
     const [deleteQuestion] = useDeleteAdminQuestionMutation();
     const [duplicateQuestion] = useDuplicateAdminQuestionMutation();
     const [reorderQuestions] = useReorderAdminQuestionsMutation();
+
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [editingQuestion, setEditingQuestion] = useState<IQuestion | null>(null);
+
+    const openAddDialog = () => {
+        setEditingQuestion(null);
+        setDialogOpen(true);
+    };
+
+    const openEditDialog = (question: IQuestion) => {
+        setEditingQuestion(question);
+        setDialogOpen(true);
+    };
+
+    const handleSaveQuestion = async (value: QuestionFormValue) => {
+        try {
+            if (editingQuestion) {
+                await updateQuestion({ questionId: editingQuestion._id, data: value }).unwrap();
+                toast.success("Question updated");
+            } else {
+                await createQuestion({ quizId, data: value }).unwrap();
+                toast.success("Question added");
+            }
+        } catch (err) {
+            toast.error(getApiErrorMessage(err, "Failed to save question"));
+            throw err;
+        }
+    };
 
     const handleDelete = async (questionId: string) => {
         try {
@@ -118,10 +152,7 @@ export default function AdminQuizDetailPage({ params }: { params: Promise<{ quiz
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>Questions</CardTitle>
-                            <Button
-                                onClick={() => router.push(`/dashboard/admin/quizzes/${quizId}/questions/new`)}
-                                size="sm"
-                            >
+                            <Button onClick={openAddDialog} size="sm">
                                 <Plus className="h-4 w-4 mr-2" />
                                 Add Question
                             </Button>
@@ -158,23 +189,27 @@ export default function AdminQuizDetailPage({ params }: { params: Promise<{ quiz
                                                         </Button>
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <span className="text-sm font-medium text-muted-foreground">
+                                                        <div className="flex items-start gap-2 mb-2">
+                                                            <span className="text-sm font-medium text-muted-foreground shrink-0 mt-0.5">
                                                                 Q{index + 1}.
                                                             </span>
-                                                            <Badge variant="outline" className="text-xs">
-                                                                {question.questionType === 'mcq' ? 'MCQ' : 'True/False'}
-                                                            </Badge>
-                                                            <Badge variant="outline" className="text-xs">
-                                                                {question.marks} mark{question.marks !== 1 ? 's' : ''}
-                                                            </Badge>
-                                                            {question.zamesPoints > 0 && (
-                                                                <Badge variant="secondary" className="text-xs text-amber-500">
-                                                                    ★ {question.zamesPoints} Zames
+                                                            <div className="flex-1">
+                                                                <ContentBlockDisplay content={question.content} variant="question" />
+                                                            </div>
+                                                            <div className="flex items-center gap-2 shrink-0">
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    {question.questionType === 'mcq' ? 'MCQ' : 'True/False'}
                                                                 </Badge>
-                                                            )}
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    {question.marks} mark{question.marks !== 1 ? 's' : ''}
+                                                                </Badge>
+                                                                {question.zamesPoints > 0 && (
+                                                                    <Badge variant="secondary" className="text-xs text-amber-500">
+                                                                        ★ {question.zamesPoints} Zames
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <ContentBlockDisplay content={question.content} variant="question" />
                                                         <div className="grid grid-cols-2 gap-2 mt-2">
                                                             {question.options.map((option, oi) => (
                                                                 <div
@@ -194,11 +229,7 @@ export default function AdminQuizDetailPage({ params }: { params: Promise<{ quiz
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-8 w-8"
-                                                            onClick={() =>
-                                                                    router.push(
-                                                                        `/dashboard/admin/quizzes/${quizId}/questions/${question._id}/edit`
-                                                                    )
-                                                            }
+                                                            onClick={() => openEditDialog(question)}
                                                         >
                                                             <Pencil className="h-4 w-4" />
                                                         </Button>
@@ -227,6 +258,15 @@ export default function AdminQuizDetailPage({ params }: { params: Promise<{ quiz
                             )}
                         </CardContent>
                     </Card>
+
+                    <QuestionDialog
+                        open={dialogOpen}
+                        onOpenChange={setDialogOpen}
+                        editingQuestion={editingQuestion}
+                        onSave={handleSaveQuestion}
+                        isSaving={isCreating || isUpdating}
+                        mode="admin"
+                    />
                 </div>
             }
         />
