@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Pencil, Plus, Rocket } from 'lucide-react';
+import { Loader2, Pencil, Plus, Rocket, Video } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/dialog";
 import { useUploadSingleImageMutation } from '@/redux/api/uploadApi';
 import type { BootcampCatalogItem } from '@/redux/api/bootcampApi';
-import { useGetAllBatchesQuery } from '@/redux/api/batchApi';
 import { Textarea } from "@/components/ui/textarea";
 import Image from 'next/image';
+import BootcampVideosManager from './BootcampVideosManager';
 import {
     useGetBootcampCatalogAdminQuery,
     usePublishBootcampRecordingMutation,
@@ -56,10 +56,7 @@ export default function BootcampCatalogManager() {
     const [uploadImage] = useUploadSingleImageMutation();
     const [uploadingField, setUploadingField] = useState<'thumbnail' | 'posterImage' | null>(null);
     const [previews, setPreviews] = useState<{ thumbnail?: string; posterImage?: string }>({});
-    const [publishTarget, setPublishTarget] = useState<BootcampCatalogItem | null>(null);
-    const [publishSourceBatchId, setPublishSourceBatchId] = useState('');
-    const { data: batchesData } = useGetAllBatchesQuery({ limit: 100 });
-    const batches = batchesData?.data ?? [];
+    const [videosTarget, setVideosTarget] = useState<BootcampCatalogItem | null>(null);
 
     const bootcamps = data?.data ?? [];
 
@@ -187,20 +184,10 @@ export default function BootcampCatalogManager() {
 
     const handleCreate = handleSubmit;
 
-    const openPublishDialog = (b: BootcampCatalogItem) => {
-        setPublishTarget(b);
-        setPublishSourceBatchId('');
-    };
-
-    const handlePublish = async () => {
-        if (!publishTarget) return;
+    const handlePublish = async (b: BootcampCatalogItem) => {
         try {
-            await publish({
-                id: publishTarget._id,
-                sourceBatchId: publishSourceBatchId || undefined,
-            }).unwrap();
+            await publish({ id: b._id }).unwrap();
             toast.success('Recording published — now visible in archive');
-            setPublishTarget(null);
             refetch();
         } catch (e) {
             const err = e as { data?: { message?: string } };
@@ -236,8 +223,8 @@ export default function BootcampCatalogManager() {
             </CardHeader>
             <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                    Edit a bootcamp to change its replay price — it syncs to the hidden lifetime batch automatically.
-                    Publish to show the card on the /bootcamp archive.
+                    Bootcamps are fully standalone — add completed session videos directly (no course
+                    or batch needed), then publish to show the card on the /bootcamp archive.
                 </p>
                 {isLoading ? (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -267,8 +254,11 @@ export default function BootcampCatalogManager() {
                                 <Button size="sm" variant="outline" onClick={() => openEdit(b)}>
                                     <Pencil className="mr-1 h-3 w-3" /> Edit
                                 </Button>
+                                <Button size="sm" variant="outline" onClick={() => setVideosTarget(b)}>
+                                    <Video className="mr-1 h-3 w-3" /> Videos ({b.videos?.length ?? 0})
+                                </Button>
                                 {b.recordedStatus !== 'published' ? (
-                                    <Button size="sm" variant="default" onClick={() => openPublishDialog(b)} disabled={isPublishing}>
+                                    <Button size="sm" variant="default" onClick={() => handlePublish(b)} disabled={isPublishing}>
                                         <Rocket className="mr-1 h-3 w-3" /> Publish
                                     </Button>
                                 ) : null}
@@ -436,52 +426,23 @@ export default function BootcampCatalogManager() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-            <Dialog open={!!publishTarget} onOpenChange={(open) => { if (!open) setPublishTarget(null); }}>
-                <DialogContent className="max-w-md">
+            <Dialog open={!!videosTarget} onOpenChange={(open) => { if (!open) setVideosTarget(null); }}>
+                <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Publish Recording</DialogTitle>
+                        <DialogTitle>
+                            {videosTarget ? `${videosTarget.title} ${videosTarget.season} — Videos` : ''}
+                        </DialogTitle>
                         <DialogDescription>
-                            {publishTarget
-                                ? `Publish "${publishTarget.title} ${publishTarget.season}" to the /bootcamp archive.`
-                                : ''}
+                            Add the completed bootcamp videos here. They live on the bootcamp —
+                            completely separate from courses, batches and recordings.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium" htmlFor="bc-publish-source">
-                                Copy content from batch
-                            </label>
-                            <select
-                                id="bc-publish-source"
-                                value={publishSourceBatchId}
-                                onChange={(e) => setPublishSourceBatchId(e.target.value)}
-                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            >
-                                <option value="">Publish without copying content (empty course)</option>
-                                {batches.map((batch) => (
-                                    <option key={batch._id} value={batch._id}>
-                                        {batch.title} (#{batch.batchNumber})
-                                    </option>
-                                ))}
-                            </select>
-                            {batches.length === 0 ? (
-                                <p className="text-xs text-muted-foreground">
-                                    No batches found — the recording will be published as an empty course.
-                                </p>
-                            ) : null}
-                        </div>
-                    </div>
+                    {videosTarget ? (
+                        <BootcampVideosManager bootcamp={videosTarget} />
+                    ) : null}
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setPublishTarget(null)} disabled={isPublishing}>
-                            Cancel
-                        </Button>
-                        <Button onClick={handlePublish} disabled={isPublishing}>
-                            {isPublishing ? (
-                                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                            ) : (
-                                <Rocket className="mr-1 h-4 w-4" />
-                            )}
-                            Publish
+                        <Button variant="outline" onClick={() => setVideosTarget(null)}>
+                            Done
                         </Button>
                     </DialogFooter>
                 </DialogContent>

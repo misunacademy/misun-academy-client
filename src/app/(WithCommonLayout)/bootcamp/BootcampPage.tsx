@@ -41,17 +41,17 @@ const BootcampPage = () => {
             <main className="bg-[#0a0a0b]">
                 <section className="mx-auto max-w-6xl px-4 pb-2 pt-12">
                     <p className="font-bangla text-sm font-semibold tracking-wide text-[#ffd60a]">
-                        বুটক্যাম্প রেকর্ডিং
+                        রেকর্ডিং লাইব্রেরি
                     </p>
                     <h1 className="mt-2 font-bangla text-3xl font-bold text-white sm:text-4xl">
-                        আগের বুটক্যাম্পগুলো যেকোনো সময় কিনুন
+                        রেকর্ডিং দেখে নিজের গতিতে শিখুন
                     </h1>
                     <p className="mt-3 max-w-2xl font-bangla text-white/60">
-                        এখন কোনো লাইভ বুটক্যাম্প চলছে না। নিচের যেকোনো রেকর্ডিং কিনে লাইফটাইম অ্যাক্সেস নিন।
+                        বর্তমানে কোনো লাইভ বুটক্যাম্প চালু নেই। পূর্বের বুটক্যাম্পের রেকর্ডিং কিনে লাইফটাইম অ্যাক্সেস নিয়ে শেখা শুরু করুন।
                     </p>
                 </section>
                 {past.length > 0 ? (
-                    <PreviousBootcampsGrid items={past} title="সব রেকর্ডিং" />
+                    <PreviousBootcampsGrid items={past} title="সব রেকর্ডিং বুটক্যাম্প" />
                 ) : (
                     <section className="mx-auto max-w-6xl px-4 py-14">
                         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">

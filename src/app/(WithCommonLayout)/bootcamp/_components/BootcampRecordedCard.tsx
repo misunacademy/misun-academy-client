@@ -49,9 +49,16 @@ export const BootcampRecordedCard = ({ item }: { item: Card }) => {
                         <Clock className="h-3.5 w-3.5" />
                         {hours} • লাইফটাইম অ্যাক্সেস
                     </span>
-                    <span className="font-bangla text-base font-bold text-[#ffd60a]">
-                        ৳{item.recordedPrice}
-                    </span>
+                    <div className="flex items-baseline gap-1.5 font-bangla">
+                        {item.liveFee && item.liveFee > item.recordedPrice ? (
+                            <span className="text-lg text-white/40 line-through">
+                                ৳{item.liveFee}
+                            </span>
+                        ) : null}
+                        <span className="text-xl font-bold text-[#ffd60a]">
+                            ৳{item.recordedPrice}
+                        </span>
+                    </div>
                 </div>
             </div>
         </Link>
