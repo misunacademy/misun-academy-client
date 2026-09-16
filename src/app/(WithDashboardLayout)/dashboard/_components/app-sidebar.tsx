@@ -146,7 +146,7 @@ function getAdminGroups(isSuperAdmin: boolean): NavGroup[] {
       label: "Commerce",
       items: [
         { title: "Payments", url: "/dashboard/admin/payment", icon: CreditCard },
-        { title: "Refunds", url: "/dashboard/admin/refunds", icon: RotateCcw },
+        // { title: "Refunds", url: "/dashboard/admin/refunds", icon: RotateCcw },
         { title: "Reports", url: "/dashboard/admin/reports", icon: FileText },
       ],
     },

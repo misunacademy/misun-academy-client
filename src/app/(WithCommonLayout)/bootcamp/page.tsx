@@ -12,7 +12,7 @@ export const metadata: Metadata = generateMetadata({
     'MISUN Academy',
     'প্যারাসিটামল ফর ফটোশপ',
     'গ্রাফিক ডিজাইন বুটক্যাম্প',
-    'ফটোশপ কোর্স',
+    'ফটোশপ বুটক্যাম্প',
     'Online Bootcamp Bangladesh',
   ],
   slug: 'bootcamp',

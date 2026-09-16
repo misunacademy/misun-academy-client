@@ -8,7 +8,7 @@ export const BootcampPerks = () => (
         <div className="mx-auto max-w-6xl px-4">
             <FadeIn>
                 <p className="font-mona text-xs font-bold uppercase tracking-[0.3em] text-[#ffd60a]">
-                    4-Day Course · Special Dose
+                    4-Day Bootcamp · Special Dose
                 </p>
                 <h2 className="mt-2 font-bangla text-2xl font-bold sm:text-3xl">
                     এই বুটক্যাম্পে যা যা পাচ্ছেন
