@@ -69,6 +69,7 @@ export const baseApi = createApi({
         'CourseEnrollments',
         'Profile',
         'Payments',
+        'Refunds',
         'Recordings',
         'Certificates',
         'Instructors',
@@ -87,6 +88,7 @@ export const baseApi = createApi({
         'Zames',
         'AuditLogs',
         'Bootcamp',
+        'Announcements',
     ],
     endpoints: () => ({}),
 });

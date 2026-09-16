@@ -49,38 +49,41 @@ export default function CustomizationPanel({
 }: CustomizationPanelProps) {
   return (
     <div className="lg:col-span-5 space-y-6">
-      <Card className="bg-[#0a1610]/90 border-white/10 text-white">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <LayoutTemplate className="w-4 h-4" />
+      <Card className="border-primary/20 bg-surface-darker/80 text-white shadow-[0_0_60px_hsl(156_70%_42%/0.08)] backdrop-blur-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-primary/20 bg-primary/10">
+              <LayoutTemplate className="h-4 w-4 text-primary" />
+            </span>
             Choose Template
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-4">
+        <CardContent className="grid grid-cols-2 gap-3">
           {templates.map((template, index) => (
-            <div
+            <button
               key={template.id}
+              type="button"
               onClick={() => onSelectTemplate(index)}
-              className={`cursor-pointer rounded-lg border-2 overflow-hidden relative aspect-square transition-all ${
+              className={`relative aspect-square cursor-pointer overflow-hidden rounded-xl border-2 transition-all ${
                 selectedTemplateIndex === index
-                  ? "border-green-500 ring-2 ring-green-500/30"
-                  : "border-white/10 hover:border-white/30"
+                  ? "border-primary shadow-[0_0_24px_hsl(156_70%_42%/0.25)]"
+                  : "border-white/10 hover:border-white/25"
               }`}
             >
-              <Image src={template.src} alt={template.name} width={100} height={100} className="w-full h-full object-cover" />
+              <Image src={template.src} alt={template.name} width={200} height={200} className="h-full w-full object-cover" />
               {selectedTemplateIndex === index && (
-                <div className="absolute top-2 right-2 bg-green-600 text-white p-1 rounded-full">
-                  <CheckCircle2 className="w-3 h-3" />
-                </div>
+                <span className="absolute right-2 top-2 rounded-full bg-primary p-1 text-white shadow-lg">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                </span>
               )}
-            </div>
+            </button>
           ))}
         </CardContent>
       </Card>
 
-      <Card className="bg-[#0a1610]/90 border-white/10 text-white">
-        <CardHeader>
-          <CardTitle className="text-lg">Customize Details</CardTitle>
+      <Card className="border-primary/20 bg-surface-darker/80 text-white shadow-[0_0_60px_hsl(156_70%_42%/0.08)] backdrop-blur-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base font-semibold text-white">Customize Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -103,24 +106,24 @@ export default function CustomizationPanel({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white/80">Student Name</Label>
-            <Input value={userName} onChange={(e) => onUserNameChange(e.target.value)} placeholder="Enter your full name" className="bg-[#0d1f12] border-primary/25 text-white placeholder:text-white/40" />
+            <Label className="text-[13px] font-medium text-white/70">Student Name</Label>
+            <Input value={userName} onChange={(e) => onUserNameChange(e.target.value)} placeholder="Enter your full name" className="border-white/10 bg-white/[0.03] text-white placeholder:text-white/30 focus-visible:ring-primary/50" />
           </div>
 
           <div className="space-y-2 hidden">
             <Label className="text-white/80">Batch ID</Label>
-            <Input value={batchNo} readOnly placeholder="e.g. BATCH-06" className="bg-[#0d1f12] border-primary/25 text-white placeholder:text-white/40" />
+            <Input value={batchNo} readOnly placeholder="e.g. BATCH-06" className="border-white/10 bg-white/[0.03] text-white placeholder:text-white/30" />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-white/80">Profile Photo</Label>
-            <div className="border-2 border-dashed border-primary/20 rounded-lg p-6 hover:bg-primary/5 transition-colors text-center">
+            <Label className="text-[13px] font-medium text-white/70">Profile Photo</Label>
+            <div className="rounded-xl border border-dashed border-white/15 bg-white/[0.02] p-5 text-center transition-colors hover:border-primary/40 hover:bg-primary/[0.04]">
               <input type="file" id="image-upload" accept="image/*" onChange={onImageUpload} className="hidden" />
-              <label htmlFor="image-upload" className="cursor-pointer block w-full h-full">
+              <label htmlFor="image-upload" className="block h-full w-full cursor-pointer">
                 {userImage ? (
                   <div className="mx-auto">
                     <div
-                      className="relative w-24 h-24 mx-auto rounded-full overflow-hidden touch-none cursor-grab"
+                      className="relative mx-auto h-24 w-24 cursor-grab touch-none overflow-hidden rounded-full border border-primary/30"
                       ref={previewImgRef}
                       onPointerDown={onPreviewPointerDown}
                       onPointerMove={onPreviewPointerMove}
@@ -129,43 +132,38 @@ export default function CustomizationPanel({
                       style={{ touchAction: "none" }}
                     >
                       <Image src={userImage} alt="Preview" fill sizes="96px" className="object-cover" />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 hover:opacity-100 transition-opacity">
-                        <Upload className="w-6 h-6 text-white" />
+                      <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity hover:opacity-100">
+                        <Upload className="h-6 w-6 text-white" />
                       </div>
                     </div>
 
-                    <div className="mt-3 space-y-3">
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="grid grid-cols-3 gap-2 items-center">
-                          <div className="col-span-3 flex justify-center">
-                            <Button size="sm" variant="outline" onClick={() => onMoveImage(0, -0.05)}><ArrowUp className="w-4 h-4" /></Button>
-                          </div>
-                          <Button size="sm" variant="outline" onClick={() => onMoveImage(-0.05, 0)}><ArrowLeft className="w-4 h-4" /></Button>
-                          <div className="flex items-center justify-center space-x-2">
-                            <Button size="sm" variant="ghost" onClick={onResetImage}>Reset</Button>
-                            <span className="text-xs text-white/55">X: {Math.round(imageOffset.x * 100)}% Y: {Math.round(imageOffset.y * 100)}% Zoom: {Math.round(imageZoom * 100)}%</span>
-                          </div>
-                          <Button size="sm" variant="outline" onClick={() => onMoveImage(0.05, 0)}><ArrowRight className="w-4 h-4" /></Button>
-                          <div className="col-span-3 flex justify-center">
-                            <Button size="sm" variant="outline" onClick={() => onMoveImage(0, 0.05)}><ArrowDown className="w-4 h-4" /></Button>
-                          </div>
-                        </div>
+                    <div className="mt-4 space-y-3 rounded-xl border border-white/10 bg-black/20 p-3">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Button type="button" size="icon" variant="outline" className="h-8 w-8 border-white/15 bg-transparent text-white/70 hover:bg-white/10 hover:text-white" onClick={(e) => { e.preventDefault(); onMoveImage(0, -0.05); }} aria-label="Move up"><ArrowUp className="h-4 w-4" /></Button>
+                        <Button type="button" size="icon" variant="outline" className="h-8 w-8 border-white/15 bg-transparent text-white/70 hover:bg-white/10 hover:text-white" onClick={(e) => { e.preventDefault(); onMoveImage(-0.05, 0); }} aria-label="Move left"><ArrowLeft className="h-4 w-4" /></Button>
+                        <Button type="button" size="sm" variant="ghost" className="h-8 px-3 text-xs text-white/60 hover:bg-white/10 hover:text-white" onClick={(e) => { e.preventDefault(); onResetImage(); }}>Reset</Button>
+                        <Button type="button" size="icon" variant="outline" className="h-8 w-8 border-white/15 bg-transparent text-white/70 hover:bg-white/10 hover:text-white" onClick={(e) => { e.preventDefault(); onMoveImage(0.05, 0); }} aria-label="Move right"><ArrowRight className="h-4 w-4" /></Button>
+                        <Button type="button" size="icon" variant="outline" className="h-8 w-8 border-white/15 bg-transparent text-white/70 hover:bg-white/10 hover:text-white" onClick={(e) => { e.preventDefault(); onMoveImage(0, 0.05); }} aria-label="Move down"><ArrowDown className="h-4 w-4" /></Button>
                       </div>
 
                       <div className="flex items-center justify-center gap-2">
-                        <Button size="sm" variant="outline" onClick={onZoomOut}><ZoomOut className="w-4 h-4" /></Button>
-                        <input type="range" min={MIN_ZOOM} max={MAX_ZOOM} step={ZOOM_STEP} value={imageZoom} onChange={(e) => setImageZoom(Number(e.target.value))} className="w-40" />
-                        <Button size="sm" variant="outline" onClick={onZoomIn}><ZoomIn className="w-4 h-4" /></Button>
+                        <Button type="button" size="icon" variant="outline" className="h-8 w-8 border-white/15 bg-transparent text-white/70 hover:bg-white/10 hover:text-white" onClick={(e) => { e.preventDefault(); onZoomOut(); }} aria-label="Zoom out"><ZoomOut className="h-4 w-4" /></Button>
+                        <input type="range" min={MIN_ZOOM} max={MAX_ZOOM} step={ZOOM_STEP} value={imageZoom} onChange={(e) => setImageZoom(Number(e.target.value))} className="w-36 accent-emerald-500" />
+                        <Button type="button" size="icon" variant="outline" className="h-8 w-8 border-white/15 bg-transparent text-white/70 hover:bg-white/10 hover:text-white" onClick={(e) => { e.preventDefault(); onZoomIn(); }} aria-label="Zoom in"><ZoomIn className="h-4 w-4" /></Button>
                       </div>
+                      <p className="text-[11px] tabular-nums text-white/40">
+                        X: {Math.round(imageOffset.x * 100)}% Y: {Math.round(imageOffset.y * 100)}% · Zoom: {Math.round(imageZoom * 100)}%
+                      </p>
                     </div>
                   </div>
                 ) : (
-                  <div>
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2 text-green-500">
-                      <Upload className="w-6 h-6" />
-                    </div>
-                    <span className="text-sm font-medium text-white/70">Click to upload photo</span>
-                  </div>
+                  <span className="block">
+                    <span className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary">
+                      <Upload className="h-6 w-6" />
+                    </span>
+                    <span className="block text-sm font-medium text-white/70">Click to upload photo</span>
+                    <span className="mt-1 block text-xs text-white/35">PNG or JPG, square works best</span>
+                  </span>
                 )}
               </label>
             </div>

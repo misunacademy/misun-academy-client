@@ -14,17 +14,20 @@ export default function FloatingChat() {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
-    setMessages([
-      {
-        id: "init-1",
-        sender: "bot",
-        text: "স্বাগতম! আমি Sun, Misun Academy-এর আপনার AI সহায়ক। কিভাবে আপনাকে সাহায্য করতে পারি?",
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      },
-    ]);
+    const frame = requestAnimationFrame(() => {
+      setMessages([
+        {
+          id: "init-1",
+          sender: "bot",
+          text: "স্বাগতম! আমি Sun, Misun Academy-এর আপনার AI সহায়ক। কিভাবে আপনাকে সাহায্য করতে পারি?",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);

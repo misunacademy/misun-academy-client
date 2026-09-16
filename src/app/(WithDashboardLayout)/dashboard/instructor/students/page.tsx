@@ -1,3 +1,5 @@
+export const instant = false
+
 import StudentsPage from "@/app/(WithDashboardLayout)/dashboard/instructor/students/components/Students";
 
 

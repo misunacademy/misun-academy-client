@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Image from "next/image";
-import { X } from "lucide-react";
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 export default function PopupBannerModal() {
   const { data, isSuccess } = useGetSettingsQuery();
@@ -22,46 +22,47 @@ export default function PopupBannerModal() {
     try {
       sessionStorage.setItem("misunPopupDismissed", "1");
     } catch {
-      // no fallback
+      // storage unavailable
     }
   }, []);
 
-  useEffect(() => {
-    if (!showPopup) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [showPopup, close]);
-
-  if (!showPopup) {
-    return null;
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-label="Popup banner">
-      <div className="relative max-w-5xl w-full bg-white rounded-xl shadow-xl overflow-hidden">
-        <button
-          className="absolute top-3 right-3 z-20 rounded-full bg-white/90 p-1 text-gray-900 shadow hover:bg-white"
-          aria-label="Close popup"
-          onClick={close}
-        >
-          <X className="h-5 w-5" />
-        </button>
+    <Dialog open={showPopup} onOpenChange={(open) => { if (!open) close(); }}>
+      <DialogContent
+        className="max-w-5xl gap-0 overflow-hidden border-primary/20 bg-surface-darker p-0 shadow-2xl [&>button]:rounded-full [&>button]:bg-white/10 [&>button]:p-1.5 [&>button]:text-white [&>button]:shadow-md [&>button]:hover:bg-white/20"
+        aria-describedby={undefined}
+      >
+        <DialogTitle className="sr-only">প্রোমোশনাল ব্যানার</DialogTitle>
+        <DialogDescription className="sr-only">
+          বর্তমান অফার বা ঘোষণা প্রদর্শনকারী ব্যানার
+        </DialogDescription>
 
         {popupLink ? (
-          <a href={popupLink} target="_blank" rel="noreferrer" onClick={close}>
-            <div className="relative h-[80vh] w-full">
-              <Image src={popupImageUrl} alt="Promotional banner" fill sizes="(max-width: 1024px) 100vw, 1024px" className="object-cover" unoptimized />
+          <a href={popupLink} target="_blank" rel="noopener noreferrer" onClick={close}>
+            <div className="relative h-[70vh] max-h-[80vh] w-full sm:h-[80vh]">
+              <Image
+                src={popupImageUrl}
+                alt="প্রোমোশনাল ব্যানার"
+                fill
+                sizes="(max-width: 1024px) 100vw, 1024px"
+                className="object-cover"
+                unoptimized
+              />
             </div>
           </a>
         ) : (
-          <div className="relative h-[80vh]  w-full">
-            <Image src={popupImageUrl} alt="" fill sizes="(max-width: 1024px) 100vw, 1024px" className="object-cover" unoptimized />
+          <div className="relative h-[70vh] max-h-[80vh] w-full sm:h-[80vh]">
+            <Image
+              src={popupImageUrl}
+              alt="প্রোমোশনাল ব্যানার"
+              fill
+              sizes="(max-width: 1024px) 100vw, 1024px"
+              className="object-cover"
+              unoptimized
+            />
           </div>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -18,7 +18,7 @@ export default function CourseOverviewTab({
         ? typeof duration === "object"
             ? `${(duration as { weeks?: number }).weeks || 0} weeks, ${(duration as { hours?: number }).hours || 0} hours`
             : String(duration)
-        : "TBD";
+        : "—";
 
     return (
         <div className="mt-4 space-y-4">

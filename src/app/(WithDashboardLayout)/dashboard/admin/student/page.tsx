@@ -1,3 +1,5 @@
+export const instant = false
+
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
 import EnrolledStudentTable from '@/app/(WithDashboardLayout)/dashboard/admin/student/components/EnrolledStudent';
 

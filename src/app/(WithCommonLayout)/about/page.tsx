@@ -4,7 +4,7 @@ import TeamMemberCard from './_components/TeamMemberCard';
 import AboutStorySection from './_components/AboutStorySection';
 import AboutMissionVisionSection from './_components/AboutMissionVisionSection';
 import AboutCtaSection from './_components/AboutCtaSection';
-import { ajeful, debrotto, mehedi, mithun, neyemur, rohan,ruponpaul ,puspita, sakin } from "@/assets/teamMembers/index";
+import { ajeful, debrotto, mehedi, mithun, neyemur, rohan,ruponpaul ,puspita, sakin,ananda } from "@/assets/teamMembers/index";
 
 export const metadata = genMeta({
   title: 'আমাদের সম্পর্কে | MISUN Academy',
@@ -23,6 +23,7 @@ const teamMembers = [
   { name: "Mehedi Hasan", role: "Web Developer", company: "MISUN Academy", image: mehedi },
   { name: "S. M. Nayemur Rahman", role: "Marketing Executive", company: "MISUN Academy", image: neyemur },
   { name: "Nafiun Sakin", role: "Community Growth Manager", company: "MISUN Academy", image: sakin },
+  { name: "Ananda", role: "Accountant", company: "MISUN Academy", image: ananda },
 ];
 
 const AboutUs = () => {

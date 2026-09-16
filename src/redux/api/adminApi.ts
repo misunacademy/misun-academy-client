@@ -99,6 +99,20 @@ export interface SendBatchReminderRequest {
   batchId: string;
 }
 
+export interface RoleStatsResponse {
+  total: number;
+  roles: Array<{
+    role: string;
+    label: string;
+    description: string;
+    color: string;
+    count: number;
+    active: number;
+    suspended: number;
+  }>;
+  byRoleStatus: Record<string, Record<string, number>>;
+}
+
 // ============================================================================
 // ADMIN API ENDPOINTS
 // ============================================================================
@@ -240,16 +254,21 @@ const adminApi = baseApi.injectEndpoints({
     }),
 
     /**
-     * Send completed batch incomplete reminder (progress < 100% or no progress)
-     * POST /api/v1/admin/send-batch-incomplete-reminder
-     * Requires: ADMIN or SUPERADMIN
-     */
+      * Send completed batch incomplete reminder (progress < 100% or no progress)
+      * POST /api/v1/admin/send-batch-incomplete-reminder
+      * Requires: ADMIN or SUPERADMIN
+      */
     sendBatchIncompleteReminder: build.mutation<EmailCountResponse, SendBatchReminderRequest>({
       query: (data) => ({
         url: "/admin/send-batch-incomplete-reminder",
         method: "POST",
         body: data,
       }),
+    }),
+
+    getRoleStats: build.query<{ success: boolean; message: string; data: RoleStatsResponse }, void>({
+      query: () => ({ url: "/admin/roles/stats" }),
+      providesTags: ["Users"],
     }),
   }),
 });
@@ -268,6 +287,7 @@ export const {
   useSendNewsUpdateMutation,
   useSendBatchProgressReminderMutation,
   useSendBatchIncompleteReminderMutation,
+  useGetRoleStatsQuery,
 } = adminApi;
 
 export default adminApi;

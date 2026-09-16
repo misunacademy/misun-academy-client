@@ -1,9 +1,8 @@
-"use client";
-
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
+import AuditLogsContent from "./_components/AuditLogsContent";
 
-const AuditLogsContent = lazy(() => import("./_components/AuditLogsContent"));
+export const instant = false
 
 function AuditLogsSkeleton() {
   return (

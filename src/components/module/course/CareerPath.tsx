@@ -36,6 +36,8 @@ export default function CareerPath() {
 
             gsapModule.gsap.registerPlugin(MotionPathPlugin, ScrollTrigger);
 
+            setGsapLoaded(true);
+
             if (rocketRef.current && scrollRef.current && pathRef.current) {
 
                 let previousScroll = 0;
@@ -72,7 +74,6 @@ export default function CareerPath() {
             }
         };
         if (typeof window !== 'undefined') {
-            setGsapLoaded(true);
             loadGsap();
         }
     }, [isSmDevice]);

@@ -12,23 +12,10 @@ import { FadeIn } from '@/components/ui/FadeIn';
 import { StaggerContainer } from '@/components/ui/StaggerContainer';
 import { StatCard } from './StatCard';
 import { stats } from './statsData';
-// import { useGetSettingsQuery } from '@/redux/api/settingsApi';
-// import { toYouTubeEmbedUrl } from './WhyThisCourseModal';
-
-// function extractVideoId(embedUrl: string): string | null {
-//   const match = embedUrl.match(/\/embed\/([^/?#]+)/);
-//   return match ? match[1] : null;
-// }
 
 export default function WhyThisCourse() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [animate, setAnimate] = useState(false);
-  // const { data: settingsData } = useGetSettingsQuery();
-  // const embedUrl = toYouTubeEmbedUrl(settingsData?.data?.homeWhyVideoUrl);
-  // const videoId = embedUrl ? extractVideoId(embedUrl) : null;
-  // const thumbnailUrl = videoId
-  //   ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-  //   : null;
 
   useEffect(() => {
     const observer = new IntersectionObserver(

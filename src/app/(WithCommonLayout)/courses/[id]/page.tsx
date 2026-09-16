@@ -20,7 +20,7 @@ const courseConfig = {
       'ফ্রিল্যান্সিং শেখা',
       'অনলাইন ডিজাইন কোর্স',
     ],
-    image: '/course-og-image.png',
+    image: '/preview/course-og-image.png',
   },
   [COURSE_SLUGS.ENGLISH]: {
     title: 'English For Professional Communication | MISUN Academy',
@@ -35,7 +35,7 @@ const courseConfig = {
       'Business English',
       'English Course Online',
     ],
-    image: '/english-og-image.png',
+    image: '/preview/default-og-image.png',
   },
 } as const;
 

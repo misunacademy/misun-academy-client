@@ -1,3 +1,5 @@
+export const instant = false
+
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
 import BatchCrate from "@/app/(WithDashboardLayout)/dashboard/admin/batch/components/Create";
 

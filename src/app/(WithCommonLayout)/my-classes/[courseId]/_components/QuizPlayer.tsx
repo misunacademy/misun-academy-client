@@ -74,7 +74,8 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
     if (phase !== "loading") return;
     if (infoLoading) return;
     if (!quizInfo) return;
-    setPhase(determinedPhase);
+    const frame = requestAnimationFrame(() => setPhase(determinedPhase));
+    return () => cancelAnimationFrame(frame);
   }, [phase, infoLoading, quizInfo, determinedPhase]);
 
   const timerActive = phase === "active" && timeRemaining !== null && timeRemaining > 0;
@@ -171,7 +172,8 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
 
   React.useEffect(() => {
     if (timeRemaining === 0 && phase === "active") {
-      handleSubmit();
+      const frame = requestAnimationFrame(() => handleSubmit());
+      return () => cancelAnimationFrame(frame);
     }
   }, [timeRemaining, phase, handleSubmit]);
 

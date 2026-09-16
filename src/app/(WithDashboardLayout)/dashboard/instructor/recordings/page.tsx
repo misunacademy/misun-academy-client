@@ -1,3 +1,5 @@
+export const instant = false
+
 
 import RecordingPage from "@/app/(WithDashboardLayout)/dashboard/instructor/recordings/components/Recording";
 

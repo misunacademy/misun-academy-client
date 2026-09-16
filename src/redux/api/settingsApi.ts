@@ -13,6 +13,9 @@ export interface SettingsResponse {
   epFacebookGroupLink?: string;
   epWhatsappGroupLink?: string;
   homeWhyVideoUrl?: string;
+  epHomeWhyVideoUrl?: string;
+  maPaymentTutorialVideoUrl?: string;
+  epPaymentTutorialVideoUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

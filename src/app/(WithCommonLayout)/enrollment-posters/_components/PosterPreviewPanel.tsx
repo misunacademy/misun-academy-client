@@ -13,19 +13,22 @@ interface PosterPreviewPanelProps {
 export default function PosterPreviewPanel({ canvasRef, onDownload, onShare }: PosterPreviewPanelProps) {
   return (
     <div className="lg:col-span-7">
-      <Card className="h-full border border-white/10 shadow-lg bg-[#0a1610]/90 backdrop-blur-sm sticky top-24 flex items-center justify-center">
-        <CardContent className="p-6">
-          <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-[#0a1610] border border-white/10 shadow-inner mb-6">
-            <canvas ref={canvasRef} className="w-full h-full object-contain" />
+      <Card className="h-full border-primary/20 bg-surface-darker/80 text-white shadow-[0_0_60px_hsl(156_70%_42%/0.08)] backdrop-blur-sm lg:sticky lg:top-24">
+        <CardContent className="p-5 sm:p-6">
+          <div className="relative mb-5 aspect-square w-full overflow-hidden rounded-xl border border-white/10 bg-black/40 shadow-inner">
+            <canvas ref={canvasRef} className="h-full w-full object-contain" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Button onClick={onDownload} className="w-full bg-green-600 hover:bg-green-700 sm:h-12 sm:text-lg">
-              <Download className="w-5 h-5 mr-2" />Download Poster
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button onClick={onDownload} className="h-11 w-full font-semibold">
+              <Download className="mr-2 h-5 w-5" />Download Poster
             </Button>
-            <Button onClick={onShare} variant="outline" className="w-full sm:h-12 sm:text-lg border-primary/35 text-primary hover:bg-primary/10">
-              <Share2 className="w-5 h-5 mr-2" />Share
+            <Button onClick={onShare} variant="outline" className="h-11 w-full border-white/15 bg-transparent text-white/80 hover:bg-white/5 hover:text-white">
+              <Share2 className="mr-2 h-5 w-5" />Share
             </Button>
           </div>
+          <p className="mt-4 text-center text-xs leading-relaxed text-white/35">
+            Tip: drag your photo in the preview circle to reposition it before downloading.
+          </p>
         </CardContent>
       </Card>
     </div>

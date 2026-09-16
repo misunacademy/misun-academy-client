@@ -1,3 +1,5 @@
+export const instant = false
+
 import BatchEdit from "@/app/(WithDashboardLayout)/dashboard/admin/batch/components/Edit";
 
 

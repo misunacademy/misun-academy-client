@@ -46,7 +46,7 @@ export default function page() {
         name="AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স"
         description="Learn graphic design from home and build a successful freelancing career with MISUN Academy. Complete Adobe Photoshop & Illustrator course in Bangla."
         slug="graphic-design"
-        image="/images/og-image.png"
+        image="/preview/default-og-image.png"
         courseCode="GD-101"
       />
       <BreadcrumbJsonLd />

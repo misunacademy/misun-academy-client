@@ -16,7 +16,7 @@ export interface PaymentResponse {
   batchId: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'success' | 'failed' | 'review' | 'cancel';
+  status: 'pending' | 'success' | 'failed' | 'review' | 'risk' | 'cancel' | 'refunded';
   method: string; // Changed from paymentMethod to method to match backend
   gatewayResponse?: unknown;
   verifiedAt?: string; // Date as string from API
@@ -73,6 +73,24 @@ const paymentApi = baseApi.injectEndpoints({
       providesTags: ["Payments"],
     }),
 
+    // Admin: Payment transaction detail (drilldown)
+    getPaymentDetail: build.query<
+      {
+        success: boolean;
+        message: string;
+        data: {
+          payment: PaymentResponse;
+          enrollment: { enrollmentId: string; status: string; createdAt: string } | null;
+        };
+      },
+      string
+    >({
+      query: (transactionId) => ({
+        url: `/payments/history/${transactionId}`,
+      }),
+      providesTags: (_r, _e, transactionId) => [{ type: "Payments", id: transactionId }],
+    }),
+
     // Update payment status (admin)
     updatePaymentStatus: build.mutation<unknown, { transactionId: string; status: string }>({
       query: ({ transactionId, status }) => ({
@@ -100,6 +118,7 @@ const paymentApi = baseApi.injectEndpoints({
 export const {
   useGetMyPaymentsQuery,
   useGetAllPaymentsQuery,
+  useGetPaymentDetailQuery,
   useUpdatePaymentStatusMutation,
   useVerifyManualPaymentMutation,
 } = paymentApi;

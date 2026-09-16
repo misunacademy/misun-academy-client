@@ -8,6 +8,7 @@ import {
   AlertCircle,
   Video,
   KeyRound,
+  Flame,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AuthGuard from "@/components/shared/AuthGuard";
@@ -22,6 +23,7 @@ const SceneBackground = dynamic(
 )
 
 const CoursesTab = dynamic(() => import("./components/CoursesTab").then(m => ({ default: m.CoursesTab })), { ssr: false });
+const BootcampsTab = dynamic(() => import("./components/BootcampsTab").then(m => ({ default: m.BootcampsTab })), { ssr: false });
 const LiveRecordingsTab = dynamic(() => import("./components/LiveRecordingsTab").then(m => ({ default: m.LiveRecordingsTab })), { ssr: false });
 const SpecialAccessTab = dynamic(() => import("./components/SpecialAccessTab").then(m => ({ default: m.SpecialAccessTab })), { ssr: false });
 
@@ -116,6 +118,20 @@ const MyClassesPage = () => {
                     )}
                   </TabsTrigger>
                   <TabsTrigger
+                    value="bootcamps"
+                    className="
+                    shrink-0 whitespace-nowrap flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-none border-b-2 border-transparent
+                    text-xs sm:text-sm font-semibold text-white/40
+                    data-[state=active]:border-primary data-[state=active]:text-primary
+                    data-[state=active]:bg-transparent data-[state=active]:shadow-none
+                    hover:text-white/70 transition-all duration-200
+                  "
+                  >
+                    <Flame className="w-4 h-4" />
+                    <span className="hidden sm:inline">My Bootcamps</span>
+                    <span className="sm:hidden">Bootcamps</span>
+                  </TabsTrigger>
+                  <TabsTrigger
                     value="recordings"
                     className="
                     shrink-0 whitespace-nowrap flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-none border-b-2 border-transparent
@@ -157,6 +173,10 @@ const MyClassesPage = () => {
 
             <TabsContent value="courses" className="mt-0">
               <CoursesTab enrolledCourses={enrolledCourses} />
+            </TabsContent>
+
+            <TabsContent value="bootcamps" className="mt-0">
+              <BootcampsTab />
             </TabsContent>
 
             <TabsContent value="recordings" className="mt-0">
