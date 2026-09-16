@@ -1,19 +1,19 @@
-const REDIRECT_HOST_ENV_KEYS = [
+const REDIRECT_ORIGIN_ENV_KEYS = [
   'NEXT_PUBLIC_MA_FRONTEND_URL',
   'NEXT_PUBLIC_EP_FRONTEND_URL',
   'NEXT_PUBLIC_APP_URL',
   'NEXT_PUBLIC_AUTH_URL',
 ] as const;
 
-const REDIRECT_HOST_FALLBACKS = [
-  'esun.misun-academy.com',
+const REDIRECT_ORIGIN_FALLBACKS = [
+  'https://esun.misun-academy.com',
 ] as const;
 
-function toHostname(urlLike?: string | null): string | null {
+function toOrigin(urlLike?: string | null): string | null {
   if (!urlLike) return null;
-
   try {
-    return new URL(urlLike).hostname.toLowerCase();
+    const u = new URL(urlLike);
+    return `${u.protocol}//${u.host}`.toLowerCase();
   } catch {
     return null;
   }
@@ -25,30 +25,33 @@ export function isAllowedRedirectUrl(target?: string | null, currentOrigin?: str
   if (target.startsWith('/')) return true;
 
   try {
-    const targetHost = new URL(target).hostname.toLowerCase();
-    const allowedHosts = new Set<string>();
+    const targetOrigin = toOrigin(target);
+    if (!targetOrigin) return false;
 
-    for (const envKey of REDIRECT_HOST_ENV_KEYS) {
-      const envHost = toHostname(process.env[envKey]);
-      if (envHost) {
-        allowedHosts.add(envHost);
+    const allowedOrigins = new Set<string>();
+
+    for (const envKey of REDIRECT_ORIGIN_ENV_KEYS) {
+      const envOrigin = toOrigin(process.env[envKey]);
+      if (envOrigin) {
+        allowedOrigins.add(envOrigin);
       }
     }
 
-    const currentHost = toHostname(currentOrigin);
-    if (currentHost) {
-      allowedHosts.add(currentHost);
+    const currentOriginParsed = toOrigin(currentOrigin);
+    if (currentOriginParsed) {
+      allowedOrigins.add(currentOriginParsed);
     }
 
     if (typeof window !== 'undefined') {
-      allowedHosts.add(window.location.hostname.toLowerCase());
+      allowedOrigins.add(`${window.location.protocol}//${window.location.host}`.toLowerCase());
     }
 
-    for (const host of REDIRECT_HOST_FALLBACKS) {
-      allowedHosts.add(host);
+    for (const origin of REDIRECT_ORIGIN_FALLBACKS) {
+      const parsed = toOrigin(origin);
+      if (parsed) allowedOrigins.add(parsed);
     }
 
-    return allowedHosts.has(targetHost);
+    return allowedOrigins.has(targetOrigin);
   } catch {
     return false;
   }

@@ -35,7 +35,7 @@ function SectionSkeleton({ minHeight }: { minHeight: string }) {
   return (
     <div
       aria-hidden="true"
-      className="w-full bg-[#060f0a]"
+      className="w-full bg-surface"
       style={{ minHeight }}
     />
   );

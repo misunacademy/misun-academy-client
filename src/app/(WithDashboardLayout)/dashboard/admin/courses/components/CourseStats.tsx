@@ -1,18 +1,15 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Users, DollarSign, Loader2 } from "lucide-react";
+import { BookOpen, Users, DollarSign, Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useGetAllCoursesQuery, type CourseResponse } from "@/redux/api/courseApi";
 import { useGetDashboardMetadataQuery } from "@/redux/api/dashboardApi";
 
 
 export function CourseStats() {
-  const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({});
-  const { data: dashboardData, isLoading: dashboardLoading } = useGetDashboardMetadataQuery(undefined);
-
-  const courses: CourseResponse[] = coursesData?.data || [];
-  const totalCourses = courses.length;
-  const activeCourses = courses.filter((course) => course.status === 'published').length;
-  const totalStudents = dashboardData?.data?.totalEnrolled || 0;
-  const totalRevenue = dashboardData?.data?.totalIncome || 0;
+  const { data: coursesData, isLoading: coursesLoading, isError: coursesError } = useGetAllCoursesQuery({});
+  const { data: dashboardData, isLoading: dashboardLoading, isError: dashboardError } = useGetDashboardMetadataQuery(undefined);
 
   if (coursesLoading || dashboardLoading) {
     return (
@@ -21,6 +18,22 @@ export function CourseStats() {
       </div>
     );
   }
+
+  if (coursesError || dashboardError) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>Failed to load course statistics</AlertDescription>
+      </Alert>
+    );
+  }
+
+  const courses: CourseResponse[] = coursesData?.data || [];
+  const totalCourses = courses.length;
+  const activeCourses = courses.filter((course) => course.status === 'published').length;
+  const meta = dashboardData?.data as { totalEnrolled?: number; totalIncome?: number } | undefined;
+  const totalStudents = meta?.totalEnrolled || 0;
+  const totalRevenue = meta?.totalIncome || 0;
 
   return (
     <div className="grid gap-4 md:grid-cols-4">

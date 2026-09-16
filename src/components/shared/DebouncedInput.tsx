@@ -1,22 +1,19 @@
-import React from "react";
+'use client';
+
+import { memo, useState, useEffect, type FC } from "react";
 
 type Props = {
     value: string;
-    onChange: (val: string) => void;
-    delay?: number;
     placeholder?: string;
     className?: string;
 };
 
-export const DebouncedInput: React.FC<Props> = ({ value, onChange, delay = 300, placeholder, className }) => {
-    const [inner, setInner] = React.useState(value);
+const DebouncedInput: FC<Props> = memo(({ value, placeholder, className }) => {
+    const [inner, setInner] = useState(value);
 
-    React.useEffect(() => setInner(value), [value]);
-
-    React.useEffect(() => {
-        const id = setTimeout(() => onChange(inner), delay);
-        return () => clearTimeout(id);
-    }, [inner, delay, onChange]);
+    useEffect(() => {
+        setInner(value);
+    }, [value]);
 
     return (
         <input
@@ -26,4 +23,6 @@ export const DebouncedInput: React.FC<Props> = ({ value, onChange, delay = 300, 
             placeholder={placeholder}
         />
     );
-};
+});
+DebouncedInput.displayName = "DebouncedInput";
+export { DebouncedInput };

@@ -5,7 +5,7 @@ import { EnrolledCourse } from "../types";
 export function SpecialAccessTab({ courses }: { courses: EnrolledCourse[] }) {
   if (courses.length === 0) {
     return (
-      <div className="relative rounded-2xl border border-primary/20 bg-[#060f0a] overflow-hidden flex flex-col items-center justify-center py-20 gap-5 text-center px-6">
+      <div className="relative rounded-2xl border border-primary/20 bg-surface overflow-hidden flex flex-col items-center justify-center py-20 gap-5 text-center px-6">
         <div
           className="absolute inset-0 opacity-[0.10] pointer-events-none"
           style={{

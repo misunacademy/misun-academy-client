@@ -1,20 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useGetMySalariesQuery, useGetMyEmployeeProfileQuery } from '@/redux/api/employeeApi';
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-import { EmployeeStatCards } from './(components)/EmployeeStatCards';
-import { EmployeeInfoCard } from './(components)/EmployeeInfoCard';
-import { SalaryStructureCard } from './(components)/SalaryStructureCard';
-import { PayableCard } from './(components)/PayableCard';
-import { SalaryHistoryTable } from './(components)/SalaryHistoryTable';
+import { EmployeeStatCards } from './_components/EmployeeStatCards';
+import { EmployeeInfoCard } from './_components/EmployeeInfoCard';
+import { SalaryStructureCard } from './_components/SalaryStructureCard';
+import { PayableCard } from './_components/PayableCard';
+import { SalaryHistoryTable } from './_components/SalaryHistoryTable';
 import {
     UpdateInfoDialog,
     type EmployeeExtendedInfo,
-} from './(components)/UpdateInfoDialog';
+} from './_components/UpdateInfoDialog';
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 function DashboardLoader() {
@@ -33,7 +33,7 @@ const EmployeePage = () => {
     const { isLoading: authLoading } = useAuth();
 
     /* ── Server profile (extended fields) ─────────────────────────────────── */
-    const { data: serverProfile, isLoading: profileLoading } = useGetMyEmployeeProfileQuery();
+    const { data: serverProfile, isLoading: profileLoading, isError: profileError } = useGetMyEmployeeProfileQuery();
 
     /* ── Salary data ────────────────────────────────────────────────────────── */
     const { data: salaryData, isLoading: salaryLoading } = useGetMySalariesQuery({
@@ -63,25 +63,39 @@ const EmployeePage = () => {
     const email =  serverProfile?.data?.email || '';
     const avatarUrl = serverProfile?.data?.image || undefined;
 
-    const salaries = salaryData?.data?.salaries ?? [];
+    const salaries = useMemo(() => salaryData?.data?.salaries ?? [], [salaryData]);
     const latestSalary = salaries[0];
     const grossSalary = latestSalary?.amount ?? 0;
     const latestBonus = latestSalary?.bonus ?? 0;
-    const totalPaid = salaries
-        .filter((s) => s.status === 'Paid')
-        .reduce((acc, s) => acc + (s.totalAmount ?? 0), 0);
-    const pendingCount = salaries.filter((s) => s.status === 'Pending').length;
 
-    const initials = extInfo.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-    const firstName = extInfo.name.trim().split(' ')[0] || 'Employee';
-    const designationLabel = extInfo.designation.trim() || 'Not provided';
+    const { totalPaid, pendingCount } = useMemo(() => {
+        let paid = 0, pending = 0;
+        for (const s of salaries) {
+            if (s.status === 'Paid') paid += s.totalAmount ?? 0;
+            else if (s.status === 'Pending') pending++;
+        }
+        return { totalPaid: paid, pendingCount: pending };
+    }, [salaries]);
+
+    const { initials, firstName, designationLabel } = useMemo(() => {
+        const name = extInfo.name;
+        const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+        const firstName = name.trim().split(' ')[0] || 'Employee';
+        const designationLabel = extInfo.designation.trim() || 'Not provided';
+        return { initials, firstName, designationLabel };
+    }, [extInfo.name, extInfo.designation]);
 
     if (authLoading || profileLoading) return <DashboardLoader />;
+
+    if (profileError) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="flex flex-col items-center gap-3 text-destructive">
+                    <p className="text-sm">Failed to load employee profile</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <DashboardPageContainer

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
@@ -8,7 +7,6 @@ import {
     getFilteredRowModel,
     getPaginationRowModel,
     useReactTable,
-    ColumnDef,
 } from '@tanstack/react-table';
 import {
     Table,
@@ -19,32 +17,13 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-} from '@/components/ui/select';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import type { PaymentResponse } from '@/redux/api/paymentApi';
 import { useGetAllPaymentsQuery, useUpdatePaymentStatusMutation, useVerifyManualPaymentMutation } from '@/redux/api/paymentApi';
 import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { useGetAllBatchesQuery } from '@/redux/api/batchApi';
 import { toast } from 'sonner';
-import PaymentFiltersCard from '@/app/(WithDashboardLayout)/dashboard/admin/payment/components/PaymentFiltersCard';
-
+import PaymentFiltersCard from './PaymentFiltersCard';
+import { usePaymentColumns } from './paymentColumns';
+import { PaymentPagination } from './PaymentPagination';
 
 const PaymentTable = () => {
     const [page, setPage] = useState(1);
@@ -57,223 +36,57 @@ const PaymentTable = () => {
     const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
     const { data: coursesData } = useGetAllCoursesQuery({});
-    const { data: batchesData } = useGetAllBatchesQuery({
+    const batchesQueryParams = useMemo(() => ({
         courseId: selectedCourseId !== 'all' ? selectedCourseId : undefined,
-    });
-    const courses = coursesData?.data || [];
-    const batches = batchesData?.data || [];
+    }), [selectedCourseId]);
+    const { data: batchesData } = useGetAllBatchesQuery(batchesQueryParams);
+    const courses = useMemo(() => coursesData?.data || [], [coursesData]);
+    const batches = useMemo(() => batchesData?.data || [], [batchesData]);
 
-    useEffect(() => {
-        setPage(1);
-    }, [search, statusFilter, selectedCourseId, selectedBatchId]);
+    useEffect(() => { setPage(1); }, [search, statusFilter, selectedCourseId, selectedBatchId]);
 
-    // RTK Query hooks
-    const paymentsQueryParams: any = {
+    const paymentsQueryParams = useMemo(() => ({
         search: search || undefined,
         status: statusFilter !== 'all' ? statusFilter : undefined,
         courseId: selectedCourseId !== 'all' ? selectedCourseId : undefined,
         batchId: selectedBatchId !== 'all' ? selectedBatchId : undefined,
-    };
-    if (page > 1) paymentsQueryParams.page = page;
-    const paramsToSend = Object.keys(paymentsQueryParams).length ? paymentsQueryParams : undefined;
+        page: page > 1 ? page : undefined,
+    } as Record<string, string | number | undefined>), [search, statusFilter, selectedCourseId, selectedBatchId, page]);
 
-    const { data, isLoading, isError, refetch } = useGetAllPaymentsQuery(paramsToSend);
+    const { data, isLoading, isError, refetch } = useGetAllPaymentsQuery(paymentsQueryParams);
     const [updatePaymentStatus] = useUpdatePaymentStatusMutation();
     const [verifyManualPayment] = useVerifyManualPaymentMutation();
 
     const payments = useMemo(() => data?.data || [], [data]);
-    const meta = data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 };
+    const meta = useMemo(() => data?.meta || { total: 0, page: 1, limit: 10, totalPages: 1 }, [data?.meta]);
 
     const handleConfirmStatusChange = useCallback(async () => {
-
         if (selectedTransactionId && selectedStatus) {
             try {
-                // Find the payment to determine the method
-                const payment = payments.find((p: any) => p.transactionId === selectedTransactionId);
-
+                const payment = payments.find((p) => p.transactionId === selectedTransactionId);
                 if (payment?.method === 'PhonePay' && payment.status === 'review') {
-                    // For manual payments in review/pending status, use verify endpoint
-                    const approved = selectedStatus === 'success';
-                    await verifyManualPayment({ transactionId: selectedTransactionId, approved }).unwrap();
-                    toast.success(approved ? 'Payment approved successfully' : 'Payment rejected');
+                    await verifyManualPayment({ transactionId: selectedTransactionId, approved: selectedStatus === 'success' }).unwrap();
                 } else {
-                    // For other payments, use general status update
                     await updatePaymentStatus({ transactionId: selectedTransactionId, status: selectedStatus }).unwrap();
-                    toast.success('Payment status updated successfully');
                 }
+                toast.success('Payment status updated successfully');
                 refetch();
-            } catch (error) {
-                console.log(error)
-                toast.error('Failed to update payment status');
-            }
+            } catch { toast.error('Failed to update payment status'); }
         }
         setOpenDialog(false);
         setSelectedStatus(null);
         setSelectedTransactionId(null);
-    }, [selectedTransactionId, selectedStatus, updatePaymentStatus, verifyManualPayment, refetch, payments]);
+    }, [selectedTransactionId, selectedStatus, payments, updatePaymentStatus, verifyManualPayment, refetch]);
 
-    const columns = useMemo<ColumnDef<PaymentResponse>[]>(
-        () => [
-            {
-                accessorKey: 'transactionId',
-                header: 'Transaction ID',
-                cell: ({ row }) => row.original.transactionId,
-            },
-            {
-                accessorKey: 'amount',
-                header: 'Amount',
-                cell: ({ row }) => `${row.original.amount.toFixed(2)}`,
-            },
+    const columns = usePaymentColumns(openDialog, selectedTransactionId, selectedStatus, setSelectedStatus, setSelectedTransactionId, setOpenDialog, handleConfirmStatusChange);
 
-            {
-                accessorKey: 'method',
-                header: 'Method',
-                cell: ({ row }) => row.original.method,
-            },
-            {
-                accessorFn: (row) => row.student?.name,
-                id: 'student.name',
-                header: 'Student',
-                cell: ({ row }) => {
-                    return <div>
-                        <p>{row.original.student?.name || 'N/A'}</p>
-                        <p className='text-[12px]'>{row.original.student?.email || 'N/A'}</p>
-                    </div>
-                }
-            },
-            {
-                accessorFn: (row) => row.course?.title,
-                id: 'course.title',
-                header: 'Course',
-                cell: ({ row }) => {
-                    return <div>
-                        <p className='font-medium'>{row.original.course?.title || 'N/A'}</p>
-                        {/* {row.original.course?.slug && (
-                            <p className='text-[12px] text-gray-500'>{row.original.course.slug}</p>
-                        )} */}
-                    </div>
-                }
-            },
-            {
-                accessorFn: (row) => row.batch?.title,
-                id: 'batch.title',
-                header: 'Batch',
-                cell: ({ row }) => {
-                    return <div>
-                        <p className='font-medium'>{row.original.batch?.title || 'N/A'}</p>
-                        {/* {row.original.batch?.batchNumber && (
-                            <p className='text-[12px] text-gray-500'>Code: {row.original.batch.title.split(' ')[1]}</p>
-                        )} */}
-                    </div>
-                }
-            },
-            {
-                accessorFn: (row) => row.gatewayResponse,
-                id: 'gatewayResponse',
-                header: 'Payment Info',
-                cell: ({ row }) => {
-                    return <div>
-                        {
-                            (row.original.method === 'PhonePay' && row.original.gatewayResponse) && (
-                                <div>
-                                    <p className='text-[12px] font-bold'>{row.original?.gatewayResponse?.senderNumber}</p>
-                                    <p>{row.original?.gatewayResponse?.phonePeTransactionId}</p>
-                                </div>
-                            )
-                        }
-                        {
-                            (row.original.method === 'SSLCommerz' && row.original.gatewayResponse) && (
-                                <div>
-                                    <p className='text-[12px] font-bold'>{row.original?.gatewayResponse?.card_issuer}</p>
-                                    <p>{row.original?.gatewayResponse?.bank_tran_id}</p>
-                                </div>
-                            )
-                        }
-                    </div>
-                },
-            },
-            {
-                accessorKey: 'createdAt',
-                header: 'Payment Date',
-                cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString(),
-            },
-            {
-                accessorKey: 'status',
-                header: 'Status',
-                cell: ({ row }) => {
-                    const status = row.original.status;
-                    const transactionId = row.original.transactionId;
+    const handleCourseChange = useCallback((value: string) => {
+        setSelectedCourseId(value);
+        setSelectedBatchId('all');
+    }, []);
 
-                    const handleStatusChange = (newStatus: string) => {
-                        if (newStatus !== status) {
-                            setSelectedStatus(newStatus);
-                            setSelectedTransactionId(transactionId);
-                            setOpenDialog(true);
-                        }
-                    };
-
-                    return (
-                        <>
-                            <Select
-                                value={status}
-                                onValueChange={handleStatusChange}
-                            >
-                                <SelectTrigger className="w-[120px]">
-                                    <Badge
-                                        variant={
-                                            status === 'success'
-                                                ? 'default'
-                                                : status === 'failed'
-                                                    ? 'destructive'
-                                                    : status === 'pending'
-                                                        ? 'secondary'
-                                                        : status === 'review'
-                                                            ? 'outline'
-                                                            : 'outline'
-                                        }
-                                        className="capitalize w-full justify-center"
-                                    >
-                                        {status}
-                                    </Badge>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {/* For manual payments in review, only show approve/reject options */}
-                                    {row.original.method === 'PhonePay' && status === 'review' ? (
-                                        <>
-                                            <SelectItem value="success">Approve</SelectItem>
-                                            <SelectItem value="failed">Reject</SelectItem>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <SelectItem value="success">Success</SelectItem>
-                                            <SelectItem value="pending">Pending</SelectItem>
-                                            <SelectItem value="failed">Failed</SelectItem>
-                                        </>
-                                    )}
-                                </SelectContent>
-                            </Select>
-                            <AlertDialog open={openDialog && selectedTransactionId === transactionId} onOpenChange={setOpenDialog}>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Confirm Status Update</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            Are you sure you want to update the status to{' '}
-                                            <span className="capitalize font-semibold">{selectedStatus}</span>?
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel onClick={() => setOpenDialog(false)}>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleConfirmStatusChange}>Confirm</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        </>
-                    );
-                },
-            },
-        ],
-        [openDialog, selectedTransactionId, selectedStatus, handleConfirmStatusChange]
-    );
+    const handlePrevPage = useCallback(() => setPage((prev) => Math.max(prev - 1, 1)), []);
+    const handleNextPage = useCallback(() => setPage((prev) => Math.min(prev + 1, meta.totalPages)), [meta.totalPages]);
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const table = useReactTable({
@@ -283,49 +96,24 @@ const PaymentTable = () => {
         getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        state: {
-            globalFilter: search,
-            pagination: { pageIndex: page - 1, pageSize: meta.limit },
-        },
+        state: { globalFilter: search, pagination: { pageIndex: page - 1, pageSize: meta.limit } },
         onGlobalFilterChange: setSearch,
         manualPagination: true,
         pageCount: meta.totalPages,
     });
 
-    if (isLoading) {
-        return (
-            <div className="container mx-auto p-4 flex justify-center items-center h-64">
-                <div className="text-gray-600 text-lg">Loading payments...</div>
-            </div>
-        );
-    }
-
-    if (isError) {
-        return (
-            <div className="container mx-auto p-4 flex justify-center items-center h-64">
-                <div className="text-red-600 text-lg">Error fetching payments. Please try again later.</div>
-            </div>
-        );
-    }
+    if (isLoading) return <div className="container mx-auto p-4 flex justify-center items-center h-64"><div className="text-gray-600 text-lg">Loading payments...</div></div>;
+    if (isError) return <div className="container mx-auto p-4 flex justify-center items-center h-64"><div className="text-red-600 text-lg">Error fetching payments. Please try again later.</div></div>;
 
     return (
         <div className="space-y-6">
             <PaymentFiltersCard
-                courses={courses}
-                batches={batches}
-                selectedCourseId={selectedCourseId}
-                selectedBatchId={selectedBatchId}
-                statusFilter={statusFilter}
-                search={search}
-                onSearchChange={setSearch}
-                onCourseChange={(value) => {
-                    setSelectedCourseId(value);
-                    setSelectedBatchId('all');
-                }}
-                onBatchChange={setSelectedBatchId}
-                onStatusChange={setStatusFilter}
+                courses={courses} batches={batches}
+                selectedCourseId={selectedCourseId} selectedBatchId={selectedBatchId}
+                statusFilter={statusFilter} search={search}
+                onSearchChange={setSearch} onCourseChange={handleCourseChange}
+                onBatchChange={setSelectedBatchId} onStatusChange={setStatusFilter}
             />
-
             <Card>
                 <CardHeader>
                     <CardTitle>All Payments</CardTitle>
@@ -338,19 +126,9 @@ const PaymentTable = () => {
                                 {table.getHeaderGroups().map((headerGroup) => (
                                     <TableRow key={headerGroup.id}>
                                         {headerGroup.headers.map((header) => (
-                                            <TableHead
-                                                key={header.id}
-                                                onClick={header.column.getToggleSortingHandler()}
-                                                className="cursor-pointer"
-                                            >
+                                            <TableHead key={header.id} onClick={header.column.getToggleSortingHandler()} className="cursor-pointer">
                                                 {flexRender(header.column.columnDef.header, header.getContext())}
-                                                {header.column.getIsSorted() ? (
-                                                    header.column.getIsSorted() === 'asc' ? (
-                                                        <span className="ml-1">🔼</span>
-                                                    ) : (
-                                                        <span className="ml-1">🔽</span>
-                                                    )
-                                                ) : null}
+                                                {header.column.getIsSorted() === 'asc' ? <span className="ml-1">🔼</span> : header.column.getIsSorted() === 'desc' ? <span className="ml-1">🔽</span> : null}
                                             </TableHead>
                                         ))}
                                     </TableRow>
@@ -359,58 +137,21 @@ const PaymentTable = () => {
                             <TableBody>
                                 {table.getRowModel().rows.length ? (
                                     table.getRowModel().rows.map((row) => (
-                                        <TableRow
-                                            key={row.id}
-                                            className="hover:bg-gray-50 transition-colors"
-                                        >
+                                        <TableRow key={row.id} className="hover:bg-gray-50 transition-colors">
                                             {row.getVisibleCells().map((cell) => (
-                                                <TableCell key={cell.id}>
-                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                                </TableCell>
+                                                <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                                             ))}
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={columns.length} className="text-center py-4 text-gray-500">
-                                            No results found
-                                        </TableCell>
+                                        <TableCell colSpan={columns.length} className="text-center py-4 text-gray-500">No results found</TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
                         </Table>
                     </div>
-
-                    <div className="flex items-center justify-between mt-6">
-                        <div className="text-gray-600">
-                            Showing {table.getRowModel().rows.length} of {meta.total} payments
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                                disabled={page === 1}
-                                className="border-gray-300"
-                                aria-label="Previous page"
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-                            <span className="text-gray-600">
-                                Page {page} of {meta.totalPages}
-                            </span>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setPage((prev) => Math.min(prev + 1, meta.totalPages))}
-                                disabled={page === meta.totalPages}
-                                className="border-gray-300"
-                                aria-label="Next page"
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
+                    <PaymentPagination page={page} totalPages={meta.totalPages} total={meta.total} rowCount={table.getRowModel().rows.length} onPrevPage={handlePrevPage} onNextPage={handleNextPage} />
                 </CardContent>
             </Card>
         </div>

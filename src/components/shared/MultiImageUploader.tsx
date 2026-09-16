@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import Image from 'next/image';
@@ -6,11 +5,21 @@ import { useState, useRef } from 'react';
 import { useUploadMultipleImagesMutation, useDeleteImageMutation } from '@/redux/api/uploadApi';
 import { toast } from 'sonner';
 
+interface UploadedImage {
+  url: string;
+  fileName: string;
+  format: string;
+  width: number;
+  height: number;
+  size: number;
+  publicId: string;
+}
+
 export function MultiImageUploader() {
   const [uploadImages, { isLoading }] = useUploadMultipleImagesMutation();
   const [deleteImage] = useDeleteImageMutation();
   const [previews, setPreviews] = useState<string[]>([]);
-  const [uploadedImages, setUploadedImages] = useState<any[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,9 +79,9 @@ export function MultiImageUploader() {
       
       setUploadedImages(result.data.files);
       toast.success(`${result.data.totalFiles} images uploaded successfully!`);
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Upload failed');
-      console.error('Upload error:', error);
+    } catch (error: unknown) {
+      const apiError = error as { data?: { message?: string } };
+      toast.error(apiError?.data?.message || 'Upload failed');
     }
   };
 
@@ -81,9 +90,9 @@ export function MultiImageUploader() {
       await deleteImage(publicId).unwrap();
       setUploadedImages((prev) => prev.filter((_, i) => i !== index));
       toast.success('Image deleted successfully!');
-    } catch (error: any) {
-      toast.error(error?.data?.message || 'Delete failed');
-      console.error('Delete error:', error);
+    } catch (error: unknown) {
+      const apiError = error as { data?: { message?: string } };
+      toast.error(apiError?.data?.message || 'Delete failed');
     }
   };
 

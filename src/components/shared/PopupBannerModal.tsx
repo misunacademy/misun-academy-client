@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { X } from "lucide-react";
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
@@ -17,21 +17,30 @@ export default function PopupBannerModal() {
   const popupLink = data?.data?.popupLink?.trim() || "";
   const showPopup = !isDismissed && isSuccess && popupEnabled && !!popupImageUrl;
 
-  if (!showPopup) {
-    return null;
-  }
-
-  const close = () => {
+  const close = useCallback(() => {
     setIsDismissed(true);
     try {
       sessionStorage.setItem("misunPopupDismissed", "1");
     } catch {
       // no fallback
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!showPopup) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [showPopup, close]);
+
+  if (!showPopup) {
+    return null;
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-label="Popup banner">
       <div className="relative max-w-5xl w-full bg-white rounded-xl shadow-xl overflow-hidden">
         <button
           className="absolute top-3 right-3 z-20 rounded-full bg-white/90 p-1 text-gray-900 shadow hover:bg-white"
@@ -44,12 +53,12 @@ export default function PopupBannerModal() {
         {popupLink ? (
           <a href={popupLink} target="_blank" rel="noreferrer" onClick={close}>
             <div className="relative h-[80vh] w-full">
-              <Image src={popupImageUrl} alt="Popup banner" fill sizes="100vw" className="object-cover" unoptimized />
+              <Image src={popupImageUrl} alt="Promotional banner" fill sizes="(max-width: 1024px) 100vw, 1024px" className="object-cover" unoptimized />
             </div>
           </a>
         ) : (
           <div className="relative h-[80vh]  w-full">
-            <Image src={popupImageUrl} alt="Popup banner" fill sizes="100vw" className="object-cover" unoptimized />
+            <Image src={popupImageUrl} alt="" fill sizes="(max-width: 1024px) 100vw, 1024px" className="object-cover" unoptimized />
           </div>
         )}
       </div>

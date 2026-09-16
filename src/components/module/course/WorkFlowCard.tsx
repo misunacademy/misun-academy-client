@@ -16,7 +16,7 @@ export default function WorkflowCard({
     return (
         <div className="p-2 group cursor-pointer">
             <div
-                className="relative overflow-hidden rounded-2xl bg-[#060f0a] border border-white/8
+                className="relative overflow-hidden rounded-2xl bg-surface border border-white/8
                     py-8 px-7 h-full
                     transition-all duration-300 hover:-translate-y-1"
                 style={{

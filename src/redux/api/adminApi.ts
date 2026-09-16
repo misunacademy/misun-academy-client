@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * ADMIN API - User Management
  * Requires ADMIN or SUPERADMIN role
@@ -193,7 +192,7 @@ const adminApi = baseApi.injectEndpoints({
     }),
 
     // Admin login (separate route)
-    adminLogin: build.mutation<any, { email: string; password: string }>({
+    adminLogin: build.mutation<unknown, { email: string; password: string }>({
       query: (data) => ({
         url: "/admin/login",
         method: "POST",

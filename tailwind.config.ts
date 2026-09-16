@@ -62,7 +62,21 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				surface: {
+					darker: '#040a07',
+					DEFAULT: '#060f0a',
+					navy: '#171f33',
+				},
+				sage: {
+					DEFAULT: '#bccbb9',
+				},
+				emerald: {
+					darker: '#0d5c36',
+					dark: '#0a5f38',
+					deep: '#0f6e41',
+					bright: '#18a06a',
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

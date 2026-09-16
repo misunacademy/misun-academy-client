@@ -55,6 +55,17 @@ const uploadApi = baseApi.injectEndpoints({
       invalidatesTags: ["Uploads"],
     }),
 
+    // Upload restricted document (authenticated delivery; store the returned publicId)
+    uploadRestrictedImage: build.mutation<{ data: UploadResult }, FormData>({
+      query: (formData) => ({
+        url: "/upload/restricted",
+        method: "POST",
+        body: formData,
+        timeout: 30000,
+      }),
+      invalidatesTags: ["Uploads"],
+    }),
+
     // Upload multiple images
     uploadMultipleImages: build.mutation<{ data: MultipleUploadResult }, FormData>({
       query: (formData) => ({
@@ -90,6 +101,7 @@ const uploadApi = baseApi.injectEndpoints({
 
 export const {
   useUploadSingleImageMutation,
+  useUploadRestrictedImageMutation,
   useUploadMultipleImagesMutation,
   useUploadWithDataMutation,
   useDeleteImageMutation,

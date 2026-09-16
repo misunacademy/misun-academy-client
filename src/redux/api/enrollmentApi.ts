@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "./baseApi";
 
 export interface EnrollmentInitiateRequest {
@@ -29,6 +28,7 @@ export interface EnrollmentResponse {
     courseId: {
       _id: string;
       title: string;
+      slug?: string;
       thumbnailImage?: string;
       category?: string;
       level?: string;
@@ -59,6 +59,11 @@ export interface EnrollmentResponse {
   batch?: {
     _id?: string;
     title: string;
+  };
+  courseId?: {
+    _id?: string;
+    title?: string;
+    slug?: string;
   };
   isCertificateAvailable?: boolean;
   createdAt: Date;
@@ -93,7 +98,7 @@ const enrollmentApi = baseApi.injectEndpoints({
   overrideExisting: true,
   endpoints: (build) => ({
     // Initiate enrollment
-    initiateEnrollment: build.mutation<any, EnrollmentInitiateRequest>({
+    initiateEnrollment: build.mutation<unknown, EnrollmentInitiateRequest>({
       query: (data) => ({
         url: "/enrollments",
         method: "POST",
@@ -156,7 +161,7 @@ const enrollmentApi = baseApi.injectEndpoints({
 
     // Admin: Update enrollment status
     // Server expects PUT, not PATCH
-    updateEnrollmentStatus: build.mutation<any, { id: string; status: string }>({
+    updateEnrollmentStatus: build.mutation<unknown, { id: string; status: string }>({
       query: ({ id, status }) => ({
         url: `/enrollments/${id}/status`,
         method: "PUT",  
@@ -166,7 +171,7 @@ const enrollmentApi = baseApi.injectEndpoints({
     }),
 
     // Manual enrollment (e.g., bank/phone transfer)
-    enrollStudentManual: build.mutation<any, { batchId: string; paymentData: any }>({
+    enrollStudentManual: build.mutation<unknown, { batchId: string; paymentData: unknown }>({
       query: (data) => ({
         url: "/enrollments/manual",
         method: "POST",
@@ -176,7 +181,7 @@ const enrollmentApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Grant course access to a student by email
-    grantAccessByEmail: build.mutation<any, GrantAccessRequest>({
+    grantAccessByEmail: build.mutation<unknown, GrantAccessRequest>({
       query: (data) => ({
         url: "/enrollments/grant-access",
         method: "POST",

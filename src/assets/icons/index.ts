@@ -1,9 +1,7 @@
 import Phone from './Phone';
 import Globe from './Globe';
 import Mail from './Mail';
-import Facebook from './Facebook';
 import Instagram from './Instagram';
-import YouTube from './YouTube';
 import LinkedIn from './LinkedIn';
 import Video from './Video';
 import Assignment from './Assignment';
@@ -20,9 +18,7 @@ export {
   Phone,
   Globe,
   Mail,
-  Facebook,
   Instagram,
-  YouTube,
   LinkedIn,
   Video,
   Assignment,

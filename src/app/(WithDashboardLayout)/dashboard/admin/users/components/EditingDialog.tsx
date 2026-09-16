@@ -1,103 +1,123 @@
+"use client"
 
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FormEvent } from "react";
+import { useEffect } from "react"
+import { useForm, type Resolver } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Form } from "@/components/ui/form"
+import { InputField } from "@/components/forms/input-field"
+import { SelectField } from "@/components/forms/select-field"
+import { SubmitButton } from "@/components/forms/submit-button"
+import { useUpdateUserMutation } from "@/redux/api/adminApi"
+import { toast } from "sonner"
 
 interface User {
-    _id: string;
-    name: string;
-    email: string;
-    role: string;
-    createdAt: string;
-    status: 'active' | 'suspended' | 'deleted';
-    // array of enrolled batch titles (if any)
-    enrolledBatches?: string[];
-    // kept for backward compatibility
-    isEnrolled?: boolean;
-    phone?: string;
-    address?: string;
-    image?: string;
-    avatar?: string;
+  _id: string
+  name: string
+  email: string
+  role: string
+  createdAt: string
+  status: "active" | "suspended" | "deleted"
+  enrolledBatches?: string[]
+  isEnrolled?: boolean
+  phone?: string
+  address?: string
+  image?: string
+  avatar?: string
 }
+
+const editUserSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  role: z.enum(["learner", "employee", "instructor", "admin", "superadmin"]),
+  status: z.enum(["active", "suspended", "deleted"]),
+})
+
+type EditUserFormValues = z.infer<typeof editUserSchema>
 
 interface EditingDialogProps {
-    editUser: User | null;
-    editDialogOpen: boolean;
-    onOpenChange: (open: boolean) => void;
-    handleUpdateUser: (e: FormEvent<HTMLFormElement>) => Promise<void>;
+  user: User | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSuccess: () => void
 }
 
-const EditingDialog = ({
-    editDialogOpen,
-    onOpenChange,
-    editUser,
-    handleUpdateUser,
-}: EditingDialogProps) => {
+const ROLE_OPTIONS = [
+  { value: "learner", label: "Learner" },
+  { value: "employee", label: "Employee" },
+  { value: "instructor", label: "Instructor" },
+  { value: "admin", label: "Admin" },
+  { value: "superadmin", label: "Super Admin" },
+]
 
-    {/* Edit Dialog - Controlled programmatically */ }
-    return (
-        <Dialog open={editDialogOpen} onOpenChange={onOpenChange}>
+const STATUS_OPTIONS = [
+  { value: "active", label: "Active" },
+  { value: "suspended", label: "Suspended" },
+  { value: "deleted", label: "Deleted" },
+]
 
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle>Edit User</DialogTitle>
-                    <DialogDescription>
-                        Update user information and permissions.
-                    </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleUpdateUser}>
-                    <input type="hidden" name="id" value={editUser?._id || ''} />
-                    <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-name" className="text-right">Name</Label>
-                            <Input id="edit-name" name="name" defaultValue={editUser?.name || ''} className="col-span-3" />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-email" className="text-right">Email</Label>
-                            <Input id="edit-email" name="email" defaultValue={editUser?.email || ''} type="email" className="col-span-3" />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-role" className="text-right">Role</Label>
-                            <Select name="role" defaultValue={editUser?.role || 'learner'}>
-                                <SelectTrigger className="col-span-3">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="learner">Learner</SelectItem>
-                                    <SelectItem value="employee">Employee</SelectItem>
-                                    <SelectItem value="instructor">Instructor</SelectItem>
-                                    <SelectItem value="admin">Admin</SelectItem>
-                                    <SelectItem value="superadmin">Super Admin</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-status" className="text-right">Status</Label>
-                            <Select name="status" defaultValue={editUser?.status || 'active'}>
-                                <SelectTrigger className="col-span-3">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="active">Active</SelectItem>
-                                    <SelectItem value="suspended">Suspended</SelectItem>
-                                    <SelectItem value="deleted">Deleted</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-                        <Button type="submit">Update User</Button>
-                    </div>
-                </form>
-            </DialogContent>
-        </Dialog>
+const EditingDialog = ({ user, open, onOpenChange, onSuccess }: EditingDialogProps) => {
+  const [updateUserMutation, { isLoading }] = useUpdateUserMutation()
 
+  const form = useForm<EditUserFormValues>({
+    resolver: zodResolver(editUserSchema) as Resolver<EditUserFormValues>,
+    defaultValues: {
+      name: "",
+      email: "",
+      role: "learner",
+      status: "active",
+    },
+  })
 
-    )
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        name: user.name,
+        email: user.email,
+        role: user.role as EditUserFormValues["role"],
+        status: user.status,
+      })
+    }
+  }, [user, form])
+
+  const handleSubmit = async (values: EditUserFormValues) => {
+    if (!user) return
+    try {
+      await updateUserMutation({ id: user._id, data: values }).unwrap()
+      toast.success("User updated successfully")
+      onSuccess()
+    } catch (error) {
+      const err = error as { data?: { message?: string }; message?: string }
+      toast.error(err?.data?.message || err?.message || "Failed to update user")
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit User</DialogTitle>
+          <DialogDescription>
+            Update user information and permissions.
+          </DialogDescription>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 py-4">
+            <InputField name="name" label="Name" required />
+            <InputField name="email" label="Email" type="email" required />
+            <SelectField name="role" label="Role" options={ROLE_OPTIONS} />
+            <SelectField name="status" label="Status" options={STATUS_OPTIONS} />
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <SubmitButton disabled={isLoading}>Update User</SubmitButton>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  )
 }
 
-export default EditingDialog;
+export default EditingDialog

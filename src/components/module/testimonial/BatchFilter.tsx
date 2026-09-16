@@ -11,7 +11,7 @@ export const BatchFilter = ({ batches, selectedBatch, onBatchChange, testimonial
     const totalCount = Object.values(testimonialCounts).reduce((a, b) => a + b, 0);
 
     return (
-        <div className="relative overflow-hidden rounded-2xl bg-[#060f0a] border border-primary/15 p-6
+        <div className="relative overflow-hidden rounded-2xl bg-surface border border-primary/15 p-6
             shadow-[0_0_40px_hsl(156_70%_42%/0.08)]">
 
             {/* Corner accents */}
@@ -35,8 +35,8 @@ export const BatchFilter = ({ batches, selectedBatch, onBatchChange, testimonial
                         transition-all duration-200
                         ${
                             selectedBatch === "all"
-                                ? "bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white shadow-[0_0_16px_hsl(156_70%_42%/0.35)]"
-                                : "bg-[#060f0a] border border-primary/20 text-white/55 hover:border-primary/40 hover:text-white/80"
+                                ? "bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark text-white shadow-[0_0_16px_hsl(156_70%_42%/0.35)]"
+                                : "bg-surface border border-primary/20 text-white/55 hover:border-primary/40 hover:text-white/80"
                         }`}
                 >
                     <Users className="w-3.5 h-3.5" />
@@ -59,8 +59,8 @@ export const BatchFilter = ({ batches, selectedBatch, onBatchChange, testimonial
                             transition-all duration-200
                             ${
                                 selectedBatch === batch
-                                    ? "bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38] text-white shadow-[0_0_16px_hsl(156_70%_42%/0.35)]"
-                                    : "bg-[#060f0a] border border-primary/20 text-white/55 hover:border-primary/40 hover:text-white/80"
+                                    ? "bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark text-white shadow-[0_0_16px_hsl(156_70%_42%/0.35)]"
+                                    : "bg-surface border border-primary/20 text-white/55 hover:border-primary/40 hover:text-white/80"
                             }`}
                     >
                         <span>{batch} ব্যাচ</span>

@@ -1,22 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useGetMyLeaveRequestsQuery } from '@/redux/api/employeeApi';
 import type { LeaveRequest } from '@/redux/api/employeeApi';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { TableCell } from '@/components/ui/table';
 import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import type { ColumnDef } from '@tanstack/react-table';
 import {
     CalendarDays, CheckCircle2, XCircle,
     Clock, Plus,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import DashboardPageTableWithPagination from '@/components/layout/DashboardPageTableWithPagination';
-import { LeaveRequestDialog } from '../(components)/LeaveRequestDialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DataTable } from '@/components/ui/data-table';
+import { LeaveRequestDialog } from '../_components/LeaveRequestDialog';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function daysBetween(from: string, to: string) {
@@ -60,26 +60,35 @@ const LeavePage = () => {
     const [dialogOpen, setDialogOpen]     = useState(false);
     const limit = 10;
 
-    // Fetch all for stats (small limit is fine — employee won't have thousands)
-    const { data: allData } = useGetMyLeaveRequestsQuery({ limit: 200 });
+    const { data, isLoading, isFetching } = useGetMyLeaveRequestsQuery({ limit: 200 });
 
-    // Fetch paginated + filtered for table
-    const { data, isLoading, isFetching } = useGetMyLeaveRequestsQuery({
-        page,
-        limit,
-        ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
-    });
+    const allRequests = useMemo(() => data?.data?.requests ?? [], [data]);
 
-    const allRequests = allData?.data?.requests ?? [];
-    const pending     = allRequests.filter((r) => r.status === 'Pending').length;
-    const approved    = allRequests.filter((r) => r.status === 'Approved').length;
-    const totalDaysApproved = allRequests
-        .filter((r) => r.status === 'Approved')
-        .reduce((acc, r) => acc + daysBetween(r.from, r.to), 0);
+    const stats = useMemo(() => {
+        let pending = 0, approved = 0, totalDaysApproved = 0;
+        for (const r of allRequests) {
+            if (r.status === 'Pending') pending++;
+            if (r.status === 'Approved') {
+                approved++;
+                totalDaysApproved += daysBetween(r.from, r.to);
+            }
+        }
+        return { pending, approved, totalDaysApproved };
+    }, [allRequests]);
 
-    const requests   = data?.data?.requests   ?? [];
-    const total      = data?.data?.total      ?? 0;
-    const totalPages = data?.data?.totalPages ?? 1;
+    const filtered = useMemo(() =>
+        statusFilter === 'all'
+            ? allRequests
+            : allRequests.filter((r) => r.status === statusFilter),
+        [allRequests, statusFilter],
+    );
+
+    const paginated = useMemo(() => {
+        const start = (page - 1) * limit;
+        return filtered.slice(start, start + limit);
+    }, [filtered, page, limit]);
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
 
     return (
         <div className="container mx-auto p-6 space-y-6">
@@ -98,36 +107,44 @@ const LeavePage = () => {
             {/* ── Stats ───────────────────────────────────────── */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard label="Total Requests"   value={allRequests.length} sub="All time" />
-                <StatCard label="Pending"          value={pending}            sub="Awaiting review" />
-                <StatCard label="Approved"         value={approved}           sub="Approved by admin" />
-                <StatCard label="Approved Days"    value={totalDaysApproved}  sub="Total leave days taken" />
+                <StatCard label="Pending"          value={stats.pending}            sub="Awaiting review" />
+                <StatCard label="Approved"         value={stats.approved}           sub="Approved by admin" />
+                <StatCard label="Approved Days"    value={stats.totalDaysApproved}  sub="Total leave days taken" />
             </div>
 
             {/* ── Table ───────────────────────────────────────── */}
-            <Card>
-                <CardHeader>
-                    <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div>
-                            <CardTitle>My Leave Requests</CardTitle>
-                            <CardDescription>All your leave applications and their current status.</CardDescription>
-                        </div>
-                        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
-                            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Requests</SelectItem>
-                                <SelectItem value="Pending">Pending</SelectItem>
-                                <SelectItem value="Approved">Approved</SelectItem>
-                                <SelectItem value="Rejected">Rejected</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </CardHeader>
-            </Card>
-
-            <DashboardPageTableWithPagination
-                columns={['Type', 'From', 'To', 'Days', 'Reason', 'Status', 'Applied On']}
-                data={requests}
-                getRowKey={(r) => r._id}
+            <DataTable
+                heading="My Leave Requests"
+                subheading="All your leave applications and their current status."
+                filters={
+                    <Card className="w-full">
+                        <CardHeader>
+                            <CardTitle>Filters</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex justify-end items-center">
+                            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
+                                <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Requests</SelectItem>
+                                    <SelectItem value="Pending">Pending</SelectItem>
+                                    <SelectItem value="Approved">Approved</SelectItem>
+                                    <SelectItem value="Rejected">Rejected</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </CardContent>
+                    </Card>
+                }
+                columns={useMemo<ColumnDef<LeaveRequest>[]>(() => [
+                    { accessorKey: "type", header: "Type", cell: ({ row }) => <Badge variant="secondary">{row.original.type}</Badge> },
+                    { accessorKey: "from", header: "From", cell: ({ row }) => <span className="text-sm text-muted-foreground whitespace-nowrap">{new Date(row.original.from).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span> },
+                    { accessorKey: "to", header: "To", cell: ({ row }) => <span className="text-sm text-muted-foreground whitespace-nowrap">{new Date(row.original.to).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span> },
+                    { id: "days", header: "Days", cell: ({ row }) => <span className="text-sm text-center font-semibold block">{daysBetween(row.original.from, row.original.to)}</span> },
+                    { accessorKey: "reason", header: "Reason", cell: ({ row }) => <p className="text-sm text-muted-foreground max-w-[200px] truncate" title={row.original.reason}>{row.original.reason}</p> },
+                    { accessorKey: "status", header: "Status", cell: ({ row }) => <Badge className={`gap-1 ${STATUS_BADGE[row.original.status]}`}>{row.original.status === 'Pending' && <Clock className="w-3 h-3" />}{row.original.status === 'Approved' && <CheckCircle2 className="w-3 h-3" />}{row.original.status === 'Rejected' && <XCircle className="w-3 h-3" />}{row.original.status}</Badge> },
+                    { accessorKey: "createdAt", header: "Applied On", cell: ({ row }) => <span className="text-sm text-muted-foreground whitespace-nowrap">{new Date(row.original.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span> },
+                ], [])}
+                data={paginated}
+                getRowId={(r) => r._id}
                 isLoading={isLoading}
                 isFetching={isFetching}
                 emptyState={
@@ -139,43 +156,7 @@ const LeavePage = () => {
                         </Button>
                     </div>
                 }
-                renderRow={(req) => (
-                    <>
-                        <TableCell>
-                            <Badge variant="secondary">{req.type}</Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                            {new Date(req.from).toLocaleDateString('en-GB', {
-                                day: '2-digit', month: 'short', year: 'numeric',
-                            })}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                            {new Date(req.to).toLocaleDateString('en-GB', {
-                                day: '2-digit', month: 'short', year: 'numeric',
-                            })}
-                        </TableCell>
-                        <TableCell className="text-sm text-center font-semibold">
-                            {daysBetween(req.from, req.to)}
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground max-w-[200px]">
-                            <p className="truncate" title={req.reason}>{req.reason}</p>
-                        </TableCell>
-                        <TableCell>
-                            <Badge className={`gap-1 ${STATUS_BADGE[req.status]}`}>
-                                {req.status === 'Pending'  && <Clock        className="w-3 h-3" />}
-                                {req.status === 'Approved' && <CheckCircle2 className="w-3 h-3" />}
-                                {req.status === 'Rejected' && <XCircle      className="w-3 h-3" />}
-                                {req.status}
-                            </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                            {new Date(req.createdAt).toLocaleDateString('en-GB', {
-                                day: '2-digit', month: 'short', year: 'numeric',
-                            })}
-                        </TableCell>
-                    </>
-                )}
-                pagination={{ page, totalPages, total, limit, onPageChange: setPage }}
+                pagination={{ page, totalPages, total: filtered.length, limit, onPageChange: setPage }}
             />
 
             {/* ── Dialog ──────────────────────────────────────── */}

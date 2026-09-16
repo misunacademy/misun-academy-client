@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import type { Dispatch, ReactNode, SetStateAction } from "react";
+import type { ReactNode } from "react";
 import type { InstructorCourse } from "@/redux/api/instructorApi";
-import RecordingForm, { RecordingFormData } from "./RecordingForm";
+import RecordingForm, { type RecordingFormValues } from "./RecordingForm";
 
 interface RecordingFormDialogProps {
   open: boolean;
@@ -9,10 +9,9 @@ interface RecordingFormDialogProps {
   title: string;
   description?: string;
   trigger?: ReactNode;
-  formData: RecordingFormData;
-  setFormData: Dispatch<SetStateAction<RecordingFormData>>;
+  defaultValues?: Partial<RecordingFormValues>;
   courses: InstructorCourse[];
-  onSubmit: () => void;
+  onSubmit: (values: RecordingFormValues) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -22,8 +21,7 @@ const RecordingFormDialog = ({
   title,
   description,
   trigger,
-  formData,
-  setFormData,
+  defaultValues,
   courses,
   onSubmit,
   isLoading,
@@ -37,8 +35,7 @@ const RecordingFormDialog = ({
           {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
         <RecordingForm
-          formData={formData}
-          setFormData={setFormData}
+          defaultValues={defaultValues}
           courses={courses}
           onSubmit={onSubmit}
           isLoading={isLoading}

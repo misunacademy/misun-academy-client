@@ -1,79 +1,21 @@
-"use client"
-
+import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { motion } from "framer-motion"
-import { FaBookOpen, FaMicrophoneAlt, FaGlobeAmericas, FaPencilAlt, FaComments } from "react-icons/fa"
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { Mic, Pencil, MousePointer2 } from "lucide-react"
 import Link from 'next/link';
 import { FadeIn } from '@/components/ui/FadeIn';
-import { MousePointer2 } from "lucide-react";
-
-//  Skill Badge 
-
-interface SkillBadgeProps {
-    icon: React.ReactNode;
-    name: string;
-    delay?: number;
-}
-
-const SkillBadge = ({ icon, name, delay = 0 }: SkillBadgeProps) => (
-    <TooltipProvider>
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: delay * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                    viewport={{ once: true }}
-                    className="group relative cursor-pointer"
-                >
-                    <div className="absolute inset-0 rounded-2xl bg-blue-400/15 blur-xl opacity-0 transition-opacity duration-700 pointer-events-none group-hover:opacity-100" />
-                    <div className="relative flex h-20 w-20 items-center justify-center rounded-2xl border border-blue-400/[0.1] bg-blue-400/[0.02] backdrop-blur-md transition-all duration-500 ease-out group-hover:-translate-y-1.5 group-hover:border-blue-400/[0.25] group-hover:bg-blue-400/[0.05] group-hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] z-10 text-4xl text-white/80 group-hover:text-white group-hover:scale-110">
-                        {icon}
-                    </div>
-                </motion.div>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="rounded-lg border border-blue-400/[0.15] bg-[#060f0a] px-3 py-1.5 font-medium text-blue-400 shadow-xl">
-                <p>{name}</p>
-            </TooltipContent>
-        </Tooltip>
-    </TooltipProvider>
-);
-
-//  Data 
-
-const featureCards = [
-    {
-        icon: <FaComments className="h-5 w-5" />,
-        title: "ফ্লুয়েন্ট স্পিকিং",
-        description: "বাস্তব জীবনের কথোপকথন ও ইন্টারভিউতে আত্মবিশ্বাসের সাথে ইংরেজিতে কথা বলতে শিখুন।",
-    },
-    {
-        icon: <FaGlobeAmericas className="h-5 w-5" />,
-        title: "আইইএলটিএস (IELTS)",
-        description: "উচ্চতর শিক্ষা ও ক্যারিয়ারের জন্য প্রয়োজনীয় স্কোর অর্জন করতে আমাদের এক্সপার্ট গাইডলাইন অনুসরণ করুন।",
-    },
-    {
-        icon: <FaBookOpen className="h-5 w-5" />,
-        title: "অ্যাডভান্সড গ্রামার",
-        description: "সঠিক উচ্চারণ, শব্দভাণ্ডার এবং কর্পোরেট লেভেল গ্রামার দক্ষতা অর্জন করুন সহজে।",
-    },
-];
+import { SkillBadge } from './EnglishSkillsSkillBadge';
+import { featureCards } from './englishSkillsData';
 
 //  Section 
 
 export default function EnglishSkills() {
     const skills = [
-        { icon: <FaMicrophoneAlt />, name: "স্পোকেন" },
-        { icon: <FaPencilAlt />, name: "রাইটিং" },
+        { icon: <Mic />, name: "স্পোকেন" },
+        { icon: <Pencil />, name: "রাইটিং" },
     ];
 
     return (
-        <section className="relative overflow-hidden bg-[#040a07] py-24 selection:bg-blue-400/30 selection:text-white md:py-32">
+        <section className="relative overflow-hidden bg-surface-darker py-24 selection:bg-blue-400/30 selection:text-white md:py-32">
 
             {/* Elegant Background Meshes & Masks */}
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(59,130,246,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(59,130,246,0.04)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
@@ -165,15 +107,7 @@ export default function EnglishSkills() {
                                 ))}
                             </div>
 
-                            {/* Premium Shimmer/Glass CTA (Desktop only here, mobile is below) */}
-                            {/* <Link href="/checkout" className="group hidden relative md:inline-flex items-center justify-center overflow-hidden rounded-xl p-[1px]">
-                                <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                                <div className="relative inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-blue-400/20 bg-[#0d1f14]/80 px-8 text-sm font-medium text-white backdrop-blur-sm transition-all duration-300 group-hover:bg-[#112a1b] group-hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]">
-                                    <span>কোর্সটি এনরোল করুন</span>
-                                    <span className="text-primary transition-transform duration-300 group-hover:translate-x-1">→</span>
-                                </div>
-                            </Link> */}
-                                 <div className="pt-4 hidden md:inline-flex">
+                                <div className="pt-4 hidden md:inline-flex">
                                 <Link href="/checkout">
                                     {/* Spinning glowing border wrapper */}
                                     <div className="relative inline-flex p-[2px] rounded-xl overflow-hidden
@@ -182,8 +116,7 @@ export default function EnglishSkills() {
                                               hover:scale-105 hover:-translate-y-0.5
                                               active:scale-95 active:translate-y-0
                                               transition-all duration-300 ease-out">
-                                        {/* Rotating conic-gradient border */}
-                                        <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,hsl(217_91%_60%)_25%,hsl(217_80%_58%)_50%,hsl(217_91%_60%)_75%,transparent_100%)]" />
+                                        <AnimatedBorder variant="blue-branded" speed="3s" />
                                         <button className="group relative overflow-hidden
                                                 inline-flex items-center gap-2
                                                 px-8 py-3.5
@@ -222,17 +155,7 @@ export default function EnglishSkills() {
                     ))}
                 </div>
 
-                {/* Premium CTA (Mobile) */}
-                {/* <div className="mt-12 flex justify-center md:hidden">
-                    <Link href="/checkout" className="group relative inline-flex items-center justify-center overflow-hidden rounded-xl p-[1px]">
-                        <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                        <div className="relative inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-blue-400/20 bg-[#0d1f14]/80 px-8 text-sm font-medium text-white backdrop-blur-sm transition-all duration-300 hover:bg-[#112a1b] hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]">
-                            <span>কোর্সটি এনরোল করুন</span>
-                            <span className="text-primary transition-transform duration-300 group-hover:translate-x-1">→</span>
-                        </div>
-                    </Link>
-                </div> */}
-                     <div className="pt-4 md:hidden  flex justify-center items-center">
+                    <div className="pt-4 md:hidden flex justify-center items-center">
                                     <Link href="/checkout">
                                         {/* Spinning glowing border wrapper */}
                                         <div className="relative inline-flex p-[2px] rounded-xl overflow-hidden
@@ -241,8 +164,7 @@ export default function EnglishSkills() {
                                                               hover:scale-105 hover:-translate-y-0.5
                                                               active:scale-95 active:translate-y-0
                                                               transition-all duration-300 ease-out">
-                                            {/* Rotating conic-gradient border */}
-                                            <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,hsl(156_70%_42%)_25%,hsl(156_85%_70%)_50%,hsl(156_70%_42%)_75%,transparent_100%)]" />
+                                            <AnimatedBorder />
                                             <button className="group relative overflow-hidden
                                                                 inline-flex items-center gap-2
                                                                 px-8 py-3.5
@@ -289,10 +211,10 @@ function FeatureCard({
             className="group relative overflow-hidden rounded-2xl p-[1px] transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_8px_30px_rgba(59,130,246,0.06)]"
         >
             {/* Animated Glowing Border Background */}
-            <span className="absolute inset-[-100%] animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_0deg_at_50%_50%,transparent_0%,transparent_40%,hsl(217_91%_60%/0.4)_50%,transparent_60%,transparent_100%)]" />
+            <AnimatedBorder variant="blue-accent" speed="4s" />
 
             {/* Inner Card Background */}
-            <div className="relative h-full w-full rounded-[15px] bg-[#040a07] p-8 border border-white/[0.02] backdrop-blur-md transition-colors duration-500 group-hover:bg-[#060f0a]">
+            <div className="relative h-full w-full rounded-[15px] bg-surface-darker p-8 border border-white/[0.02] backdrop-blur-md transition-colors duration-500 group-hover:bg-surface">
 
                 {/* Top Shine (Subtle hover effect) */}
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-400/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />

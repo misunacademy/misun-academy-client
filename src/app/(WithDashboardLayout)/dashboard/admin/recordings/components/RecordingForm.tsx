@@ -1,191 +1,137 @@
-import type { Dispatch, SetStateAction } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+"use client";
+
+import { useForm, useWatch, type Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Form } from "@/components/ui/form";
+import { InputField } from "@/components/forms/input-field";
+import { TextareaField } from "@/components/forms/textarea-field";
+import { SelectField } from "@/components/forms/select-field";
+import { CheckboxField } from "@/components/forms/checkbox-field";
+import { SubmitButton } from "@/components/forms/submit-button";
 import type { CourseResponse } from "@/redux/api/courseApi";
 import type { BatchResponse } from "@/redux/api/batchApi";
 
-export interface RecordingFormData {
-  courseId: string;
-  batchId: string;
-  title: string;
-  description: string;
-  sessionDate: string;
-  videoSource: "youtube" | "googledrive";
-  videoId: string;
-  duration: string;
-  isPublished: boolean;
-}
+const recordingSchema = z.object({
+  courseId: z.string().min(1, "Course is required"),
+  batchId: z.string().min(1, "Batch is required"),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().default(""),
+  sessionDate: z.string().min(1, "Session date is required"),
+  videoSource: z.enum(["youtube", "googledrive"]),
+  videoId: z.string().min(1, "Video ID is required"),
+  duration: z.string().default(""),
+  isPublished: z.boolean().default(false),
+});
+
+export type RecordingFormValues = z.infer<typeof recordingSchema>;
 
 interface RecordingFormProps {
-  formData: RecordingFormData;
-  setFormData: Dispatch<SetStateAction<RecordingFormData>>;
+  defaultValues?: Partial<RecordingFormValues>;
   courses: CourseResponse[];
   batches: BatchResponse[];
-  onSubmit: () => void;
+  onSubmit: (values: RecordingFormValues) => Promise<void>;
   isLoading: boolean;
 }
 
+const VIDEO_SOURCE_OPTIONS = [
+  { value: "youtube", label: "YouTube" },
+  { value: "googledrive", label: "Google Drive" },
+];
+
 const RecordingForm = ({
-  formData,
-  setFormData,
+  defaultValues,
   courses,
   batches,
   onSubmit,
   isLoading,
 }: RecordingFormProps) => {
+  const form = useForm<RecordingFormValues>({
+    resolver: zodResolver(recordingSchema) as Resolver<RecordingFormValues>,
+    defaultValues: {
+      courseId: "",
+      batchId: "",
+      title: "",
+      description: "",
+      sessionDate: "",
+      videoSource: "youtube",
+      videoId: "",
+      duration: "",
+      isPublished: false,
+      ...defaultValues,
+    },
+  });
+
+  const watchedVideoSource = useWatch({ control: form.control, name: "videoSource" });
+  const watchedCourseId = useWatch({ control: form.control, name: "courseId" });
+  const courseOptions = courses.map((c) => ({ value: c._id, label: c.title }));
+  const filteredBatches = watchedCourseId
+    ? batches.filter((b) => {
+        const batchCourseId = typeof b.courseId === 'string' ? b.courseId : b.courseId?._id;
+        return batchCourseId === watchedCourseId;
+      })
+    : [];
+  const batchOptions = filteredBatches.map((b) => ({ value: b._id, label: `${b.title} - ${b.status}` }));
+
+  const videoDescription =
+    watchedVideoSource === "youtube"
+      ? "YouTube URL: https://www.youtube.com/watch?v=VIDEO_ID"
+      : "Google Drive URL: https://drive.google.com/file/d/FILE_ID/view";
+
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>
-            Course <span className="text-red-500">*</span>
-          </Label>
-          <Select
-            value={formData.courseId}
-            onValueChange={(value) =>
-              setFormData({ ...formData, courseId: value, batchId: "" })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select course" />
-            </SelectTrigger>
-            <SelectContent>
-              {courses.map((course) => (
-                <SelectItem key={course._id} value={course._id}>
-                  {course.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label>
-            Batch <span className="text-red-500">*</span>
-          </Label>
-          <Select value={formData.batchId} onValueChange={(value) => setFormData({ ...formData, batchId: value })}>
-            <SelectTrigger disabled={!formData.courseId}>
-              <SelectValue placeholder="Select batch" />
-            </SelectTrigger>
-            <SelectContent>
-              {batches.map((batch) => (
-                <SelectItem key={batch._id} value={batch._id}>
-                  {batch.title} - {batch.status}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>
-          Title <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder="e.g., Week 1: Introduction to JavaScript"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label>Description</Label>
-        <Textarea
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Brief description of the session content"
-          rows={3}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>
-            Session Date <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            type="date"
-            value={formData.sessionDate}
-            onChange={(e) => setFormData({ ...formData, sessionDate: e.target.value })}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <SelectField
+            name="courseId"
+            label="Course"
+            options={courseOptions}
+            placeholder="Select course"
+            required
+            onValueChange={() => form.setValue("batchId", "")}
+          />
+          <SelectField
+            name="batchId"
+            label="Batch"
+            options={batchOptions}
+            placeholder="Select batch"
+            disabled={!watchedCourseId}
+            required
           />
         </div>
 
-        <div className="space-y-2">
-          <Label>Duration (minutes)</Label>
-          <Input
-            type="number"
-            value={formData.duration}
-            onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-            placeholder="e.g., 90"
-          />
+        <InputField name="title" label="Title" placeholder="e.g., Week 1: Introduction to JavaScript" required />
+
+        <TextareaField name="description" label="Description" placeholder="Brief description of the session content" rows={3} />
+
+        <div className="grid grid-cols-2 gap-4">
+          <InputField name="sessionDate" label="Session Date" type="date" required />
+          <InputField name="duration" label="Duration (minutes)" type="number" placeholder="e.g., 90" />
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label>
-          Video Source <span className="text-red-500">*</span>
-        </Label>
-        <Select
-          value={formData.videoSource}
-          onValueChange={(value: "youtube" | "googledrive") =>
-            setFormData({ ...formData, videoSource: value })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="youtube">YouTube</SelectItem>
-            <SelectItem value="googledrive">Google Drive</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+        <SelectField name="videoSource" label="Video Source" options={VIDEO_SOURCE_OPTIONS} required />
 
-      <div className="space-y-2">
-        <Label>
-          Video ID <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          value={formData.videoId}
-          onChange={(e) => setFormData({ ...formData, videoId: e.target.value })}
+        <InputField
+          name="videoId"
+          label="Video ID"
+          required
+          description={videoDescription}
           placeholder={
-            formData.videoSource === "youtube"
+            watchedVideoSource === "youtube"
               ? "YouTube video ID (e.g., dQw4w9WgXcQ)"
               : "Google Drive file ID"
           }
         />
-        <p className="text-xs text-muted-foreground">
-          {formData.videoSource === "youtube"
-            ? "YouTube URL: https://www.youtube.com/watch?v=VIDEO_ID"
-            : "Google Drive URL: https://drive.google.com/file/d/FILE_ID/view"}
-        </p>
-      </div>
 
-      <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
-          id="isPublished"
-          checked={formData.isPublished}
-          onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-          className="rounded border-gray-300"
-        />
-        <Label htmlFor="isPublished" className="cursor-pointer">
-          Publish immediately (students can view)
-        </Label>
-      </div>
+        <CheckboxField name="isPublished" label="Publish immediately (students can view)" />
 
-      <div className="flex justify-end gap-2 pt-4">
-        <Button onClick={onSubmit} disabled={isLoading}>
-          {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          {isLoading ? "Saving..." : "Save Recording"}
-        </Button>
-      </div>
-    </div>
+        <div className="flex justify-end gap-2 pt-4">
+          <SubmitButton disabled={isLoading} loadingText="Saving...">
+            Save Recording
+          </SubmitButton>
+        </div>
+      </form>
+    </Form>
   );
 };
 

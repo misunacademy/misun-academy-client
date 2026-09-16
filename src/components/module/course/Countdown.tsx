@@ -1,10 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useState } from 'react';
-import { useGetCurrentEnrollmentBatchQuery } from "@/redux/api/batchApi";
-import { useGetCourseBySlugQuery } from "@/redux/api/courseApi";
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Skeleton } from 'boneyard-js/react'
 import { intervalToDuration, isBefore, isAfter } from "date-fns";
 import { FadeIn } from '@/components/ui/FadeIn';
+import { useCurrentBatch } from '@/hooks/useCurrentBatch';
 import { BatchResponse } from '@/redux/api/batchApi';
+import { COURSE_SLUGS } from '@/constants/courses';
 
 type TimeLeft = {
   months: number;
@@ -19,7 +21,7 @@ type TimeLeft = {
 function TimeBlock({ value, label }: { value: number; label: string }) {
   return (
     <div className="relative overflow-hidden flex flex-col items-center justify-center
-      bg-[#060f0a] border border-primary/20 rounded-2xl
+      bg-surface border border-primary/20 rounded-2xl
       w-20 h-24 sm:w-24 sm:h-28
       shadow-[0_8px_32px_hsl(156_70%_42%/0.15)]
       transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 group"
@@ -55,11 +57,12 @@ interface CountdownProps {
   batch?: BatchResponse | null;
   /** OR pass a course slug to auto-resolve the current enrollment batch */
   courseSlug?: string;
+  /** Server timestamp for accurate clock-drift-free countdown */
+  serverTimestamp?: number;
 }
 
-// map of course slug → primary colors (HSL) used by CSS vars
 const themeMap: Record<string, { primary: string; glow: string }> = {
-  'english-for-professional-communication': {
+  [COURSE_SLUGS.ENGLISH]: {
     primary: '217 91% 60%',
     glow: '217 91% 60%',
   },
@@ -69,43 +72,29 @@ const themeMap: Record<string, { primary: string; glow: string }> = {
   },
 };
 
-const Countdown = ({ batch: batchProp, courseSlug }: CountdownProps = {}) => {
+const Countdown = ({ batch: batchProp, courseSlug, serverTimestamp: serverTimestampProp }: CountdownProps = {}) => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
   const [label, setLabel] = useState<string>('');
+  const clientReceivedAt = useRef<number>(0);
 
-  // ── Course-slug path (course detail pages & BannerSection) ───────────────
-  const { data: courseBySlug, isLoading: courseBySlugLoading } = useGetCourseBySlugQuery(
-    courseSlug!, { skip: !courseSlug }
-  );
-  const slugCourseId = courseSlug ? (courseBySlug?.data as any)?._id : undefined;
+  const { batch: resolvedBatch, isLoading, serverTimestamp: serverTimestampHook } = useCurrentBatch(courseSlug);
+  const batch = batchProp ?? resolvedBatch;
+  const serverTimestamp = serverTimestampProp ?? serverTimestampHook;
 
-  const { data: slugBatchRes, isLoading: slugBatchLoading } = useGetCurrentEnrollmentBatchQuery(
-    { courseId: slugCourseId },
-    { skip: !slugCourseId }
-  );
-
-  // Resolve batch: if a batch is passed directly, use it; otherwise use slug-resolved batch
-  const batch = batchProp ?? (courseSlug ? (slugBatchRes?.data as any) : null);
-
-  // derive effective slug from either prop or batch info
   const effectiveSlug = useMemo(() => {
     if (courseSlug) return courseSlug;
-    // batch.courseId may be object with slug
-    if (batch && typeof batch.courseId === 'object' && batch.courseId !== null && (batch.courseId as any)?.slug) {
-      return (batch.courseId as any).slug as string;
+    if (batch && typeof batch.courseId === 'object' && batch.courseId !== null) {
+      const info = batch.courseId as { slug?: string };
+      return info.slug;
     }
     return undefined;
   }, [courseSlug, batch]);
 
-  // compute CSS variable overrides based on slug
   const themeVars = useMemo(() => {
-    if (!effectiveSlug) return {};
+    if (!effectiveSlug) return {} as React.CSSProperties;
     const t = themeMap[effectiveSlug];
-    if (!t) return {};
-    return {
-      '--primary': t.primary,
-      '--primary-glow': t.glow,
-    } as React.CSSProperties;
+    if (!t) return {} as React.CSSProperties;
+    return { '--primary': t.primary, '--primary-glow': t.glow } as React.CSSProperties;
   }, [effectiveSlug]);
 
   const enrollmentStart = useMemo(() => batch?.enrollmentStartDate ? new Date(batch.enrollmentStartDate) : null, [batch]);
@@ -114,9 +103,15 @@ const Countdown = ({ batch: batchProp, courseSlug }: CountdownProps = {}) => {
   useEffect(() => {
     if (!batch || !enrollmentStart || !enrollmentEnd) return;
 
+    if (clientReceivedAt.current === 0) {
+      clientReceivedAt.current = Date.now();
+    }
+
+    const offset = serverTimestamp ? serverTimestamp - clientReceivedAt.current : 0;
+
     const tick = () => {
-      const now = new Date();
-      const batchStatus = batch.status as string;
+      const now = new Date(Date.now() + offset);
+      const batchStatus = batch.status;
 
       let targetDate: Date | null = null;
       let nextLabel = '';
@@ -126,17 +121,13 @@ const Countdown = ({ batch: batchProp, courseSlug }: CountdownProps = {}) => {
         const enrollmentNotYetOpen = isBefore(now, enrollmentStart);
 
         if (enrollmentOpen) {
-          // Enrollment window is currently open → count down to its end
           targetDate = enrollmentEnd;
           nextLabel = 'এনরোলমেন্ট শেষ হতে বাকি';
         } else if (enrollmentNotYetOpen) {
-          // Enrollment hasn't started yet → count down to its start
           targetDate = enrollmentStart;
           nextLabel = 'এনরোলমেন্ট শুরু হতে বাকি';
         }
-        // If past enrollmentEnd and still "upcoming", nothing to show
       } else if (batchStatus === 'running') {
-        // The batch is running — show enrollment end countdown only if still within window
         if (isBefore(now, enrollmentEnd)) {
           targetDate = enrollmentEnd;
           nextLabel = 'এনরোলমেন্ট শেষ হতে বাকি';
@@ -159,48 +150,44 @@ const Countdown = ({ batch: batchProp, courseSlug }: CountdownProps = {}) => {
       }
     };
 
-    tick(); // run immediately
+    tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [batch, enrollmentStart, enrollmentEnd]);
-
-  const isCountdownLoading = courseSlug
-    ? (courseBySlugLoading || (!!slugCourseId && slugBatchLoading))
-    : false;
-
-  if (isCountdownLoading) return null;
-  if (!batch || !timeLeft || !label) return null;
+  }, [batch, enrollmentStart, enrollmentEnd, serverTimestamp]);
 
   return (
-    <FadeIn delay={0.1} className="mt-8 mb-4" style={themeVars}>
-      <div className="text-center space-y-6">
-        {/* Status badge */}
-        <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full
-          bg-primary/10 border border-primary/25 backdrop-blur-sm
-          shadow-[0_0_20px_hsl(156_70%_42%/0.12)]">
-          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
-          <p className="text-xs font-semibold  uppercase text-primary/90 font-bangla">
-            {label}
-          </p>
-        </div>
+    <Skeleton name="Countdown" loading={isLoading}>
+      {!batch || !timeLeft || !label ? null : (
+        <FadeIn delay={0.1} className="mt-8 mb-4" style={themeVars}>
+          <div className="text-center space-y-6">
+            <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full
+              bg-primary/10 border border-primary/25 backdrop-blur-sm
+              shadow-[0_0_20px_hsl(156_70%_42%/0.12)]">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+              <p className="text-xs font-semibold  uppercase text-primary/90 font-bangla">
+                {label}
+              </p>
+            </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-          {timeLeft.months > 0 && (
-            <>
-              <TimeBlock value={timeLeft.months} label="মাস" />
+            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+              {timeLeft.months > 0 && (
+                <>
+                  <TimeBlock value={timeLeft.months} label="মাস" />
+                  <Colon />
+                </>
+              )}
+              <TimeBlock value={timeLeft.days} label="দিন" />
               <Colon />
-            </>
-          )}
-          <TimeBlock value={timeLeft.days} label="দিন" />
-          <Colon />
-          <TimeBlock value={timeLeft.hours} label="ঘণ্টা" />
-          <Colon />
-          <TimeBlock value={timeLeft.minutes} label="মিনিট" />
-          <Colon />
-          <TimeBlock value={timeLeft.seconds} label="সেকেন্ড" />
-        </div>
-      </div>
-    </FadeIn>
+              <TimeBlock value={timeLeft.hours} label="ঘণ্টা" />
+              <Colon />
+              <TimeBlock value={timeLeft.minutes} label="মিনিট" />
+              <Colon />
+              <TimeBlock value={timeLeft.seconds} label="সেকেন্ড" />
+            </div>
+          </div>
+        </FadeIn>
+      )}
+    </Skeleton>
   );
 };
 

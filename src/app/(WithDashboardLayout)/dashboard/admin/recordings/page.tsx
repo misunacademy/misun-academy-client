@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus, Video } from "lucide-react";
 import { toast } from "sonner";
@@ -16,15 +16,14 @@ import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import type { CourseResponse } from "@/redux/api/courseApi";
 import type { BatchResponse } from "@/redux/api/batchApi";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
-import DashboardPageTableWithPagination from "@/components/layout/DashboardPageTableWithPagination";
+import { DataTable } from "@/components/ui/data-table";
 import RecordingFiltersCard, { RecordingFilters } from "./components/RecordingFiltersCard";
 import RecordingFormDialog from "./components/RecordingFormDialog";
-import RecordingTableRow from "./components/RecordingTableRow";
+import { useRecordingColumns } from "./components/recordingColumns";
 import RecordingPreviewDialog from "./components/RecordingPreviewDialog";
 import RecordingDeleteDialog from "./components/RecordingDeleteDialog";
-import type { RecordingFormData } from "./components/RecordingForm";
+import type { RecordingFormValues } from "./components/RecordingForm";
 
-// Use canonical API response shapes
 type Course = CourseResponse;
 type Batch = BatchResponse;
 
@@ -32,6 +31,7 @@ export default function RecordingsPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedRecording, setSelectedRecording] = useState<Recording | null>(null);
+  const [editDefaults, setEditDefaults] = useState<Partial<RecordingFormValues>>({});
   const [playingRecording, setPlayingRecording] = useState<Recording | null>(null);
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -40,7 +40,7 @@ export default function RecordingsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [recordingToDelete, setRecordingToDelete] = useState<Recording | null>(null);
 
-  const { data: recordingsData, isLoading, isFetching } = useGetRecordingsQuery({
+  const { data: recordingsData, isLoading, isFetching, isError } = useGetRecordingsQuery({
     ...filters,
     page,
     limit,
@@ -52,67 +52,34 @@ export default function RecordingsPage() {
   const [updateRecording, { isLoading: isUpdating }] = useUpdateRecordingMutation();
   const [deleteRecording, { isLoading: isDeleting }] = useDeleteRecordingMutation();
 
-  const [formData, setFormData] = useState<RecordingFormData>({
-    courseId: "",
-    batchId: "",
-    title: "",
-    description: "",
-    sessionDate: "",
-    videoSource: "youtube",
-    videoId: "",
-    duration: "",
-    isPublished: false,
-  });
-
-  const resetForm = () => {
-    setFormData({
-      courseId: "",
-      batchId: "",
-      title: "",
-      description: "",
-      sessionDate: "",
-      videoSource: "youtube",
-      videoId: "",
-      duration: "",
-      isPublished: false,
-    });
-  };
-
-  const handleCreate = async () => {
-    if (!formData.courseId || !formData.batchId || !formData.title || !formData.sessionDate || !formData.videoId) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
+  const handleCreate = async (values: RecordingFormValues) => {
     try {
       await createRecording({
-        ...formData,
-        duration: formData.duration ? parseInt(formData.duration) : undefined,
+        ...values,
+        duration: values.duration ? parseInt(values.duration) : undefined,
       }).unwrap();
       toast.success("Recording created successfully");
       setIsCreateOpen(false);
-      resetForm();
     } catch (error) {
       const err = error as { data?: { message?: string } };
       toast.error(err?.data?.message || "Failed to create recording");
     }
   };
 
-  const handleEdit = async () => {
+  const handleEdit = async (values: RecordingFormValues) => {
     if (!selectedRecording) return;
-
     try {
       await updateRecording({
         id: selectedRecording._id,
         data: {
-          ...formData,
-          duration: formData.duration ? parseInt(formData.duration) : undefined,
+          ...values,
+          duration: values.duration ? parseInt(values.duration) : undefined,
         },
       }).unwrap();
       toast.success("Recording updated successfully");
       setIsEditOpen(false);
       setSelectedRecording(null);
-      resetForm();
+      setEditDefaults({});
     } catch (error) {
       const err = error as { data?: { message?: string } };
       toast.error(err?.data?.message || "Failed to update recording");
@@ -139,7 +106,7 @@ export default function RecordingsPage() {
 
   const openEditDialog = (recording: Recording) => {
     setSelectedRecording(recording);
-    setFormData({
+    setEditDefaults({
       courseId: typeof recording.courseId === "string" ? recording.courseId : recording.courseId._id,
       batchId: typeof recording.batchId === "string" ? recording.batchId : recording.batchId._id,
       title: recording.title,
@@ -153,8 +120,8 @@ export default function RecordingsPage() {
     setIsEditOpen(true);
   };
 
-  const courses = coursesData?.data || [];
-  const batches = batchesData?.data || [];
+  const courses = useMemo(() => coursesData?.data || [], [coursesData]);
+  const batches = useMemo(() => batchesData?.data || [], [batchesData]);
   const recordings = recordingsData?.data || [];
   const meta = recordingsData?.meta ?? { page, limit, total: 0, totalPages: 1 };
 
@@ -165,26 +132,32 @@ export default function RecordingsPage() {
     return rec.videoUrl ?? "";
   };
 
-  const getBatchCourseId = (batch: Batch) => {
+  const getBatchCourseId = useCallback((batch: Batch) => {
     if (!batch.courseId) return "";
     return typeof batch.courseId === "string" ? batch.courseId : batch.courseId._id;
-  };
+  }, []);
 
-  const getBatchCourseTitle = (batch: Batch) => {
+  const getBatchCourseTitle = useCallback((batch: Batch) => {
     if (!batch.courseId) return "";
     if (typeof batch.courseId === "string") {
       return courses.find((course: Course) => course._id === batch.courseId)?.title || "";
     }
     return batch.courseId.title;
-  };
+  }, [courses]);
 
-  const filteredFilterBatches = filters.courseId
-    ? batches.filter((batch) => getBatchCourseId(batch) === filters.courseId)
-    : batches;
+  const filteredFilterBatches = useMemo(
+    () => filters.courseId
+      ? batches.filter((batch) => getBatchCourseId(batch) === filters.courseId)
+      : batches,
+    [batches, filters.courseId, getBatchCourseId],
+  );
 
-  const filteredFormBatches = formData.courseId
-    ? batches.filter((batch) => getBatchCourseId(batch) === formData.courseId)
-    : batches;
+  const columns = useRecordingColumns(
+    (item) => setPlayingRecording(item),
+    openEditDialog,
+    handleDelete,
+    isDeleting,
+  );
 
   const emptyState = (
     <div className="flex flex-col items-center gap-3">
@@ -204,6 +177,14 @@ export default function RecordingsPage() {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-destructive">Failed to load recordings</p>
+      </div>
+    );
+  }
+
   return (
     <DashboardPageContainer
       heading="Live Class Recordings"
@@ -211,8 +192,8 @@ export default function RecordingsPage() {
       buttons={
         <RecordingFormDialog
           open={isCreateOpen}
-          onOpenChange={setIsCreateOpen}
-          onOpen={resetForm}
+          onOpenChange={(open) => { setIsCreateOpen(open); if (!open) setEditDefaults({}); }}
+          onOpen={() => setEditDefaults({})}
           trigger={
             <Button>
               <Plus className="mr-2 h-4 w-4" />
@@ -221,10 +202,9 @@ export default function RecordingsPage() {
           }
           title="Upload Live Class Recording"
           description="Add a new recorded session from a live class"
-          formData={formData}
-          setFormData={setFormData}
+          defaultValues={{}}
           courses={courses}
-          batches={filteredFormBatches}
+          batches={batches}
           onSubmit={handleCreate}
           isLoading={isCreating}
         />
@@ -240,20 +220,11 @@ export default function RecordingsPage() {
             getBatchCourseTitle={getBatchCourseTitle}
           />
 
-          <DashboardPageTableWithPagination
+          <DataTable
             heading={`Recordings (${meta.total})`}
-            columns={["Title", "Course/Batch", "Session Date", "Duration", "Status", "Actions"]}
+            columns={columns}
             data={recordings}
-            renderRow={(recording) => (
-              <RecordingTableRow
-                recording={recording}
-                onPlay={(item) => setPlayingRecording(item)}
-                onEdit={openEditDialog}
-                onDelete={handleDelete}
-                isDeleting={isDeleting}
-              />
-            )}
-            getRowKey={(recording) => recording._id}
+            getRowId={(recording) => recording._id}
             isLoading={isLoading}
             isFetching={isFetching}
             emptyState={emptyState}
@@ -285,13 +256,12 @@ export default function RecordingsPage() {
 
           <RecordingFormDialog
             open={isEditOpen}
-            onOpenChange={setIsEditOpen}
+            onOpenChange={(open) => { setIsEditOpen(open); if (!open) { setSelectedRecording(null); setEditDefaults({}); } }}
             title="Edit Recording"
             description="Update recording details"
-            formData={formData}
-            setFormData={setFormData}
+            defaultValues={editDefaults}
             courses={courses}
-            batches={filteredFormBatches}
+            batches={batches}
             onSubmit={handleEdit}
             isLoading={isUpdating}
           />

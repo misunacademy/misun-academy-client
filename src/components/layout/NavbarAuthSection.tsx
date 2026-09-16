@@ -2,11 +2,10 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import type { AuthUser } from '@/types/auth';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,21 +14,18 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, UserCircle, Sparkles, LayoutDashboard } from 'lucide-react';
-import { FaCertificate, FaRegFileAlt } from 'react-icons/fa';
+import { User, LogOut, UserCircle, Sparkles, LayoutDashboard, BadgeCheck, FileText } from 'lucide-react';
+import { COURSE_PRICES } from '@/constants/courses';
 
 export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
     const { user, signOut } = useAuth();
-    const router = useRouter();
-    const safeUser = hydrated ? user : null;
-    const userRole = (safeUser as AuthUser | null)?.role;
-    const canSeeClasses = !!userRole && userRole.toLowerCase() === 'learner';
-    const isEnrolled = (safeUser?.enrolledCourses?.length ?? 0) > 0;
+    const safeUser = hydrated ? user : undefined;
+    const userRole = safeUser?.role;
+    const isLearner = userRole === 'learner';
+    const isStaff = userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor' || userRole === 'employee';
+
     const handleLogout = async () => {
-        const result = await signOut();
-        if (result.success) {
-            router.push('/');
-        }
+        await signOut();
     };
 
     const handleEnrollClick = () => {
@@ -37,15 +33,19 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
             track('InitiateCheckout', {
                 content_name: 'Graphic Design Course',
                 content_type: 'course',
-                value: 4800,
+                value: COURSE_PRICES.GRAPHIC_DESIGN_BDT,
                 currency: 'BDT',
             })
         );
     };
 
+    const dashboardPath = userRole === 'superadmin' || userRole === 'admin'
+        ? '/dashboard/admin'
+        : `/dashboard/${userRole}`;
+
     return (
         <>
-            {canSeeClasses ? (
+            {isLearner ? (
                 <Link href="/my-classes" className="relative group py-2">
                     <span className="group-hover:text-primary transition-colors duration-300 text-xs">
                         আমার ক্লাসগুলো
@@ -65,28 +65,25 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
             ) : null}
             <div className="flex items-center justify-end">
                 <Link href="/checkout" className="w-full sm:w-auto block" onClick={handleEnrollClick}>
-                    {/* Spinning glowing border wrapper */}
                     <div className="relative inline-flex p-[1.5px] rounded-full overflow-hidden
                     shadow-[0_4px_24px_rgba(32,180,134,0.35)]
                     hover:shadow-[0_8px_36px_rgba(32,180,134,0.60)]
                     hover:scale-105 hover:-translate-y-0.5
                     active:scale-95 active:translate-y-0
                     transition-all duration-300 ease-out">
-                        {/* Rotating conic-gradient border */}
-                        <span className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,transparent_0%,hsl(156_70%_42%)_25%,hsl(156_85%_70%)_50%,hsl(156_70%_42%)_75%,transparent_100%)]" />
+                        <AnimatedBorder />
                         <button className="group relative overflow-hidden
                       inline-flex items-center gap-2
                       px-6 py-2
                       text-sm font-bold tracking-wide rounded-full
-                      bg-gradient-to-r from-[#0d5c36] via-primary to-[#0a5f38]
+                      bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
                       text-white
-                      hover:from-[#0f6e41] hover:via-[#18a06a] hover:to-[#0f6e41]
+                      hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
                       transition-all duration-300 ease-out">
                             <span className="relative z-10 flex items-center gap-1.5">
                                 <Sparkles className="w-4 h-4 text-white animate-pulse" />
                                 এনরোল করুন
                             </span>
-                            {/* Shine sweep */}
                             <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
                         </button>
                     </div>
@@ -123,35 +120,30 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
                                 Profile
                             </Link>
                         </DropdownMenuItem>
-                        {
-                            userRole === 'learner' && canSeeClasses && isEnrolled &&
+                        {isLearner && (
                             <DropdownMenuItem asChild>
-                                <Link href="/enrollment-posters" className="">
-                                    <FaRegFileAlt className="mr-2 h-4 w-4" />
+                                <Link href="/enrollment-posters">
+                                    <FileText className="mr-2 h-4 w-4" />
                                     Your Enrollment Posters
                                 </Link>
                             </DropdownMenuItem>
-
-                        }
-                        {
-                            userRole === 'learner' && canSeeClasses && isEnrolled &&
+                        )}
+                        {isLearner && (
                             <DropdownMenuItem asChild>
-                                <Link href="/my-classes/certificates" className="">
-                                    <FaCertificate className="mr-2 h-4 w-4" />
+                                <Link href="/my-classes/certificates">
+                                    <BadgeCheck className="mr-2 h-4 w-4" />
                                     Certificates
                                 </Link>
                             </DropdownMenuItem>
-
-                        }
-                        {
-                            (userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor' || userRole === 'employee') &&
+                        )}
+                        {isStaff && (
                             <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/${(userRole==='superadmin' || userRole==='admin') ? 'admin' : `${userRole}`}`} className="flex items-center">
+                                <Link href={dashboardPath} className="flex items-center">
                                     <LayoutDashboard className="mr-2 h-4 w-4" />
                                     Dashboard
                                 </Link>
                             </DropdownMenuItem>
-                        }
+                        )}
                         <DropdownMenuItem onClick={handleLogout} className="flex items-center text-red-600">
                             <LogOut className="mr-2 h-4 w-4" />
                             Log out

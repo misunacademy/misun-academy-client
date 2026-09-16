@@ -1,4 +1,4 @@
-import Dashboard from '@/app/(WithDashboardLayout)/dashboard/admin/(components)/Dashboard';
+import Dashboard from '@/app/(WithDashboardLayout)/dashboard/admin/_components/Dashboard';
 
 const page = () => {
     return (

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "./baseApi";
 
 export interface CertificateResponse {
@@ -38,7 +37,10 @@ export interface VerifiedCertificate {
   courseName: string;
   batchName?: string;
   issuedDate: string;
-  batchId?:any;
+  batchId?: {
+    startDate?: string;
+    endDate?: string;
+  };
 }
 
 const certificateApi = baseApi.injectEndpoints({
@@ -101,7 +103,7 @@ const certificateApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Update certificate (approve/reject)
-    updateCertificate: build.mutation<{ data: CertificateResponse }, { id: string; data: any }>({
+    updateCertificate: build.mutation<{ data: CertificateResponse }, { id: string; data: unknown }>({
       query: ({ id, data }) => ({
         url: `/certificates/${id}`,
         method: "PUT",

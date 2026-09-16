@@ -2,5 +2,7 @@ node_modules
 dist
 .env
 .next
+.playwright-mcp
 /src/app/(WithCommonLayout)/test
 .vercel
+.env*.local

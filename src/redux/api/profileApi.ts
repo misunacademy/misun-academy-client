@@ -1,15 +1,65 @@
 import { baseApi } from "@/redux/api/baseApi";
 
+export interface ProfileUser {
+    name?: string;
+    email?: string;
+    studentId?: string;
+    phone?: string;
+}
+
+export interface EducationEntry {
+    degree: string;
+    institution: string;
+    passingYear: string;
+    result?: string;
+}
+
+export interface EnrollmentRef {
+    _id?: string;
+    enrollmentId?: string;
+    status?: string;
+    enrolledAt?: string;
+    certificateIssued?: boolean;
+    batchId?: {
+        _id: string;
+        title: string;
+        price?: number;
+        courseId?: {
+            _id: string;
+            title: string;
+        };
+    };
+    courseId?: {
+        _id: string;
+        title: string;
+    };
+    accessType?: string;
+}
+
+export interface ProfileData {
+    user?: ProfileUser;
+    wpnumber?: string;
+    bio?: string;
+    dateOfBirth?: string;
+    address?: string;
+    education?: EducationEntry[];
+    linkedinUrl?: string;
+    timeZone?: string;
+    enrollments?: EnrollmentRef[];
+    currentJob?: string;
+    company?: string;
+    industry?: string;
+    experience?: string;
+}
+
 const profileApi = baseApi.injectEndpoints({
+    overrideExisting: true,
     endpoints: (builder) => ({
-        getUserProfile: builder.query({
-            query: () => ({
-                url: '/profile',
-                method: 'GET',
-            }),
+        getUserProfile: builder.query<{ data: ProfileData }, void>({
+            query: () => ({ url: '/profile' }),
             providesTags: ['Profile'],
         }),
-        createProfile: builder.mutation({
+        createProfile: builder.mutation<unknown, object>({
             query: (profileData) => ({
                 url: '/profile',
                 method: 'POST',
@@ -17,7 +67,7 @@ const profileApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['Profile'],
         }),
-        updateUserProfile: builder.mutation({
+        updateUserProfile: builder.mutation<unknown, object>({
             query: (updateData) => ({
                 url: '/profile',
                 method: 'PUT',
@@ -25,14 +75,14 @@ const profileApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['Profile'],
         }),
-        deleteProfile: builder.mutation({
+        deleteProfile: builder.mutation<unknown, void>({
             query: () => ({
                 url: '/profile',
                 method: 'DELETE',
             }),
             invalidatesTags: ['Profile'],
         }),
-        updateInterests: builder.mutation({
+        updateInterests: builder.mutation<unknown, unknown[]>({
             query: (interests) => ({
                 url: '/profile/interests',
                 method: 'PUT',
@@ -40,7 +90,7 @@ const profileApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['Profile'],
         }),
-        addInterest: builder.mutation({
+        addInterest: builder.mutation<unknown, unknown>({
             query: (interest) => ({
                 url: '/profile/interests',
                 method: 'POST',
@@ -48,7 +98,7 @@ const profileApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['Profile'],
         }),
-        removeInterest: builder.mutation({
+        removeInterest: builder.mutation<unknown, unknown>({
             query: (interest) => ({
                 url: '/profile/interests',
                 method: 'DELETE',

@@ -1,0 +1,321 @@
+"use client";
+import { BookOpen, CalendarDays, ChevronUp, FileText, Home, User2, Settings, Group, DollarSign, Users, LogOut, Video, CreditCard, ShieldCheck, TrendingUp, Mail, GraduationCap, LayoutDashboard, KeyRound, ClipboardCheck, Trophy, Bell, Rocket } from "lucide-react";import { usePathname, useRouter } from "next/navigation";
+import Link from 'next/link';
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import Image from "next/image";
+import { useAuth } from "@/hooks/useAuth";
+import { Role } from "@/types/common";
+
+
+
+const employeeItems = [
+    {
+        title: "Dashboard",
+        url: "/dashboard/employee",
+        icon: Home,
+    },
+    {
+        title: "Notifications",
+        url: "/dashboard/notifications",
+        icon: Bell,
+    },
+    {
+        title: "Leave Management",
+        url: "/dashboard/employee/leave",
+        icon: CalendarDays,
+    },
+    {
+        title: "Salary History",
+        url: "/dashboard/employee/salary-history",
+        icon: CreditCard,
+    },
+    {
+        title: "Settings",
+        url: "/dashboard/employee/settings",
+        icon: Settings,
+    },
+];
+
+const instructorItems = [
+    {
+        title: "Dashboard",
+        url: "/dashboard/instructor",
+        icon: LayoutDashboard,
+    },
+    {
+        title: "Notifications",
+        url: "/dashboard/notifications",
+        icon: Bell,
+    },
+    {
+        title: "Live Class Recordings",
+        url: "/dashboard/instructor/recordings",
+        icon: Video,
+    },
+    {
+        title: "Students",
+        url: "/dashboard/instructor/students",
+        icon: User2,
+    },
+    {
+        title: "Quizzes",
+        url: "/dashboard/instructor/quizzes",
+        icon: ClipboardCheck,
+    },
+    {
+        title: "Leaderboard",
+        url: "/dashboard/instructor/leaderboard",
+        icon: Trophy,
+    },
+    {
+        title: "Settings",
+        url: "/dashboard/instructor/settings",
+        icon: Settings,
+    },
+];
+
+const adminItems = [
+    {
+        title: "Dashboard",
+        url: "/dashboard/admin",
+        icon: Home,
+    },
+    {
+        title: "Notifications",
+        url: "/dashboard/notifications",
+        icon: Bell,
+    },
+    {
+        title: "Course Management",
+        url: "/dashboard/admin/courses",
+        icon: BookOpen,
+    },
+    {
+        title: "Batch Management",
+        url: "/dashboard/admin/batch",
+        icon: Group,
+    },
+    {
+        title: "Live Class Recordings",
+        url: "/dashboard/admin/recordings",
+        icon: Video,
+    },
+    {
+        title: "Student Management",
+        url: "/dashboard/admin/student",
+        icon: User2,
+    },
+    {
+        title: "Grant Course Access",
+        url: "/dashboard/admin/grant-access",
+        icon: KeyRound,
+    },
+    {
+        title: "Quiz Management",
+        url: "/dashboard/admin/quizzes",
+        icon: ClipboardCheck,
+    },
+    {
+        title: "Leaderboard",
+        url: "/dashboard/admin/leaderboard",
+        icon: Trophy,
+    },
+    {
+        title: "Payment Management",
+        url: "/dashboard/admin/payment",
+        icon: DollarSign,
+    },
+    {
+        title: "User Management",
+        url: "/dashboard/admin/users",
+        icon: Users,
+    },
+    {
+        title: "Employee Management",
+        url: "/dashboard/admin/employees",
+        icon: GraduationCap,
+    },
+    {
+        title: "Students Progress Tracker",
+        url: "/dashboard/admin/students-progress-tracker",
+        icon: TrendingUp,
+    },
+    {
+        title: "Certificate Approval",
+        url: "/dashboard/admin/certificates",
+        icon: ShieldCheck,
+    },
+    {
+        title: "Bootcamp Registrations",
+        url: "/dashboard/admin/bootcamp",
+        icon: Rocket,
+    },
+    {
+        title: "Email Management",
+        url: "/dashboard/admin/emails",
+        icon: Mail,
+    },
+    {
+        title: "Reports",
+        url: "/dashboard/admin/reports",
+        icon: FileText,
+    },
+    {
+        title: "Settings",
+        url: "/dashboard/admin/settings",
+        icon: Settings,
+    },
+];
+
+export function AppSidebar() {
+    const pathname = usePathname();
+    const { user } = useAuth();
+
+    // Determine if we're in admin or student dashboard based on user role
+    // Handle both uppercase (API) and lowercase (enum) role values
+    const userRole = user?.role?.toLowerCase() || '';
+
+    const isInstructor = userRole === Role.INSTRUCTOR.toLowerCase();
+    const isAdmin = [
+        Role.SUPERADMIN.toLowerCase(),
+        Role.ADMIN.toLowerCase(),
+    ].includes(userRole);
+    const isEmployee = userRole === Role.EMPLOYEE.toLowerCase();
+
+
+const baseItems = !user ? [] : isAdmin ? adminItems : isInstructor ? instructorItems : isEmployee ? employeeItems : [];
+const isSuperAdmin = userRole === Role.SUPERADMIN.toLowerCase();
+const auditLogItem = {
+    title: "Audit Logs",
+    url: "/dashboard/admin/audit-logs",
+    icon: ShieldCheck,
+};
+const items = isAdmin && isSuperAdmin ? [...baseItems, auditLogItem] : baseItems;
+
+    const panelText = !user ? 'Loading...' : isAdmin ? 'Admin Panel' : isInstructor ? 'Instructor Panel' : isEmployee ? 'Employee Panel' : 'Student Panel';
+
+    const router = useRouter();
+    const { signOut } = useAuth();
+
+    const handleSignOut = async () => {
+        const result = await signOut();
+        if (result.success) {
+            router.push('/');
+        }
+    };
+
+    return (
+        <Sidebar className="border-r border-gray-200">
+            {/* Logo Section */}
+            <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-md">
+                        <BookOpen className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-800">MISUN Academy</h2>
+                        <p className="text-xs text-gray-500">{panelText}</p>
+                    </div>
+                </div>
+            </div>
+
+            <SidebarContent className="py-4">
+                <SidebarGroup>
+                    <SidebarGroupContent>
+                        <SidebarMenu className="space-y-1">
+                            {items.map((item) => {
+                                const isActive = pathname === item.url;
+                                return (
+                                    <SidebarMenuItem key={item.title}>
+                                        <SidebarMenuButton
+                                            asChild
+                                            className={`
+                                                px-4 py-3 rounded-lg transition-all duration-200
+                                                hover:bg-gray-100
+                                               
+                                                ${isActive
+                                                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 shadow-md  hover:text-white'
+                                                    : 'text-gray-700'
+                                                }
+                                            `}
+                                        >
+                                            <Link href={item.url} className="flex items-center gap-3">
+                                                <item.icon className="w-5 h-5" />
+                                                <span className="font-medium">{item.title}</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                );
+                            })}
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+            </SidebarContent>
+
+            <SidebarFooter className="border-t border-gray-200 p-4">
+                <SidebarMenu>
+
+                    <SidebarMenuItem>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <SidebarMenuButton className="w-full px-4 py-3 hover:bg-gray-100 rounded-lg">
+                                    <div className="flex items-center gap-3 w-full">
+                                        {user?.image ? (
+                                            <Image
+                                                src={user.image}
+                                                alt="User Avatar"
+                                                width={30}
+                                                height={30}
+                                                className="h-8 w-8 rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="h-10 w-10 rounded-full bg-emerald-50 flex items-center justify-center">
+                                                <User2 className="h-6 w-6 text-emerald-600" />
+                                            </div>
+                                        )}
+
+                                        <div className="flex flex-col items-start truncate">
+                                            <span className="text-sm font-medium text-gray-800 truncate">
+                                                {user?.name || "Guest"}
+                                            </span>
+                                            <span className="text-xs text-gray-500 truncate">
+                                                {user?.email || "No email"}
+                                            </span>
+                                        </div>
+
+                                        <ChevronUp className="ml-auto w-4 h-4 text-gray-500" />
+                                    </div>
+                                </SidebarMenuButton>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                side="top"
+                                className="w-[--radix-popper-anchor-width]"
+                            >
+                                <DropdownMenuItem onClick={handleSignOut} className="flex justify-around items-center">
+                                    <span>Sign Out</span>
+                                    <LogOut className="mr-2 h-4 w-4 text-red-600" />
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarFooter>
+        </Sidebar>
+    );
+}
