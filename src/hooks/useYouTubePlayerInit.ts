@@ -7,6 +7,7 @@ export function useYouTubePlayerInit(
   onPlaybackRateChange: (event: { data: number }) => void,
   onPlaybackQualityChange: (event: { data: string }) => void,
   playerRef: MutableRefObject<YTPlayer | null>,
+  onError?: (event: { data: number }) => void,
 ) {
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +31,7 @@ export function useYouTubePlayerInit(
           loop: 1, playlist: videoId,
           origin: window.location.origin,
         },
-        events: { onReady, onStateChange, onPlaybackRateChange, onPlaybackQualityChange },
+        events: { onReady, onStateChange, onPlaybackRateChange, onPlaybackQualityChange, onError },
       });
     }
 
@@ -61,7 +62,7 @@ export function useYouTubePlayerInit(
       playerRef.current?.destroy?.();
       playerRef.current = null;
     };
-  }, [videoId, onReady, onStateChange, onPlaybackRateChange, onPlaybackQualityChange, playerRef]);
+  }, [videoId, onReady, onStateChange, onPlaybackRateChange, onPlaybackQualityChange, onError, playerRef]);
 
   return { playerContainerRef, playerRef };
 }

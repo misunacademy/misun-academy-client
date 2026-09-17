@@ -6,7 +6,7 @@ const INITIAL_STATE: YouTubePlayerState = {
   isPlaying: false, isMuted: false, progress: 0, currentTime: 0, duration: 0,
   isReady: false, showControls: true, isFullscreen: false, isEnded: false,
   volume: 100, playbackRates: [0.5, 1, 1.5, 2], playbackRate: 1,
-  qualityLevels: ['auto'], qualityLevel: 'auto',
+  qualityLevels: ['auto'], qualityLevel: 'auto', errorCode: null,
 };
 
 export function useYouTubePlayer(videoId: string | null) {
@@ -58,7 +58,7 @@ export function useYouTubePlayer(videoId: string | null) {
     playerRef.current = p;
     update({
       duration: p.getDuration(), volume: p.getVolume?.() ?? 100,
-      isMuted: p.isMuted?.() ?? false, isReady: true,
+      isMuted: p.isMuted?.() ?? false, isReady: true, errorCode: null,
     });
     syncPlaybackOptions();
     const iframe = p.getIframe?.();
@@ -104,8 +104,16 @@ export function useYouTubePlayer(videoId: string | null) {
     }
   }, [state.qualityLevel, update]);
 
+  const onPlayerError = useCallback((event: { data: number }) => {
+    update({ errorCode: typeof event?.data === 'number' ? event.data : -1, isPlaying: false });
+  }, [update]);
+
+  // Note: callers key this hook's component by videoId (see LessonVideoPlayer),
+  // so a lesson switch remounts with fresh INITIAL_STATE — no in-effect
+  // setState reset needed here (and react-hooks/set-state-in-effect forbids it).
+
   const { playerContainerRef } = useYouTubePlayerInit(
-    videoId, onPlayerReady, onStateChange, onPlaybackRateChange, onPlaybackQualityChange, playerRef,
+    videoId, onPlayerReady, onStateChange, onPlaybackRateChange, onPlaybackQualityChange, playerRef, onPlayerError,
   );
 
   useEffect(() => {
