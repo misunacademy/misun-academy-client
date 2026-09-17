@@ -14,6 +14,7 @@ import { TextareaField } from "@/components/forms/textarea-field";
 import { SelectField } from "@/components/forms/select-field";
 import { SwitchField } from "@/components/forms/switch-field";
 import { SubmitButton } from "@/components/forms/submit-button";
+import { normalizeVideoId } from "@/lib/youtube/utils";
 
 interface Lesson {
     _id: string;
@@ -121,6 +122,9 @@ const LessonFormDialog = ({ open, mode, moduleId, data, onClose, onSuccess }: {
                 delete payload.videoId;
                 delete payload.videoUrl;
                 delete payload.videoDuration;
+            } else if (payload.videoId) {
+                payload.videoId = normalizeVideoId(payload.videoSource || 'youtube', payload.videoId);
+                delete payload.videoUrl;
             }
 
             if (mode === 'create') {
@@ -161,11 +165,11 @@ const LessonFormDialog = ({ open, mode, moduleId, data, onClose, onSuccess }: {
                                 <SelectField name="videoSource" label="Video Source" options={VIDEO_SOURCE_OPTIONS} />
                                 <InputField
                                     name="videoId"
-                                    label={watchedVideoSource === 'youtube' ? 'YouTube Video ID' : 'Google Drive File ID'}
-                                    placeholder={watchedVideoSource === 'youtube' ? 'dQw4w9WgXcQ' : '1a2b3c4d5e6f7g8h9i0j'}
+                                    label={watchedVideoSource === 'youtube' ? 'YouTube Video ID or URL' : 'Google Drive File ID or URL'}
+                                    placeholder={watchedVideoSource === 'youtube' ? 'dQw4w9WgXcQ or full YouTube link' : 'FILE_ID or full Drive link'}
                                     description={watchedVideoSource === 'youtube'
-                                        ? 'YouTube URL: https://www.youtube.com/watch?v=VIDEO_ID'
-                                        : 'Google Drive URL: https://drive.google.com/file/d/FILE_ID/view'}
+                                        ? 'Paste a full YouTube link or just the 11-character ID — e.g. https://www.youtube.com/watch?v=VIDEO_ID'
+                                        : 'Paste a full Drive link or just the file ID — e.g. https://drive.google.com/file/d/FILE_ID/view'}
                                 />
                                 <InputField name="videoDuration" label="Duration (seconds)" type="number" placeholder="300" />
                             </>
