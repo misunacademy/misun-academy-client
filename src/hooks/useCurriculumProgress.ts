@@ -27,7 +27,7 @@ interface CourseProgress {
 export type Lesson = {
   lessonId: string;
   title: string;
-  media?: { url?: string };
+  media?: { url?: string; type?: string; videoId?: string };
   duration?: number;
   resources?: Array<{ type?: string; title?: string; url?: string; textContent?: string }>;
 };
