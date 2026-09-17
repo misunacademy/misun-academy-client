@@ -13,6 +13,7 @@ export interface YouTubePlayerState {
   playbackRate: number;
   qualityLevels: string[];
   qualityLevel: string;
+  errorCode: number | null;
 }
 
 export interface YouTubePlayerActions {

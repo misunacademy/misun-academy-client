@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
+import { LessonVideoPlayer } from "@/components/shared/lesson-video-player";
 import type { Recording } from "@/redux/api/recordingApi";
 
 interface RecordingPreviewDialogProps {
@@ -22,12 +22,13 @@ const RecordingPreviewDialog = ({
           <DialogTitle>{recording?.title}</DialogTitle>
         </DialogHeader>
         {recording ? (
-          <div className="relative aspect-video w-full rounded-lg overflow-hidden">
-            <YoutubePrivatePlayer
-              url={getRecordingUrl(recording)}
-              className="absolute inset-0 w-full h-full"
-            />
-          </div>
+          <LessonVideoPlayer
+            key={recording._id}
+            url={getRecordingUrl(recording)}
+            videoSource={recording.videoSource}
+            videoId={recording.videoId}
+            title={recording.title}
+          />
         ) : null}
       </DialogContent>
     </Dialog>

@@ -9,6 +9,7 @@ import { TextareaField } from "@/components/forms/textarea-field";
 import { SelectField } from "@/components/forms/select-field";
 import { CheckboxField } from "@/components/forms/checkbox-field";
 import { SubmitButton } from "@/components/forms/submit-button";
+import { normalizeVideoId } from "@/lib/youtube/utils";
 import type { CourseResponse } from "@/redux/api/courseApi";
 import type { BatchResponse } from "@/redux/api/batchApi";
 
@@ -75,12 +76,12 @@ const RecordingForm = ({
 
   const videoDescription =
     watchedVideoSource === "youtube"
-      ? "YouTube URL: https://www.youtube.com/watch?v=VIDEO_ID"
-      : "Google Drive URL: https://drive.google.com/file/d/FILE_ID/view";
+      ? "Paste a full YouTube link or just the ID — e.g. https://www.youtube.com/watch?v=VIDEO_ID"
+      : "Paste a full Drive link or just the file ID — e.g. https://drive.google.com/file/d/FILE_ID/view";
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit((values) => onSubmit({ ...values, videoId: normalizeVideoId(values.videoSource, values.videoId) || values.videoId }))} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <SelectField
             name="courseId"
@@ -113,13 +114,13 @@ const RecordingForm = ({
 
         <InputField
           name="videoId"
-          label="Video ID"
+          label="Video ID or URL"
           required
           description={videoDescription}
           placeholder={
             watchedVideoSource === "youtube"
-              ? "YouTube video ID (e.g., dQw4w9WgXcQ)"
-              : "Google Drive file ID"
+              ? "YouTube ID or full link (e.g., dQw4w9WgXcQ)"
+              : "Drive file ID or full link"
           }
         />
 

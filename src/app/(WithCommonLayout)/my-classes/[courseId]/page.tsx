@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import AuthGuard from "@/components/shared/AuthGuard";
 import NotificationBell from "@/components/shared/NotificationBell";
-import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
+import { LessonVideoPlayer } from "@/components/shared/lesson-video-player";
 import { useCourseNavigation } from "@/hooks/useCourseNavigation";
 import { useGetZamesStatsQuery } from "@/redux/api/gamificationApi";
 import type { IZamesStats } from "@/types/quiz";
@@ -53,6 +53,7 @@ export default function CourseDetails() {
     handlePrevLesson,
     toggleModule,
     selectLesson,
+    selectQuizModule,
     setShowCongratulations,
     setShowCookingMessage,
     courseId,
@@ -62,7 +63,8 @@ export default function CourseDetails() {
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
-  const handleSelectQuiz = (quizId: string) => {
+  const handleSelectQuiz = (moduleIdx: number, quizId: string) => {
+    selectQuizModule(moduleIdx);
     setActiveQuizId(quizId);
   };
 
@@ -208,13 +210,14 @@ export default function CourseDetails() {
                     </div>
                   </div>
                   <div className="p-4">
-                    {currentLesson.media?.url ? (
-                      <div className="relative aspect-video w-full rounded-xl overflow-hidden">
-                        <YoutubePrivatePlayer
-                          url={currentLesson.media.url}
-                          className="absolute inset-0 w-full h-full"
-                        />
-                      </div>
+                    {currentLesson.media?.url || currentLesson.media?.videoId ? (
+                      <LessonVideoPlayer
+                        key={`${currentLesson.lessonId}-${currentLesson.media?.url || currentLesson.media?.videoId}`}
+                        url={currentLesson.media?.url}
+                        type={currentLesson.media?.type}
+                        videoId={currentLesson.media?.videoId}
+                        title={currentLesson.title}
+                      />
                     ) : (
                       <div className="aspect-video rounded-xl border border-white/[0.04] bg-white/[0.02] flex flex-col items-center justify-center gap-3">
                         <FileText className="h-12 w-12 text-white/20" />

@@ -7,14 +7,6 @@ interface RecordingPreviewDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const resolveUrl = (recording: Recording): string | null => {
-  if (recording.videoUrl) return recording.videoUrl;
-  if (recording.videoSource === "youtube" && recording.videoId) {
-    return `https://www.youtube.com/watch?v=${recording.videoId}`;
-  }
-  return null;
-};
-
 const RecordingPreviewDialog = ({ recording, onOpenChange }: RecordingPreviewDialogProps) => {
   return (
     <Dialog open={!!recording} onOpenChange={onOpenChange}>
@@ -23,9 +15,13 @@ const RecordingPreviewDialog = ({ recording, onOpenChange }: RecordingPreviewDia
           <DialogTitle>{recording?.title}</DialogTitle>
         </DialogHeader>
         {recording ? (
-          <div className="relative aspect-video w-full rounded-lg overflow-hidden">
-            <YoutubePrivatePlayer url={resolveUrl(recording) ?? ""} className="absolute inset-0 w-full h-full" />
-          </div>
+          <LessonVideoPlayer
+            key={recording._id}
+            url={recording.videoUrl}
+            videoSource={recording.videoSource}
+            videoId={recording.videoId}
+            title={recording.title}
+          />
         ) : null}
       </DialogContent>
     </Dialog>

@@ -53,6 +53,16 @@ export function useLessonNav(curriculum: ModuleType[], currentLesson?: { moduleI
     setShowCookingMessage(false);
   };
 
+  const selectQuizModule = (moduleIdx: number) => {
+    const selectedModule = curriculum[moduleIdx];
+    if (!selectedModule) return;
+    setCurrentModuleIndex(moduleIdx);
+    if (moduleIdx !== currentModuleIndex) {
+      setCurrentLessonIndex(selectedModule.lessons.length - 1);
+    }
+    setShowCookingMessage(false);
+  };
+
   return {
     currentModuleIndex,
     currentLessonIndex,
@@ -66,6 +76,7 @@ export function useLessonNav(curriculum: ModuleType[], currentLesson?: { moduleI
     handlePrevLesson,
     toggleModule,
     selectLesson,
+    selectQuizModule,
     setShowCookingMessage,
     setShowCongratulations,
   };

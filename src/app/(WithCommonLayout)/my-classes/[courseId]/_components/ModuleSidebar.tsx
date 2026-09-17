@@ -48,7 +48,7 @@ export default function ModuleSidebar({
     isQuizCompleted?: (moduleId: string, quizId: string) => boolean;
     isQuizUnlocked?: (moduleIdx: number, quizIdx: number) => boolean;
     onSelectLesson: (moduleIdx: number, lessonIdx: number) => void;
-    onSelectQuiz?: (quizId: string) => void;
+    onSelectQuiz?: (moduleIdx: number, quizId: string) => void;
 }) {
     const totalModules = curriculum.length;
 
@@ -151,7 +151,7 @@ export default function ModuleSidebar({
                                                         return (
                                                             <button
                                                                 key={quiz.quizId}
-                                                                onClick={() => onSelectQuiz?.(quiz.quizId)}
+                                                                onClick={() => onSelectQuiz?.(moduleIdx, quiz.quizId)}
                                                                 disabled={!unlocked}
                                                                 className={`w-full text-left px-3 py-2.5 rounded-xl border text-xs font-medium transition-all duration-200 flex items-center gap-2.5
                                                                     ${isActiveQuiz
