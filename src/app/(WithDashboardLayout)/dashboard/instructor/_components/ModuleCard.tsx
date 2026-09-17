@@ -13,7 +13,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
+import { LessonVideoPlayer } from "@/components/shared/lesson-video-player";
 import {
   ChevronDown, ChevronRight, Edit, Trash2, Video, FileText,
   GripVertical, ArrowUp, ArrowDown, Plus, Eye, ClipboardCheck,
@@ -188,18 +188,14 @@ export function ModuleCard({
           </DialogHeader>
           {playingLesson ? (() => {
             const lessonUrl = resolveLessonUrl(playingLesson);
-            if (playingLesson.type === "video" && lessonUrl) {
-              if (playingLesson.videoSource === "googledrive") {
-                return (
-                  <div className="relative aspect-video w-full rounded-lg overflow-hidden">
-                    <iframe src={lessonUrl} className="absolute inset-0 w-full h-full" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title={playingLesson.title} />
-                  </div>
-                );
-              }
+            if (playingLesson.type === "video" && (lessonUrl || playingLesson.videoId)) {
               return (
-                <div className="relative aspect-video w-full rounded-lg overflow-hidden">
-                  <YoutubePrivatePlayer url={lessonUrl} className="absolute inset-0 w-full h-full" />
-                </div>
+                <LessonVideoPlayer
+                  url={lessonUrl}
+                  videoSource={playingLesson.videoSource}
+                  videoId={playingLesson.videoId}
+                  title={playingLesson.title}
+                />
               );
             }
             if (playingLesson.type !== "video" && playingLesson.content) {

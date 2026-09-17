@@ -60,6 +60,7 @@ export function useCourseNavigation() {
     handlePrevLesson: nav.handlePrevLesson,
     toggleModule: nav.toggleModule,
     selectLesson: nav.selectLesson,
+    selectQuizModule: nav.selectQuizModule,
     setShowCongratulations: nav.setShowCongratulations,
     setShowCookingMessage: nav.setShowCookingMessage,
   };

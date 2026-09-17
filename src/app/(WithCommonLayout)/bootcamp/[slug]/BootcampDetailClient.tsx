@@ -9,7 +9,7 @@ import { useGetBootcampBySlugQuery, useGetMyBootcampVideosQuery } from '@/redux/
 import { useAuth } from '@/hooks/useAuth';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import BootcampPurchaseDialog from '../_components/BootcampPurchaseDialog';
-import { YoutubePrivatePlayer } from '@/components/shared/youtube-private-player';
+import { LessonVideoPlayer } from '@/components/shared/lesson-video-player';
 import { toast } from 'sonner';
 
 export default function BootcampDetailClient() {
@@ -71,11 +71,6 @@ export default function BootcampDetailClient() {
     const myVideos = videosData?.data?.videos ?? [];
     const safeIdx = myVideos.length > 0 ? Math.min(activeIdx, myVideos.length - 1) : 0;
     const activeVideo = myVideos[safeIdx];
-
-    const getVideoUrl = (v: (typeof myVideos)[number]) =>
-        v.videoSource === 'youtube'
-            ? v.videoUrl || `https://www.youtube.com/watch?v=${v.videoId}`
-            : v.videoUrl || `https://drive.google.com/file/d/${v.videoId}/preview`;
 
     const handleBuy = () => {
         if (!user) {
@@ -179,13 +174,14 @@ export default function BootcampDetailClient() {
                         <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_340px]">
                             <div>
                                 <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
-                                    <div className="aspect-video w-full">
-                                        <YoutubePrivatePlayer
-                                            key={activeVideo._id}
-                                            url={getVideoUrl(activeVideo)}
-                                            className="h-full w-full"
-                                        />
-                                    </div>
+                                    <LessonVideoPlayer
+                                        key={activeVideo._id}
+                                        url={activeVideo.videoUrl}
+                                        videoSource={activeVideo.videoSource}
+                                        videoId={activeVideo.videoId}
+                                        title={activeVideo.title}
+                                        className="rounded-none"
+                                    />
                                 </div>
                                 <p className="mt-4 font-bangla text-xs font-semibold text-white/50">
                                     সেশন {safeIdx + 1} / {myVideos.length}

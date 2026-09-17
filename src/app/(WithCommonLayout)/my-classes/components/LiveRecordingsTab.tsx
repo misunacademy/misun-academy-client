@@ -5,7 +5,7 @@ import { Skeleton } from 'boneyard-js/react'
 import { AlertCircle, BookOpen, Clock, PlayCircle, Radio, Video } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
+import { LessonVideoPlayer } from "@/components/shared/lesson-video-player";
 import { toast } from "sonner";
 import { Recording, useGetStudentRecordingsQuery, useIncrementRecordingViewMutation } from "@/redux/api/recordingApi";
 import { useGetStudentDashboardDataQuery } from "@/redux/api/dashboardApi";
@@ -199,12 +199,13 @@ export function LiveRecordingsTab() {
             <DialogTitle>{playingRecording?.title}</DialogTitle>
           </DialogHeader>
           {playingRecording ? (
-            <div className="relative aspect-video w-full rounded-lg overflow-hidden">
-              <YoutubePrivatePlayer
-                url={playingRecording.videoUrl ?? ""}
-                className="absolute inset-0 w-full h-full"
-              />
-            </div>
+            <LessonVideoPlayer
+              key={playingRecording._id}
+              url={playingRecording.videoUrl}
+              videoSource={playingRecording.videoSource}
+              videoId={playingRecording.videoId}
+              title={playingRecording.title}
+            />
           ) : null}
         </DialogContent>
       </Dialog>
