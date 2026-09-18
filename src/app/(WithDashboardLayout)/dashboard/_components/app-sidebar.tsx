@@ -16,7 +16,6 @@ import {
   Mail,
   Megaphone,
   Rocket,
-  RotateCcw,
   Settings,
   ShieldCheck,
   TrendingUp,
