@@ -69,6 +69,9 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
   const [timeRemaining, setTimeRemaining] = React.useState<number | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [reviewAttemptId, setReviewAttemptId] = React.useState<string | null>(null);
+  // In-flight guard: phase state lags a tick, so a ref prevents double
+  // submits from double-clicks and timer-expiry races.
+  const submittingRef = React.useRef(false);
 
   React.useEffect(() => {
     if (phase !== "loading") return;
@@ -146,7 +149,8 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
   };
 
   const handleSubmit = React.useCallback(async () => {
-    if (!attemptId) return;
+    if (!attemptId || submittingRef.current) return;
+    submittingRef.current = true;
     setPhase("submitting");
     try {
       const timeTaken = quizInfo?.timeLimit
@@ -167,6 +171,8 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
     } catch (err) {
       setError(getApiErrorMessage(err, "Failed to submit quiz"));
       setPhase("active");
+    } finally {
+      submittingRef.current = false;
     }
   }, [attemptId, answers, quizInfo, quizId, submitAttempt, timeRemaining]);
 
@@ -194,6 +200,13 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
   const isLastQuestion = currentIndex === questions.length - 1;
   const canGoNext = selectedAnswer !== null;
   const canGoPrev = currentIndex > 0;
+  // Free jumping is limited to answered questions so learners cannot skip
+  // ahead and submit partial attempts; unanswered ones are reached via Next.
+  const canJumpTo = (idx: number) =>
+    idx === currentIndex || answers[questions[idx]?._id] !== undefined;
+  const allAnswered =
+    questions.length > 0 &&
+    questions.every((q) => answers[q._id] !== undefined && answers[q._id] !== null);
 
   if (infoLoading || phase === "loading") {
     return (
@@ -272,8 +285,10 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
                   {questions.map((_, idx) => (
                     <button
                       key={idx}
-                      onClick={() => setCurrentIndex(idx)}
-                      className={` flex-1 rounded-full transition-all duration-200 ${
+                      aria-label={`Go to question ${idx + 1}`}
+                      onClick={() => { if (canJumpTo(idx)) setCurrentIndex(idx); }}
+                      disabled={!canJumpTo(idx)}
+                      className={` flex-1 rounded-full transition-all duration-200 disabled:cursor-not-allowed ${
                         idx === currentIndex
                           ? "bg-primary"
                           : answers[questions[idx]._id] !== undefined
@@ -313,7 +328,8 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
                 {isLastQuestion ? (
                   <button
                     onClick={handleSubmit}
-                    disabled={submitting}
+                    disabled={submitting || !allAnswered}
+                    title={allAnswered ? "Submit quiz" : `Answer all questions (${answeredCount}/${questions.length})`}
                     className="flex items-center gap-1.5 px-5 py-2 rounded-lg text-sm font-semibold bg-primary hover:bg-primary/90 text-white transition-all disabled:opacity-50"
                   >
                     {submitting ? "Submitting..." : "Submit"}
