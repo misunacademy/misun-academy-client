@@ -648,8 +648,8 @@ function QuizResultView({
         <div className="space-y-4 text-left">
           {questions.map((q: IQuestionReview, idx: number) => {
             const ans = answerMap.get(q._id);
-            const selectedIdx = ans?.selectedAnswer;
-            const correctIdx = q.correctAnswer;
+            const selectedValue = ans?.selectedAnswer;
+            const correctValue = q.correctAnswer;
             const isCorrect = ans?.isCorrect;
 
             return (
@@ -667,8 +667,9 @@ function QuizResultView({
 
                 <div className="space-y-1.5 pl-9">
                   {q.options.map((opt: IContentBlock, optIdx: number) => {
-                    const isSelected = String(optIdx) === selectedIdx;
-                    const isRightAnswer = String(optIdx) === correctIdx;
+                    const optionValue = opt.text || `option-${optIdx}`;
+                    const isSelected = optionValue === selectedValue;
+                    const isRightAnswer = optionValue === correctValue;
                     let style = "border-white/[0.06] text-white/50";
                     if (isRightAnswer) style = "border-green-500/40 bg-green-500/8 text-green-300";
                     else if (isSelected && !isCorrect) style = "border-red-500/40 bg-red-500/8 text-red-300";

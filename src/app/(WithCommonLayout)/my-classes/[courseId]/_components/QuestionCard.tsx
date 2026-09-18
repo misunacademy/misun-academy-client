@@ -26,7 +26,11 @@ export function QuestionCard({ question, index, selectedAnswer, onSelect }: Ques
 
       <div className="grid grid-cols-2 gap-2.5">
         {question.options.map((opt, optIdx) => {
-          const value = String(optIdx);
+          // Option VALUE convention (shared with the admin form, the review
+          // screen and server-side scoring): option text, falling back to
+          // `option-<index>` for textless options. Never the bare index —
+          // correctAnswer stores text, so indices never match.
+          const value = opt.text || `option-${optIdx}`;
           const isSelected = selectedAnswer === value;
           return (
             <button
