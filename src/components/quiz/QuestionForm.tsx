@@ -52,6 +52,12 @@ const EMPTY_OPTIONS: OptionForm[] = [
     { type: "text", text: "", imageUrl: "", altText: "" },
 ];
 
+// True/False always has exactly these two options (fresh copies per use).
+const TRUE_FALSE_OPTIONS: OptionForm[] = [
+    { type: "text", text: "True", imageUrl: "", altText: "" },
+    { type: "text", text: "False", imageUrl: "", altText: "" },
+];
+
 export function questionToFormState(q?: IQuestion | null): QuestionFormState {
     if (!q) {
         return {
@@ -135,32 +141,24 @@ interface QuestionFormFieldsProps {
 
 export function QuestionFormFields({
     initialQuestion,
-    resetSignal,
     onChange,
     onValidityChange,
 }: QuestionFormFieldsProps) {
-    const [state, setState] = useState<QuestionFormState>(() => questionToFormState(initialQuestion));
-
-    // Load / reset when the edited question changes or after a successful save
-    useEffect(() => {
-        setState(questionToFormState(initialQuestion));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [initialQuestion?._id, resetSignal]);
-
-    // True/False always has exactly True + False options
-    useEffect(() => {
-        if (state.questionType === "true_false") {
-            setState((prev) => ({
-                ...prev,
-                options: [
-                    { type: "text", text: "True", imageUrl: "", altText: "" },
-                    { type: "text", text: "False", imageUrl: "", altText: "" },
-                ],
+    // State is (re)initialized during render. Reloading on question change /
+    // "save & add another" needs no effect: the parent (QuestionDialog) keys
+    // this component by question id + resetSignal, so it remounts fresh.
+    // `resetSignal` is therefore intentionally not read here.
+    const [state, setState] = useState<QuestionFormState>(() => {
+        const initial = questionToFormState(initialQuestion);
+        if (initial.questionType === "true_false") {
+            return {
+                ...initial,
+                options: TRUE_FALSE_OPTIONS.map((o) => ({ ...o })),
                 correctAnswer: "",
-            }));
+            };
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [state.questionType]);
+        return initial;
+    });
 
     const optionValue = (index: number, opt: OptionForm) => opt.text || `option-${index}`;
 
@@ -219,7 +217,17 @@ export function QuestionFormFields({
                             <Label>Question Type</Label>
                             <Select
                                 value={questionType}
-                                onValueChange={(v: QuestionType) => patch({ questionType: v, correctAnswer: "" })}
+                                onValueChange={(v: QuestionType) =>
+                                    patch(
+                                        v === "true_false"
+                                            ? {
+                                                  questionType: v,
+                                                  correctAnswer: "",
+                                                  options: TRUE_FALSE_OPTIONS.map((o) => ({ ...o })),
+                                              }
+                                            : { questionType: v, correctAnswer: "" }
+                                    )
+                                }
                             >
                                 <SelectTrigger>
                                     <SelectValue />
