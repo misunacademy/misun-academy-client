@@ -5,6 +5,12 @@ import { useGetCourseByIdQuery } from "@/redux/api/courseApi";
 import { useGetCourseProgressQuery, useCompleteLessonMutation } from "@/redux/api/courseEnrollmentApi";
 import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
 import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
+import {
+  isLessonCompleted as checkLessonCompleted,
+  isLessonUnlocked as checkLessonUnlocked,
+  isQuizCompleted as checkQuizCompleted,
+  isQuizUnlocked as checkQuizUnlocked,
+} from "@/lib/curriculum-locks";
 
 interface CourseProgress {
   percentage: number;
@@ -77,51 +83,16 @@ export function useCurriculumProgress() {
   const isBatchCompleted = batchData?.data?.status === "completed";
 
   const isLessonCompleted = (moduleId: string, lessonId: string) =>
-    progress?.completedLessons?.some((c) => c.moduleId === moduleId && c.lessonId === lessonId) || false;
+    checkLessonCompleted(progress?.completedLessons, moduleId, lessonId);
 
   const isQuizCompleted = (moduleId: string, quizId: string) =>
-    progress?.completedQuizzes?.some((c) => c.moduleId === moduleId && c.quizId === quizId) || false;
+    checkQuizCompleted(progress?.completedQuizzes, moduleId, quizId);
 
-  const isLessonUnlocked = (moduleIdx: number, lessonIdx: number) => {
-    for (let m = 0; m < moduleIdx; m++) {
-      const mod = curriculum?.[m];
-      if (!mod) continue;
-      for (const les of mod.lessons) {
-        if (!isLessonCompleted(mod.moduleId, les.lessonId)) return false;
-      }
-      for (const quiz of (mod.quizzes || [])) {
-        if (!isQuizCompleted(mod.moduleId, quiz.quizId)) return false;
-      }
-    }
-    const mod = curriculum?.[moduleIdx];
-    if (!mod) return false;
-    for (let l = 0; l < lessonIdx; l++) {
-      if (!isLessonCompleted(mod.moduleId, mod.lessons[l].lessonId)) return false;
-    }
-    return true;
-  };
+  const isLessonUnlocked = (moduleIdx: number, lessonIdx: number) =>
+    checkLessonUnlocked(curriculum, progress?.completedLessons, progress?.completedQuizzes, moduleIdx, lessonIdx);
 
-  const isQuizUnlocked = (moduleIdx: number, quizIdx: number) => {
-    for (let m = 0; m < moduleIdx; m++) {
-      const mod = curriculum?.[m];
-      if (!mod) continue;
-      for (const les of mod.lessons) {
-        if (!isLessonCompleted(mod.moduleId, les.lessonId)) return false;
-      }
-      for (const quiz of (mod.quizzes || [])) {
-        if (!isQuizCompleted(mod.moduleId, quiz.quizId)) return false;
-      }
-    }
-    const mod = curriculum?.[moduleIdx];
-    if (!mod) return false;
-    for (const les of mod.lessons) {
-      if (!isLessonCompleted(mod.moduleId, les.lessonId)) return false;
-    }
-    for (let q = 0; q < quizIdx; q++) {
-      if (!isQuizCompleted(mod.moduleId, (mod.quizzes || [])[q].quizId)) return false;
-    }
-    return true;
-  };
+  const isQuizUnlocked = (moduleIdx: number, quizIdx: number) =>
+    checkQuizUnlocked(curriculum, progress?.completedLessons, progress?.completedQuizzes, moduleIdx, quizIdx);
 
   const handleCompleteLesson = async (moduleId: string, lessonId: string): Promise<boolean> => {
     try {
