@@ -13,7 +13,10 @@ export function useCourseNavigation() {
     const l = nav.currentLessonItem;
     if (!m || !l) return;
     if (!progress.isLessonCompleted(m.moduleId, l.lessonId)) {
-      await progress.handleCompleteLesson(m.moduleId, l.lessonId);
+      const ok = await progress.handleCompleteLesson(m.moduleId, l.lessonId);
+      // Backend rejected (e.g. module is locked): stay put instead of
+      // drifting into locked content the server will refuse.
+      if (!ok) return;
     }
 
     const quizzes = m.quizzes || [];

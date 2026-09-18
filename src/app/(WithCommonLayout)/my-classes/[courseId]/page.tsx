@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { toast } from "sonner";
 import { PlayCircle, ChevronLeft, FileText, Gem, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
@@ -64,8 +65,23 @@ export default function CourseDetails() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   const handleSelectQuiz = (moduleIdx: number, quizId: string) => {
+    const quizzes = curriculum[moduleIdx]?.quizzes || [];
+    const quizIdx = quizzes.findIndex((q) => q.quizId === quizId);
+    if (quizIdx >= 0 && !isQuizUnlocked(moduleIdx, quizIdx)) {
+      toast.error("This module is locked. Complete previous modules before attempting its lessons.");
+      return;
+    }
     selectQuizModule(moduleIdx);
     setActiveQuizId(quizId);
+  };
+
+  const handleSelectLesson = (moduleIdx: number, lessonIdx: number) => {
+    if (!isLessonUnlocked(moduleIdx, lessonIdx)) {
+      toast.error("This module is locked. Complete previous modules before attempting its lessons.");
+      return;
+    }
+    setActiveQuizId(null);
+    selectLesson(moduleIdx, lessonIdx);
   };
 
   const handleQuizComplete = useCallback(async () => {
@@ -281,7 +297,7 @@ export default function CourseDetails() {
               isLessonUnlocked={isLessonUnlocked}
               isQuizCompleted={isQuizCompleted}
               isQuizUnlocked={isQuizUnlocked}
-              onSelectLesson={(moduleIdx, lessonIdx) => { setActiveQuizId(null); selectLesson(moduleIdx, lessonIdx); }}
+              onSelectLesson={handleSelectLesson}
               onSelectQuiz={handleSelectQuiz}
             />
           </div>

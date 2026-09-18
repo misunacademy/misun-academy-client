@@ -123,13 +123,18 @@ export function useCurriculumProgress() {
     return true;
   };
 
-  const handleCompleteLesson = async (moduleId: string, lessonId: string) => {
+  const handleCompleteLesson = async (moduleId: string, lessonId: string): Promise<boolean> => {
     try {
       await completeLesson({ courseId, moduleId, lessonId }).unwrap();
       toast.success("Lesson marked as complete!");
       refetchProgress();
+      return true;
     } catch (error: unknown) {
       toast.error((error as { data?: { message?: string } })?.data?.message || "Failed to complete lesson.");
+      // Refresh so lock state in the UI matches the server instead of
+      // leaving the user stranded on content the server considers locked.
+      refetchProgress();
+      return false;
     }
   };
 

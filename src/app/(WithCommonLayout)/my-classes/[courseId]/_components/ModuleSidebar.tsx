@@ -103,7 +103,7 @@ export default function ModuleSidebar({
                                             {module.lessons.map((lesson, lessonIdx) => {
                                                 const isCompleted = isLessonCompleted(module.moduleId, lesson.lessonId);
                                                 const isCurrent = !activeQuizId && moduleIdx === currentModuleIndex && lessonIdx === currentLessonIndex;
-                                                const isUnlocked = isLessonUnlocked(moduleIdx, lessonIdx) || isCurrent;
+                                                const isUnlocked = isLessonUnlocked(moduleIdx, lessonIdx);
 
                                                 return (
                                                     <button
