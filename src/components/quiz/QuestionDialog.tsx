@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -37,13 +37,10 @@ export function QuestionDialog({
     const [isSavingAnother, setIsSavingAnother] = useState(false);
     const [resetSignal, setResetSignal] = useState(0);
 
-    // Clear local state whenever the dialog opens or the edited question changes
-    useEffect(() => {
-        if (open) {
-            setFormValue(null);
-            setValid(false);
-        }
-    }, [open, editingQuestion?._id]);
+    // No reset effect here: QuestionFormFields is keyed by question id +
+    // resetSignal below, so it remounts fresh on open / question change /
+    // "save & add another", and reports its initial value/validity via
+    // onChange / onValidityChange on mount.
 
     const handleSave = async (addAnother: boolean) => {
         if (!formValue) return;
