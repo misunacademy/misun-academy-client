@@ -31,6 +31,7 @@ const ManualPaymentForm = ({
     onBack,
     onPaymentComplete,
     manualAmount,
+    manualCurrency,
     batch
 }: ManualPaymentFormProps) => {
     const form = useForm<PaymentForm>({
@@ -54,9 +55,15 @@ const ManualPaymentForm = ({
     };
 
     const displayAmount = manualAmount ?? 0;
+    // Batches carry their own currency (BDT batches vs INR manual payments
+    // for Indian students) — never hardcode it.
+    const CURRENCY_SYMBOLS: Record<string, string> = { INR: "INR", BDT: "৳" };
+    const effectiveCurrency = manualCurrency ?? paymentInfo.currency;
+    const currencyLabel = CURRENCY_SYMBOLS[effectiveCurrency] ?? effectiveCurrency;
+    const formattedAmount = `${currencyLabel} ${displayAmount.toLocaleString('en-IN')}`;
     const dynamicInstructions = paymentInfo.instructions.map((instruction) => {
         if (instruction.toLowerCase().includes('enter the exact amount')) {
-            return `Enter the exact amount: INR ${displayAmount.toLocaleString('en-IN')}`;
+            return `Enter the exact amount: ${formattedAmount}`;
         }
         return instruction;
     });
@@ -124,7 +131,7 @@ const ManualPaymentForm = ({
                     <div className="flex justify-center">
                         <div className="relative overflow-hidden rounded-xl bg-red-500/8 border border-red-500/25 px-6 py-2.5">
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
-                            <span className="font-bold text-red-400 text-lg">Amount: INR {displayAmount.toLocaleString('en-IN')}</span>
+                            <span className="font-bold text-red-400 text-lg">Amount: {formattedAmount}</span>
                         </div>
                     </div>
 
