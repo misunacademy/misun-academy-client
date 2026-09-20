@@ -90,9 +90,12 @@ export default function QuizBuilderPage() {
                     toast.error("Module ID is required");
                     return;
                 }
-                await createQuiz({ moduleId, data }).unwrap();
+                const res = await createQuiz({ moduleId, data }).unwrap();
+                const created = (res as { data?: { _id?: string } })?.data;
                 toast.success("Quiz created successfully");
-                router.back();
+                // Land on the detail page so questions can be added and
+                // the quiz published right away.
+                router.push(created?._id ? `/dashboard/instructor/quizzes/${created._id}` : "/dashboard/instructor/quizzes");
             }
         } catch (err) {
             toast.error((err as Error)?.message || "Failed to save quiz");

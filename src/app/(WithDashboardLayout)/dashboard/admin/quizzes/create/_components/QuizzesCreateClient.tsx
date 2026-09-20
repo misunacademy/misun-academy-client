@@ -118,9 +118,12 @@ export default function AdminQuizBuilderPage() {
                 toast.success("Quiz updated successfully");
                 router.push(`/dashboard/admin/quizzes/${quizId}`);
             } else {
-                await createQuiz({ moduleId: selectedModuleId, data }).unwrap();
+                const res = await createQuiz({ moduleId: selectedModuleId, data }).unwrap();
+                const created = extractApiData<IQuiz>(res);
                 toast.success("Quiz created successfully");
-                router.push("/dashboard/admin/quizzes");
+                // Land on the detail page so questions can be added and the
+                // quiz published right away instead of hunting the list.
+                router.push(created?._id ? `/dashboard/admin/quizzes/${created._id}` : "/dashboard/admin/quizzes");
             }
         } catch (err) {
             toast.error((err as Error)?.message || "Failed to save quiz");

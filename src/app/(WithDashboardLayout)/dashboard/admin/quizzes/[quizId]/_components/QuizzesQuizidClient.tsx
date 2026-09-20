@@ -56,7 +56,7 @@ export default function AdminQuizDetailPage({ params }: { params: Promise<{ quiz
     const handleSaveQuestion = async (value: QuestionFormValue) => {
         try {
             if (editingQuestion) {
-                await updateQuestion({ questionId: editingQuestion._id, data: value }).unwrap();
+                await updateQuestion({ questionId: editingQuestion._id, quizId, data: value }).unwrap();
                 toast.success("Question updated");
             } else {
                 await createQuestion({ quizId, data: value }).unwrap();
