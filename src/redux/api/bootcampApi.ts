@@ -48,6 +48,11 @@ export interface BootcampRecordedCard {
   status: string;
 }
 
+export interface BootcampVideoResource {
+  title: string;
+  url: string;
+}
+
 export interface BootcampVideo {
   _id: string;
   title: string;
@@ -58,6 +63,7 @@ export interface BootcampVideo {
   duration?: number;
   orderIndex: number;
   isPublished: boolean;
+  resources?: BootcampVideoResource[];
 }
 
 export interface BootcampPurchase {
@@ -94,6 +100,12 @@ export interface BootcampCatalogItem {
   schedule: { day: string; dose?: string; title: string; description: string }[];
   faq: { question: string; answer: string }[];
   paymentMethods: { label: string; number: string; type?: string }[];
+  painPoints: { title: string; description: string }[];
+  outcomes: { title: string; description: string }[];
+  audience: string[];
+  mentor?: { name: string; title?: string; bio?: string; image?: string };
+  testimonials: { name: string; role?: string; quote: string; rating?: number }[];
+  guaranteeNote?: string;
   registrationOpen: boolean;
   recordedCourseId?: string | { _id: string; title: string; slug: string };
   recordedBatchId?: string;

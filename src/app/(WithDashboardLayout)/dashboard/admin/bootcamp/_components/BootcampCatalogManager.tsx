@@ -43,6 +43,39 @@ const emptyForm = {
     thumbnail: '',
     posterImage: '',
     registrationOpen: true,
+    mentorName: '',
+    mentorTitle: '',
+    mentorBio: '',
+    mentorImage: '',
+    guaranteeNote: '',
+    audience: '',
+    perksJson: '',
+    scheduleJson: '',
+    faqJson: '',
+    painPointsJson: '',
+    outcomesJson: '',
+    testimonialsJson: '',
+};
+
+const stringifyList = (v: unknown) => {
+    if (!v || (Array.isArray(v) && v.length === 0)) return '';
+    try {
+        return JSON.stringify(v, null, 2);
+    } catch {
+        return '';
+    }
+};
+
+const parseJsonArray = (raw: string, label: string): unknown[] | undefined => {
+    const trimmed = raw.trim();
+    if (!trimmed) return undefined;
+    try {
+        const parsed: unknown = JSON.parse(trimmed);
+        if (!Array.isArray(parsed)) throw new Error('not-array');
+        return parsed;
+    } catch {
+        throw new Error(`${label} must be a valid JSON array`);
+    }
 };
 
 export default function BootcampCatalogManager() {
@@ -96,6 +129,18 @@ export default function BootcampCatalogManager() {
             thumbnail: b.thumbnail ?? '',
             posterImage: b.posterImage ?? '',
             registrationOpen: b.registrationOpen ?? true,
+            mentorName: b.mentor?.name ?? '',
+            mentorTitle: b.mentor?.title ?? '',
+            mentorBio: b.mentor?.bio ?? '',
+            mentorImage: b.mentor?.image ?? '',
+            guaranteeNote: b.guaranteeNote ?? '',
+            audience: (b.audience ?? []).join('\n'),
+            perksJson: stringifyList(b.perks),
+            scheduleJson: stringifyList(b.schedule),
+            faqJson: stringifyList(b.faq),
+            painPointsJson: stringifyList(b.painPoints),
+            outcomesJson: stringifyList(b.outcomes),
+            testimonialsJson: stringifyList(b.testimonials),
         });
         setPreviews({ thumbnail: b.thumbnail || undefined, posterImage: b.posterImage || undefined });
         setDialogOpen(true);
@@ -156,6 +201,32 @@ export default function BootcampCatalogManager() {
         if (form.posterImage.trim()) payload.posterImage = form.posterImage.trim();
         if (form.startDate) payload.startDate = new Date(form.startDate).toISOString();
         if (form.endDate) payload.endDate = new Date(form.endDate).toISOString();
+        if (form.guaranteeNote.trim()) payload.guaranteeNote = form.guaranteeNote.trim();
+        const audienceLines = form.audience
+            .split('\n')
+            .map((s) => s.trim())
+            .filter(Boolean);
+        if (audienceLines.length > 0) payload.audience = audienceLines;
+        if (form.mentorName.trim()) {
+            payload.mentor = {
+                name: form.mentorName.trim(),
+                ...(form.mentorTitle.trim() ? { title: form.mentorTitle.trim() } : {}),
+                ...(form.mentorBio.trim() ? { bio: form.mentorBio.trim() } : {}),
+                ...(form.mentorImage.trim() ? { image: form.mentorImage.trim() } : {}),
+            };
+        }
+        const jsonFields: [string, string, string][] = [
+            ['perksJson', 'perks', 'Perks'],
+            ['scheduleJson', 'schedule', 'Schedule'],
+            ['faqJson', 'faq', 'FAQ'],
+            ['painPointsJson', 'painPoints', 'Pain points'],
+            ['outcomesJson', 'outcomes', 'Outcomes'],
+            ['testimonialsJson', 'testimonials', 'Testimonials'],
+        ];
+        for (const [formKey, payloadKey, label] of jsonFields) {
+            const parsed = parseJsonArray(form[formKey as keyof typeof form] as string, label);
+            if (parsed !== undefined) payload[payloadKey] = parsed;
+        }
         return payload;
     };
 
@@ -164,12 +235,19 @@ export default function BootcampCatalogManager() {
             toast.error('Title and season are required');
             return;
         }
+        let payload: Record<string, unknown>;
+        try {
+            payload = buildPayload();
+        } catch (e) {
+            toast.error(e instanceof Error ? e.message : 'Invalid JSON in detail fields');
+            return;
+        }
         try {
             if (editingId) {
-                await update({ id: editingId, data: buildPayload() as never }).unwrap();
+                await update({ id: editingId, data: payload as never }).unwrap();
                 toast.success('Bootcamp updated');
             } else {
-                await create(buildPayload() as never).unwrap();
+                await create(payload as never).unwrap();
                 toast.success('Bootcamp created');
             }
             setForm(emptyForm);
@@ -413,6 +491,58 @@ export default function BootcampCatalogManager() {
                                 className="h-4 w-4"
                             />
                             <label className="text-sm font-medium" htmlFor="bc-regopen">Registration open</label>
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                            <p className="text-sm font-semibold">Detail page sections (optional)</p>
+                            <p className="text-xs text-muted-foreground">List fields accept a JSON array, leave blank to hide.</p>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium" htmlFor="bc-mentor-name">Mentor name</label>
+                            <Input id="bc-mentor-name" value={form.mentorName} onChange={(e) => set('mentorName', e.target.value)} placeholder="Mentor name" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium" htmlFor="bc-mentor-title">Mentor title</label>
+                            <Input id="bc-mentor-title" value={form.mentorTitle} onChange={(e) => set('mentorTitle', e.target.value)} placeholder="Senior Designer, ..." />
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                            <label className="text-sm font-medium" htmlFor="bc-mentor-bio">Mentor bio</label>
+                            <Textarea id="bc-mentor-bio" value={form.mentorBio} onChange={(e) => set('mentorBio', e.target.value)} rows={2} />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium" htmlFor="bc-mentor-image">Mentor image URL</label>
+                            <Input id="bc-mentor-image" value={form.mentorImage} onChange={(e) => set('mentorImage', e.target.value)} placeholder="https://..." />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium" htmlFor="bc-audience">Who is this for (one per line)</label>
+                            <Textarea id="bc-audience" value={form.audience} onChange={(e) => set('audience', e.target.value)} rows={3} placeholder={'Beginners\nFreelancers'} />
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                            <label className="text-sm font-medium" htmlFor="bc-guarantee">Guarantee / support note</label>
+                            <Textarea id="bc-guarantee" value={form.guaranteeNote} onChange={(e) => set('guaranteeNote', e.target.value)} rows={2} />
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                            <label className="text-sm font-medium" htmlFor="bc-perks">Perks JSON</label>
+                            <Textarea id="bc-perks" value={form.perksJson} onChange={(e) => set('perksJson', e.target.value)} rows={3} placeholder='[{"title":"...","description":"..."}]' className="font-mono text-xs" />
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                            <label className="text-sm font-medium" htmlFor="bc-schedule">Schedule / curriculum JSON</label>
+                            <Textarea id="bc-schedule" value={form.scheduleJson} onChange={(e) => set('scheduleJson', e.target.value)} rows={3} placeholder='[{"day":"Day 1","title":"...","description":"..."}]' className="font-mono text-xs" />
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                            <label className="text-sm font-medium" htmlFor="bc-faq">FAQ JSON</label>
+                            <Textarea id="bc-faq" value={form.faqJson} onChange={(e) => set('faqJson', e.target.value)} rows={3} placeholder='[{"question":"...","answer":"..."}]' className="font-mono text-xs" />
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                            <label className="text-sm font-medium" htmlFor="bc-pain">Pain points JSON (Is this you?)</label>
+                            <Textarea id="bc-pain" value={form.painPointsJson} onChange={(e) => set('painPointsJson', e.target.value)} rows={3} placeholder='[{"title":"...","description":"..."}]' className="font-mono text-xs" />
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                            <label className="text-sm font-medium" htmlFor="bc-outcomes">Outcomes JSON (what you will be able to do)</label>
+                            <Textarea id="bc-outcomes" value={form.outcomesJson} onChange={(e) => set('outcomesJson', e.target.value)} rows={3} placeholder='[{"title":"...","description":"..."}]' className="font-mono text-xs" />
+                        </div>
+                        <div className="space-y-2 sm:col-span-2">
+                            <label className="text-sm font-medium" htmlFor="bc-testimonials">Testimonials JSON</label>
+                            <Textarea id="bc-testimonials" value={form.testimonialsJson} onChange={(e) => set('testimonialsJson', e.target.value)} rows={3} placeholder='[{"name":"...","role":"...","quote":"...","rating":5}]' className="font-mono text-xs" />
                         </div>
                     </div>
                     <DialogFooter>
