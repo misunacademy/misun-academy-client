@@ -36,6 +36,10 @@ const ManualPaymentForm = ({
 }: ManualPaymentFormProps) => {
     const form = useForm<PaymentForm>({
         resolver: zodResolver(paymentSchema),
+        // onChange: the submit button is gated on `isValid`, which only
+        // updates live in a validating mode — in default onSubmit mode it
+        // stays false until a submit that the disabled button prevents.
+        mode: "onChange",
         defaultValues: {
             senderNumber: "",
             transactionId: ""
