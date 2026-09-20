@@ -144,6 +144,7 @@ export default function ModuleSidebar({
                                             {module.quizzes && module.quizzes.length > 0 && (
                                                 <div className="pt-1 pb-1">
                                                     <div className="text-[10px] font-semibold text-white/20 uppercase tracking-wider px-3 pb-1">Quizzes</div>
+                                                    <div className="space-y-1.5">
                                                     {module.quizzes.map((quiz, quizIdx) => {
                                                         const isActiveQuiz = activeQuizId === quiz.quizId;
                                                         const completed = isQuizCompleted?.(module.moduleId, quiz.quizId) ?? false;
@@ -176,6 +177,7 @@ export default function ModuleSidebar({
                                                             </button>
                                                         );
                                                     })}
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>

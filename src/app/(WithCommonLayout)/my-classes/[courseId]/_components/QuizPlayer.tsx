@@ -44,11 +44,16 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
 
   const enrollment = React.useMemo<EnrollmentResponse | undefined>(() => {
     if (!enrollments?.data) return undefined;
-    return enrollments.data.find((e) => {
+    const list = enrollments.data;
+    const matches = (e: EnrollmentResponse) => {
       const courseRef = e.batchId?.courseId;
       const cId = typeof courseRef === "object" && courseRef !== null ? courseRef._id : courseRef;
-      return cId === courseId;
-    });
+      const slug = typeof courseRef === "object" && courseRef !== null ? courseRef.slug : undefined;
+      return cId === courseId || slug === courseId;
+    };
+    // Prefer an active enrollment so progress/attempts land on the right record
+    // when a learner has several enrollments for the same course.
+    return list.find((e) => matches(e) && e.status === "active") ?? list.find(matches);
   }, [enrollments, courseId]);
   const enrollmentId = enrollment?._id || "";
 
@@ -122,8 +127,17 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
       setQuestions(data.questions);
       setCurrentIndex(0);
       setAnswers({});
+      setReviewAttemptId(null);
       if (data.quiz.timeLimit) {
-        setTimeRemaining(data.quiz.timeLimit * 60);
+        // Resumed in-progress attempts carry the original startedAt, so
+        // count down only the time that is actually left.
+        const elapsed = Math.max(
+          0,
+          Math.floor((Date.now() - new Date(data.attempt.startedAt).getTime()) / 1000)
+        );
+        setTimeRemaining(Math.max(0, data.quiz.timeLimit * 60 - elapsed));
+      } else {
+        setTimeRemaining(null);
       }
       setPhase("active");
     } catch (err) {

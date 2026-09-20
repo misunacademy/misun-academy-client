@@ -154,13 +154,19 @@ export function QuestionFormFields({
             return {
                 ...initial,
                 options: TRUE_FALSE_OPTIONS.map((o) => ({ ...o })),
-                correctAnswer: "",
+                // Preserve the saved answer when editing; only default to
+                // empty for brand-new questions.
+                correctAnswer:
+                    initial.correctAnswer === "True" || initial.correctAnswer === "False"
+                        ? initial.correctAnswer
+                        : "",
             };
         }
         return initial;
     });
 
     const optionValue = (index: number, opt: OptionForm) => opt.text || `option-${index}`;
+    const optionValues = (options: OptionForm[]) => options.map((o, i) => o.text || `option-${i}`);
 
     const valid =
         (state.contentType === "text" ? state.questionText.trim().length > 0 : true) &&
@@ -168,7 +174,9 @@ export function QuestionFormFields({
         (state.contentType === "text_image"
             ? state.questionText.trim().length > 0 && state.questionImage.trim().length > 0
             : true) &&
-        state.correctAnswer.trim().length > 0 &&
+        // The selection must still point at a live option — option texts are
+        // editable, so a detached non-empty string is not enough.
+        optionValues(state.options).includes(state.correctAnswer) &&
         state.options.length >= 2 &&
         state.options.every((o) =>
             o.type === "text"
@@ -194,12 +202,32 @@ export function QuestionFormFields({
 
     const removeOption = (index: number) => {
         if (state.options.length > 2) {
-            patch({ options: state.options.filter((_, i) => i !== index) });
+            setState((prev) => {
+                const options = prev.options.filter((_, i) => i !== index);
+                // Indices shift, so re-derive: drop the selection if its
+                // option is gone rather than pointing at a wrong one.
+                const correctAnswer = optionValues(options).includes(prev.correctAnswer)
+                    ? prev.correctAnswer
+                    : "";
+                return { ...prev, options, correctAnswer };
+            });
         }
     };
 
     const updateOption = (index: number, field: keyof OptionForm, value: string) => {
-        patch({ options: state.options.map((opt, i) => (i === index ? { ...opt, [field]: value } : opt)) });
+        setState((prev) => {
+            const prevValue = prev.options[index]?.text || `option-${index}`;
+            const options = prev.options.map((opt, i) => (i === index ? { ...opt, [field]: value } : opt));
+            const values = optionValues(options);
+            let correctAnswer = prev.correctAnswer;
+            if (prevValue === prev.correctAnswer) {
+                // Follow the edited option so the selection survives typing.
+                correctAnswer = options[index]?.text || `option-${index}`;
+            } else if (correctAnswer && !values.includes(correctAnswer)) {
+                correctAnswer = "";
+            }
+            return { ...prev, options, correctAnswer };
+        });
     };
 
     const { questionType, contentType, questionText, questionImage, explanationText, marks, zamesPoints, correctAnswer, options } =

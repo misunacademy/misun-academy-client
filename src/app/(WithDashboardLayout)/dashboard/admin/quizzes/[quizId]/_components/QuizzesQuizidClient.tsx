@@ -18,7 +18,7 @@ import {
 } from "@/redux/api/quizApi";
 import { IQuestion, IQuiz } from "@/types/quiz";
 import { QuizStatus } from "@/types/enums";
-import { Plus, Pencil, Trash2, Copy, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy, ArrowUp, ArrowDown, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { ContentBlockDisplay } from "@/components/quiz/ContentBlockDisplay";
 import { extractApiData, getApiErrorMessage } from "@/lib/api-helpers";
@@ -194,7 +194,7 @@ export default function AdminQuizDetailPage({ params }: { params: Promise<{ quiz
                                                                 Q{index + 1}.
                                                             </span>
                                                             <div className="flex-1">
-                                                                <ContentBlockDisplay content={question.content} variant="question" />
+                                                                <ContentBlockDisplay content={question.content} variant="question" tone="light" />
                                                             </div>
                                                             <div className="flex items-center gap-2 shrink-0">
                                                                 <Badge variant="outline" className="text-xs">
@@ -211,17 +211,36 @@ export default function AdminQuizDetailPage({ params }: { params: Promise<{ quiz
                                                             </div>
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-2 mt-2">
-                                                            {question.options.map((option, oi) => (
-                                                                <div
-                                                                    key={oi}
-                                                                    className="flex items-center gap-2 p-2 rounded bg-muted/50"
-                                                                >
-                                                                    <span className="text-xs font-mono text-muted-foreground">
-                                                                        {String.fromCharCode(65 + oi)}.
-                                                                    </span>
-                                                                    <ContentBlockDisplay content={option} />
-                                                                </div>
-                                                            ))}
+                                                            {question.options.map((option, oi) => {
+                                                                // Same VALUE convention as the player, review screen
+                                                                // and server-side scoring: option text, falling back
+                                                                // to `option-<index>` for textless options.
+                                                                const isCorrect =
+                                                                    (option.text || `option-${oi}`) === question.correctAnswer;
+                                                                return (
+                                                                    <div
+                                                                        key={oi}
+                                                                        className={`flex items-center gap-2 p-2 rounded border ${
+                                                                            isCorrect
+                                                                                ? "border-green-500 bg-green-500/10"
+                                                                                : "border-transparent bg-muted/50"
+                                                                        }`}
+                                                                    >
+                                                                        <span className="text-xs font-mono text-muted-foreground">
+                                                                            {String.fromCharCode(65 + oi)}.
+                                                                        </span>
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <ContentBlockDisplay content={option} tone="light" />
+                                                                        </div>
+                                                                        {isCorrect && (
+                                                                            <span className="flex items-center gap-1 shrink-0 text-xs font-semibold text-green-700">
+                                                                                <CheckCircle2 className="h-4 w-4" />
+                                                                                Correct
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                );
+                                                            })}
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-1">
