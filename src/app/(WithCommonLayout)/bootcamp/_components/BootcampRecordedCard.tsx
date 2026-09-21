@@ -1,17 +1,32 @@
+'use client';
+
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PlayCircle, Clock, Video } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { PlayCircle, Clock, Video, ShoppingCart } from 'lucide-react';
 import type { BootcampRecordedCard as Card } from '@/redux/api/bootcampApi';
+import { useAuth } from '@/hooks/useAuth';
+import BootcampPurchaseDialog from './BootcampPurchaseDialog';
 
 export const BootcampRecordedCard = ({ item }: { item: Card }) => {
     const image = item.thumbnail || item.posterImage;
     const hours = item.durationMinutes > 0 ? `${Math.round(item.durationMinutes / 60)} ঘণ্টা` : 'সেলফ-পেসড';
+    const router = useRouter();
+    const { user } = useAuth();
+    const [purchaseOpen, setPurchaseOpen] = useState(false);
+
+    const handleBuy = () => {
+        if (!user) {
+            router.push(`/auth?mode=register&redirect_url=${encodeURIComponent(`/bootcamp/${item.slug}`)}`);
+            return;
+        }
+        setPurchaseOpen(true);
+    };
 
     return (
-        <Link
-            href={`/bootcamp/${item.slug}`}
-            className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-transform hover:scale-[1.01]"
-        >
+        <div className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-transform hover:scale-[1.01]">
+            <Link href={`/bootcamp/${item.slug}`} className="block">
             <div className="relative aspect-video w-full overflow-hidden bg-black/40">
                 {image ? (
                     <Image
@@ -61,6 +76,30 @@ export const BootcampRecordedCard = ({ item }: { item: Card }) => {
                     </div>
                 </div>
             </div>
-        </Link>
+            </Link>
+            <div className="mt-auto flex gap-2 p-4 pt-0">
+                <button
+                    type="button"
+                    onClick={handleBuy}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#ffd60a] px-4 py-2.5 font-bangla text-sm font-bold text-black transition hover:bg-[#ffd60a]/90 hover:scale-[1.02]"
+                >
+                    <ShoppingCart className="h-4 w-4" />
+                    এখনই কিনুন
+                </button>
+                <Link
+                    href={`/bootcamp/${item.slug}`}
+                    className="flex items-center justify-center rounded-xl border border-white/15 px-4 py-2.5 font-bangla text-sm font-semibold text-white/80 transition hover:border-white/30 hover:text-white"
+                >
+                    বিস্তারিত
+                </Link>
+            </div>
+            <BootcampPurchaseDialog
+                open={purchaseOpen}
+                onClose={() => setPurchaseOpen(false)}
+                slug={item.slug}
+                title={`${item.title} ${item.season}`}
+                price={item.recordedPrice}
+            />
+        </div>
     );
 };

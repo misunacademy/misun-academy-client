@@ -104,7 +104,7 @@ const BootcampPurchaseCard = memo(function BootcampPurchaseCard({
           <div className="relative flex flex-col sm:flex-row sm:items-center gap-3 mt-auto pt-1">
             <div className="flex items-center gap-2 sm:ml-auto">
               {slug ? (
-                <Link href={`/bootcamp/${slug}${isPaid ? "#bootcamp-videos" : ""}`}>
+                <Link href={isPaid ? `/bootcamp/${slug}/watch` : `/bootcamp/${slug}`}>
                   <button
                     className="group/btn inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm font-bangla
                     bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark text-white

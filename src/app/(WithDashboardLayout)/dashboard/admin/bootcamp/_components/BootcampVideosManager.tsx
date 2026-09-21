@@ -29,6 +29,7 @@ const emptyVideo = {
     videoId: '',
     duration: '',
     isPublished: true,
+    resources: [] as { title: string; url: string }[],
 };
 
 interface BootcampVideosManagerProps {
@@ -64,9 +65,22 @@ export default function BootcampVideosManager({ bootcamp }: BootcampVideosManage
             videoId: v.videoId ?? '',
             duration: v.duration ? String(Math.round(v.duration / 60)) : '',
             isPublished: v.isPublished ?? true,
+            resources: (v.resources ?? []).map((r) => ({ title: r.title, url: r.url })),
         });
         setVideoDialogOpen(true);
     };
+
+    const updateResource = (idx: number, key: 'title' | 'url', value: string) =>
+        setVideoForm((p) => ({
+            ...p,
+            resources: p.resources.map((r, i) => (i === idx ? { ...r, [key]: value } : r)),
+        }));
+
+    const addResource = () =>
+        setVideoForm((p) => ({ ...p, resources: [...p.resources, { title: '', url: '' }] }));
+
+    const removeResource = (idx: number) =>
+        setVideoForm((p) => ({ ...p, resources: p.resources.filter((_, i) => i !== idx) }));
 
     const handleSaveVideo = async () => {
         if (!videoForm.title.trim() || !videoForm.videoId.trim()) {
@@ -80,6 +94,9 @@ export default function BootcampVideosManager({ bootcamp }: BootcampVideosManage
             videoId: videoForm.videoId.trim(),
             duration: videoForm.duration ? Number(videoForm.duration) * 60 : 0,
             isPublished: videoForm.isPublished,
+            resources: videoForm.resources
+                .map((r) => ({ title: r.title.trim(), url: r.url.trim() }))
+                .filter((r) => r.title && r.url),
         };
         try {
             if (editingVideo) {
@@ -143,6 +160,7 @@ export default function BootcampVideosManager({ bootcamp }: BootcampVideosManage
                                     <p className="text-xs text-muted-foreground">
                                         {v.videoSource === 'youtube' ? 'YouTube' : 'Google Drive'}
                                         {v.duration ? ` • ${Math.round(v.duration / 60)} min` : ''}
+                                        {(v.resources?.length ?? 0) > 0 ? ` • ${v.resources?.length} resources` : ''}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -229,6 +247,46 @@ export default function BootcampVideosManager({ bootcamp }: BootcampVideosManage
                                 onChange={(e) => setVideoForm((p) => ({ ...p, videoId: e.target.value }))}
                                 placeholder={videoIdHint}
                             />
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-medium">
+                                    Resources (links, files, downloads)
+                                </label>
+                                <Button type="button" size="sm" variant="outline" onClick={addResource}>
+                                    <Plus className="mr-1 h-3 w-3" /> Add
+                                </Button>
+                            </div>
+                            {videoForm.resources.length === 0 ? (
+                                <p className="text-xs text-muted-foreground">
+                                    No resources yet. Each resource is a title + URL shown below the video.
+                                </p>
+                            ) : (
+                                videoForm.resources.map((r, idx) => (
+                                    <div key={idx} className="flex items-start gap-2">
+                                        <div className="grid flex-1 gap-2">
+                                            <Input
+                                                value={r.title}
+                                                onChange={(e) => updateResource(idx, 'title', e.target.value)}
+                                                placeholder="Resource title, e.g. Class PSD file"
+                                            />
+                                            <Input
+                                                value={r.url}
+                                                onChange={(e) => updateResource(idx, 'url', e.target.value)}
+                                                placeholder="https://..."
+                                            />
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => removeResource(idx)}
+                                        >
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                    </div>
+                                ))
+                            )}
                         </div>
                         <label className="flex items-center gap-2 text-sm">
                             <input

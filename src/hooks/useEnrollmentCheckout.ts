@@ -1,21 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useGetCourseBySlugQuery } from "@/redux/api/courseApi";
 import { useGetCurrentEnrollmentBatchQuery, useGetUpcomingBatchesQuery } from "@/redux/api/batchApi";
 import { useEnrollStudentManualMutation, useInitiateEnrollmentMutation } from "@/redux/api/enrollmentApi";
+import {
+  enrollmentCheckoutSchema,
+  type EnrollmentCheckoutForm,
+  isBatchEnrollmentOpen,
+} from "@/lib/enrollment-checkout";
 
-const enrollmentSchema = z.object({
-  batchId: z.string().min(1, "Please select a batch"),
-  paymentMethod: z
-    .enum(["SSLCommerz", "phonePay"])
-    .refine((val) => !!val, { message: "Please select a payment method" }),
-});
+const enrollmentSchema = enrollmentCheckoutSchema;
 
-export type EnrollmentForm = z.infer<typeof enrollmentSchema>;
+export type EnrollmentForm = EnrollmentCheckoutForm;
 export type ManualPaymentData = { senderNumber: string; transactionId: string };
 
 export function useEnrollmentCheckout(courseSlug?: string) {
@@ -25,7 +24,21 @@ export function useEnrollmentCheckout(courseSlug?: string) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [enrollmentData, setEnrollmentData] = useState<EnrollmentForm | null>(null);
-  const [now] = useState(() => Date.now());
+  // Ticking clock: a frozen mount-time `now` permanently blocks enrollment
+  // for tabs left open across the window boundary.
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60_000);
+    const onVisible = () => {
+      if (!document.hidden) setNow(Date.now());
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, []);
 
   const [enrollStudent] = useInitiateEnrollmentMutation();
   const [enrollStudentManual] = useEnrollStudentManualMutation();
@@ -56,12 +69,11 @@ export function useEnrollmentCheckout(courseSlug?: string) {
     ? ((currentBatchRes?.data ?? (upcomingBatchRes?.data as unknown[])?.[0]) as unknown as Record<string, unknown>)
     : {};
 
-  const isEnrollmentOpen = resolvedBatch
-    ? (() => {
-        const start = Date.parse(String((resolvedBatch as Record<string, string>).enrollmentStartDate || ""));
-        const end = Date.parse(String((resolvedBatch as Record<string, string>).enrollmentEndDate || ""));
-        return now >= start && now <= end;
-      })()
+  const resolvedBatchId = (resolvedBatch as Record<string, { _id: string } | string>)?._id;
+  // Shared window policy (missing dates = open, matching the server); only
+  // evaluate once a batch is actually resolved.
+  const isEnrollmentOpen = resolvedBatchId
+    ? isBatchEnrollmentOpen(resolvedBatch as { enrollmentStartDate?: unknown; enrollmentEndDate?: unknown }, now)
     : false;
 
   const isDataLoading = !!courseSlug && (courseLoading || (!!courseData && batchLoading));
@@ -72,7 +84,6 @@ export function useEnrollmentCheckout(courseSlug?: string) {
       : 0;
 
   const manualPaymentCurrency = (resolvedBatch as Record<string, string>)?.currency || 'BDT';
-  const resolvedBatchId = (resolvedBatch as Record<string, { _id: string } | string>)?._id;
 
   useEffect(() => {
     if (!form.getValues('batchId') && resolvedBatchId) {

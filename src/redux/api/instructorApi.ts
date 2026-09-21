@@ -278,13 +278,13 @@ const instructorApi = baseApi.injectEndpoints({
       invalidatesTags: ["Questions", "Quizzes"],
     }),
 
-    updateInstructorQuestion: build.mutation<unknown, { questionId: string; data: Partial<IQuestion> }>({
+    updateInstructorQuestion: build.mutation<unknown, { questionId: string; quizId?: string; data: Partial<IQuestion> }>({
       query: ({ questionId, data }) => ({
         url: `/instructor/questions/${questionId}`,
         method: "PUT",
         body: data,
       }),
-      invalidatesTags: (_result, _err, { questionId }) => [{ type: "Questions", id: questionId }],
+      invalidatesTags: (_result, _err, { questionId }) => [{ type: "Questions", id: questionId }, "Questions"],
     }),
 
     deleteInstructorQuestion: build.mutation({

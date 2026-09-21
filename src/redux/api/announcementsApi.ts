@@ -2,7 +2,7 @@ import { baseApi } from "./baseApi";
 
 export type AnnouncementType = "info" | "success" | "warning" | "critical";
 export type AnnouncementAudience = "all" | "learner" | "instructor" | "employee" | "admin";
-export type AnnouncementStatus = "draft" | "published" | "scheduled" | "expired";
+export type AnnouncementStatus = "draft" | "published" | "scheduled" | "expired" | "unpublished";
 export interface AnnouncementCreator {
   _id: string;
   name: string;
@@ -33,6 +33,7 @@ export interface AnnouncementStats {
   published: number;
   scheduled: number;
   expired: number;
+  unpublished: number;
   byAudience: Partial<Record<AnnouncementAudience, number>>;
   byType: Partial<Record<AnnouncementType, number>>;
 }
@@ -102,6 +103,10 @@ export const announcementsApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/announcements/${id}/publish`, method: "POST" }),
       invalidatesTags: (_r, _e, id) => ["Announcements", { type: "Announcements", id }, "Notifications"],
     }),
+    unpublishAnnouncement: build.mutation<{ success: boolean; message: string; data: Announcement }, string>({
+      query: (id) => ({ url: `/announcements/${id}/unpublish`, method: "POST" }),
+      invalidatesTags: (_r, _e, id) => ["Announcements", { type: "Announcements", id }, "Notifications"],
+    }),
     deleteAnnouncement: build.mutation<{ success: boolean; message: string; data: null }, string>({
       query: (id) => ({ url: `/announcements/${id}`, method: "DELETE" }),
       invalidatesTags: ["Announcements"],
@@ -123,6 +128,7 @@ export const {
   useCreateAnnouncementMutation,
   useUpdateAnnouncementMutation,
   usePublishAnnouncementMutation,
+  useUnpublishAnnouncementMutation,
   useDeleteAnnouncementMutation,
   useGetLiveAnnouncementsQuery,
 } = announcementsApi;

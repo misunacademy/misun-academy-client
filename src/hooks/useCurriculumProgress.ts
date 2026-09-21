@@ -61,18 +61,29 @@ export function useCurriculumProgress() {
   const courseId = params.courseId;
 
   const batchIdFromUrl = searchParams.get("batchId") ?? undefined;
-  const { data: enrollments } = useGetEnrollmentsQuery(undefined, { skip: !!batchIdFromUrl });
+  const { data: enrollments, isLoading: enrollmentsLoading } = useGetEnrollmentsQuery(undefined, { skip: !!batchIdFromUrl });
   const fallbackBatchId = batchIdFromUrl
     ? undefined
     : (enrollments?.data?.find(
-        (e: { batchId?: { courseId?: { _id?: string } } }) => e.batchId?.courseId?._id === courseId
+        (e: { batchId?: { _id?: string; courseId?: { _id?: string; slug?: string } | string } }) => {
+          const ref = e.batchId?.courseId;
+          const cId = typeof ref === "object" && ref !== null ? ref._id : ref;
+          const slug = typeof ref === "object" && ref !== null ? ref.slug : undefined;
+          return cId === courseId || slug === courseId;
+        }
       )?.batchId?._id as string | undefined);
   const batchId = batchIdFromUrl ?? fallbackBatchId;
+  // Don't fire course/progress queries with an unresolved batchId: while the
+  // enrollment list is still loading, an unbatched request can return
+  // wrong/empty progress and compute bogus lock states. Once loading settles
+  // with no match (e.g.unenrolled preview), fetch as before.
+  const batchResolving = !batchIdFromUrl && enrollmentsLoading;
+  const ready = !!courseId && (!!batchId || !batchResolving);
 
-  const { data: course, isLoading: courseLoading } = useGetCourseByIdQuery({ id: courseId, batchId });
+  const { data: course, isLoading: courseLoading } = useGetCourseByIdQuery({ id: courseId, batchId }, { skip: !ready });
   const { data: progressData, isLoading: progressLoading, refetch: refetchProgress } = useGetCourseProgressQuery(
     { courseId, batchId },
-    { skip: !courseId }
+    { skip: !ready }
   );
   const progress: CourseProgress | undefined = progressData?.data as CourseProgress | undefined;
   const [completeLesson] = useCompleteLessonMutation();
@@ -130,7 +141,9 @@ export function useCurriculumProgress() {
   ) || [];
 
   const instructorName = typeof course?.instructor === "string" ? course?.instructor : "Instructor";
-  const isLoading = courseLoading || progressLoading;
+  // While the batch is still resolving the queries above are skipped — keep
+  // reporting loading so the page doesn't flash "course not found".
+  const isLoading = courseLoading || progressLoading || batchResolving;
 
   return {
     course,

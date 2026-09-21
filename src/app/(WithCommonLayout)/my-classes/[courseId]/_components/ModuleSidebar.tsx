@@ -141,41 +141,44 @@ export default function ModuleSidebar({
                                                     </button>
                                                 );
                                             })}
-                                            {module.quizzes && module.quizzes.length > 0 && (
+                                            {
+                                            module.quizzes && module.quizzes.length > 0 && (
                                                 <div className="pt-1 pb-1">
                                                     <div className="text-[10px] font-semibold text-white/20 uppercase tracking-wider px-3 pb-1">Quizzes</div>
-                                                    {module.quizzes.map((quiz, quizIdx) => {
-                                                        const isActiveQuiz = activeQuizId === quiz.quizId;
-                                                        const completed = isQuizCompleted?.(module.moduleId, quiz.quizId) ?? false;
-                                                        const unlocked = isQuizUnlocked?.(moduleIdx, quizIdx) ?? true;
-                                                        return (
-                                                            <button
-                                                                key={quiz.quizId}
-                                                                onClick={() => onSelectQuiz?.(moduleIdx, quiz.quizId)}
-                                                                disabled={!unlocked}
-                                                                className={`w-full text-left px-3 py-2.5 rounded-xl border text-xs font-medium transition-all duration-200 flex items-center gap-2.5
+                                                    <div className="space-y-1.5">
+                                                        {module.quizzes.map((quiz, quizIdx) => {
+                                                            const isActiveQuiz = activeQuizId === quiz.quizId;
+                                                            const completed = isQuizCompleted?.(module.moduleId, quiz.quizId) ?? false;
+                                                            const unlocked = isQuizUnlocked?.(moduleIdx, quizIdx) ?? true;
+                                                            return (
+                                                                <button
+                                                                    key={quiz.quizId}
+                                                                    onClick={() => onSelectQuiz?.(moduleIdx, quiz.quizId)}
+                                                                    disabled={!unlocked}
+                                                                    className={`w-full text-left px-3 py-2.5 rounded-xl border text-xs font-medium transition-all duration-200 flex items-center gap-2.5
                                                                     ${isActiveQuiz
-                                                                        ? "bg-primary/12 border-primary/35 text-primary shadow-[0_0_10px_hsl(156_70%_42%/0.15)]"
-                                                                        : completed
-                                                                            ? "bg-white/[0.02] border-white/[0.04] text-white/50 hover:bg-white/[0.04]"
-                                                                            : unlocked
-                                                                                ? "bg-transparent border-transparent text-white/45 hover:bg-white/[0.03] hover:border-white/[0.08] hover:text-white/70"
-                                                                                : "bg-transparent border-transparent text-white/20 cursor-not-allowed opacity-50"}`}
-                                                            >
-                                                                <span className="shrink-0">
-                                                                    {completed ? (
-                                                                        <CheckCircle className="h-3.5 w-3.5 text-primary" />
-                                                                    ) : unlocked ? (
-                                                                        <ClipboardCheck className="h-3.5 w-3.5 text-white/30" />
-                                                                    ) : (
-                                                                        <Lock className="h-3.5 w-3.5 text-white/20" />
-                                                                    )}
-                                                                </span>
-                                                                <span className="flex-1 truncate leading-snug">{quiz.title}</span>
-                                                                <span className="shrink-0 text-[10px] text-white/25">{quiz.totalQuestions} questions</span>
-                                                            </button>
-                                                        );
-                                                    })}
+                                                                            ? "bg-primary/12 border-primary/35 text-primary shadow-[0_0_10px_hsl(156_70%_42%/0.15)]"
+                                                                            : completed
+                                                                                ? "bg-white/[0.02] border-white/[0.04] text-white/50 hover:bg-white/[0.04]"
+                                                                                : unlocked
+                                                                                    ? "bg-transparent border-transparent text-white/45 hover:bg-white/[0.03] hover:border-white/[0.08] hover:text-white/70"
+                                                                                    : "bg-transparent border-transparent text-white/20 cursor-not-allowed opacity-50"}`}
+                                                                >
+                                                                    <span className="shrink-0">
+                                                                        {completed ? (
+                                                                            <CheckCircle className="h-3.5 w-3.5 text-primary" />
+                                                                        ) : unlocked ? (
+                                                                            <ClipboardCheck className="h-3.5 w-3.5 text-white/30" />
+                                                                        ) : (
+                                                                            <Lock className="h-3.5 w-3.5 text-white/20" />
+                                                                        )}
+                                                                    </span>
+                                                                    <span className="flex-1 truncate leading-snug">{quiz.title}</span>
+                                                                    <span className="shrink-0 text-[10px] text-white/25">{quiz.totalQuestions} questions</span>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>

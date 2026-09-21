@@ -55,13 +55,6 @@ const certificateApi = baseApi.injectEndpoints({
       invalidatesTags: ["Certificates"],
     }),
 
-    // Check certificate eligibility
-    checkEligibility: build.query<{ data: { isEligible: boolean } }, string>({
-      query: (enrollmentId) => ({
-        url: `/certificates/enrollment/${enrollmentId}/eligibility`,
-      }),
-    }),
-
     // Get my certificates (includes pending, active, revoked)
     getMyCertificates: build.query<{ data: CertificateResponse[] }, void>({
       query: () => ({
@@ -144,7 +137,6 @@ const certificateApi = baseApi.injectEndpoints({
 
 export const {
   useRequestCertificateMutation,
-  useCheckEligibilityQuery,
   useGetMyCertificatesQuery,
   useGetCertificateByEnrollmentQuery,
   useVerifyCertificateQuery,

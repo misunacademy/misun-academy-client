@@ -36,6 +36,10 @@ const ManualPaymentForm = ({
 }: ManualPaymentFormProps) => {
     const form = useForm<PaymentForm>({
         resolver: zodResolver(paymentSchema),
+        // onChange: the submit button is gated on `isValid`, which only
+        // updates live in a validating mode — in default onSubmit mode it
+        // stays false until a submit that the disabled button prevents.
+        mode: "onChange",
         defaultValues: {
             senderNumber: "",
             transactionId: ""
@@ -145,7 +149,9 @@ const ManualPaymentForm = ({
                                     <div className="w-5 h-5 bg-primary/15 border border-primary/30 text-primary rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">
                                         {index + 1}
                                     </div>
-                                    <span className="text-sm text-white/55 leading-relaxed">{instruction.includes("MA")?`Add reference: 'MA-${batch}'`:instruction}</span>
+                                    {/* Only substitute the concrete reference when we have one —
+                                        otherwise show the generic template instead of "MA-". */}
+                                    <span className="text-sm text-white/55 leading-relaxed">{instruction.includes("MA") && batch ? `Add reference: 'MA-${batch}'` : instruction}</span>
                                 </li>
                             ))}
                         </ol>

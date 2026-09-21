@@ -10,12 +10,12 @@ import { CheckoutStepOne } from './CheckoutStepOne';
 import ManualPaymentForm from './ManualPaymentForm';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-
-const schema = z.object({
-    batchId: z.string().min(1),
-    paymentMethod: z.enum(['SSLCommerz', 'phonePay']),
-});
+import {
+    enrollmentCheckoutSchema,
+    type EnrollmentCheckoutForm,
+    isBatchEnrollmentOpen,
+    resolveBatchRef,
+} from '@/lib/enrollment-checkout';
 
 export default function BootcampCheckout({
     batchId,
@@ -36,8 +36,8 @@ export default function BootcampCheckout({
     const [initiate] = useInitiateEnrollmentMutation();
     const [manual] = useEnrollStudentManualMutation();
 
-    const form = useForm<z.infer<typeof schema>>({
-        resolver: zodResolver(schema),
+    const form = useForm<EnrollmentCheckoutForm>({
+        resolver: zodResolver(enrollmentCheckoutSchema),
         defaultValues: { batchId, paymentMethod: undefined },
     });
 
@@ -45,7 +45,7 @@ export default function BootcampCheckout({
     const manualAmount = typeof batch?.manualPaymentPrice === 'number' ? (batch.manualPaymentPrice as number) : 0;
     const manualCurrency = (batch?.currency as string) || 'BDT';
 
-    const onSubmit = async (data: z.infer<typeof schema>) => {
+    const onSubmit = async (data: EnrollmentCheckoutForm) => {
         if (!agreed) {
             toast.error('Please agree to the terms first.');
             return;
@@ -120,7 +120,7 @@ export default function BootcampCheckout({
                                         course={course}
                                         agreed={agreed}
                                         isProcessing={isProcessing}
-                                        isEnrollmentOpen
+                                        isEnrollmentOpen={isBatchEnrollmentOpen(batch)}
                                         showTutorial={showTutorial}
                                         batchPrice={batchPrice}
                                         onAgreeChange={setAgreed}
@@ -133,7 +133,7 @@ export default function BootcampCheckout({
                                         onPaymentComplete={handleManualComplete}
                                         manualAmount={manualAmount}
                                         manualCurrency={manualCurrency}
-                                        batch={(batch?.title as string)?.split(' ')[1]}
+                                        batch={resolveBatchRef(batch)}
                                     />
                                 )}
                             </div>

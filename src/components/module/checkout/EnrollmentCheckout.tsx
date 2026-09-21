@@ -1,5 +1,6 @@
 'use client';
 import { useEnrollmentCheckout } from "@/hooks/useEnrollmentCheckout";
+import { resolveBatchRef } from "@/lib/enrollment-checkout";
 import { CourseInfoSidebar } from "./CourseInfoSidebar";
 import { CheckoutStepOne } from "./CheckoutStepOne";
 import { CheckoutHeader } from "./CheckoutHeader";
@@ -63,7 +64,7 @@ export default function EnrollmentCheckout({ courseSlug }: { courseSlug?: string
                     onPaymentComplete={handleManualPaymentComplete}
                     manualAmount={manualPaymentAmount}
                     manualCurrency={manualPaymentCurrency}
-                    batch={(batch?.title as string)?.split(' ')[1]}
+                    batch={resolveBatchRef(batch)}
                   />
                 )}
               </div>

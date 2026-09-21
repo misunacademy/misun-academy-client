@@ -45,6 +45,14 @@ export function QuestionCard({ question, index, selectedAnswer, onSelect }: Ques
                 ${isSelected ? "border-primary bg-primary" : "border-white/30 group-hover:border-white/50"}`}>
                 {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
               </span>
+              {/* Letter of the DISPLAYED position (A/B/C/…). The recorded
+                value is the option text, not this letter — but with option
+                shuffling on, positions move, so the letter keeps "tap A"
+                unambiguous for the learner. Hidden from assistive tech so the
+                button name stays the pure option text. */}
+              <span aria-hidden="true" className="shrink-0 text-xs font-bold text-white/40">
+                {String.fromCharCode(65 + optIdx)}.
+              </span>
               <ContentBlockDisplay content={opt} />
             </button>
           );
