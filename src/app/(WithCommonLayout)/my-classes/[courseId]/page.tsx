@@ -117,12 +117,22 @@ export default function CourseDetails() {
     const currentQuizIndex = quizzes.findIndex(q => q.quizId === activeQuizId);
 
     if (currentQuizIndex >= 0 && currentQuizIndex < quizzes.length - 1) {
+      // Mirror the lesson path: never walk into locked content. The server
+      // would reject it anyway, stranding the UI on refused content.
+      if (!isQuizUnlocked(currentModuleIndex, currentQuizIndex + 1)) {
+        toast.error("Complete previous content to unlock this quiz.");
+        return;
+      }
       setActiveQuizId(quizzes[currentQuizIndex + 1].quizId);
     } else if (currentModuleIndex < curriculum.length - 1) {
+      if (!isLessonUnlocked(currentModuleIndex + 1, 0)) {
+        toast.error("This module is locked. Complete previous modules first.");
+        return;
+      }
       setActiveQuizId(null);
       selectLesson(currentModuleIndex + 1, 0);
     }
-  }, [currentModule, activeQuizId, currentModuleIndex, curriculum, selectLesson]);
+  }, [currentModule, activeQuizId, currentModuleIndex, curriculum, selectLesson, isQuizUnlocked, isLessonUnlocked]);
 
   const currentQuizIndex = activeQuizId
     ? (currentModule?.quizzes || []).findIndex(q => q.quizId === activeQuizId)
