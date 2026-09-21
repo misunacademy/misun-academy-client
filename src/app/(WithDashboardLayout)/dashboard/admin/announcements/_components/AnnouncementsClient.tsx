@@ -12,11 +12,22 @@ import {
   useCreateAnnouncementMutation,
   useUpdateAnnouncementMutation,
   usePublishAnnouncementMutation,
+  useUnpublishAnnouncementMutation,
   useDeleteAnnouncementMutation,
 } from "@/redux/api/announcementsApi"
 import { toast } from "sonner"
-import { Plus, XCircle, CheckCircle, Trash2, Eye, Loader2 } from "lucide-react"
+import { Plus, Pencil, CheckCircle, Trash2, Eye, EyeOff, Loader2 } from "lucide-react"
 import { DataTable } from "@/components/ui/data-table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Form, FormItem, FormLabel, FormControl, FormField } from "@/components/ui/form"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -58,11 +69,13 @@ function AnnouncementTable({
   announcements,
   onEdit,
   onPublish,
+  onUnpublish,
   onDelete,
 }: {
   announcements: Announcement[]
   onEdit: (a: Announcement) => void
   onPublish: (id: string) => void
+  onUnpublish: (id: string) => void
   onDelete: (id: string) => void
 }) {
   const columns = useMemo(() => [
@@ -120,16 +133,20 @@ function AnnouncementTable({
               onClick={() => onEdit(a)}
               className="rounded-md bg-muted/50 p-1 hover:bg-muted/70"
               aria-label="Edit announcement"
+              title="Edit"
             >
-              <XCircle className="h-3.5 w-3.5 text-muted-foreground" />
+              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
             <button
-              onClick={() => onPublish(a._id)}
+              onClick={() => (a.status === "published" ? onUnpublish(a._id) : onPublish(a._id))}
               className="rounded-md bg-muted/50 p-1 hover:bg-muted/70"
-              aria-label={`Publish announcement ${a._id}`}
+              aria-label={a.status === "published" ? `Unpublish announcement ${a._id}` : `Publish announcement ${a._id}`}
+              title={a.status === "published" ? "Unpublish" : "Publish"}
             >
               {a.status === "published" ? (
-                <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+                <EyeOff className="h-3.5 w-3.5 text-amber-600" />
+              ) : a.status === "unpublished" ? (
+                <CheckCircle className="h-3.5 w-3.5 text-muted-foreground" />
               ) : (
                 <Eye className="h-3.5 w-3.5 text-blue-600" />
               )}
@@ -145,7 +162,7 @@ function AnnouncementTable({
         )
       },
     },
-    ], [onEdit, onPublish, onDelete])
+    ], [onEdit, onPublish, onUnpublish, onDelete])
 
   return (
     <DataTable
@@ -301,6 +318,7 @@ export default function AdminAnnouncementsPage() {
     published: 0,
     scheduled: 0,
     expired: 0,
+    unpublished: 0,
     byAudience: {},
     byType: {},
   }
@@ -309,10 +327,19 @@ export default function AdminAnnouncementsPage() {
   const [editing, setEditing] = useState<Announcement | null>(null)
   const [editingOpen, setEditingOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  // Pending destructive/visibility action confirmed via the dialog below —
+  // replaces the native window.confirm().
+  const [pendingAction, setPendingAction] = useState<
+    | { kind: "delete"; id: string; title: string }
+    | { kind: "unpublish"; id: string; title: string }
+    | null
+  >(null)
+  const [confirming, setConfirming] = useState(false)
 
   const [createTrigger] = useCreateAnnouncementMutation()
   const [updateTrigger] = useUpdateAnnouncementMutation()
   const [publishTrigger] = usePublishAnnouncementMutation()
+  const [unpublishTrigger] = useUnpublishAnnouncementMutation()
   const [deleteTrigger] = useDeleteAnnouncementMutation()
 
   const handleCreate = () => {
@@ -335,14 +362,33 @@ export default function AdminAnnouncementsPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (typeof window !== "undefined" && !window.confirm("Delete this announcement?")) return
+  const handleDelete = (id: string) => {
+    const target = announcements.find((a) => a._id === id)
+    setPendingAction({ kind: "delete", id, title: target?.title ?? "" })
+  }
+
+  const handleUnpublish = (id: string) => {
+    const target = announcements.find((a) => a._id === id)
+    setPendingAction({ kind: "unpublish", id, title: target?.title ?? "" })
+  }
+
+  const handleConfirmAction = async () => {
+    if (!pendingAction) return
+    setConfirming(true)
     try {
-      await deleteTrigger(id).unwrap()
-      toast.success("Announcement deleted successfully")
+      if (pendingAction.kind === "delete") {
+        await deleteTrigger(pendingAction.id).unwrap()
+        toast.success("Announcement deleted successfully")
+      } else {
+        await unpublishTrigger(pendingAction.id).unwrap()
+        toast.success("Announcement unpublished successfully")
+      }
+      setPendingAction(null)
     } catch (error) {
       const err = error as { data?: { message?: string } }
-      toast.error(err?.data?.message || "Failed to delete announcement")
+      toast.error(err?.data?.message || `Failed to ${pendingAction.kind} announcement`)
+    } finally {
+      setConfirming(false)
     }
   }
 
@@ -363,7 +409,7 @@ export default function AdminAnnouncementsPage() {
       content={
         <div className="space-y-6">
           {stats.total > 0 && (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-6">
               <div className="rounded-lg border bg-card p-4">
                 <div className="text-2xl font-semibold">{stats.total}</div>
                 <div className="text-xs text-muted-foreground">Total</div>
@@ -384,6 +430,10 @@ export default function AdminAnnouncementsPage() {
                 <div className="text-2xl font-semibold text-red-600">{stats.expired}</div>
                 <div className="text-xs text-muted-foreground">Expired</div>
               </div>
+              <div className="rounded-lg border bg-card p-4">
+                <div className="text-2xl font-semibold text-amber-600">{stats.unpublished ?? 0}</div>
+                <div className="text-xs text-muted-foreground">Unpublished</div>
+              </div>
             </div>
           )}
           <Card>
@@ -400,6 +450,7 @@ export default function AdminAnnouncementsPage() {
                     announcements={announcements}
                     onEdit={handleEdit}
                     onPublish={handlePublish}
+                    onUnpublish={handleUnpublish}
                     onDelete={handleDelete}
                   />
                 </div>
@@ -432,6 +483,43 @@ export default function AdminAnnouncementsPage() {
         isSaving={isSaving}
         setIsSaving={setIsSaving}
       />
+      <AlertDialog open={pendingAction !== null} onOpenChange={(open) => { if (!open && !confirming) setPendingAction(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingAction?.kind === "delete" ? "Delete announcement?" : "Unpublish announcement?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingAction?.kind === "delete" ? (
+                <>
+                  This action cannot be undone. This will permanently delete
+                  {pendingAction.title ? <> <span className="font-medium">“{pendingAction.title}”</span></> : " this announcement"}.
+                </>
+              ) : (
+                <>
+                  Users will immediately stop seeing
+                  {pendingAction?.title ? <> <span className="font-medium">“{pendingAction?.title}”</span></> : " this announcement"}.
+                  You can publish it again at any time.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={confirming}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); void handleConfirmAction() }}
+              disabled={confirming}
+              className={
+                pendingAction?.kind === "delete"
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  : ""
+              }
+            >
+              {confirming ? "Working..." : pendingAction?.kind === "delete" ? "Delete" : "Unpublish"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
