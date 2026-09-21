@@ -112,6 +112,28 @@ const paymentApi = baseApi.injectEndpoints({
       // When an admin verifies a manual payment, it may create/activate an enrollment — invalidate enrollments
       invalidatesTags: ["Payments", "CourseEnrollments"],
     }),
+
+    // Learner: verify my own payment (used by the purchase tracker so
+    // analytics values come from the server, not the URL)
+    verifyMyPayment: build.query<
+      {
+        data: {
+          verified: boolean;
+          paymentStatus: string;
+          courseSlug: string;
+          transactionId: string;
+          amount: number;
+          currency: string;
+        };
+      },
+      string
+    >({
+      query: (transactionId) => ({
+        url: "/payments/verify",
+        params: { t: transactionId },
+      }),
+      providesTags: (_r, _e, transactionId) => [{ type: "Payments", id: transactionId }],
+    }),
   }),
 });
 
@@ -121,4 +143,5 @@ export const {
   useGetPaymentDetailQuery,
   useUpdatePaymentStatusMutation,
   useVerifyManualPaymentMutation,
+  useVerifyMyPaymentQuery,
 } = paymentApi;

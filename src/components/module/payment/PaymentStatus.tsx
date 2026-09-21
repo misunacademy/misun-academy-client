@@ -7,6 +7,8 @@ import { v4 as uuid } from 'uuid';
 import { AlertCircle, CheckCircle2, Clock, Loader2, XCircle } from 'lucide-react';
 import { track } from '@/lib/metaPixel';
 import { useAuth } from '@/hooks/useAuth';
+import { useVerifyMyPaymentQuery } from '@/redux/api/paymentApi';
+import { extractApiData } from '@/lib/api-helpers';
 import { Button } from '@/components/ui/button';
 import { COURSE_SLUGS, FALLBACK_COURSE_TITLE } from '@/constants/courses';
 import Congratulations from '@/components/module/payment/congratulations';
@@ -84,22 +86,32 @@ const statusConfig: Record<StatusKey, StatusConfig> = {
 
 function PurchaseTracker({
   transactionId,
-  amount,
-  currency,
   courseSlug,
 }: {
   transactionId: string | null;
-  amount?: number;
-  currency: string;
   courseSlug: string | null;
 }) {
   const { user } = useAuth();
   const hasTracked = useRef(false);
+  // Values come from the verified server record — never from the URL, which
+  // anyone can edit (?amount=999999). No verified payment => no event.
+  const { data: verifyRaw } = useVerifyMyPaymentQuery(transactionId ?? "", {
+    skip: !transactionId,
+  });
 
   useEffect(() => {
-    if (!user?.email || hasTracked.current) return;
+    if (!user?.email || !transactionId || hasTracked.current) return;
 
-    const dedupeKey = `ma:purchaseTracked:${transactionId || 'unknown'}`;
+    const verification = extractApiData<{
+      verified: boolean;
+      amount: number;
+      currency: string;
+      courseSlug: string;
+    }>(verifyRaw);
+    if (!verification) return; // still loading — wait for the verdict
+    if (!verification.verified) return; // not a real purchase — stay silent
+
+    const dedupeKey = `ma:purchaseTracked:${transactionId}`;
     try {
       if (sessionStorage.getItem(dedupeKey) === '1') {
         hasTracked.current = true;
@@ -111,17 +123,21 @@ function PurchaseTracker({
 
     hasTracked.current = true;
     const eventId = uuid();
-    const value = typeof amount === 'number' && amount > 0 ? amount : undefined;
+    const value = typeof verification.amount === 'number' && verification.amount > 0
+      ? verification.amount
+      : undefined;
+    const currency = verification.currency || 'BDT';
+    const slug = verification.courseSlug || courseSlug;
     const contentName =
-      courseSlug === COURSE_SLUGS.GRAPHIC_DESIGN
+      slug === COURSE_SLUGS.GRAPHIC_DESIGN
         ? FALLBACK_COURSE_TITLE
-        : courseSlug || 'MISUN Academy Course';
+        : slug || 'MISUN Academy Course';
 
     track('Purchase', {
       ...(value !== undefined ? { value, currency } : {}),
       content_name: contentName,
       content_type: 'course',
-      ...(transactionId ? { transaction_id: transactionId } : {}),
+      transaction_id: transactionId,
     }, { eventID: eventId });
 
     fetch('/api/meta-conversion', {
@@ -141,7 +157,7 @@ function PurchaseTracker({
     } catch {
       // ignore
     }
-  }, [user?.email, transactionId, amount, currency, courseSlug]);
+  }, [user?.email, transactionId, courseSlug, verifyRaw]);
 
   return null;
 }
@@ -152,9 +168,6 @@ function StatusCard() {
   const config = statusConfig[statusParam as StatusKey] ?? statusConfig.failed;
   const transactionId = searchParams?.get('t');
   const courseSlug = searchParams?.get('course');
-  const amountParam = Number(searchParams?.get('amount'));
-  const amount = Number.isFinite(amountParam) && amountParam > 0 ? amountParam : undefined;
-  const currency = searchParams?.get('currency') || 'BDT';
 
   const Icon = config.icon;
 
@@ -195,8 +208,6 @@ function StatusCard() {
       {statusParam === 'success' && (
         <PurchaseTracker
           transactionId={transactionId}
-          amount={amount}
-          currency={currency}
           courseSlug={courseSlug}
         />
       )}
