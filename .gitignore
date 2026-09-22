@@ -6,3 +6,4 @@ dist
 /src/app/(WithCommonLayout)/test
 .vercel
 .env*.local
+.turbo
