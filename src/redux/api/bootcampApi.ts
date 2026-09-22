@@ -79,6 +79,54 @@ export interface BootcampPurchase {
   createdAt: string;
 }
 
+export interface BootcampPurchaseBuyer {
+  _id: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  studentId?: string;
+  image?: string;
+}
+
+export interface BootcampPurchaseAdminItem {
+  _id: string;
+  user?: BootcampPurchaseBuyer;
+  bootcamp?: {
+    _id: string;
+    title: string;
+    season: string;
+    slug: string;
+    thumbnail?: string;
+  };
+  amount: number;
+  method: "manual" | "SSLCommerz";
+  transactionId: string;
+  status: "pending" | "paid" | "rejected";
+  adminNote?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface BootcampPurchaseStats {
+  total: number;
+  paid: number;
+  pending: number;
+  rejected: number;
+  revenue: number;
+  today: number;
+}
+
+export interface BootcampPurchaseQueryParams {
+  bootcampId?: string;
+  status?: "pending" | "paid" | "rejected";
+  search?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}
+
 export interface BootcampCatalogItem {
   _id: string;
   title: string;
@@ -123,6 +171,16 @@ export interface RegisterBootcampPayload {
   email: string;
   paymentLast4: string;
 }
+
+const compactQueryParams = (params?: Record<string, unknown>) => {
+  if (!params) return undefined;
+  const cleaned = Object.fromEntries(
+    Object.entries(params).filter(
+      ([, value]) => value !== undefined && value !== null && value !== ""
+    )
+  );
+  return Object.keys(cleaned).length > 0 ? cleaned : undefined;
+};
 
 const bootcampApi = baseApi.injectEndpoints({
   overrideExisting: true,
@@ -289,6 +347,29 @@ const bootcampApi = baseApi.injectEndpoints({
       query: () => ({ url: "/bootcamp/my-purchases" }),
       providesTags: ["Bootcamp"],
     }),
+
+    // ─── Admin: who bought a recorded bootcamp ───
+    getBootcampPurchases: build.query<
+      { data: BootcampPurchaseAdminItem[]; meta: BootcampRegistrationMeta },
+      BootcampPurchaseQueryParams | void
+    >({
+      query: (params) => ({
+        url: "/bootcamp/purchases",
+        params: compactQueryParams(params as Record<string, unknown> | undefined),
+      }),
+      providesTags: ["Bootcamp"],
+    }),
+
+    getBootcampPurchaseStats: build.query<
+      { data: BootcampPurchaseStats },
+      { bootcampId?: string } | void
+    >({
+      query: (params) => ({
+        url: "/bootcamp/purchases/stats",
+        params: compactQueryParams(params as Record<string, unknown> | undefined),
+      }),
+      providesTags: ["Bootcamp"],
+    }),
   }),
 });
 
@@ -314,4 +395,7 @@ export const {
   useListBootcampVideosQuery,
   useInitiateBootcampSSLCommerzMutation,
   useGetMyBootcampPurchasesQuery,
+  useGetBootcampPurchasesQuery,
+  useLazyGetBootcampPurchasesQuery,
+  useGetBootcampPurchaseStatsQuery,
 } = bootcampApi;
