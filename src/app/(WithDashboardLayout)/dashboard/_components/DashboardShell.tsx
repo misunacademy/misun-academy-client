@@ -27,6 +27,7 @@ const pageTitleMap: Record<string, string> = {
     '/dashboard/admin/students-progress-tracker': 'Students Progress Tracker',
     '/dashboard/admin/quizzes': 'Quiz Management',
     '/dashboard/admin/bootcamp': 'Bootcamp Registrations',
+    '/dashboard/admin/bootcamp-students': 'Bootcamp Students',
     '/dashboard/instructor': 'Instructor Dashboard',
     '/dashboard/instructor/recordings': 'Live Class Recordings',
     '/dashboard/instructor/students': 'Student Management',

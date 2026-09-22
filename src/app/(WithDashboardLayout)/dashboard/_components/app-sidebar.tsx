@@ -139,6 +139,7 @@ function getAdminGroups(isSuperAdmin: boolean): NavGroup[] {
         { title: "Progress Tracker", url: "/dashboard/admin/students-progress-tracker", icon: TrendingUp },
         { title: "Leaderboard", url: "/dashboard/admin/leaderboard", icon: Trophy },
         { title: "Bootcamps", url: "/dashboard/admin/bootcamp", icon: Rocket },
+        { title: "Bootcamp Students", url: "/dashboard/admin/bootcamp-students", icon: GraduationCap },
       ],
     },
     {
