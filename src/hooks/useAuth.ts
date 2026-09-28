@@ -12,11 +12,19 @@ import {
   updateUserProfileAction,
 } from '@/lib/auth-actions';
 import { useGetSessionQuery } from '@/redux/api/authApi';
+import { baseApi } from '@/redux/api/baseApi';
+import { store } from '@/redux/store';
 import { authServerApi } from '@/lib/auth-server-api';
+import { isAllowedRedirectUrl } from '@/lib/auth-redirect';
 
 export function useAuth() {
   const router = useRouter();
-  const { data: sessionData, isLoading: isPending, error: sessionError, refetch: refetchSession } = useGetSessionQuery();
+  // Revalidate on focus/reconnect (no timer polling): suspend/role changes
+  // propagate without a 5-minute stale window.
+  const { data: sessionData, isLoading: isPending, error: sessionError, refetch: refetchSession } = useGetSessionQuery(undefined, {
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
 
   const baseApiUrl = process.env.NEXT_PUBLIC_BASE_API_URL;
 
@@ -36,18 +44,12 @@ export function useAuth() {
       return;
     }
 
-    if (typeof window !== 'undefined') {
-      try {
-        const host = new URL(target).hostname.toLowerCase();
-        if (host === 'esun.misun-academy.com') {
-          window.open(target, '_blank', 'noopener,noreferrer');
-          return;
-        }
-      } catch {
-        // Fall through to assign for malformed absolute URLs.
-      }
-
+    // Absolute URLs must be allowlisted — never blindly assign attacker input
+    // (e.g. a crafted ?redirect_url=) to window.location.
+    if (typeof window !== 'undefined' && isAllowedRedirectUrl(target)) {
       window.location.assign(target);
+    } else {
+      router.push('/');
     }
   }, [router]);
 
@@ -63,8 +65,8 @@ export function useAuth() {
   );
 
   const signUp = useCallback(
-    (name: string, email: string, password: string) =>
-      signUpAction(name, email, password),
+    (name: string, email: string, password: string, agreedToTerms?: boolean) =>
+      signUpAction(name, email, password, agreedToTerms),
     [],
   );
 
@@ -74,6 +76,9 @@ export function useAuth() {
       if (result.error) {
         throw new Error(result.error.message);
       }
+      // Drop all cached RTK data — the next login must not see this user's
+      // dashboard queries.
+      store.dispatch(baseApi.util.resetApiState());
       await refetchSession();
       toast.success('Successfully logged out');
       router.push('/');

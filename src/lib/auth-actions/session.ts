@@ -1,4 +1,6 @@
 import { authServerApi } from '@/lib/auth-server-api';
+import { baseApi } from '@/redux/api/baseApi';
+import { store } from '@/redux/store';
 import { getAuthErrorMessage } from '@/lib/auth-errors';
 import { toast } from 'sonner';
 import type { AuthUser } from '@/types/auth';
@@ -13,6 +15,8 @@ export async function signOutAction(
       throw new Error(result.error.message);
     }
     setUser(undefined);
+    // Purge cached queries so the next login starts clean.
+    store.dispatch(baseApi.util.resetApiState());
     toast.success('Successfully logged out');
     push('/');
     return { success: true };
@@ -46,7 +50,16 @@ export async function updateUserProfileAction(
   refetchSession: () => Promise<AuthUser | null | undefined>,
 ) {
   try {
-    const result = await authServerApi.updateUser(data as Record<string, unknown>);
+    // Client-side allowlist (server enforces input:false too): never forward
+    // role/status even if a caller passes a full user object.
+    const { name, image, phone, address, avatar } = data;
+    const result = await authServerApi.updateUser({
+      ...(name !== undefined ? { name } : {}),
+      ...(image !== undefined ? { image } : {}),
+      ...(phone !== undefined ? { phone } : {}),
+      ...(address !== undefined ? { address } : {}),
+      ...(avatar !== undefined ? { avatar } : {}),
+    });
 
     if (result.error) {
       return { success: false, error: result.error.message };

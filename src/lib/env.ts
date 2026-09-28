@@ -6,6 +6,7 @@ const envSchema = z.object({
     NEXT_PUBLIC_FACEBOOK_PIXEL_ID: z.string().optional(),
     NEXT_PUBLIC_AUTH_URL: z.string().url().optional(),
     NEXT_PUBLIC_APP_URL: z.string().url().optional(),
+    NEXT_PUBLIC_MA_FRONTEND_URL: z.string().url().optional(),
     NEXT_PUBLIC_EP_FRONTEND_URL: z.string().url().optional(),
     NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
     NEXT_PUBLIC_GA_ID: z.string().optional(),
@@ -16,7 +17,9 @@ const envSchema = z.object({
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 
-// Parse and validate
+// Parse and validate. NOTE: this module has no side effects on import besides
+// validation — import it once from instrumentation (server) so misconfigured
+// deploys fail fast at boot instead of rendering with `undefined` URLs.
 const _env = envSchema.safeParse(process.env);
 
 if (!_env.success) {

@@ -7,6 +7,8 @@ const PROTECTED_PATHS = [
     '/checkout',
     '/my-classes',
     '/profile',
+    '/payment',
+    // '/bootcamp',
 ] as const;
 
 const MAINTENANCE_ALLOWLIST_PREFIXES = [
@@ -35,6 +37,9 @@ const BETTER_AUTH_COOKIE_KEYS = [
 ] as const;
 
 function hasBetterAuthSession(request: NextRequest): boolean {
+    // Presence check only (HttpOnly session cookies can't be verified at the
+    // edge without the secret): a forged/expired cookie passes here, but real
+    // enforcement lives in AuthGuard + API 401s. Never treat presence as proof.
     if (getSessionCookie(request)) {
         return true;
     }
@@ -48,9 +53,14 @@ function hasBetterAuthSession(request: NextRequest): boolean {
     return false;
 }
 
+// Segment-boundary prefix match: '/dashboard-evil' must not match '/dashboard'.
+function matchesPath(pathname: string, prefix: string): boolean {
+    return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
 function isMaintenanceAllowlisted(pathname: string) {
     if (MAINTENANCE_ALLOWLIST_EXACT.has(pathname)) return true;
-    return MAINTENANCE_ALLOWLIST_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+    return MAINTENANCE_ALLOWLIST_PREFIXES.some((prefix) => matchesPath(pathname, prefix));
 }
 
 async function fetchMaintenanceStatus(baseApiUrl: string): Promise<boolean> {
@@ -105,12 +115,13 @@ export async function proxy(request: NextRequest) {
 
     const sessionCookie = hasBetterAuthSession(request);
 
-    const isProtectedRoute = PROTECTED_PATHS.some((path) => pathname.startsWith(path));
+    const isProtectedRoute = PROTECTED_PATHS.some((path) => matchesPath(pathname, path));
 
     if (isProtectedRoute && !sessionCookie) {
         const url = request.nextUrl.clone();
         url.pathname = '/auth/login';
-        url.search = `?redirect_url=${encodeURIComponent(pathname)}`;
+        // Preserve the full deep link (path + query) for post-login return.
+        url.search = `?redirect_url=${encodeURIComponent(`${pathname}${request.nextUrl.search}`)}`;
         return NextResponse.redirect(url);
     }
 

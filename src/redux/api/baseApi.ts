@@ -33,11 +33,14 @@ const baseQueryWithSessionHandling = async (args: FetchArgs, api: BaseQueryApi, 
 
     const error = result.error as { status: number; data: { message?: string } } | undefined;
     const errorData = error?.data;
+    // Background/polling queries opt out of toasts via extraOptions.silent —
+    // a 404 on a 30s poll must not spam the user. 401 handling below still runs.
+    const silent = (extraOptions as { silent?: boolean } | undefined)?.silent === true;
 
-    if (error?.status === 404) {
+    if (!silent && error?.status === 404) {
         toast.error(errorData?.message || "Something went wrong");
     }
-    if (error?.status === 403) {
+    if (!silent && error?.status === 403) {
         toast.error(errorData?.message || "Forbidden");
     }
     if (error?.status === 401) {
@@ -57,14 +60,19 @@ const baseQueryWithSessionHandling = async (args: FetchArgs, api: BaseQueryApi, 
             } catch {
                 // Sign-out itself failing must not block the redirect.
             }
+            // Purge cached dashboard data so the next user never sees the
+            // previous user's queries.
+            api.dispatch(baseApi.util.resetApiState());
 
             if (typeof window !== 'undefined') {
                 toast.error('Your session has expired. Please login again.');
                 const loginUrl = new URL('/auth', window.location.origin);
                 // Preserve where the user was (incl. mid-checkout) so login
-                // can send them straight back.
+                // can send them straight back — minus secret query params
+                // (?token= from reset/verify links must not leak into history).
                 const redirectPath = `${window.location.pathname}${window.location.search}`;
-                loginUrl.searchParams.set('redirect_url', redirectPath);
+                const cleanRedirect = redirectPath.replace(/([?&])token=[^&]*/g, '$1token=[REDACTED]').replace(/[?&]$/, '');
+                loginUrl.searchParams.set('redirect_url', cleanRedirect);
                 window.location.href = loginUrl.toString();
             }
 

@@ -2,9 +2,14 @@ import { authServerApi } from '@/lib/auth-server-api';
 import { getAuthErrorMessage } from '@/lib/auth-errors';
 import { toast } from 'sonner';
 
-export async function signUpAction(name: string, email: string, password: string) {
+export async function signUpAction(name: string, email: string, password: string, agreedToTerms?: boolean) {
   try {
-    const result = await authServerApi.signUpEmail({ email, password, name });
+    if (!agreedToTerms) {
+      const errorMsg = 'Please accept the Terms & Conditions to create an account';
+      toast.error(errorMsg);
+      return { success: false, error: errorMsg };
+    }
+    const result = await authServerApi.signUpEmail({ email, password, name, agreedToTerms: true });
 
     if (result.error) {
       const errorMsg = getAuthErrorMessage(result.error.code, result.error.message);

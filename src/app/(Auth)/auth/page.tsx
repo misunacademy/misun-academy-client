@@ -47,8 +47,8 @@ const AuthPage = () => {
         return result;
     };
 
-    const handleRegister = async (data: { name: string; email: string; password: string; confirmPassword: string }) => {
-        const result = await signUp(data.name, data.email, data.password);
+    const handleRegister = async (data: { name: string; email: string; password: string; confirmPassword: string; agreedToTerms?: boolean }) => {
+        const result = await signUp(data.name, data.email, data.password, data.agreedToTerms);
         if (result.success) {
             //  Track Lead immediately
             import('@/lib/metaPixel').then(({ track }) => track('Lead'));

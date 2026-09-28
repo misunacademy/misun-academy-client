@@ -24,6 +24,17 @@ const getBaseApiUrl = () => {
   return baseUrl;
 };
 
+const getCSRFToken = (): string | null => {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+};
+
+const withCSRF = (headers: Record<string, string>): Record<string, string> => {
+  const token = getCSRFToken();
+  return token ? { ...headers, 'X-CSRF-Token': token } : headers;
+};
+
 const getAuthServerBaseUrl = () => {
   return `${getBaseApiUrl()}/auth/server`;
 };
@@ -119,9 +130,9 @@ const jsonRequest = <T = unknown>(
 ) => {
   return authServerRequest<T>(path, {
     method,
-    headers: {
+    headers: withCSRF({
       'content-type': 'application/json',
-    },
+    }),
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 };
@@ -147,9 +158,9 @@ export const authServerApi = {
 
     return absoluteRequest<{ url?: string }>(`${getBaseApiUrl()}/auth/sign-in/social`, {
       method: 'POST',
-      headers: {
+      headers: withCSRF({
         'content-type': 'application/json',
-      },
+      }),
       body: JSON.stringify(socialPayload),
     });
   },
@@ -160,9 +171,19 @@ export const authServerApi = {
     password: string;
     image?: string;
     callbackURL?: string;
+    agreedToTerms?: boolean;
   }) => jsonRequest('/sign-up/email', 'POST', body),
 
   signOut: () => jsonRequest('/sign-out', 'POST'),
+
+  sendVerificationEmail: (body: { email: string; callbackURL?: string }) =>
+    absoluteRequest<{ status: boolean }>(`${getBaseApiUrl()}/auth/send-verification-email`, {
+      method: 'POST',
+      headers: withCSRF({
+        'content-type': 'application/json',
+      }),
+      body: JSON.stringify(body),
+    }),
 
   requestPasswordReset: (body: { email: string; redirectTo?: string }) =>
     jsonRequest('/request-password-reset', 'POST', body),
