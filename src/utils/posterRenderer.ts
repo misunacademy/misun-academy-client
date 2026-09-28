@@ -14,6 +14,14 @@ function drawUserImage(
   if (!userImage) return Promise.resolve();
 
   return new Promise<void>((resolve) => {
+    let settled = false;
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    const stallTimer = setTimeout(done, 15000);
+
     const img = new window.Image();
     img.src = userImage;
     img.crossOrigin = "anonymous";
@@ -62,10 +70,14 @@ function drawUserImage(
       ctx.lineWidth = 8;
       ctx.stroke();
 
-      resolve();
+      clearTimeout(stallTimer);
+      done();
     };
 
-    img.onerror = () => resolve();
+    img.onerror = () => {
+      clearTimeout(stallTimer);
+      done();
+    };
   });
 }
 
@@ -136,6 +148,15 @@ export function generatePoster(
   ctx.clearRect(0, 0, cssWidth, cssHeight);
 
   return new Promise<void>((resolve) => {
+    let settled = false;
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    // Stalled images fire neither onload nor onerror — never hang the UI.
+    const stallTimer = setTimeout(done, 15000);
+
     const bg = new window.Image();
     bg.src = template.src;
     bg.crossOrigin = "anonymous";
@@ -163,14 +184,16 @@ export function generatePoster(
       drawUserImage(ctx, config, userImage, imageOffset, imageZoom).then(() => {
         drawName(ctx, config, userName);
         drawBatch(ctx, config, batchNo);
-        resolve();
+        clearTimeout(stallTimer);
+        done();
       });
     };
 
     bg.onerror = () => {
       ctx.fillStyle = "#f8fafc";
       ctx.fillRect(0, 0, cssWidth, cssHeight);
-      resolve();
+      clearTimeout(stallTimer);
+      done();
     };
   });
 }
