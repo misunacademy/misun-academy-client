@@ -12,6 +12,7 @@ import DashboardPageTabs from "@/components/layout/DashboardPageTabs";
 import { useCertificateColumns } from "../components/certificateColumns";
 import CertificateStatsCards from "../components/CertificateStatsCards";
 import CertificateReviewDialog from "../components/CertificateReviewDialog";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 const normalizeStatus = (status: string) => {
   const value = status.toLowerCase();
@@ -53,6 +54,8 @@ export default function CertificateManagementPage() {
   const { data: rejectedMetaData } = useGetCertificatesQuery({ status: "rejected", page: 1, limit: 1 });
 
   const [updateCertificate, { isLoading: isUpdating }] = useUpdateCertificateMutation();
+  const [approveId, setApproveId] = useState<string | null>(null);
+  const [isApproving, setIsApproving] = useState(false);
 
   const certificates = data?.data || [];
   const meta = data?.meta ?? { total: 0, page: 1, limit, totalPages: 1 };
@@ -61,17 +64,22 @@ export default function CertificateManagementPage() {
   const rejectedCount = rejectedMetaData?.meta?.total ?? 0;
   const totalPages = meta.totalPages ?? 1;
 
-  const handleApprove = async (certificateId: string) => {
+  const handleApprove = async () => {
+    if (!approveId) return;
+    setIsApproving(true);
     try {
       await updateCertificate({
-        id: certificateId,
+        id: approveId,
         data: { status: 'Approved', approvedAt: new Date().toISOString() }
       }).unwrap();
       toast.success('Certificate approval successful');
       refetch();
+      setApproveId(null);
       setReviewDialogOpen(false);
     } catch {
       toast.error('Approval failed');
+    } finally {
+      setIsApproving(false);
     }
   };
 
@@ -209,7 +217,7 @@ export default function CertificateManagementPage() {
             rejectionReason={rejectionReason}
             onRejectionReasonChange={setRejectionReason}
             onReject={handleReject}
-            onApprove={handleApprove}
+            onApprove={(certificateId) => setApproveId(certificateId)}
             isUpdating={isUpdating}
             getStudentName={getStudentName}
             getStudentEmail={getStudentEmail}
@@ -217,6 +225,16 @@ export default function CertificateManagementPage() {
             getBatchTitle={getBatchTitle}
             getStatusBadge={getStatusBadge}
             normalizeStatus={normalizeStatus}
+          />
+          <ConfirmDialog
+            open={approveId !== null}
+            onOpenChange={(open) => { if (!open) setApproveId(null); }}
+            title="Approve this certificate?"
+            description="The learner will be marked completed."
+            confirmLabel="Approve"
+            variant="default"
+            confirming={isApproving}
+            onConfirm={() => { void handleApprove(); }}
           />
         </>
       }

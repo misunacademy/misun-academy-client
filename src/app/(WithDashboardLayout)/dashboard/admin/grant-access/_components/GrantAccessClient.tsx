@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { useForm, useWatch, Controller, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -19,6 +19,7 @@ import { toast } from "sonner"
 import { KeyRound, Loader2 } from "lucide-react"
 import { DataTable } from "@/components/ui/data-table"
 import { Form } from "@/components/ui/form"
+import ConfirmDialog from "@/components/shared/ConfirmDialog"
 
 const grantSchema = z.object({
   email: z.string().email("Enter a valid email address"),
@@ -30,6 +31,8 @@ type GrantFormValues = z.infer<typeof grantSchema>
 
 const GrantCourseAccessPage = () => {
   const [specialPage, setSpecialPage] = useState(1)
+  // Validated values awaiting confirmation in the dialog below.
+  const [pendingGrant, setPendingGrant] = useState<GrantFormValues | null>(null)
 
   const { data: coursesData, isLoading: isCoursesLoading } = useGetAllCoursesQuery({})
   const courses = useMemo(() => coursesData?.data || [], [coursesData])
@@ -59,6 +62,14 @@ const GrantCourseAccessPage = () => {
   const watchedCourseId = useWatch({ control: form.control, name: "courseId" })
   const normalizedEmail = watchedEmail.trim().toLowerCase()
 
+  // Debounce the admin user-list lookup: without this, every keystroke fires
+  // a request against the user search endpoint.
+  const [debouncedEmail, setDebouncedEmail] = useState(normalizedEmail)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedEmail(normalizedEmail), 500)
+    return () => clearTimeout(timer)
+  }, [normalizedEmail])
+
   const { data: batchesData, isLoading: isBatchesLoading } = useGetAllBatchesQuery(
     { courseId: watchedCourseId },
     { skip: !watchedCourseId },
@@ -66,14 +77,14 @@ const GrantCourseAccessPage = () => {
   const batches = useMemo(() => batchesData?.data || [], [batchesData])
 
   const { data: usersData, isFetching: isCheckingUser } = useGetAllUsersQuery(
-    normalizedEmail ? { search: normalizedEmail, limit: 5, page: 1 } : undefined,
-    { skip: !normalizedEmail },
+    debouncedEmail ? { search: debouncedEmail, limit: 5, page: 1 } : undefined,
+    { skip: !debouncedEmail },
   )
   const matchedUser = useMemo(() => {
-    if (!normalizedEmail) return null
+    if (!debouncedEmail) return null
     const users = usersData?.data || []
-    return users.find((user) => user.email?.toLowerCase() === normalizedEmail) || null
-  }, [normalizedEmail, usersData])
+    return users.find((user) => user.email?.toLowerCase() === debouncedEmail) || null
+  }, [debouncedEmail, usersData])
 
   const handleCourseChange = (value: string) => {
     form.setValue("courseId", value)
@@ -81,14 +92,21 @@ const GrantCourseAccessPage = () => {
   }
 
   const handleSubmit = async (values: GrantFormValues) => {
+    // Confirm first — granting is free access with no payment.
+    setPendingGrant(values)
+  }
+
+  const handleConfirmGrant = async () => {
+    if (!pendingGrant) return
     try {
       const result = await grantAccess({
-        email: values.email.trim().toLowerCase(),
-        courseId: values.courseId,
-        batchId: values.batchId,
+        email: pendingGrant.email.trim().toLowerCase(),
+        courseId: pendingGrant.courseId,
+        batchId: pendingGrant.batchId,
       }).unwrap()
 
       toast.success((result as { message?: string })?.message || "Access granted successfully.")
+      setPendingGrant(null)
       form.reset()
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } }
@@ -99,6 +117,7 @@ const GrantCourseAccessPage = () => {
   }
 
   return (
+    <>
     <DashboardPageContainer
       heading="Grant Special Access"
       subheading="Give a registered student special access to a course and batch using their email address."
@@ -273,6 +292,17 @@ const GrantCourseAccessPage = () => {
         </div>
       }
     />
+    <ConfirmDialog
+      open={pendingGrant !== null}
+      onOpenChange={(open) => { if (!open) setPendingGrant(null); }}
+      title={`Grant FREE access to ${pendingGrant?.email.trim().toLowerCase() ?? "this student"}?`}
+      description="No payment will be collected."
+      confirmLabel="Grant Access"
+      variant="default"
+      confirming={isGranting}
+      onConfirm={() => { void handleConfirmGrant(); }}
+    />
+    </>
   )
 }
 
