@@ -47,6 +47,7 @@ interface DashboardData {
     courseWiseStats: { courseId: string; courseTitle: string; courseSlug: string; totalIncome: number; totalEnrollments: number }[];
     batchWiseIncome: { batchId: string; batchTitle: string; courseTitle?: string; batchNumber: string; totalIncome: number; totalEnrollments: number }[];
     totalIncome: number;
+    totalIncomeByCurrency?: { currency: string; totalIncome: number }[];
     dayWiseStats: { date: string; totalIncome: number; totalEnrollment: number }[];
 }
 
@@ -77,6 +78,7 @@ export default function Dashboard() {
         courseWiseStats: raw?.courseWiseStats ?? [],
         batchWiseIncome: raw?.batchWiseIncome ?? [],
         totalIncome: raw?.totalIncome ?? 0,
+        totalIncomeByCurrency: raw?.totalIncomeByCurrency ?? [],
         dayWiseStats: raw?.dayWiseStats ?? [],
     };
 
@@ -127,6 +129,11 @@ export default function Dashboard() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">BDT {(dashboardData.totalIncome ?? 0).toLocaleString()}</div>
+                        {(dashboardData.totalIncomeByCurrency?.length ?? 0) > 1 && (
+                            <p className="mt-1 text-xs text-muted-foreground">
+                                {dashboardData.totalIncomeByCurrency!.map((c) => `${c.currency} ${c.totalIncome.toLocaleString()}`).join(" · ")}
+                            </p>
+                        )}
                     </CardContent>
                 </Card>
                 <Card>

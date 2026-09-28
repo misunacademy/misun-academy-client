@@ -3,11 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import { useCallback, useMemo, useState, useEffect } from "react";
-import { useGetAllUsersQuery, useLazyGetAllUsersQuery, useUpdateUserStatusMutation, useDeleteUserMutation } from "@/redux/api/adminApi";
+import { useGetAllUsersQuery, useLazyGetAllUsersQuery, useUpdateUserStatusMutation, useDeleteUserMutation, useGetRoleStatsQuery } from "@/redux/api/adminApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import type { BatchResponse } from "@/redux/api/batchApi";
 import type { GetAllUsersParams, UsersListResponse } from "@/redux/api/adminApi";
 import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/lib/api-helpers';
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
 import { DataTable } from "@/components/ui/data-table";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
@@ -16,6 +17,8 @@ import { useUserColumns } from "../components/userColumns";
 import UsersStatsCards from "../components/UsersStatsCards";
 import CreateUserDialog from "../components/CreateUserDialog";
 import UsersFilters from "../components/UsersFilters";
+import { useAuth } from "@/hooks/useAuth";
+import { Role } from "@/types/common";
 
 interface User {
   _id: string;
@@ -57,6 +60,11 @@ export default function AdminUsers() {
   const [deleteUserMutation] = useDeleteUserMutation();
   const [updateUserStatusMutation] = useUpdateUserStatusMutation();
   const [triggerExportQuery] = useLazyGetAllUsersQuery();
+
+  // User deletion is superadmin-only on the server — hide the action for
+  // other roles instead of letting them hit a 403.
+  const { user: currentUser } = useAuth();
+  const canDeleteUsers = currentUser?.role?.toLowerCase() === Role.SUPERADMIN.toLowerCase();
 
   // Debounce search input to avoid excessive requests
   useEffect(() => {
@@ -123,7 +131,7 @@ export default function AdminUsers() {
       setDeleteDialogOpen(false);
       setUserToDelete(null);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to delete user');
+      toast.error(getApiErrorMessage(error, 'Failed to delete user'));
       setDeleteDialogOpen(false);
       setUserToDelete(null);
     }
@@ -135,13 +143,24 @@ export default function AdminUsers() {
       await updateUserStatusMutation({ id, status }).unwrap();
       toast.success('User status updated');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to update status');
+      toast.error(getApiErrorMessage(error, 'Failed to update status'));
     }
   }, [updateUserStatusMutation]);
 
   // Typed server response and current page rows
   const filteredUsers: User[] = useMemo(() => (resp?.data as User[] | undefined) || [], [resp]);
   const batches: BatchResponse[] = useMemo(() => (batchesData?.data as BatchResponse[] | undefined) || [], [batchesData]);
+
+  // Stat cards must reflect GLOBAL totals, not the current page/filter.
+  // Role stats come from the dedicated aggregate endpoint (same source as
+  // the Roles page), so numbers stay consistent across the dashboard.
+  const { data: roleStatsData } = useGetRoleStatsQuery();
+  const roleRows = roleStatsData?.data?.roles || [];
+  const countFor = (role: string) =>
+    roleRows.find((r) => r.role?.toLowerCase() === role)?.count ?? 0;
+  const activeFor = (role: string) =>
+    roleRows.find((r) => r.role?.toLowerCase() === role)?.active ?? 0;
+  const globalActiveCount = roleRows.reduce((sum, r) => sum + (r.active ?? 0), 0);
 
   const getRoleBadgeVariant = useCallback((role: string): "default" | "secondary" | "destructive" | "outline" => {
     const lr = role?.toLowerCase?.() ?? '';
@@ -162,6 +181,7 @@ export default function AdminUsers() {
     handleToggleStatus,
     setUserToDelete,
     setDeleteDialogOpen,
+    canDeleteUsers,
   );
 
   const handleExportExcel = useCallback(async () => {
@@ -212,15 +232,21 @@ export default function AdminUsers() {
       toast.loading(`Generating Excel spreadsheet for ${allUsers.length} users...`, { id: toastId });
 
       const XLSX = await import('xlsx');
+      // Spreadsheet formula-injection guard: user-controlled text starting
+      // with =,+,-,@ executes on open in Excel/Sheets.
+      const safeCell = (v: unknown) => {
+        const s = v === null || v === undefined ? '' : String(v);
+        return /^[=+\-@\t]/.test(s) ? `'${s}` : s;
+      };
       const rows = allUsers.map((user, index) => ({
         'SL': index + 1,
-        'Name': user.name,
-        'Email': user.email,
-        'Role': user.role,
-        'Status': user.status,
-        'Enrolled Courses/Batches': user.enrolledBatches?.join(' | ') || 'No',
-        'Phone': user.phone || '',
-        'Address': user.address || '',
+        'Name': safeCell(user.name),
+        'Email': safeCell(user.email),
+        'Role': safeCell(user.role),
+        'Status': safeCell(user.status),
+        'Enrolled Courses/Batches': safeCell(user.enrolledBatches?.join(' | ') || 'No'),
+        'Phone': safeCell(user.phone || ''),
+        'Address': safeCell(user.address || ''),
         'Join Date': new Date(user.createdAt).toLocaleDateString(),
       }));
 
@@ -239,12 +265,18 @@ export default function AdminUsers() {
     }
   }, [filteredUsers, roleParam, statusParam, debouncedSearch, batchFilter, enrolledFilter, triggerExportQuery]);
 
-  const activeUsersCount = useMemo(() => filteredUsers.filter((u) => u.status === "active").length, [filteredUsers]);
-  const instructorCount = useMemo(() => filteredUsers.filter((u) => u.role?.toLowerCase() === "instructor").length, [filteredUsers]);
-  const adminCount = useMemo(() => filteredUsers.filter((u) => {
+  // Stat cards show global totals from the roles aggregate. When it hasn't
+  // loaded yet, fall back to the current page counts (clearly partial).
+  const statsReady = roleRows.length > 0;
+  const pageActiveCount = useMemo(() => filteredUsers.filter((u) => u.status === "active").length, [filteredUsers]);
+  const pageInstructorCount = useMemo(() => filteredUsers.filter((u) => u.role?.toLowerCase() === "instructor").length, [filteredUsers]);
+  const pageAdminCount = useMemo(() => filteredUsers.filter((u) => {
     const r = u.role?.toLowerCase?.() ?? "";
     return r === "admin" || r === "superadmin";
   }).length, [filteredUsers]);
+  const activeUsersCount = statsReady ? globalActiveCount : pageActiveCount;
+  const instructorCount = statsReady ? countFor("instructor") : pageInstructorCount;
+  const adminCount = statsReady ? countFor("admin") + countFor("superadmin") : pageAdminCount;
 
   if (isLoading) {
     return (
