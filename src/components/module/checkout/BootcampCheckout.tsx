@@ -67,7 +67,8 @@ export default function BootcampCheckout({
                 return;
             }
             toast.success('Redirecting to SSLCommerz...');
-            router.push(url);
+            // External gateway URL — full navigation, not next/router.
+            window.location.href = url;
         } catch (e: unknown) {
             const err = e as { data?: { message?: string } };
             toast.error(err?.data?.message || 'Payment initiation failed.');
