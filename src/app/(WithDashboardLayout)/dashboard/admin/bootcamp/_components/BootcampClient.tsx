@@ -64,7 +64,13 @@ const getStatusBadge = (status: string) => {
   }
 };
 
-const escapeCsvValue = (value: string) => `"${value.replace(/"/g, '""')}"`;
+const escapeCsvValue = (value: string) => {
+  // Quote-wrap + formula-injection guard (cells starting with =,+,-,@
+  // execute on open in Excel/Sheets; registrant names/phones are attacker-
+  // controlled input).
+  const guarded = /^[=+\-@\t]/.test(value) ? `'${value}` : value;
+  return `"${guarded.replace(/"/g, '""')}"`;
+};
 
 const exportToCsv = (rows: BootcampRegistration[]) => {
   const header = ["Name", "Email", "WhatsApp", "Address", "Payment Last 4", "Status", "Registered At"];

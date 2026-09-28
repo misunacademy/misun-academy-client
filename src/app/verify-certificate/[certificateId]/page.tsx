@@ -18,7 +18,9 @@ const downloadBlob = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = filename;
+    // Filename comes from the URL path: strip anything but safe chars so a
+    // crafted ID can't inject path separators or control characters.
+    a.download = filename.replace(/[^A-Za-z0-9._-]/g, "_");
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

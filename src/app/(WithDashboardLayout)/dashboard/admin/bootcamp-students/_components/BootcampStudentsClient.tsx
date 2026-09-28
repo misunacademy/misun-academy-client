@@ -29,6 +29,11 @@ import { paginateAll } from "@/lib/paginate-all";
 import BootcampStudentStatsCards from "./BootcampStudentStatsCards";
 import { bootcampStudentColumns } from "./bootcampStudentColumns";
 
+const safeCell = (v: unknown): string => {
+  const s = v === null || v === undefined ? "" : String(v);
+  return /^[=+\-@\t]/.test(s) ? `'${s}` : s;
+};
+
 type StatusFilter = "all" | "paid" | "pending" | "rejected";
 
 // The server caps `limit` at 100, so the export walks the API one page at a
@@ -43,17 +48,19 @@ const endOfDayIso = (date: string) => new Date(`${date}T23:59:59.999`).toISOStri
 
 const toExportRow = (purchase: BootcampPurchaseAdminItem, index: number) => ({
   SL: index + 1,
-  Name: purchase.user?.name || "",
-  Email: purchase.user?.email || "",
-  Phone: purchase.user?.phone || "",
-  "Student ID": purchase.user?.studentId || "",
-  Address: purchase.user?.address || "",
-  Bootcamp: purchase.bootcamp?.title || "",
-  Season: purchase.bootcamp?.season || "",
+  // Spreadsheet formula-injection guard: PII cells starting with =,+,-,@
+  // execute on open in Excel/Sheets.
+  Name: safeCell(purchase.user?.name || ""),
+  Email: safeCell(purchase.user?.email || ""),
+  Phone: safeCell(purchase.user?.phone || ""),
+  "Student ID": safeCell(purchase.user?.studentId || ""),
+  Address: safeCell(purchase.user?.address || ""),
+  Bootcamp: safeCell(purchase.bootcamp?.title || ""),
+  Season: safeCell(purchase.bootcamp?.season || ""),
   Status: purchase.status,
   "Amount (BDT)": purchase.amount,
   Method: purchase.method,
-  "Transaction ID": purchase.transactionId,
+  "Transaction ID": safeCell(purchase.transactionId),
   "Purchased At": new Date(purchase.createdAt).toLocaleString("en-US"),
 });
 
