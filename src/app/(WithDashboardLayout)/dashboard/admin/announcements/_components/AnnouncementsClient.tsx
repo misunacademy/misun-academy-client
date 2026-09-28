@@ -327,11 +327,11 @@ export default function AdminAnnouncementsPage() {
   const [editing, setEditing] = useState<Announcement | null>(null)
   const [editingOpen, setEditingOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  // Pending destructive/visibility action confirmed via the dialog below —
-  // replaces the native window.confirm().
+  // Pending destructive/visibility action confirmed via the dialog below.
   const [pendingAction, setPendingAction] = useState<
     | { kind: "delete"; id: string; title: string }
     | { kind: "unpublish"; id: string; title: string }
+    | { kind: "publish"; id: string; title: string; emailNote: string }
     | null
   >(null)
   const [confirming, setConfirming] = useState(false)
@@ -352,14 +352,10 @@ export default function AdminAnnouncementsPage() {
     setEditingOpen(true)
   }
 
-  const handlePublish = async (id: string) => {
-    try {
-      await publishTrigger(id).unwrap()
-      toast.success("Announcement published successfully")
-    } catch (error) {
-      const err = error as { data?: { message?: string } }
-      toast.error(err?.data?.message || "Failed to publish announcement")
-    }
+  const handlePublish = (id: string) => {
+    const target = announcements.find((a) => a._id === id);
+    const emailNote = target?.notifyByEmail ? " This will also EMAIL all targeted users." : "";
+    setPendingAction({ kind: "publish", id, title: target?.title ?? "", emailNote });
   }
 
   const handleDelete = (id: string) => {
@@ -379,6 +375,9 @@ export default function AdminAnnouncementsPage() {
       if (pendingAction.kind === "delete") {
         await deleteTrigger(pendingAction.id).unwrap()
         toast.success("Announcement deleted successfully")
+      } else if (pendingAction.kind === "publish") {
+        await publishTrigger(pendingAction.id).unwrap()
+        toast.success("Announcement published successfully")
       } else {
         await unpublishTrigger(pendingAction.id).unwrap()
         toast.success("Announcement unpublished successfully")
@@ -487,13 +486,22 @@ export default function AdminAnnouncementsPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {pendingAction?.kind === "delete" ? "Delete announcement?" : "Unpublish announcement?"}
+              {pendingAction?.kind === "delete"
+                ? "Delete announcement?"
+                : pendingAction?.kind === "publish"
+                  ? `Publish "${pendingAction?.title || "this announcement"}"?`
+                  : "Unpublish announcement?"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {pendingAction?.kind === "delete" ? (
                 <>
                   This action cannot be undone. This will permanently delete
                   {pendingAction.title ? <> <span className="font-medium">“{pendingAction.title}”</span></> : " this announcement"}.
+                </>
+              ) : pendingAction?.kind === "publish" ? (
+                <>
+                  This cannot be undone.
+                  {pendingAction.emailNote ? <>{pendingAction.emailNote}</> : null}
                 </>
               ) : (
                 <>
@@ -515,7 +523,7 @@ export default function AdminAnnouncementsPage() {
                   : ""
               }
             >
-              {confirming ? "Working..." : pendingAction?.kind === "delete" ? "Delete" : "Unpublish"}
+              {confirming ? "Working..." : pendingAction?.kind === "delete" ? "Delete" : pendingAction?.kind === "publish" ? "Publish" : "Unpublish"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
