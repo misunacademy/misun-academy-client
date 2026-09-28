@@ -64,12 +64,15 @@ export default function FloatingChat() {
         time: timeNow,
       };
 
+      // Server accepts user turns only (assistant history is untrusted
+      // client input — a jailbreak vector). Send recent genuine user turns;
+      // the service is stateless per request otherwise.
+      const userTurns = messagesRef.current
+        .filter((m) => m.sender === "user")
+        .slice(-10)
+        .map((m) => ({ role: "user" as const, content: m.text }));
       const conversation = [
-        ...messagesRef.current.slice(1).map((m) => ({
-          role:
-            m.sender === "user" ? ("user" as const) : ("assistant" as const),
-          content: m.text,
-        })),
+        ...userTurns,
         { role: "user" as const, content: text.trim() },
       ];
 
@@ -78,11 +81,19 @@ export default function FloatingChat() {
       setIsTyping(true);
 
       try {
+        const csrfMatch =
+          typeof document !== 'undefined'
+            ? document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/)
+            : null;
+        const csrfToken = csrfMatch ? decodeURIComponent(csrfMatch[1]) : null;
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_BASE_API_URL}/chat`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+            },
             credentials: "include",
             body: JSON.stringify({ messages: conversation }),
           },

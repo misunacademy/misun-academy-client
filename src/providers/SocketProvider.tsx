@@ -139,6 +139,9 @@ function SocketController({ children }: { children: React.ReactNode }) {
       });
 
       socket.on('notification', (data: NotificationEvent) => {
+        // Ignore pushes addressed to someone else: a misrouted server push
+        // must never increment another user's unread count.
+        if (!data || data.userId !== user?.id) return;
         setRecentNotifications((prev) => [data, ...prev].slice(0, 10));
         setUnreadCount((prev) => prev + 1);
       });
