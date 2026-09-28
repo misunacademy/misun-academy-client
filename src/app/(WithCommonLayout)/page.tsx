@@ -56,9 +56,9 @@ export default function page() {
       <EnrollmentFixed />
 
 
-      {/* Global Tech Support Chat widget */}
+      {/* Global Tech Support Chat widget (dev only) */}
       {
-        process.env.NEXT_PUBLIC_NODE_ENV === 'development' && 
+        process.env.NODE_ENV === 'development' && 
           <FloatingChat />
       }
 

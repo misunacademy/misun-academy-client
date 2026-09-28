@@ -28,6 +28,7 @@ export default function StudentProfile() {
     const profile = profileData?.data;
 
     useEffect(() => {
+        if (!user) return;
         const fetchSessions = async () => {
             try {
                 const result = await authServerApi.listSessions();
@@ -38,7 +39,7 @@ export default function StudentProfile() {
             }
         };
         fetchSessions();
-    }, []);
+    }, [user]);
 
     const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

@@ -32,17 +32,22 @@ export default function BootcampDetailClient() {
 
     const paymentResult = searchParams.get('payment');
     useEffect(() => {
+        if (!paymentResult || isLoading) return;
+        // Never celebrate on URL alone: ?payment=success is trivially
+        // spoofable. Confirm against the server-derived hasPurchased flag.
         if (paymentResult === 'success') {
-            toast.success('পেমেন্ট সফল হয়েছে! আপনার রেকর্ডিং আনলক হয়ে গেছে।');
+            if (hasPurchased) {
+                toast.success('পেমেন্ট সফল হয়েছে! আপনার রেকর্ডিং আনলক হয়ে গেছে।');
+            } else {
+                toast.error('পেমেন্ট যাচাই করা যায়নি। সফল হলে রেকর্ডিং এখানে আনলক হবে।');
+            }
         } else if (paymentResult === 'failed') {
             toast.error('পেমেন্ট সফল হয়নি। আবার চেষ্টা করুন।');
         }
-        if (paymentResult) {
-            const remaining = searchParams.toString().replace(/(^|&)payment=[^&]*/g, '');
-            void router.replace(`/bootcamp/${slug}${remaining ? `?${remaining}` : ''}`);
-        }
+        const remaining = searchParams.toString().replace(/(^|&)payment=[^&]*/g, '');
+        void router.replace(`/bootcamp/${slug}${remaining ? `?${remaining}` : ''}`);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [paymentResult]);
+    }, [paymentResult, isLoading, hasPurchased]);
 
     if (isLoading) {
         return (

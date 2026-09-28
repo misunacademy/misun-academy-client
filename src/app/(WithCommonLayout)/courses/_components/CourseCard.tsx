@@ -37,8 +37,9 @@ export default function CourseCard({ course }: { course: CourseConfig }) {
     }
   };
 
+  const epBase = process.env.NEXT_PUBLIC_EP_FRONTEND_URL;
   const href = course.slug !== COURSE_SLUGS.GRAPHIC_DESIGN
-    ? `${process.env.NEXT_PUBLIC_EP_FRONTEND_URL}`
+    ? (epBase || '/courses')
     : `/courses/${course.slug}`;
 
   return (
