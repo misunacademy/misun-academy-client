@@ -202,7 +202,7 @@ const adminApi = baseApi.injectEndpoints({
         url: `/admin/users/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Users"],
+      invalidatesTags: ["Users", "Dashboard", "CourseEnrollments", "Profile"],
     }),
 
     // Admin login (separate route)
@@ -212,7 +212,15 @@ const adminApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Profile"],
+      // Full purge: the previous admin's cached queries must not survive.
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(baseApi.util.resetApiState());
+        } catch {
+          // Login failed — keep cache untouched.
+        }
+      },
     }),
 
     /**

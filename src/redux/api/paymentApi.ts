@@ -65,10 +65,10 @@ const paymentApi = baseApi.injectEndpoints({
           ? Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== null))
           : undefined;
         if (cleaned && Object.keys(cleaned).length === 0) cleaned = undefined;
-        return {
-          url: "payments/history",
-          params: cleaned,
-        };
+      return {
+        url: "/payments/history",
+        params: cleaned,
+      };
       },
       providesTags: ["Payments"],
     }),

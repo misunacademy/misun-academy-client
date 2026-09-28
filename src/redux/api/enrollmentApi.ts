@@ -161,13 +161,13 @@ const enrollmentApi = baseApi.injectEndpoints({
 
     // Admin: Update enrollment status
     // Server expects PUT, not PATCH
-    updateEnrollmentStatus: build.mutation<unknown, { id: string; status: string }>({
-      query: ({ id, status }) => ({
+    updateEnrollmentStatus: build.mutation<unknown, { id: string; status: string; reason?: string }>({
+      query: ({ id, status, reason }) => ({
         url: `/enrollments/${id}/status`,
-        method: "PUT",  
-        body: { status },
+        method: "PUT",
+        body: reason === undefined ? { status } : { status, reason },
       }),
-      invalidatesTags: ["CourseEnrollments"],
+      invalidatesTags: ["CourseEnrollments", "Students", "Dashboard"],
     }),
 
     // Manual enrollment (e.g., bank/phone transfer)

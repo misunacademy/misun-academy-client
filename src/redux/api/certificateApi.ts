@@ -71,11 +71,14 @@ const certificateApi = baseApi.injectEndpoints({
       providesTags: ["Certificates"],
     }),
 
-    // Verify certificate (public)
+    // Verify certificate (public). Silent: the page renders its own
+    // not-found state, and user-typed IDs 404 routinely.
     verifyCertificate: build.query<{ data: { isValid: boolean; status: string; certificate?: VerifiedCertificate; reason?: string } }, string>({
       query: (certificateId) => ({
         url: `/certificates/verify/${certificateId}`,
       }),
+      providesTags: (_result, _error, certificateId) => [{ type: "Certificates" as const, id: certificateId }],
+      extraOptions: { silent: true },
     }),
 
     // Admin: Get all certificates (pending, approved, rejected)
