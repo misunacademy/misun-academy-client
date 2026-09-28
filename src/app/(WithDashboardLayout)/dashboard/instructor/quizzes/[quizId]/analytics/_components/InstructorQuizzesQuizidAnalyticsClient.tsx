@@ -3,7 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
-import { useGetInstructorQuizByIdQuery, useGetInstructorQuizAnalyticsQuery } from "@/redux/api/instructorApi";
+import ResetAttemptsCard, { type ResettableStudent } from "@/components/shared/ResetAttemptsCard";
+import { useGetInstructorQuizByIdQuery, useGetInstructorQuizAnalyticsQuery, useResetInstructorQuizAttemptsMutation, useGetInstructorEnrolledStudentsQuery } from "@/redux/api/instructorApi";
 import { use } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,21 @@ export default function QuizAnalyticsPage({ params }: { params: Promise<{ quizId
     const quiz = quizData?.data;
     const { data: analyticsData } = useGetInstructorQuizAnalyticsQuery(quizId);
     const analytics: IQuizAnalytics | undefined = extractApiData<IQuizAnalytics>(analyticsData);
+    const { data: studentsData, isFetching: isLoadingStudents } = useGetInstructorEnrolledStudentsQuery({});
+    const [resetAttempts] = useResetInstructorQuizAttemptsMutation();
+
+    const lookupStudent = async (email: string): Promise<ResettableStudent | null> => {
+        const students = ((studentsData?.data ?? []) as { _id?: string; id?: string; name?: string; email?: string }[]);
+        const match = students.find((s) => s.email?.toLowerCase() === email);
+        const id = match?._id ?? match?.id;
+        if (!match || !id) return null;
+        return { id, name: match.name ?? "Student", email: match.email ?? email };
+    };
+
+    const resetStudentAttempts = async (userId: string): Promise<number> => {
+        const result = await resetAttempts({ quizId, userId }).unwrap();
+        return extractApiData<{ deletedAttempts?: number }>(result)?.deletedAttempts ?? 0;
+    };
 
     const totalQuestions = analytics?.perQuestion?.length || 0;
     const totalMarks = analytics?.perQuestion?.reduce((sum, q) => sum + q.marks, 0) || 0;
@@ -125,6 +141,12 @@ export default function QuizAnalyticsPage({ params }: { params: Promise<{ quizId
                             )}
                         </CardContent>
                     </Card>
+
+                    <ResetAttemptsCard
+                        onLookup={lookupStudent}
+                        onReset={resetStudentAttempts}
+                        lookupLoading={isLoadingStudents}
+                    />
                 </div>
             }
         />

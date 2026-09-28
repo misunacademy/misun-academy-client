@@ -61,7 +61,7 @@ export const quizApi = baseApi.injectEndpoints({
                 url: `/admin/quizzes/quizzes/${quizId}`,
                 method: 'DELETE',
             }),
-            invalidatesTags: ['Quizzes'],
+            invalidatesTags: ['Quizzes', 'Questions', 'Modules'],
         }),
 
         reorderQuizzes: builder.mutation<IQuiz[], { moduleId: string; quizOrders: { quizId: string; orderIndex: number }[] }>({
@@ -140,6 +140,16 @@ export const quizApi = baseApi.injectEndpoints({
             query: (quizId) => ({ url: `/admin/quizzes/quizzes/${quizId}/analytics` }),
             providesTags: (_result, _err, quizId) => [{ type: 'Quizzes', id: quizId }],
         }),
+
+        // ── Attempt recovery (admin): reopen a quiz for a student stuck
+        // after exhausting attempts without ever passing.
+        resetQuizAttempts: builder.mutation<{ deletedAttempts: number }, { quizId: string; userId: string }>({
+            query: ({ quizId, userId }) => ({
+                url: `/admin/quizzes/quizzes/${quizId}/attempts/user/${userId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: (_result, _err, { quizId }) => [{ type: 'Quizzes', id: quizId }, 'Quizzes'],
+        }),
     }),
 });
 
@@ -159,4 +169,5 @@ export const {
     useDuplicateAdminQuestionMutation,
     useReorderAdminQuestionsMutation,
     useGetAdminQuizAnalyticsQuery,
+    useResetQuizAttemptsMutation,
 } = quizApi;

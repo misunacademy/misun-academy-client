@@ -258,6 +258,14 @@ const instructorApi = baseApi.injectEndpoints({
       providesTags: ["Quizzes"],
     }),
 
+    resetInstructorQuizAttempts: build.mutation<{ deletedAttempts: number }, { quizId: string; userId: string }>({
+      query: ({ quizId, userId }) => ({
+        url: `/instructor/quizzes/${quizId}/attempts/user/${userId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Quizzes"],
+    }),
+
     // ── Questions (instructor-scoped) ─────────────────────────────────────────
     getInstructorQuizQuestions: build.query<{ data: IQuestion[] }, string>({
       query: (quizId) => ({ url: `/instructor/quizzes/${quizId}/questions` }),
@@ -330,6 +338,7 @@ export const {
   useGetInstructorModuleQuizzesQuery,
   useGetInstructorQuizByIdQuery,
   useGetInstructorQuizAnalyticsQuery,
+  useResetInstructorQuizAttemptsMutation,
   useCreateInstructorQuizMutation,
   useUpdateInstructorQuizMutation,
   useDeleteInstructorQuizMutation,
