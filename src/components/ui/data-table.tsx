@@ -47,10 +47,14 @@ export function DataTable<TData>({
   emptyState = "No data found.",
   pagination,
 }: DataTableProps<TData>) {
+  // Opt out of React Compiler: TanStack Table's `useReactTable()` returns
+  // fresh function identities every render by design, so this component
+  // cannot be memoized safely (react-hooks/incompatible-library).
+  "use no memo";
   const [sorting, setSorting] = useState<SortingState>([])
   const showLoading = isLoading || isFetching
 
-  // eslint-disable-next-line react-hooks/incompatible-library
+  // eslint-disable-next-line react-hooks/incompatible-library -- useReactTable returns unmemoizable functions by design; component opts out via "use no memo" above
   const table = useReactTable({
     data,
     columns,

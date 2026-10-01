@@ -148,7 +148,7 @@ export default function RolesPage() {
             <CardContent className="text-sm leading-relaxed text-muted-foreground">
               <ol className="list-decimal space-y-1 pl-5">
                 <li>Go to <Link href="/dashboard/admin/users" className="text-primary underline">Users</Link> → search user → Edit</li>
-                <li>Change <code>role</code> (superadmin/admin/instructor/employee/learner) → Save</li>
+                <li>Change <code>role</code> (superadmin/admin/instructor/employee/learner) → Save. Role changes require a superadmin; you cannot change your own role.</li>
                 <li>Verify in <Link href="/dashboard/admin/audit-logs" className="text-primary underline">Audit Logs</Link> (action <code>user.role_change</code>)</li>
                 <li>Effect is immediate; suspended users have sessions revoked.</li>
               </ol>

@@ -253,6 +253,7 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
               completedCount={completedAttempts.length}
               maxAttempts={maxAttempts}
               canReAttempt={canReAttempt}
+              hasPassed={completedAttempts.some((a) => a.passed)}
               onReAttempt={handleStart}
               onReviewAnswers={handleReviewAnswers}
               onContinue={onComplete}
@@ -444,7 +445,7 @@ function QuizIntroScreen({ quizInfo, error, onStart, starting }: { quizInfo: IQu
 }
 
 function QuizSummaryScreen({
-  quizInfo, lastAttempt, completedCount, maxAttempts, canReAttempt,
+  quizInfo, lastAttempt, completedCount, maxAttempts, canReAttempt, hasPassed,
   onReAttempt, onReviewAnswers, onContinue, onBack, isStarting, error
 }: {
   quizInfo: IQuiz;
@@ -452,6 +453,7 @@ function QuizSummaryScreen({
   completedCount: number;
   maxAttempts: number;
   canReAttempt: boolean;
+  hasPassed: boolean;
   onReAttempt: () => void;
   onReviewAnswers: (attemptId: string) => void;
   onContinue: () => void;
@@ -489,6 +491,13 @@ function QuizSummaryScreen({
           </>
         )}
       </div>
+
+      {maxAttempts > 0 && remaining <= 0 && !hasPassed && (
+        <p className="rounded-lg border border-amber-400/20 bg-amber-400/5 px-4 py-3 text-center text-xs leading-relaxed text-amber-200/80">
+          You&apos;ve used all {maxAttempts} attempt{maxAttempts !== 1 ? "s" : ""} without passing.
+          Contact your instructor to reset your attempts so you can try again and continue.
+        </p>
+      )}
 
       {error && <p className="text-red-400 text-sm text-center">{error}</p>}
 

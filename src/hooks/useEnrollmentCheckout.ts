@@ -71,19 +71,27 @@ export function useEnrollmentCheckout(courseSlug?: string) {
 
   const resolvedBatchId = (resolvedBatch as Record<string, { _id: string } | string>)?._id;
   // Shared window policy (missing dates = open, matching the server); only
-  // evaluate once a batch is actually resolved.
+  // evaluate once a batch is actually resolved. Prefer server time — client
+  // clocks skew enrollment windows.
+  const serverTimestamp = (currentBatchRes as { serverTimestamp?: number } | undefined)?.serverTimestamp;
   const isEnrollmentOpen = resolvedBatchId
-    ? isBatchEnrollmentOpen(resolvedBatch as { enrollmentStartDate?: unknown; enrollmentEndDate?: unknown }, now)
+    ? isBatchEnrollmentOpen(resolvedBatch as { enrollmentStartDate?: unknown; enrollmentEndDate?: unknown }, serverTimestamp ?? now)
     : false;
 
   const isDataLoading = !!courseSlug && (courseLoading || (!!courseData && batchLoading));
 
+  // Mirror the server fallback (enrollment.service manualPaymentAmount):
+  // explicit manualPaymentPrice wins, otherwise brand-based default. Never
+  // display 0 — the user would send the wrong amount into review.
+  const isEnglishCourse = /english/i.test(
+    `${(resolvedCourse as Record<string, unknown>)?.title || ''} ${(resolvedCourse as Record<string, unknown>)?.slug || courseSlug || ''}`
+  );
   const manualPaymentAmount =
     typeof (resolvedBatch as Record<string, unknown>).manualPaymentPrice === 'number'
       ? (resolvedBatch as Record<string, number>).manualPaymentPrice
-      : 0;
+      : isEnglishCourse ? 2289 : 3661;
 
-  const manualPaymentCurrency = (resolvedBatch as Record<string, string>)?.currency || 'BDT';
+  const manualPaymentCurrency = isEnglishCourse ? 'INR' : ((resolvedBatch as Record<string, string>)?.currency || 'BDT');
 
   useEffect(() => {
     if (!form.getValues('batchId') && resolvedBatchId) {
@@ -104,13 +112,14 @@ export function useEnrollmentCheckout(courseSlug?: string) {
       toast.success("Redirecting to SSLCommerz...", {
         description: "You'll be redirected to complete your payment securely.",
       });
-      router.push(paymentUrl);
+      // External gateway URL — must be a full navigation, not next/router.
+      window.location.href = paymentUrl;
     } catch (error: unknown) {
       const paymentError = error as { data?: { message?: string } };
       toast.error(paymentError?.data?.message || "Payment initiation failed. Please try again.");
       setIsProcessing(false);
     }
-  }, [enrollStudent, router]);
+  }, [enrollStudent]);
 
   const handleManualPaymentComplete = useCallback(async (paymentData: ManualPaymentData) => {
     if (!enrollmentData) {

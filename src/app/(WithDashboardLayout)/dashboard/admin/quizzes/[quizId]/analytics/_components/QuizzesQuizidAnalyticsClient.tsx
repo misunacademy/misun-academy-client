@@ -3,10 +3,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
+import ResetAttemptsCard, { type ResettableStudent } from "@/components/shared/ResetAttemptsCard";
 import {
     useGetQuizByIdQuery,
     useGetAdminQuizAnalyticsQuery,
+    useResetQuizAttemptsMutation,
 } from "@/redux/api/quizApi";
+import { useLazyGetAllUsersQuery } from "@/redux/api/adminApi";
 import { use } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -22,6 +25,19 @@ export default function AdminQuizAnalyticsPage({ params }: { params: Promise<{ q
     const quiz = extractApiData<IQuiz>(quizData);
     const { data: analyticsData } = useGetAdminQuizAnalyticsQuery(quizId);
     const analytics = extractApiData<IQuizAnalytics>(analyticsData);
+    const [triggerUserLookup, { isFetching: isLookingUp }] = useLazyGetAllUsersQuery();
+    const [resetAttempts] = useResetQuizAttemptsMutation();
+
+    const lookupStudent = async (email: string): Promise<ResettableStudent | null> => {
+        const result = await triggerUserLookup({ search: email, limit: 5, page: 1 }).unwrap();
+        const match = (result?.data ?? []).find((u) => u.email?.toLowerCase() === email);
+        return match ? { id: match._id, name: match.name, email: match.email } : null;
+    };
+
+    const resetStudentAttempts = async (userId: string): Promise<number> => {
+        const result = await resetAttempts({ quizId, userId }).unwrap();
+        return extractApiData<{ deletedAttempts?: number }>(result)?.deletedAttempts ?? 0;
+    };
 
     const totalQuestions = analytics?.perQuestion?.length || 0;
     const totalMarks = analytics?.perQuestion?.reduce((sum, q) => sum + q.marks, 0) || 0;
@@ -93,8 +109,7 @@ export default function AdminQuizAnalyticsPage({ params }: { params: Promise<{ q
                     <Card>
                         <CardHeader>
                             <CardTitle>Question Analytics</CardTitle>
-                        </CardHeader>
-                        <CardContent>
+                        </CardHeader>                        <CardContent>
                             {totalQuestions === 0 ? (
                                 <div className="text-center py-12 text-muted-foreground">
                                     No questions in this quiz yet.
@@ -128,6 +143,12 @@ export default function AdminQuizAnalyticsPage({ params }: { params: Promise<{ q
                             )}
                         </CardContent>
                     </Card>
+
+                    <ResetAttemptsCard
+                        onLookup={lookupStudent}
+                        onReset={resetStudentAttempts}
+                        lookupLoading={isLookingUp}
+                    />
                 </div>
             }
         />

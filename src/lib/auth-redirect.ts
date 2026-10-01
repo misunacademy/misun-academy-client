@@ -22,11 +22,15 @@ function toOrigin(urlLike?: string | null): string | null {
 export function isAllowedRedirectUrl(target?: string | null, currentOrigin?: string): boolean {
   if (!target) return false;
 
-  if (target.startsWith('/')) return true;
+  // Relative paths only — and never protocol-relative `//evil.com`, which
+  // starts with '/' but navigates cross-origin.
+  if (target.startsWith('/')) return !target.startsWith('//');
 
   try {
-    const targetOrigin = toOrigin(target);
-    if (!targetOrigin) return false;
+    const parsed = new URL(target);
+    // http(s) only: javascript:, data:, etc. must never pass.
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+    const targetOrigin = `${parsed.protocol}//${parsed.host}`.toLowerCase();
 
     const allowedOrigins = new Set<string>();
 

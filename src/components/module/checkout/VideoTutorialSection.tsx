@@ -9,28 +9,37 @@ export function toYouTubeEmbedUrl(rawUrl: string | undefined | null): string {
   const value = rawUrl?.trim();
   if (!value) return "";
 
+  const idPattern = /^[A-Za-z0-9_-]{11}$/;
   try {
     const url = new URL(value);
 
     if (url.hostname === "youtu.be") {
       const id = url.pathname.slice(1).split("/")[0];
-      if (id) return `https://www.youtube.com/embed/${id}`;
+      if (id && idPattern.test(id)) return `https://www.youtube.com/embed/${id}`;
+      return "";
     }
 
     if (url.hostname.endsWith("youtube.com")) {
       if (url.pathname.startsWith("/embed/")) {
-        return `https://www.youtube.com/embed/${url.pathname.split("/")[2]}`;
+        const id = url.pathname.split("/")[2];
+        if (id && idPattern.test(id)) return `https://www.youtube.com/embed/${id}`;
+        return "";
       }
       if (url.pathname.startsWith("/shorts/")) {
-        return `https://www.youtube.com/embed/${url.pathname.split("/")[2]}`;
+        const id = url.pathname.split("/")[2];
+        if (id && idPattern.test(id)) return `https://www.youtube.com/embed/${id}`;
+        return "";
       }
       const v = url.searchParams.get("v");
-      if (v) return `https://www.youtube.com/embed/${v}`;
+      if (v && idPattern.test(v)) return `https://www.youtube.com/embed/${v}`;
+      return "";
     }
   } catch {
   }
 
-  return value;
+  // Non-YouTube input is rejected: embedding it verbatim would turn a
+  // mistyped CMS URL into an arbitrary iframe.
+  return "";
 }
 
 interface VideoTutorialSectionProps {

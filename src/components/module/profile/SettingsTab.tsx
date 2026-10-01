@@ -110,7 +110,9 @@ export function SettingsTab() {
             const result = await authServerApi.changePassword({
                 currentPassword,
                 newPassword,
-                revokeOtherSessions: false,
+                // A password change implies possible compromise: revoke all
+                // other sessions so a stolen session does not survive it.
+                revokeOtherSessions: true,
             });
 
             if (result.error) {

@@ -47,7 +47,7 @@ export default function CourseResourcesTab({ resources }: { resources: Resource[
                             <p className="text-xs text-white/30 mb-2">
                                 {resource.moduleTitle} → {resource.lessonTitle}
                             </p>
-                            {resource.type === "link" && resource.url && (
+                            {resource.type === "link" && resource.url && /^https?:\/\//i.test(resource.url) && (
                                 <a
                                     href={resource.url}
                                     target="_blank"

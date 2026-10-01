@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { useParams, useRouter } from 'next/navigation';
 import { useGetBatchByIdQuery, useUpdateBatchMutation, type CourseInfo } from '@/redux/api/batchApi';
 import { Loader2 } from 'lucide-react';
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 const batchSchema = z.object({
     title: z.string().min(1, "Title is required"),
@@ -50,6 +51,9 @@ export default function BatchEdit() {
     const { data: batch, isLoading, error } = useGetBatchByIdQuery(batchId);
     const { data: coursesData, isLoading: coursesLoading } = useGetAllCoursesQuery({ status: "published" });
     const [updateBatch, { isLoading: isUpdating }] = useUpdateBatchMutation();
+    // Price changes don't reprice past payments: hold the validated values
+    // here and confirm explicitly when the batch already has enrollments.
+    const [pendingUpdate, setPendingUpdate] = useState<BatchFormValues | null>(null);
 
     const courses = coursesData?.data || [];
     const courseOptions = courses.map((c: { _id: string; title: string }) => ({ value: c._id, label: c.title }));
@@ -95,6 +99,25 @@ export default function BatchEdit() {
     }, [batch, form]);
 
     const onSubmit = async (data: BatchFormValues) => {
+        // Price changes don't reprice past payments: confirm explicitly when
+        // the batch already has enrollments.
+        const current = batch?.data as
+            | { price?: number; manualPaymentPrice?: number; currentEnrollment?: number }
+            | undefined;
+        const priceChanged =
+            (current?.price !== undefined && Number(data.price) !== current.price) ||
+            (data.manualPaymentPrice !== undefined &&
+                data.manualPaymentPrice !== "" &&
+                current?.manualPaymentPrice !== undefined &&
+                Number(data.manualPaymentPrice) !== current.manualPaymentPrice);
+        if (priceChanged && (current?.currentEnrollment ?? 0) > 0) {
+            setPendingUpdate(data);
+            return;
+        }
+        await doUpdate(data);
+    };
+
+    const doUpdate = async (data: BatchFormValues) => {
         const batchData = {
             title: data.title,
             price: Number(data.price),
@@ -111,6 +134,7 @@ export default function BatchEdit() {
         try {
             await updateBatch({ id: batchId, data: batchData }).unwrap();
             toast.success("Batch updated successfully");
+            setPendingUpdate(null);
             router.push('/dashboard/admin/batch');
         } catch (err: unknown) {
             const error = err as { data?: { message?: string } };
@@ -148,7 +172,10 @@ export default function BatchEdit() {
         );
     }
 
+    const batchEnrollmentCount = (batch?.data as { currentEnrollment?: number } | undefined)?.currentEnrollment ?? 0;
+
     return (
+        <>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -207,5 +234,16 @@ export default function BatchEdit() {
                 </div>
             </form>
         </Form>
+        <ConfirmDialog
+            open={pendingUpdate !== null}
+            onOpenChange={(open) => { if (!open) setPendingUpdate(null); }}
+            title="Change batch price?"
+            description={`This batch already has ${batchEnrollmentCount} enrollment(s). Changing the price does NOT reprice past payments — existing payers keep their old price.`}
+            confirmLabel="Update Anyway"
+            variant="default"
+            confirming={isUpdating}
+            onConfirm={() => { if (pendingUpdate) void doUpdate(pendingUpdate); }}
+        />
+        </>
     );
 }

@@ -9,6 +9,7 @@ import { useCurrentBatch } from '@/hooks/useCurrentBatch';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import { v4 as uuid } from "uuid";
 import { track } from '@/lib/metaPixel';
+import { hasGrantedConsent } from '@/lib/consent';
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { isWindowOpen } from './_components/CourseEnrollmentCard';
 import EnrollmentNotOpenModal from './_components/EnrollmentNotOpenModal';
@@ -38,11 +39,11 @@ function CheckoutContent() {
     const hasTracked = useRef(false);
     const [openModal, setOpenModal] = useState(false);
 
-    const { course, batch, isLoading: allLoading } = useCurrentBatch();
+    const { course, batch, isLoading: allLoading, serverTimestamp } = useCurrentBatch();
 
     const enrollmentStart = batch?.enrollmentStartDate as string | undefined;
     const enrollmentEnd = batch?.enrollmentEndDate as string | undefined;
-    const enrollmentRunning = isWindowOpen(enrollmentStart, enrollmentEnd);
+    const enrollmentRunning = isWindowOpen(enrollmentStart, enrollmentEnd, serverTimestamp);
 
     const courseFee = (batch?.price as number) ?? (course?.price as number);
     const courseTitle = (course?.name as string) ?? 'MISUN Academy Course Enrollment';
@@ -57,6 +58,9 @@ function CheckoutContent() {
     useEffect(() => {
         if (!user?.email) return;
         if (hasTracked.current) return;
+        // Marketing events require opt-in consent; the track() helper
+        // no-ops without it, and the CAPI call is skipped here too.
+        if (!hasGrantedConsent()) return;
         hasTracked.current = true;
         const eventId = uuid();
         const knownFee = typeof courseFee === 'number' ? courseFee : undefined;

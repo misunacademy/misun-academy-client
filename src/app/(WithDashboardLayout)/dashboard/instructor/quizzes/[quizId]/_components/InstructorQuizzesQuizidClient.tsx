@@ -23,6 +23,7 @@ import { ContentBlockDisplay } from "@/components/quiz/ContentBlockDisplay";
 import { QuestionDialog } from "@/components/quiz/QuestionDialog";
 import { QuestionFormValue } from "@/components/quiz/QuestionForm";
 import { getApiErrorMessage } from "@/lib/api-helpers";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 export default function QuizDetailPage({ params }: { params: Promise<{ quizId: string }> }) {
     const router = useRouter();
@@ -41,6 +42,8 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingQuestion, setEditingQuestion] = useState<IQuestion | null>(null);
+    const [questionToDelete, setQuestionToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const openAddDialog = () => {
         setEditingQuestion(null);
@@ -67,12 +70,17 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
         }
     };
 
-    const handleDelete = async (questionId: string) => {
+    const handleDelete = async () => {
+        if (!questionToDelete) return;
+        setIsDeleting(true);
         try {
-            await deleteQuestion(questionId).unwrap();
+            await deleteQuestion(questionToDelete).unwrap();
             toast.success("Question deleted");
+            setQuestionToDelete(null);
         } catch {
             toast.error("Failed to delete question");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -126,6 +134,7 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
     if (quizLoading) return <div className="p-8">Loading quiz...</div>;
 
     return (
+        <>
         <DashboardPageContainer
             heading={quiz?.title || "Quiz Details"}
             subheading={`${quiz?.totalQuestions || 0} questions · ${quiz?.totalMarks || 0} marks${quiz?.timeLimit ? ` · ${quiz.timeLimit} min` : ""}`}
@@ -263,7 +272,8 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-8 w-8"
-                                                            onClick={() => handleDelete(question._id)}
+                                                            aria-label={`Delete question ${index + 1}`}
+                                                            onClick={() => setQuestionToDelete(question._id)}
                                                         >
                                                             <Trash2 className="h-4 w-4 text-red-500" />
                                                         </Button>
@@ -284,8 +294,18 @@ export default function QuizDetailPage({ params }: { params: Promise<{ quizId: s
                         onSave={handleSaveQuestion}
                         isSaving={isCreating || isUpdating}
                     />
+                    <ConfirmDialog
+                        open={questionToDelete !== null}
+                        onOpenChange={(open) => { if (!open) setQuestionToDelete(null); }}
+                        title="Delete this question?"
+                        description="This cannot be undone."
+                        confirmLabel="Delete Question"
+                        confirming={isDeleting}
+                        onConfirm={handleDelete}
+                    />
                 </div>
             }
         />
+        </>
     );
 }

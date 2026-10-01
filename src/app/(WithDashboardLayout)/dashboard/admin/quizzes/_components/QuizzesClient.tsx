@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,7 @@ import {
     PaginationEllipsis,
 } from "@/components/ui/pagination";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { useGetAllQuizzesQuery, useDeleteQuizMutation } from "@/redux/api/quizApi";
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { IAdminQuizResponse, IAdminQuizStats } from "@/types/quiz";
@@ -33,6 +34,7 @@ import Link from "next/link";
 export default function AdminQuizzes() {
     const router = useRouter();
     const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [courseFilter, setCourseFilter] = useState<string>("all");
     const [page, setPage] = useState(1);
@@ -40,8 +42,13 @@ export default function AdminQuizzes() {
     const { data: coursesData } = useGetAllCoursesQuery({});
     const courses = (coursesData?.data || []) as Course[];
 
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(search), 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
     const { data, isLoading } = useGetAllQuizzesQuery({
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined,
         courseId: courseFilter !== "all" ? courseFilter : undefined,
         page,
@@ -49,6 +56,8 @@ export default function AdminQuizzes() {
     });
 
     const [deleteQuiz] = useDeleteQuizMutation();
+    const [quizToDelete, setQuizToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const quizzes: IAdminQuizResponse[] = data?.data?.quizzes || [];
     const stats: IAdminQuizStats = data?.data?.stats || {
@@ -60,16 +69,22 @@ export default function AdminQuizzes() {
     };
     const meta = data?.meta || { page: 1, limit: 15, total: 0, totalPages: 0 };
 
-    const handleDelete = async (quizId: string) => {
+    const handleDelete = async () => {
+        if (!quizToDelete) return;
+        setIsDeleting(true);
         try {
-            await deleteQuiz(quizId).unwrap();
+            await deleteQuiz(quizToDelete).unwrap();
             toast.success("Quiz deleted successfully");
+            setQuizToDelete(null);
         } catch (err) {
             toast.error((err as Error)?.message || "Failed to delete quiz");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
     return (
+        <>
         <DashboardPageContainer
             heading="Quiz Management"
             subheading={`${stats.totalQuizzes} quizzes across all courses`}
@@ -240,7 +255,8 @@ export default function AdminQuizzes() {
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-8 w-8"
-                                                            onClick={() => handleDelete(quiz._id)}
+                                                            aria-label={`Delete quiz ${quiz.title}`}
+                                                            onClick={() => setQuizToDelete(quiz._id)}
                                                         >
                                                             <Trash2 className="h-4 w-4 text-red-500" />
                                                         </Button>
@@ -289,5 +305,15 @@ export default function AdminQuizzes() {
                 </div>
             }
         />
+        <ConfirmDialog
+            open={quizToDelete !== null}
+            onOpenChange={(open) => { if (!open) setQuizToDelete(null); }}
+            title="Delete this quiz?"
+            description="Its questions will be permanently removed (past attempt records are kept). This cannot be undone."
+            confirmLabel="Delete Quiz"
+            confirming={isDeleting}
+            onConfirm={handleDelete}
+        />
+        </>
     );
 }

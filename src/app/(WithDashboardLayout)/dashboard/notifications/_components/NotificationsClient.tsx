@@ -7,6 +7,7 @@ import { useGetNotificationsQuery, useMarkAsReadMutation, useMarkAllAsReadMutati
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { useSocketContext } from "@/providers/SocketProvider";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 const typeIcons: Record<string, string> = {
   enrollment: "text-blue-500",
@@ -47,6 +48,8 @@ export default function NotificationsPage() {
   const [deleteNotification] = useDeleteNotificationMutation();
   const [deleteAllNotifications] = useDeleteAllNotificationsMutation();
   const { unreadCount } = useSocketContext();
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   const notifications = data?.data || [];
   const meta = data?.meta;
@@ -70,13 +73,27 @@ export default function NotificationsPage() {
   };
 
   const handleDeleteAll = async () => {
+    setIsClearing(true);
     try {
       await deleteAllNotifications().unwrap();
+      setConfirmClearAll(false);
     } catch {}
+    finally {
+      setIsClearing(false);
+    }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
+      <ConfirmDialog
+        open={confirmClearAll}
+        onOpenChange={setConfirmClearAll}
+        title="Delete ALL notifications?"
+        description="This cannot be undone."
+        confirmLabel="Delete All"
+        confirming={isClearing}
+        onConfirm={() => { void handleDeleteAll(); }}
+      />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold">Notifications</h2>
@@ -108,7 +125,7 @@ export default function NotificationsPage() {
             </Button>
           )}
           {notifications.length > 0 && (
-            <Button variant="outline" size="sm" onClick={handleDeleteAll}>
+            <Button variant="outline" size="sm" onClick={() => setConfirmClearAll(true)}>
               <Trash2 className="h-4 w-4 mr-1" />
               Clear all
             </Button>

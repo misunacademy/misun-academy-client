@@ -194,6 +194,14 @@ export default function AdminReports() {
     batchWiseIncome: { batchTitle: string; totalEnrollments: number; totalIncome: number }[];
     dailyStats: { date: string; enrollments: number; revenue: number }[];
   }) => {
+    // CSV formula injection guard: titles are admin-controlled text that
+    // Excel would execute when starting with =,+,-,@.
+    const cell = (v: string | number) => {
+      const s = String(v);
+      const needsQuote = /[",\n]/.test(s) || /^[=+\-@\t]/.test(s);
+      const safe = /^[=+\-@\t]/.test(s) ? `'${s}` : s;
+      return needsQuote ? `"${safe.replace(/"/g, '""')}"` : safe;
+    };
     let csv = 'Academy Reports\n';
     csv += `Period: ${data.period}\n`;
     csv += `Course: ${data.course}\n`;
@@ -208,14 +216,14 @@ export default function AdminReports() {
     csv += 'Course-wise Statistics\n';
     csv += 'Course,Enrollments,Revenue\n';
     data.courseWiseStats.forEach((course) => {
-      csv += `"${course.courseTitle}",${course.totalEnrollments},"BDT ${course.totalIncome}"\n`;
+      csv += `${cell(course.courseTitle)},${course.totalEnrollments},"BDT ${course.totalIncome}"\n`;
     });
     csv += '\n';
 
     csv += 'Daily Statistics\n';
     csv += 'Date,Enrollments,Revenue\n';
     data.dailyStats.forEach((day) => {
-      csv += `"${day.date}",${day.enrollments},"BDT ${day.revenue}"\n`;
+      csv += `${cell(day.date)},${day.enrollments},"BDT ${day.revenue}"\n`;
     });
 
     return csv;

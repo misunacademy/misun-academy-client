@@ -341,6 +341,8 @@ const bootcampApi = baseApi.injectEndpoints({
         url: `/bootcamp/slug/${slug}/payment/initiate`,
         method: "POST",
       }),
+      // Refresh purchase lists so the pending purchase appears immediately.
+      invalidatesTags: ["Bootcamp"],
     }),
 
     getMyBootcampPurchases: build.query<{ data: BootcampPurchase[] }, void>({

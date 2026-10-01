@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { v4 as uuid } from 'uuid';
 import { AlertCircle, CheckCircle2, Clock, Loader2, XCircle } from 'lucide-react';
 import { track } from '@/lib/metaPixel';
+import { hasGrantedConsent } from '@/lib/consent';
 import { useAuth } from '@/hooks/useAuth';
 import { useVerifyMyPaymentQuery } from '@/redux/api/paymentApi';
 import { extractApiData } from '@/lib/api-helpers';
@@ -101,6 +102,8 @@ function PurchaseTracker({
 
   useEffect(() => {
     if (!user?.email || !transactionId || hasTracked.current) return;
+    // Marketing events require opt-in consent (track() also no-ops).
+    if (!hasGrantedConsent()) return;
 
     const verification = extractApiData<{
       verified: boolean;
@@ -162,10 +165,9 @@ function PurchaseTracker({
   return null;
 }
 
-function StatusCard() {
+function StatusCard({ effectiveStatus }: { effectiveStatus: StatusKey }) {
   const searchParams = useSearchParams();
-  const statusParam = searchParams?.get('status') || 'failed';
-  const config = statusConfig[statusParam as StatusKey] ?? statusConfig.failed;
+  const config = statusConfig[effectiveStatus] ?? statusConfig.failed;
   const transactionId = searchParams?.get('t');
   const courseSlug = searchParams?.get('course');
 
@@ -205,7 +207,7 @@ function StatusCard() {
         </Button>
       </div>
 
-      {statusParam === 'success' && (
+      {effectiveStatus === 'success' && (
         <PurchaseTracker
           transactionId={transactionId}
           courseSlug={courseSlug}
@@ -230,7 +232,35 @@ function PaymentStatusContent() {
   const searchParams = useSearchParams();
   const statusParam = searchParams?.get('status') || 'failed';
   const courseSlug = searchParams?.get('course');
-  const isSuccess = statusParam === 'success';
+  const transactionId = searchParams?.get('t');
+  const claimedSuccess = statusParam === 'success';
+
+  // Success must be proven, not claimed: ?status=success is trivially
+  // spoofable, so a claimed success with no transaction (or a failed server
+  // verification) renders as failed. Genuine gateway callbacks always carry ?t=.
+  const { data: verifyRaw, isLoading: verifying } = useVerifyMyPaymentQuery(
+    transactionId ?? '',
+    { skip: !claimedSuccess || !transactionId },
+  );
+  const verification = extractApiData<{ verified: boolean }>(verifyRaw);
+  const provenSuccess = claimedSuccess && !!transactionId && verification?.verified === true;
+  const stillVerifying = claimedSuccess && !!transactionId && verification === undefined;
+
+  if (stillVerifying || (claimedSuccess && verifying && verification === undefined)) {
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#0a0f18] via-surface to-surface-darker px-4 py-10 font-bangla sm:py-14">
+        <div className="relative flex min-h-[calc(100vh-10rem)] items-center justify-center">
+          <div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-surface-darker/60 px-6 py-4 text-white/60">
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+            <span className="text-sm">পেমেন্ট যাচাই করা হচ্ছে...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const effectiveStatus: StatusKey = provenSuccess ? 'success' : (claimedSuccess ? 'failed' : (statusParam as StatusKey));
+  const isSuccess = effectiveStatus === 'success';
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#0a0f18] via-surface to-surface-darker px-4 py-10 font-bangla sm:py-14">
@@ -239,7 +269,7 @@ function PaymentStatusContent() {
       {isSuccess ? (
         <div className="relative mx-auto w-full max-w-6xl space-y-8">
           <div className="flex justify-center">
-            <StatusCard />
+            <StatusCard effectiveStatus={effectiveStatus} />
           </div>
           {/* divider between payment confirmation and poster builder */}
           <div className="flex items-center gap-4 px-1 text-[11px] font-medium uppercase tracking-[0.2em] text-white/30">
@@ -251,7 +281,7 @@ function PaymentStatusContent() {
         </div>
       ) : (
         <div className="relative flex min-h-[calc(100vh-10rem)] items-center justify-center">
-          <StatusCard />
+          <StatusCard effectiveStatus={effectiveStatus} />
         </div>
       )}
     </div>

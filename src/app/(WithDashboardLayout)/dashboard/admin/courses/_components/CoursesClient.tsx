@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,6 +10,7 @@ import { Course } from "@/types/common";
 import { useGetAllCoursesQuery, useDeleteCourseMutation } from "@/redux/api/courseApi";
 import { toast } from "sonner";
 import DashboardPageContainer from "@/components/layout/DashboardPageContainer";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 
 
@@ -19,6 +21,8 @@ export default function AdminCourses() {
   const [deleteCourse] = useDeleteCourseMutation();
 
   const courses = (coursesData?.data || []) as Course[];
+  const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleAddNewCourse = () => {
     router.push("/dashboard/admin/courses/new");
@@ -28,20 +32,23 @@ export default function AdminCourses() {
     router.push(`/dashboard/admin/courses/${course._id}`);
   };
 
-  const handleDeleteCourse = async (courseId: string | number | undefined) => {
-    if (!courseId) return;
-    const id = String(courseId);
+  const handleDeleteCourse = async () => {
+    if (!courseToDelete) return;
+    setIsDeleting(true);
     try {
-      await deleteCourse(id).unwrap();
+      await deleteCourse(courseToDelete).unwrap();
       toast.success("Course deleted successfully");
+      setCourseToDelete(null);
       refetch();
     } catch (err) {
       toast.error((err as Error)?.message || "Delete failed");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
-
+    <>
     <DashboardPageContainer
       heading="Courses Management"
       subheading="Manage all courses and their content"
@@ -54,10 +61,20 @@ export default function AdminCourses() {
           <CourseStats />
 
 
-          <CoursesTable courses={courses} onEditCourse={handleEditCourse} onDeleteCourse={(id) => handleDeleteCourse(id)} />
+          <CoursesTable courses={courses} onEditCourse={handleEditCourse} onDeleteCourse={(id) => { if (id) setCourseToDelete(String(id)); }} />
         </>
       }
     />
+    <ConfirmDialog
+      open={courseToDelete !== null}
+      onOpenChange={(open) => { if (!open) setCourseToDelete(null); }}
+      title="Delete this course?"
+      description="Its batches, modules, lessons and quizzes become orphaned. This cannot be undone."
+      confirmLabel="Delete Course"
+      confirming={isDeleting}
+      onConfirm={handleDeleteCourse}
+    />
+    </>
 
   );
 }

@@ -19,6 +19,14 @@ import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import StudentFiltersCard from "@/app/(WithDashboardLayout)/dashboard/admin/student/components/StudentFiltersCard";
 
 const EnrolledStudentTable = () => {
+    // Opt out of React Compiler: TanStack Table's `useReactTable()` returns
+    // fresh function identities every render by design, so the component
+    // cannot be memoized safely (react-hooks/incompatible-library). This is
+    // behavior-preserving — the compiler was already skipping this component
+    // implicitly. No values from `table` flow into memoized children
+    // (StudentFiltersCard receives only primitives and stable setters), so
+    // there is no stale-UI hazard.
+    "use no memo";
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -62,7 +70,7 @@ const EnrolledStudentTable = () => {
             {
                 accessorKey: "studentId",
                 header: "Student ID",
-                cell: ({ row }) => row.original.studentId || row.original.userId || 'N/A',
+                cell: ({ row }) => row.original.studentId || row.original.enrollmentId || row.original.userId || 'N/A',
             },
             {
                 accessorKey: 'studentName',
@@ -83,7 +91,12 @@ const EnrolledStudentTable = () => {
                 id: 'course',
                 header: "Course",
                 cell: ({ row }) => {
-                    const course = row.original.batchId?.courseId;
+                    // Backend `GET /enrollments` returns shaped `course`/`batch`
+                    // objects; fall back to the legacy populated `batchId`
+                    // shape for backward compatibility.
+                    const shaped = row.original.course?.title;
+                    if (shaped) return shaped;
+                    const course = (row.original.batchId as unknown as { courseId?: { title?: string } | string } | undefined)?.courseId;
                     if (!course) return 'N/A';
                     return typeof course === 'string' ? course : course.title || 'N/A';
                 },
@@ -92,7 +105,9 @@ const EnrolledStudentTable = () => {
                 id: 'batch',
                 header: "Batch",
                 cell: ({ row }) => {
-                    const batch = row.original.batchId;
+                    const shaped = row.original.batch?.title;
+                    if (shaped) return shaped;
+                    const batch = row.original.batchId as unknown as { title?: string } | string | undefined;
                     if (!batch) return 'N/A';
                     return typeof batch === 'string' ? batch : batch.title || 'N/A';
                 },
@@ -142,6 +157,7 @@ const EnrolledStudentTable = () => {
         []
     );
 
+    // eslint-disable-next-line react-hooks/incompatible-library -- useReactTable returns unmemoizable functions by design; component opts out via "use no memo" above
     const table = useReactTable({
         data: students,
         columns,

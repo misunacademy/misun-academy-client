@@ -88,6 +88,4 @@ export default async function CourseDetailPage({
       <CourseDetails />
     </>
   );
-
-  notFound();
 }

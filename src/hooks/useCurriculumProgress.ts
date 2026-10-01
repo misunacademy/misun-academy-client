@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { useGetCourseByIdQuery } from "@/redux/api/courseApi";
+import { useGetCourseByIdQuery, useGetClassroomCourseQuery } from "@/redux/api/courseApi";
 import { useGetCourseProgressQuery, useCompleteLessonMutation } from "@/redux/api/courseEnrollmentApi";
 import { useGetEnrollmentsQuery } from "@/redux/api/enrollmentApi";
 import { useGetBatchByIdQuery } from "@/redux/api/batchApi";
@@ -81,6 +81,16 @@ export function useCurriculumProgress() {
   const ready = !!courseId && (!!batchId || !batchResolving);
 
   const { data: course, isLoading: courseLoading } = useGetCourseByIdQuery({ id: courseId, batchId }, { skip: !ready });
+  // Classroom assembly WITH watchable lesson content. The public query above
+  // is syllabus-only by design; this one 403s unless the caller holds an
+  // Active/Completed enrollment (verified server-side).
+  const { data: classroomCourse, isLoading: classroomLoading } = useGetClassroomCourseQuery(
+    { id: courseId, batchId },
+    { skip: !ready || !batchId }
+  );
+  // Prefer classroom content when available; fall back to the public
+  // syllabus (e.g. unenrolled preview) so the page never blanks.
+  const effectiveCourse = ((classroomCourse as unknown) ?? course) as typeof course;
   const { data: progressData, isLoading: progressLoading, refetch: refetchProgress } = useGetCourseProgressQuery(
     { courseId, batchId },
     { skip: !ready }
@@ -88,7 +98,7 @@ export function useCurriculumProgress() {
   const progress: CourseProgress | undefined = progressData?.data as CourseProgress | undefined;
   const [completeLesson] = useCompleteLessonMutation();
 
-  const curriculum: ModuleType[] = useMemo(() => (course?.curriculum as ModuleType[]) || [], [course?.curriculum]);
+  const curriculum: ModuleType[] = useMemo(() => (effectiveCourse?.curriculum as ModuleType[]) || [], [effectiveCourse?.curriculum]);
 
   const { data: batchData } = useGetBatchByIdQuery(batchId || "", { skip: !batchId });
   const isBatchCompleted = batchData?.data?.status === "completed";
@@ -140,13 +150,13 @@ export function useCurriculumProgress() {
     )
   ) || [];
 
-  const instructorName = typeof course?.instructor === "string" ? course?.instructor : "Instructor";
+  const instructorName = typeof effectiveCourse?.instructor === "string" ? effectiveCourse?.instructor : "Instructor";
   // While the batch is still resolving the queries above are skipped — keep
   // reporting loading so the page doesn't flash "course not found".
-  const isLoading = courseLoading || progressLoading || batchResolving;
+  const isLoading = courseLoading || classroomLoading || progressLoading || batchResolving;
 
   return {
-    course,
+    course: effectiveCourse,
     courseId,
     batchId,
     isLoading,

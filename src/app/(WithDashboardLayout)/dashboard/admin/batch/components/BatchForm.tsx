@@ -103,8 +103,16 @@ export function BatchForm({ mode, courses, coursesLoading, defaultValues, onCanc
       }
       onSuccess();
     } catch (err: unknown) {
-      const error = err as { data?: { message?: string } };
-      toast.error(error?.data?.message || (mode === 'edit' ? "Failed to update batch" : "Failed to create batch"));
+      const error = err as { data?: { message?: string; errorMessages?: { path?: string; message?: string }[] } };
+      // Surface per-field server validation (e.g. missing dates) instead of
+      // the generic "Validation Error" envelope so users know what to fix.
+      // This also covers values filled by browser autofill, which bypass
+      // React's onChange and can otherwise fail silently.
+      const details = error?.data?.errorMessages
+        ?.map((e) => e.message)
+        .filter(Boolean)
+        .join("; ");
+      toast.error(details || error?.data?.message || (mode === 'edit' ? "Failed to update batch" : "Failed to create batch"));
     }
   };
 

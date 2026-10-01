@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, type ChangeEvent } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react"
 import { useForm, FormProvider, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -16,22 +16,31 @@ import { CommunityLinksTab } from "./CommunityLinksTab"
 import { PopupBannerTab } from "./PopupBannerTab"
 import { HomeVideoTab } from "./HomeVideoTab"
 import { PaymentTutorialTab } from "./PaymentTutorialTab"
+import ConfirmDialog from "@/components/shared/ConfirmDialog"
+
+// Mirrors the server schema (http(s) URLs only): "" means "unset" and is
+// allowed client-side, but anything non-empty must be a valid URL so the
+// server doesn't 400 the whole save.
+const optionalHttpUrl = z.string().refine(
+  (v) => v === "" || (/^https?:\/\//i.test(v) && z.string().url().safeParse(v).success),
+  { message: "Must be a valid http(s) URL" }
+).optional();
 
 const settingsSchema = z.object({
   popupEnabled: z.boolean(),
-  popupImageUrl: z.string().optional(),
-  popupLink: z.string().optional(),
+  popupImageUrl: optionalHttpUrl,
+  popupLink: optionalHttpUrl,
   maintenanceEnabled: z.boolean(),
-  maintenanceTitle: z.string().optional(),
-  maintenanceMessage: z.string().optional(),
-  maFacebookGroupLink: z.string().optional(),
-  maWhatsappGroupLink: z.string().optional(),
-  epFacebookGroupLink: z.string().optional(),
-  epWhatsappGroupLink: z.string().optional(),
-  homeWhyVideoUrl: z.string().optional(),
-  epHomeWhyVideoUrl: z.string().optional(),
-  maPaymentTutorialVideoUrl: z.string().optional(),
-  epPaymentTutorialVideoUrl: z.string().optional(),
+  maintenanceTitle: z.string().max(200).optional(),
+  maintenanceMessage: z.string().max(2000).optional(),
+  maFacebookGroupLink: optionalHttpUrl,
+  maWhatsappGroupLink: optionalHttpUrl,
+  epFacebookGroupLink: optionalHttpUrl,
+  epWhatsappGroupLink: optionalHttpUrl,
+  homeWhyVideoUrl: z.string().max(2048).optional(),
+  epHomeWhyVideoUrl: z.string().max(2048).optional(),
+  maPaymentTutorialVideoUrl: z.string().max(2048).optional(),
+  epPaymentTutorialVideoUrl: z.string().max(2048).optional(),
 })
 
 type SettingsFormValues = z.infer<typeof settingsSchema>
@@ -43,6 +52,9 @@ export default function AdminSettingsContent() {
   const profileFileInputRef = useRef<HTMLInputElement>(null)
   const { user, updateUserProfile } = useAuth()
   const [updateProfile, { isLoading: profileUpdateLoading }] = useUpdateUserProfileMutation()
+  // Pending maintenance toggle awaiting confirmation in the dialog below.
+  const [pendingMaintenance, setPendingMaintenance] = useState<boolean | null>(null)
+  const [isTogglingMaintenance, setIsTogglingMaintenance] = useState(false)
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema) as Resolver<SettingsFormValues>,
@@ -67,8 +79,10 @@ export default function AdminSettingsContent() {
   useEffect(() => {
     if (!hasSettings) return
 
+    // No settings doc yet: leave the form on defaults. The first explicit
+    // save creates it via upsert — never auto-write empty strings on view
+    // ("" fails URL validation and would poison the doc).
     if (!settingsData?.data) {
-      updateSettings(form.getValues()).unwrap().catch(() => {})
       return
     }
 
@@ -114,15 +128,26 @@ export default function AdminSettingsContent() {
   }, [form, updateSettings])
 
   const handleMaintenanceEnabledChange = useCallback(async (value: boolean) => {
+    // Confirm first — the switch stays untouched until the user approves.
+    setPendingMaintenance(value)
+  }, [])
+
+  const handleConfirmMaintenanceChange = useCallback(async () => {
+    if (pendingMaintenance === null) return
+    const value = pendingMaintenance
+    setIsTogglingMaintenance(true)
     form.setValue("maintenanceEnabled", value)
     try {
       const current = form.getValues()
       await updateSettings({ ...current, maintenanceEnabled: value }).unwrap()
       toast.success(`Maintenance mode ${value ? "enabled" : "disabled"}`)
+      setPendingMaintenance(null)
     } catch {
       toast.error("Unable to update maintenance mode")
+    } finally {
+      setIsTogglingMaintenance(false)
     }
-  }, [form, updateSettings])
+  }, [form, pendingMaintenance, updateSettings])
 
   const onBannerFileChange = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -227,6 +252,16 @@ export default function AdminSettingsContent() {
         </div>
         <DashboardPageTabs defaultValue="profile" triggers={tabTriggers} contents={tabContents} />
       </div>
+      <ConfirmDialog
+        open={pendingMaintenance !== null}
+        onOpenChange={(open) => { if (!open) setPendingMaintenance(null); }}
+        title={pendingMaintenance ? "Enable maintenance mode?" : "Disable maintenance mode?"}
+        description={pendingMaintenance ? "ALL learners will be locked out of the site." : "The public site will become accessible again."}
+        confirmLabel={pendingMaintenance ? "Enable" : "Disable"}
+        variant={pendingMaintenance ? "destructive" : "default"}
+        confirming={isTogglingMaintenance}
+        onConfirm={() => { void handleConfirmMaintenanceChange(); }}
+      />
     </FormProvider>
   )
 }

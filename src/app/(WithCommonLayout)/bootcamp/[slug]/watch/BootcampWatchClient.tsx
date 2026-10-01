@@ -113,7 +113,31 @@ export default function BootcampWatchClient() {
 
     const bootcamp = data.data;
 
-    if (!hasPurchased || videosError) {
+    // A failed videos fetch is a network/server problem, not proof of
+    // non-purchase — report it distinctly instead of a "buy first" paywall.
+    if (hasPurchased && videosError) {
+        return (
+            <main className="bg-[#0a0a0b] text-white">
+                <div className="mx-auto max-w-3xl px-4 py-20 text-center">
+                    <Video className="mx-auto h-10 w-10 text-white/30" />
+                    <h1 className="mt-4 font-bangla text-2xl font-bold">
+                        {bootcamp.title} {bootcamp.season}
+                    </h1>
+                    <p className="mt-2 font-bangla text-sm text-white/60">
+                        ভিডিও লোড করা যাচ্ছে না। ইন্টারনেট চেক করে আবার চেষ্টা করুন।
+                    </p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="mt-6 inline-block rounded-xl bg-[#ffd60a] px-6 py-3 font-bangla font-bold text-black"
+                    >
+                        আবার চেষ্টা করুন
+                    </button>
+                </div>
+            </main>
+        );
+    }
+
+    if (!hasPurchased) {
         return (
             <main className="bg-[#0a0a0b] text-white">
                 <div className="mx-auto max-w-3xl px-4 py-20 text-center">

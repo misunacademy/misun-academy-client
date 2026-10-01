@@ -64,6 +64,7 @@ export default function EnrollmentCheckout({ courseSlug }: { courseSlug?: string
                     onPaymentComplete={handleManualPaymentComplete}
                     manualAmount={manualPaymentAmount}
                     manualCurrency={manualPaymentCurrency}
+                    isSubmitting={isProcessing}
                     batch={resolveBatchRef(batch)}
                   />
                 )}
