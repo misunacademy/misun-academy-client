@@ -158,8 +158,6 @@ export default function AdminUsers() {
   const roleRows = roleStatsData?.data?.roles || [];
   const countFor = (role: string) =>
     roleRows.find((r) => r.role?.toLowerCase() === role)?.count ?? 0;
-  const activeFor = (role: string) =>
-    roleRows.find((r) => r.role?.toLowerCase() === role)?.active ?? 0;
   const globalActiveCount = roleRows.reduce((sum, r) => sum + (r.active ?? 0), 0);
 
   const getRoleBadgeVariant = useCallback((role: string): "default" | "secondary" | "destructive" | "outline" => {

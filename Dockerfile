@@ -10,7 +10,7 @@ COPY Esun-Point-Client/package.json ./Esun-Point-Client/package.json
 RUN pnpm install --frozen-lockfile
 
 FROM base AS dev
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 COPY . .
 EXPOSE 3000
 ENTRYPOINT ["/sbin/tini", "--"]
