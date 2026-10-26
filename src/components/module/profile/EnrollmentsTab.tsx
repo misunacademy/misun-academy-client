@@ -59,11 +59,9 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
                 {
                     hasEnrollments &&
                     <div className="hidden md:block">
-                        <Link href="/enrollment-posters" className="">
-                            <Button variant={"outline"} className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-xs">
-                                Get Your Enrollment Posters
-                            </Button>
-                        </Link>
+                        <Button asChild variant={"outline"} className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-xs">
+                            <Link href="/enrollment-posters">Get Your Enrollment Posters</Link>
+                        </Button>
                     </div>
                 }
             </div>

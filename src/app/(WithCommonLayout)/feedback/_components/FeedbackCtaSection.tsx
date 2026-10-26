@@ -40,16 +40,16 @@ export default function FeedbackCtaSection() {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
                             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
                         </span>
-                        <span className="text-xs font-semibold uppercase text-primary/90">এখনই যোগ দিন</span>
+                        <span className="text-xs font-semibold text-primary-glow">এখনই যোগ দিন</span>
                     </div>
 
-                    <h3 className="text-2xl md:text-4xl font-bold leading-[145%] mb-5">
-                        <span className="bg-gradient-to-r from-white via-white/95 to-white/85 bg-clip-text text-transparent pt-4">আপনিও কি আপনার </span>
-                        <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.5)]">স্বপ্নের যাত্রা</span>
-                        <span className="bg-gradient-to-r from-white via-white/95 to-white/85 bg-clip-text text-transparent"> শুরু করতে প্রস্তুত?</span>
+                    <h3 className="text-2xl md:text-4xl font-bold leading-[1.45] mb-5 text-white">
+                        <span className="text-white pt-4">আপনিও কি আপনার </span>
+                        <span className="text-primary-glow">স্বপ্নের যাত্রা</span>
+                        <span className="text-white"> শুরু করতে প্রস্তুত?</span>
                     </h3>
 
-                    <p className="text-white/50 mb-10 max-w-2xl mx-auto leading-relaxed text-base">
+                    <p className="readable-body mb-10 max-w-2xl mx-auto">
                         MISUN Academy-র কম্প্রিহেনসিভ গ্রাফিক ডিজাইন প্রোগ্রাম-এ যুক্ত হয়ে আপনার ক্যারিয়ারে বিপ্লব আনুন।
                         হাজারো সফল শিক্ষার্থীর মতো আপনিও হয়ে উঠুন একজন দক্ষ ডিজাইনার।
                     </p>
@@ -65,36 +65,31 @@ export default function FeedbackCtaSection() {
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link href="/checkout">
-                            <div className="inline-block relative p-[1.5px] rounded-xl overflow-hidden">
+                        <Link href="/checkout" className="relative inline-block overflow-hidden rounded-xl p-[1.5px]">
                                 <AnimatedBorder variant="simple" speed="3s" />
-                                <button className="relative inline-flex items-center gap-2 bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
-                                    hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
-                                    transition-all duration-300 text-white font-bold text-base
+                                <span className="relative inline-flex items-center justify-center gap-2 min-h-[44px] bg-primary
+                                    hover:bg-primary/90
+                                    transition-all duration-300 text-primary-foreground font-bold text-base
                                     px-8 py-3.5 rounded-xl
-                                    shadow-[0_0_24px_hsl(156_70%_42%/0.4)] hover:shadow-[0_0_36px_hsl(156_70%_42%/0.6)]
-                                    cursor-pointer"
+                                    shadow-[0_0_24px_hsl(156_70%_42%/0.4)] hover:shadow-[0_0_36px_hsl(156_70%_42%/0.6)]"
                                 >
                                     <Award className="w-4 h-4" />
                                     এখনই ভর্তি হন
-                                </button>
-                            </div>
+                                </span>
                         </Link>
 
-                        <Link href="/courses">
-                            <button className="inline-flex items-center gap-2
-                                bg-surface border border-primary/30 text-white/70
-                                hover:border-primary/60 hover:text-white
+                        <Link href="/course-details" className="inline-flex items-center justify-center gap-2 min-h-[44px]
+                                bg-surface border border-primary/30 text-white
+                                hover:border-primary/60
                                 transition-all duration-300
-                                px-8 py-3.5 rounded-xl text-base font-semibold cursor-pointer"
-                            >
+                                px-8 py-3.5 rounded-xl text-base font-semibold"
+                        >
                                 <Heart className="w-4 h-4 text-primary/70" />
                                 বিস্তারিত জানুন
-                            </button>
                         </Link>
                     </div>
 
-                    <p className="mt-10 text-xs text-white/30 tracking-wide">✨ সাপোর্ট • ✨ জব প্লেসমেন্ট সহায়তা</p>
+                    <p className="mt-10 readable-micro-label">সাপোর্ট • জব প্লেসমেন্ট সহায়তা</p>
                 </div>
             </div>
         </section>

@@ -197,12 +197,12 @@ const ModuleCard = ({
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-medium">Quizzes</h4>
-                <Link href={`/dashboard/admin/quizzes/create?moduleId=${module._id}`}>
-                  <Button variant="outline" size="sm">
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/dashboard/admin/quizzes/create?moduleId=${module._id}`}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Quiz
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
 
               {quizzes.length === 0 ? (
@@ -229,11 +229,11 @@ const ModuleCard = ({
                         <Badge variant={quiz.status === 'published' ? 'default' : 'secondary'} className="text-xs">
                           {quiz.status}
                         </Badge>
-                        <Link href={`/dashboard/admin/quizzes/${quiz._id}`}>
-                          <Button variant="ghost" size="sm">
+                        <Button asChild variant="ghost" size="sm">
+                          <Link href={`/dashboard/admin/quizzes/${quiz._id}`}>
                             <Edit className="h-3 w-3" />
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                       </div>
                     </div>
                   ))}

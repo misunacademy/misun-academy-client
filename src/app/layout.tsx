@@ -5,23 +5,34 @@ import MetaPixelPageViewTracker from '@/components/analytics/MetaPixelPageViewTr
 import ConsentAwareTracking from '@/components/analytics/ConsentAwareTracking';
 import ConsentBanner from '@/components/analytics/ConsentBanner';
 import type { Metadata } from 'next';
-import { Hind_Siliguri, Mona_Sans } from 'next/font/google';
+import localFont from "next/font/local";
 import OrganizationJsonLd from '@/components/seo/OrganizationJsonLd';
 import WebSiteJsonLd from '@/components/seo/WebSiteJsonLd';
 import './globals.css';
 import '../bones/registry';
 
-const monaSans = Mona_Sans({
-  variable: '--font-mona-sans',
-  subsets: ['latin'],
+const unBangla = localFont({
+  src: [
+    {
+      path: "../../public/fonts/UNBangla-Thin.woff2",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/UNBangla-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/UNBangla-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-un-bangla",
+  display: "swap",
 });
 
-const hindSiliguri = Hind_Siliguri({
-  subsets: ['bengali'],
-  weight: ['400', '700'],
-  variable: '--font-bangla',
-  display: 'optional',
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.misun-academy.com'),
@@ -42,7 +53,7 @@ export default function RootLayout({
   const pixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;
 
   return (
-    <html lang="bn" className={`${monaSans.variable} ${hindSiliguri.variable}`}>
+    <html lang="bn" className={unBangla.variable}>
       <head>
         <OrganizationJsonLd />
         <WebSiteJsonLd />

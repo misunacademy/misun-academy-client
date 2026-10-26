@@ -26,7 +26,7 @@ export function DetailHero({ bootcamp, hasPurchased, onBuy, watchUrl }: Props) {
   return (
     <section className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(255,214,10,0.08),transparent)]" />
-      <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-12 pt-10 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 pb-12 pt-10 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
           <p className="font-bangla text-sm font-semibold tracking-wide text-white/60">
             বুটক্যাম্প রেকর্ডিং • {bootcamp.season}

@@ -101,7 +101,7 @@ function SectionLabel({
     <div className="flex items-center gap-2 mb-4">
       <Icon size={12} style={{ color: config.color }} />
       <span
-        className="text-[10px] tracking-[0.2em] uppercase font-semibold font-monaExpanded"
+        className="text-[11px] tracking-[0.18em] uppercase font-semibold font-monaExpanded"
         style={{ color: config.color }}
       >
         {label}
@@ -160,23 +160,23 @@ function PanelHeader({
             </span>
           </div>
           <span
-            className="text-[10px] tracking-[0.2em] uppercase font-semibold font-monaExpanded"
+            className="text-[11px] tracking-[0.18em] uppercase font-semibold font-monaExpanded"
             style={{ color: config.color }}
           >
             {course.level ?? "Curriculum"}
           </span>
           <span className="relative flex h-1.5 w-1.5">
             <span
-              className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60"
+              className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full opacity-60" aria-hidden="true"
               style={{ background: config.color }}
             />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: config.color }} />
           </span>
         </div>
-        <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-white via-white to-white/60 bg-clip-text text-transparent">
+        <h3 className="text-2xl sm:text-3xl font-bold text-white">
           {course.title}
         </h3>
-        <p className="text-sm text-white/45 mt-0.5">{course.description}</p>
+        <p className="text-sm text-white/75 mt-0.5">{course.description}</p>
         <div className="flex gap-2 mt-4">
           {[
             { label: `${modules.length}`, sub: "Modules", icon: Layers },
@@ -191,7 +191,7 @@ function PanelHeader({
               <span className="text-base font-black leading-none" style={{ color: config.color }}>
                 {label}
               </span>
-              <span className="text-[9px] text-white/30 tracking-wider uppercase">{sub}</span>
+              <span className="text-[10px] text-white/70 tracking-wider uppercase">{sub}</span>
             </div>
           ))}
         </div>
@@ -242,16 +242,16 @@ function ModulesSection({ modules, config }: { modules: CourseModule[]; config: 
               <div className="relative z-10 flex flex-col gap-1.5">
                 <div className="flex items-center gap-2">
                   <span
-                    className="text-[9px] px-2 py-0.5 rounded-full font-semibold tracking-wide uppercase"
+                    className="text-[10px] px-2 py-0.5 rounded-full font-semibold tracking-wide uppercase"
                     style={{ color: typeStyle.color, background: typeStyle.bg }}
                   >
                     {typeStyle.label}
                   </span>
-                  <span className="text-[10px] text-white/30 flex items-center gap-1">
+                  <span className="text-[11px] text-white/70 flex items-center gap-1">
                     <Clock size={9} /> {mod.duration}
                   </span>
                 </div>
-                <p className="text-[13px] text-white/80 leading-snug pr-10">{mod.title}</p>
+                <p className="text-sm text-white/90 leading-snug pr-10">{mod.title}</p>
               </div>
             </div>
           )
@@ -287,7 +287,7 @@ function ProjectsSection({ projects, config }: { projects: CourseProject[]; conf
               style={{ borderColor: config.color }}
             />
             <div className="flex items-start justify-between gap-3">
-              <p className="text-[12px] text-white/75 leading-snug flex-1">{proj.title}</p>
+              <p className="text-[13px] text-white/90 leading-snug flex-1">{proj.title}</p>
               <span
                 aria-hidden="true"
                 className="shrink-0 text-[11px] font-black italic leading-none mt-0.5"
@@ -297,7 +297,7 @@ function ProjectsSection({ projects, config }: { projects: CourseProject[]; conf
               </span>
             </div>
             <span
-              className="text-[9px] mt-1.5 flex items-center gap-1"
+              className="text-[11px] mt-1.5 flex items-center gap-1"
               style={{ color: config.color }}
             >
               <Clock size={8} /> {proj.duration}

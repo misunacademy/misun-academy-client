@@ -1,12 +1,13 @@
 import Image from "next/image";
 import MithunSarkar from "@/assets/images/Mithun-Sarkar.png";
 import Container from "@/components/ui/container";
+import Counter from "@/components/shared/Counter";
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 
 const stats = [
-    { value: "৬+", label: "বছরের অভিজ্ঞতা" },
-    { value: "৫০০+", label: "প্রজেক্ট ডেলিভারড" },
-    { value: "২০০০+", label: "স্টুডেন্ট রিচড" },
+    { value: 6, suffix: "+", label: "বছরের অভিজ্ঞতা" },
+    { value: 500, suffix: "+", label: "প্রজেক্ট ডেলিভারড" },
+    { value: 2000, suffix: "+", label: "স্টুডেন্ট রিচড" },
 ];
 
 export default function InstructorSection() {
@@ -36,10 +37,10 @@ export default function InstructorSection() {
                 <div className="flex justify-center mb-12">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25">
                         <span className="relative flex h-1.5 w-1.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                            <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" aria-hidden="true" />
                             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
                         </span>
-                        <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">Lead Instructor</span>
+                        <span className="text-xs font-semibold text-primary-glow">Lead Instructor</span>
                     </div>
                 </div>
 
@@ -51,7 +52,7 @@ export default function InstructorSection() {
                         <div className="relative w-80 h-80 sm:w-96 sm:h-96 lg:w-[420px] lg:h-[420px]">
 
                             {/* Enhanced Background Glows */}
-                            <div className="absolute -inset-4 bg-primary/10 blur-3xl rounded-full opacity-50 animate-pulse" />
+                            <div className="absolute -inset-4 bg-primary/10 blur-3xl rounded-full opacity-50 animate-pulse motion-reduce:animate-none" aria-hidden="true" />
 
                             {/* Layer 1 — outermost square, subtle rotation, centered */}
                             <div className="absolute inset-0 rounded-[3rem] rotate-[8deg] scale-[0.88]
@@ -102,14 +103,14 @@ export default function InstructorSection() {
                             </div>
 
                             {/* Floating accent particles */}
-                            <div className="absolute top-1/4 -right-12 space-y-4">
-                                <div className="w-2 h-2 rounded-full bg-primary/60 blur-[1px] animate-pulse" />
-                                <div className="w-1.5 h-1.5 rounded-full bg-primary/30 ml-4 animate-bounce" />
+                            <div className="absolute top-1/4 -right-12 space-y-4" aria-hidden="true">
+                                <div className="w-2 h-2 rounded-full bg-primary/60 blur-[1px] animate-pulse motion-reduce:animate-none" aria-hidden="true" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary/30 ml-4 animate-bounce motion-reduce:animate-none" aria-hidden="true" />
                                 <div className="w-2 h-2 rounded-full bg-primary/40 -ml-2" />
                             </div>
-                            <div className="absolute bottom-1/4 -left-12 space-y-4">
+                            <div className="absolute bottom-1/4 -left-12 space-y-4" aria-hidden="true">
                                 <div className="w-1.5 h-1.5 rounded-full bg-primary/40 blur-[1px]" />
-                                <div className="w-2 h-2 rounded-full bg-primary/60 animate-pulse ml-4" style={{ animationDelay: '0.5s' }} />
+                                <div className="w-2 h-2 rounded-full bg-primary/60 animate-pulse motion-reduce:animate-none ml-4" style={{ animationDelay: '0.5s' }} aria-hidden="true" />
                             </div>
                         </div>
                     </div>
@@ -118,36 +119,32 @@ export default function InstructorSection() {
                     <div className="flex flex-col gap-6">
 
                         {/* Heading */}
-                        <h2 className="text-3xl lg:text-5xl font-bold leading-[140%]">
-                            <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent pt-2">
-                                {/* অভিজ্ঞতা দিয়ে গাইড করা,{" "} */}
-                                সঠিক সিদ্ধান্তে সফল
+                        <h2 className="text-3xl lg:text-5xl font-bold leading-[1.35] text-white">
+                            <span className="text-white pt-2">
+                                Mithun Sarkar
                             </span>
                             <br />
-                            <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.45)] pt-4">
-                                {/* শুধু তত্ত্ব নয়। */}
-                                ক্যারিয়ার
-                            </span>
+                         <p className="text-primary-glow text-lg font-medium">Founder & Lead Instructor of MISUN ACADEMY</p>
                         </h2>
 
                         {/* Quote */}
                         <div className="relative pl-5 border-l-2 border-primary/40">
                             <div className="absolute -left-[5px] top-0 w-2.5 h-2.5 rounded-full bg-primary/60" />
-                            <p className="text-white/55 italic text-base leading-relaxed font-bangla">
+                            <p className="readable-body italic font-bangla">
                                 &ldquo;আমার লক্ষ্য হলো শিক্ষার্থীদের শুধু সফটওয়্যার শেখানো নয়, বরং প্রফেশনাল মানের বাস্তব দক্ষতা তৈরি করা — যা দিয়ে তারা ফ্রিল্যান্সিং বা লোকাল মার্কেটে সত্যিকারের সাফল্য পাবে।&rdquo;
                             </p>
                         </div>
 
                         {/* Name & Role */}
-                        <div className="flex items-center gap-4">
+                        {/* <div className="flex items-center gap-4">
                             <div className="relative p-[1.5px] rounded-xl overflow-hidden">
                                 <AnimatedBorder variant="simple" speed="4s" />
                                 <div className="relative bg-surface rounded-xl px-4 py-2.5">
                                     <p className="font-bold text-white text-base">Mithun Sarkar</p>
-                                    <p className="text-primary text-sm font-medium">Founder & Lead Instructor of MISUN ACADEMY</p>
+                                    <p className="text-primary-glow text-sm font-medium">Founder & Lead Instructor of MISUN ACADEMY</p>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* Decorative divider */}
                         <div className="flex items-center gap-3 w-full max-w-xs">
@@ -161,10 +158,10 @@ export default function InstructorSection() {
                         </div>
 
                         {/* Stats */}
-                        <div className="flex flex-wrap gap-6">
+                        <div className="grid grid-cols-3 gap-2.5 sm:gap-6">
                             {stats.map((stat, i) => (
                                 <div key={i} className="group relative overflow-hidden rounded-xl bg-surface border border-primary/15
-                                    px-5 py-4 transition-all duration-300
+                                    px-2.5 py-4 sm:px-5 text-center sm:text-left transition-all duration-300
                                     hover:border-primary/40 hover:shadow-[0_4px_24px_hsl(156_70%_42%/0.18)]">
 
                                     {/* Corner accents */}
@@ -174,10 +171,17 @@ export default function InstructorSection() {
                                     {/* Top shimmer */}
                                     <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                                    <p className="text-2xl font-black bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_12px_hsl(156_70%_42%/0.4)]">
-                                        {stat.value}
+                                    <p className="text-xl sm:text-2xl font-bold text-primary-glow">
+                                        <Counter
+                                            value={stat.value}
+                                            suffix={stat.suffix}
+                                            locale="bn-BD"
+                                            fontSize="inherit"
+                                            fontWeight="inherit"
+                                            textColor="inherit"
+                                        />
                                     </p>
-                                    <p className="text-xs text-white/45 uppercase tracking-widest mt-0.5 font-bangla">{stat.label}</p>
+                                    <p className="text-[11px] sm:text-sm text-white/80 mt-0.5 font-bangla">{stat.label}</p>
                                 </div>
                             ))}
                         </div>

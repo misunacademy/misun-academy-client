@@ -27,10 +27,10 @@ const FeatureCard = memo(function FeatureCard({ icon, title, description, index 
                     {icon}
                 </div>
 
-                <h3 className="mb-3 text-[17px] font-semibold tracking-tight text-white/90 transition-colors duration-300 group-hover:text-white">
+                <h3 className="mb-3 text-[17px] font-semibold tracking-tight text-white transition-colors duration-300">
                     {title}
                 </h3>
-                <p className="text-sm leading-relaxed text-zinc-400">
+                <p className="readable-muted">
                     {description}
                 </p>
             </div>

@@ -104,16 +104,15 @@ const BootcampPurchaseCard = memo(function BootcampPurchaseCard({
           <div className="relative flex flex-col sm:flex-row sm:items-center gap-3 mt-auto pt-1">
             <div className="flex items-center gap-2 sm:ml-auto">
               {slug ? (
-                <Link href={isPaid ? `/bootcamp/${slug}/watch` : `/bootcamp/${slug}`}>
-                  <button
-                    className="group/btn inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm font-bangla
+                <Link
+                  href={isPaid ? `/bootcamp/${slug}/watch` : `/bootcamp/${slug}`}
+                  className="group/btn inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm font-bangla
                     bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark text-white
                     shadow-[0_0_14px_hsl(156_70%_42%/0.35)] hover:shadow-[0_0_22px_hsl(156_70%_42%/0.55)]
                     transition-all duration-300 hover:-translate-y-px"
-                  >
+                >
                     <PlayCircle className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
                     {isPaid ? "ভিডিও দেখুন" : "বিস্তারিত দেখুন"}
-                  </button>
                 </Link>
               ) : (
                 <button
@@ -178,15 +177,11 @@ export function BootcampsTab() {
             আপনি এখনো কোনো বুটক্যাম্প রেকর্ডিং কেনেননি। রেকর্ডিং ব্রাউজ করে শেখা শুরু করুন।
           </p>
         </div>
-        <Link href="/bootcamp" className="relative">
-          <button
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm font-bangla
+        <Link href="/bootcamp" className="relative inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm font-bangla
             bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark text-white
             shadow-[0_0_20px_hsl(156_70%_42%/0.3)] hover:shadow-[0_0_30px_hsl(156_70%_42%/0.5)]
-            transition-all duration-300 hover:-translate-y-0.5"
-          >
+            transition-all duration-300 hover:-translate-y-0.5">
             Browse Bootcamps
-          </button>
         </Link>
       </div>
     );

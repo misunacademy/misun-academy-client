@@ -18,8 +18,8 @@ export function GlassGlowVariant({ progress, scrollToTop }: GlassGlowVariantProp
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 50, scale: 0.8 }}
       onClick={scrollToTop}
-      className="fixed bottom-[150px] right-8 w-16 h-16 rounded-full bg-surface-navy/70 backdrop-blur-xl border border-white/10 flex items-center justify-center group shadow-[0_0_20px_hsl(var(--primary)/0.2)] hover:shadow-[0_0_25px_hsl(var(--primary)/0.4)] transition-all duration-300 hover:scale-110 active:scale-95 z-40 overflow-hidden"
-      aria-label="Back to top"
+      className="fixed bottom-[88px] right-4 w-12 h-12 sm:bottom-[50px] sm:right-8 sm:w-16 sm:h-16 rounded-full bg-surface-navy/70 backdrop-blur-xl border border-white/10 flex items-center justify-center group shadow-[0_0_20px_hsl(var(--primary)/0.2)] hover:shadow-[0_0_25px_hsl(var(--primary)/0.4)] transition-all duration-300 hover:scale-110 active:scale-95 z-40 overflow-hidden"
+      aria-label="উপরে ফিরে যান"
     >
       <svg className="absolute inset-0 w-full h-full -rotate-90 origin-center" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r="46" fill="transparent" stroke="currentColor" strokeWidth="4" className="text-primary/10" />

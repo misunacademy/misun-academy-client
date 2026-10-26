@@ -6,7 +6,7 @@ export default function CoursesLoading() {
       <section
         aria-busy="true"
         aria-label="Loading course banner"
-        className="relative bg-surface overflow-hidden"
+        className="relative bg-transparent overflow-hidden"
       >
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none bg-[radial-gradient(circle,hsl(156_70%_42%)_1px,transparent_1px)] bg-[length:32px_32px]" />
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/8 rounded-full blur-[120px] pointer-events-none" />

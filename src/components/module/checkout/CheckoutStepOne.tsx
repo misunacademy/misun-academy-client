@@ -30,14 +30,14 @@ export function CheckoutStepOne({
           <div className="space-y-4">
             <h3 className="text-base font-semibold flex items-center gap-2.5 text-white/80">
               <StepBadge number={1} />
-              Enrolling in Current Batch
+              বর্তমান ব্যাচে ভর্তি
             </h3>
             <BatchInfoCard batch={batch} course={course} />
           </div>
         ) : (
           <div className="bg-yellow-500/8 border border-yellow-500/20 rounded-xl p-4 text-center">
-            <p className="text-yellow-400 font-medium">No upcoming batches available at the moment</p>
-            <p className="text-sm text-white/40 mt-1">Please check back later or contact support</p>
+            <p className="text-yellow-400 font-medium">এই মুহূর্তে কোনো ব্যাচ চলছে না</p>
+            <p className="text-sm text-white/70 mt-1">পরে আবার দেখুন অথবা সাপোর্টে যোগাযোগ করুন</p>
           </div>
         )}
 
@@ -50,7 +50,7 @@ export function CheckoutStepOne({
         <div className="space-y-4">
           <h3 className="text-base font-semibold flex items-center gap-2.5 text-white/80">
             <StepBadge number={2} />
-            Payment Method
+            পেমেন্ট পদ্ধতি
           </h3>
           <FormField
             control={form.control}

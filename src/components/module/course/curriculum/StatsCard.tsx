@@ -29,7 +29,7 @@ export function StatsCard({ config, modules, projects, totalHours }: StatsCardPr
         style={{ background: `linear-gradient(90deg, transparent, ${config.color}88, transparent)` }}
       />
       <p
-        className="flex items-center gap-1.5 text-[10px] tracking-[0.2em] uppercase mb-2.5 font-semibold font-monaExpanded"
+        className="flex items-center gap-1.5 text-[11px] tracking-[0.18em] uppercase mb-2.5 font-semibold font-monaExpanded"
         style={{ color: config.color }}
       >
         <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
@@ -49,10 +49,10 @@ export function StatsCard({ config, modules, projects, totalHours }: StatsCardPr
       {items.map(({ icon: Icon, label, val }) => (
         <div key={label} className="flex items-baseline gap-2 py-1.5">
           <Icon size={11} style={{ color: config.color }} className="self-center shrink-0" />
-          <span className="text-[11px] text-white/45 shrink-0">{label}</span>
+          <span className="text-xs text-white/75 shrink-0">{label}</span>
           <span aria-hidden="true" className="flex-1 border-b border-dotted border-white/15 -translate-y-[3px]" />
           <span
-            className="text-[12px] font-bold font-monaExpanded"
+            className="text-[13px] font-bold font-monaExpanded"
             style={{ color: config.color, textShadow: `0 0 12px ${config.glowStrong}` }}
           >
             {val}

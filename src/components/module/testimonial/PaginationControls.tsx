@@ -26,7 +26,7 @@ const PaginationControls = memo(({ currentPage, totalPages, onPageChange }: Pagi
     const visiblePages = getVisiblePages();
 
     const btnBase = "inline-flex items-center justify-center h-9 min-w-[36px] px-3 rounded-xl text-sm font-medium transition-all duration-200 border";
-    const btnInactive = `${btnBase} bg-surface border-primary/20 text-white/55 hover:border-primary/45 hover:text-white/85`;
+    const btnInactive = `${btnBase} bg-surface border-primary/20 text-white/80 hover:border-primary/45 hover:text-white`;
     const btnActive = `${btnBase} bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark border-transparent text-white shadow-[0_0_14px_hsl(156_70%_42%/0.4)]`;
     const btnDisabled = `${btnBase} bg-surface border-primary/10 text-white/20 cursor-not-allowed`;
 
@@ -46,7 +46,7 @@ const PaginationControls = memo(({ currentPage, totalPages, onPageChange }: Pagi
                     <>
                         <button onClick={() => onPageChange(1)} className={btnInactive}>1</button>
                         {visiblePages[0] > 2 && (
-                            <span className="flex items-center px-1 text-white/30 text-sm">…</span>
+                            <span className="flex items-center px-1 text-white/60 text-sm">…</span>
                         )}
                     </>
                 )}
@@ -64,7 +64,7 @@ const PaginationControls = memo(({ currentPage, totalPages, onPageChange }: Pagi
                 {visiblePages[visiblePages.length - 1] < totalPages && (
                     <>
                         {visiblePages[visiblePages.length - 1] < totalPages - 1 && (
-                            <span className="flex items-center px-1 text-white/30 text-sm">…</span>
+                            <span className="flex items-center px-1 text-white/60 text-sm">…</span>
                         )}
                         <button onClick={() => onPageChange(totalPages)} className={btnInactive}>{totalPages}</button>
                     </>

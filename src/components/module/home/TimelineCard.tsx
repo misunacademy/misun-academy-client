@@ -37,12 +37,12 @@ function TimelineCard({ feature, Icon }: TimelineCardProps) {
             <h3 className="text-white font-semibold text-base leading-snug group-hover:text-primary-glow transition-colors duration-300">
               {feature.title}
             </h3>
-            <span className="flex-shrink-0 text-[11px] bg-primary/15 text-primary border border-primary/25 px-2 py-0.5 rounded-full font-medium">
+            <span className="flex-shrink-0 text-xs font-medium bg-primary/15 text-primary-glow border border-primary/25 px-2 py-0.5 rounded-full">
               {feature.highlight}
             </span>
           </div>
           {/* Description */}
-          <p className="text-white/55 text-sm leading-relaxed group-hover:text-white/75 transition-colors duration-300">
+          <p className="text-white/80 text-sm sm:text-base leading-relaxed group-hover:text-white transition-colors duration-300">
             {feature.description}
           </p>
         </div>

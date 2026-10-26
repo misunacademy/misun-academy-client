@@ -64,15 +64,14 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
                 </Link>
             ) : null}
             <div className="flex items-center justify-end">
-                <Link href="/checkout" className="w-full sm:w-auto block" onClick={handleEnrollClick}>
-                    <div className="relative inline-flex p-[1.5px] rounded-full overflow-hidden
+                <Link href="/checkout" className="group relative inline-flex overflow-hidden rounded-full p-[1.5px]
                     shadow-[0_4px_24px_rgba(32,180,134,0.35)]
                     hover:shadow-[0_8px_36px_rgba(32,180,134,0.60)]
                     hover:scale-105 hover:-translate-y-0.5
                     active:scale-95 active:translate-y-0
-                    transition-all duration-300 ease-out">
-                        <AnimatedBorder />
-                        <button className="group relative overflow-hidden
+                    transition-all duration-300 ease-out" onClick={handleEnrollClick}>
+                    <AnimatedBorder />
+                    <span className="relative overflow-hidden
                       inline-flex items-center gap-2
                       px-6 py-2
                       text-sm font-bold tracking-wide rounded-full
@@ -80,13 +79,12 @@ export default function NavbarAuthSection({ hydrated }: { hydrated: boolean }) {
                       text-white
                       hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
                       transition-all duration-300 ease-out">
-                            <span className="relative z-10 flex items-center gap-1.5">
-                                <Sparkles className="w-4 h-4 text-white animate-pulse" />
-                                এনরোল করুন
-                            </span>
-                            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
-                        </button>
-                    </div>
+                        <span className="relative z-10 flex items-center gap-1.5">
+                            <Sparkles className="w-4 h-4 text-white animate-pulse motion-reduce:animate-none" />
+                            এনরোল করুন
+                        </span>
+                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                    </span>
                 </Link>
             </div>
             {safeUser ? (

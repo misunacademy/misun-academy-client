@@ -166,7 +166,7 @@ export default {
 					'sans-serif'
 				],
 				bangla: [
-					'var(--font-bangla)',
+					'var(--font-un-bangla)',
 					'sans-serif'
 				]
 			}

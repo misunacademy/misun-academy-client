@@ -22,7 +22,7 @@ function TimeBlock({ value, label }: { value: number; label: string }) {
   return (
     <div className="relative overflow-hidden flex flex-col items-center justify-center
       bg-surface border border-primary/20 rounded-2xl
-      w-20 h-24 sm:w-24 sm:h-28
+      flex-1 basis-0 min-w-0 max-w-[6rem] h-24 sm:h-28
       shadow-[0_8px_32px_hsl(156_70%_42%/0.15)]
       transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 group"
     >
@@ -33,10 +33,10 @@ function TimeBlock({ value, label }: { value: number; label: string }) {
       <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-primary/80 to-transparent opacity-50 group-hover:opacity-100 transition-opacity" />
       {/* Hover glow */}
       <div className="absolute inset-0 bg-gradient-to-b from-primary/8 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-      <div className="relative z-10 text-4xl sm:text-5xl font-bold font-mona tabular-nums bg-gradient-to-b from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-md">
+      <div className="relative z-10 text-4xl sm:text-5xl font-bold font-mona tabular-nums text-primary-glow">
         {String(value).padStart(2, '0')}
       </div>
-      <div className="relative z-10 text-[10px] sm:text-xs text-white/70 font-bangla mt-2 tracking-[0.2em] uppercase">
+      <div className="relative z-10 text-xs sm:text-sm text-white/85 font-bangla mt-2">
         {label}
       </div>
     </div>
@@ -45,7 +45,7 @@ function TimeBlock({ value, label }: { value: number; label: string }) {
 
 function Colon() {
   return (
-    <div className="hidden sm:flex flex-col gap-2 animate-pulse pb-6">
+    <div className="hidden sm:flex flex-col gap-2 animate-pulse motion-reduce:animate-none pb-6" aria-hidden="true">
       <div className="w-1.5 h-1.5 rounded-full bg-primary/70 shadow-[0_0_8px_hsl(156_70%_42%)]" />
       <div className="w-1.5 h-1.5 rounded-full bg-primary/70 shadow-[0_0_8px_hsl(156_70%_42%)]" />
     </div>
@@ -163,13 +163,13 @@ const Countdown = ({ batch: batchProp, courseSlug, serverTimestamp: serverTimest
             <div className="inline-flex items-center justify-center gap-2 px-4 py-1.5 rounded-full
               bg-primary/10 border border-primary/25 backdrop-blur-sm
               shadow-[0_0_20px_hsl(156_70%_42%/0.12)]">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
-              <p className="text-xs font-semibold  uppercase text-primary/90 font-bangla">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping motion-reduce:animate-none" aria-hidden="true" />
+              <p className="text-xs font-semibold text-primary-glow font-bangla">
                 {label}
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            <div className="mx-auto flex w-[calc(100vw-3rem)] max-w-md flex-wrap items-center justify-center gap-2 sm:gap-4">
               {timeLeft.months > 0 && (
                 <>
                   <TimeBlock value={timeLeft.months} label="মাস" />

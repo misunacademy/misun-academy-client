@@ -13,7 +13,7 @@ export function DetailTestimonials({ items }: { items?: Testimonial[] }) {
   if (!items || items.length === 0) return null;
   return (
     <section className="border-y border-white/10 bg-white/[0.015]">
-      <div className="mx-auto max-w-6xl px-4 py-10">
+      <div className="mx-auto max-w-7xl px-4 py-10">
         <p className="font-bangla text-sm font-semibold text-[#ffd60a]">
           রিভিউ
         </p>

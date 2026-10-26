@@ -54,16 +54,16 @@ export default function Feedback() {
       <StudentOpinionsCarousel studentFeedbacks={feedbacks} />
 
       <FadeIn delay={0.4} direction="up" className="w-full flex justify-center mt-10">
-        <Link href="/feedback">
-          <div className="relative p-[2px] rounded-xl overflow-hidden group">
+        <Link href="/feedback" className="group">
+          <div className="relative p-[2px] rounded-xl overflow-hidden">
             <span
-              className="absolute inset-[-100%] animate-[spin_3s_linear_infinite]"
+              className="absolute inset-[-100%] animate-[spin_3s_linear_infinite] motion-reduce:animate-none"
               style={{
                 background:
                   'conic-gradient(from 90deg, transparent 20%, hsl(156 70% 42%) 45%, hsl(156 85% 70%) 55%, hsl(156 70% 42%) 70%, transparent 80%)',
               }}
             />
-            <button
+            <span
               className="relative z-10 px-10 py-3.5 rounded-[10px] text-sm md:text-base font-bold text-white
                 bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
                 hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
@@ -72,7 +72,7 @@ export default function Feedback() {
             >
               আরো মতামত দেখো
               <ArrowRight/>
-            </button>
+            </span>
           </div>
         </Link>
       </FadeIn>

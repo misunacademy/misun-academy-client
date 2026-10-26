@@ -25,15 +25,15 @@ export default function AboutHeroSection() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
           </span>
-          <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">MISUN Academy</span>
+          <span className="text-xs font-semibold text-primary-glow">MISUN Academy</span>
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-bold leading-[140%] mb-6">
-          <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">আমাদের </span>
-          <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_24px_hsl(156_70%_42%/0.5)]">সম্পর্কে</span>
+        <h1 className="text-4xl md:text-6xl font-bold leading-[1.4] mb-6 text-white">
+          <span className="text-white">আমাদের </span>
+          <span className="text-primary-glow">সম্পর্কে</span>
         </h1>
 
-        <p className="text-lg md:text-xl text-white/55 max-w-2xl mx-auto leading-relaxed">
+        <p className="readable-body max-w-2xl mx-auto">
           ভবিষ্যৎ প্রজন্মের জন্য ডিজিটাল শিক্ষার নতুন দিগন্ত
         </p>
 

@@ -36,23 +36,23 @@ export default function AboutMissionVisionSection() {
                   <Target className="w-7 h-7 text-primary" />
                 </div>
               </div>
-              <h3 className="text-2xl md:text-3xl font-bold">
-                <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">Our </span>
-                <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">Mission</span>
+              <h3 className="text-2xl md:text-3xl font-bold text-white">
+                <span className="text-white">আমাদের </span>
+                <span className="text-primary-glow">মিশন</span>
               </h3>
-              <p className="text-primary/70 text-sm font-semibold mt-2 tracking-wide uppercase">Skill First, Career Next.</p>
+              <p className="text-primary-glow text-sm font-semibold mt-2">Skill First, Career Next.</p>
             </div>
 
             <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-8" />
 
-            <p className="text-white/55 text-sm mb-6">আমাদের মিশন হলো:</p>
+            <p className="text-sm text-white/85 mb-6">আমাদের লক্ষ্য হলো:</p>
             <ul className="space-y-4">
               {missionItems.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <div className="flex-shrink-0 w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 flex items-center justify-center mt-0.5">
                     <ArrowRight className="w-3.5 h-3.5 text-primary" />
                   </div>
-                  <span className="text-sm text-white/65 leading-relaxed">{item}</span>
+                  <span className="text-sm sm:text-base text-white/85 leading-relaxed">{item}</span>
                 </li>
               ))}
             </ul>
@@ -74,16 +74,16 @@ export default function AboutMissionVisionSection() {
                   <Eye className="w-7 h-7 text-primary" />
                 </div>
               </div>
-              <h3 className="text-2xl md:text-3xl font-bold">
-                <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">Our </span>
-                <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">Vision</span>
+              <h3 className="text-2xl md:text-3xl font-bold text-white">
+                <span className="text-white">আমাদের </span>
+                <span className="text-primary-glow">ভিশন</span>
               </h3>
             </div>
 
             <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-8" />
 
-            <p className="text-white/55 text-sm mb-6">আমাদের ভিশন হলো:</p>
-            <p className="text-sm text-white/65 leading-relaxed mb-6">
+            <p className="text-sm text-white/85 mb-6">আমাদের ভিশন হলো:</p>
+            <p className="text-sm sm:text-base text-white/85 leading-relaxed mb-6">
               সবার জন্য সাশ্রয়ী, মানসম্মত এবং প্রাসঙ্গিক ডিজিটাল শিক্ষা নিশ্চিত করা, যা তাদের একটি স্বাধীন ও আত্মনির্ভরশীল জীবনের দিকে এগিয়ে নিতে পারে।
             </p>
 
@@ -91,7 +91,7 @@ export default function AboutMissionVisionSection() {
               <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-primary/40 rounded-tl-2xl" />
               <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-primary/40 rounded-tr-2xl" />
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-              <p className="text-sm text-white/60 leading-relaxed text-center italic">
+              <p className="text-sm sm:text-base text-white/80 leading-relaxed text-center italic">
                 আমরা এমন একটি কমিউনিটি গড়ে তুলতে চাই, যেখানে শেখা মানেই শুধু সার্টিফিকেট নয়, বরং বাস্তবে কাজ করার দক্ষতা অর্জন।
               </p>
             </div>

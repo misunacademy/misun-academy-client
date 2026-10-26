@@ -143,14 +143,13 @@ export const CourseCard = memo(function CourseCard({ enrollment }: { enrollment:
               {enrollment.courseId ? (
                 <Link
                   href={`/my-classes/${enrollment.courseId}${enrollment.batchId ? `?batchId=${enrollment.batchId}` : ""}`}
-                >
-                  <button className="group/btn inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm
+                  className="group/btn inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm
                     bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark text-white
                     shadow-[0_0_14px_hsl(156_70%_42%/0.35)] hover:shadow-[0_0_22px_hsl(156_70%_42%/0.55)]
-                    transition-all duration-300 hover:-translate-y-px">
+                    transition-all duration-300 hover:-translate-y-px"
+                >
                     <PlayCircle className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
                     Continue Learning
-                  </button>
                 </Link>
               ) : (
                 <button

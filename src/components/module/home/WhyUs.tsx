@@ -39,16 +39,14 @@ const WhyChooseSection = () => {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full
             bg-primary/10 border border-primary/25 backdrop-blur-sm mb-5">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs font-semibold  uppercase text-primary/90 font-bangla">
+            <span className="text-xs font-semibold text-primary-glow font-bangla">
               প্রিমিয়াম গ্রাফিক্স ডিজাইন কোর্স
             </span>
           </div>
 
-          <h2 className="text-4xl md:text-5xl font-bold font-bangla mb-5
-            bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl font-bold font-bangla mb-5 text-white">
             কেন{' '}
-            <span className="relative inline-block
-              bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
+            <span className="relative inline-block text-primary-glow">
               Misun Academy?
               <span className="absolute -bottom-1 left-0 w-full h-[3px] rounded-full bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
             </span>
@@ -60,7 +58,7 @@ const WhyChooseSection = () => {
             <div className="w-1.5 h-1.5 rounded-full bg-primary/50" />
             <div className="h-px w-16 bg-gradient-to-r from-primary/20 to-transparent" />
           </div>
-          <p className="text-white/60 text-lg max-w-3xl mx-auto leading-relaxed font-bangla">
+          <p className="readable-body max-w-3xl mx-auto font-bangla">
             আপনার সৃজনশীল চিন্তাকে প্রফেশনাল দক্ষতায় রূপান্তর করুন আমাদের সম্পূর্ণ গ্রাফিক্স
             ডিজাইন কোর্সের মাধ্যমে। ইন্ডাস্ট্রি এক্সপার্টদের কাছ থেকে শিখুন।
           </p>
@@ -80,10 +78,10 @@ const WhyChooseSection = () => {
                   <stat.icon className="w-5 h-5 text-white" />
                 </div>
                 <div className="font-bangla">
-                  <div className="text-2xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                  <div className="text-2xl font-bold text-primary-glow">
                     {stat.value}
                   </div>
-                  <div className="text-xs text-white/55 mt-0.5">{stat.label}</div>
+                  <div className="readable-micro-label mt-0.5">{stat.label}</div>
                 </div>
               </div>
             ))}
@@ -210,23 +208,21 @@ const WhyChooseSection = () => {
             <h3 className="text-2xl font-bold mb-4 text-white font-bangla">
               আপনার ডিজাইন যাত্রা শুরু করতে প্রস্তুত?
             </h3>
-            <p className="text-white/60 mb-8 leading-relaxed font-bangla">
+            <p className="readable-body mb-8 font-bangla">
               শত শত সফল শিক্ষার্থীদের মত আপনিও আপনার ক্যারিয়ার পরিবর্তন করুন আমাদের পূর্ণাঙ্গ
               গ্রাফিক্স ডিজাইন প্রোগ্রামে অংশগ্রহণ করে। পান লাইফটাইম অ্যাক্সেস এবং ইন্ডাস্ট্রি
               সার্টিফিকেট।
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center font-bangla">
-              <Link href="/checkout">
-                {/* Spinning glowing border wrapper */}
-                <div className="relative p-[2px] rounded-xl overflow-hidden
+              <Link href="/checkout" className="group relative overflow-hidden rounded-xl p-[2px]
                   shadow-[0_4px_24px_rgba(32,180,134,0.35)]
                   hover:shadow-[0_8px_36px_rgba(32,180,134,0.60)]
                   hover:scale-105 hover:-translate-y-0.5
                   active:scale-95 active:translate-y-0
                   transition-all duration-300 ease-out">
                   <AnimatedBorder />
-                  <button
-                    className="group relative overflow-hidden
+                  <span
+                    className="relative overflow-hidden
                       w-full sm:w-auto
                       inline-flex items-center justify-center gap-2
                       px-8 py-3.5
@@ -240,23 +236,20 @@ const WhyChooseSection = () => {
                       এখনই ভর্তি হন
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
                     </span>
-                    {/* Shine sweep */}
                     <span className="absolute inset-0
                       bg-gradient-to-r from-transparent via-white/25 to-transparent
                       -translate-x-full group-hover:translate-x-full
                       transition-transform duration-700 ease-in-out" />
-                  </button>
-                </div>
+                  </span>
               </Link>
-              <Link href="/courses">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="bg-transparent border-primary/40 text-white hover:bg-primary/10 hover:border-primary hover:text-white"
-                >
-                  কারিকুলাম দেখুন
-                </Button>
-              </Link>
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="bg-transparent border-primary/40 text-white hover:bg-primary/10 hover:border-primary hover:text-white"
+              >
+                <Link href="/course-details">কারিকুলাম দেখুন</Link>
+              </Button>
             </div>
           </div>
         </FadeIn>

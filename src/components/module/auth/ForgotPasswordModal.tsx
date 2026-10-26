@@ -39,7 +39,7 @@ const ForgotPasswordModal = ({ onClose }: { onClose: () => void }) => {
         <div className="absolute top-0 left-0 w-5 h-5 border-t border-l border-primary/40 rounded-tl-2xl" />
         <div className="absolute top-0 right-0 w-5 h-5 border-t border-r border-primary/40 rounded-tr-2xl" />
         <button onClick={onClose}
-          className="absolute top-3 right-3 w-7 h-7 rounded-lg bg-primary/8 border border-primary/20 text-white/40 hover:text-white/80 hover:bg-primary/15 transition-all flex items-center justify-center text-lg leading-none">
+          className="absolute top-3 right-3 w-11 h-11 rounded-lg bg-primary/8 border border-primary/20 text-white/70 hover:text-white hover:bg-primary/15 transition-all flex items-center justify-center text-xl leading-none">
           &#x2715;
         </button>
         <div className="p-7">
@@ -54,7 +54,7 @@ const ForgotPasswordModal = ({ onClose }: { onClose: () => void }) => {
             </div>
           </div>
           <h2 className="text-xl font-bold text-white/90 text-center mb-1">পাসওয়ার্ড ভুলে গেছেন</h2>
-          <p className="text-sm text-white/45 text-center mb-6">
+          <p className="text-sm text-white/75 text-center mb-6">
             আপনার ইমেইল ঠিকানা দিন। আমরা আপনাকে পাসওয়ার্ড রিসেট লিঙ্ক পাঠাব।
           </p>
           <Form {...forgetPasswordForm}>
@@ -63,7 +63,7 @@ const ForgotPasswordModal = ({ onClose }: { onClose: () => void }) => {
 
               <div className="flex gap-3 pt-1">
                 <button type="button" onClick={onClose}
-                  className="flex-1 py-2.5 rounded-xl border border-primary/25 text-white/55 hover:border-primary/45 hover:text-white/80 transition-all text-sm font-medium">
+                  className="flex-1 py-2.5 rounded-xl border border-primary/25 text-white/80 hover:border-primary/45 hover:text-white/80 transition-all text-sm font-medium">
                   বাতিল
                 </button>
                 <div className="flex-1">

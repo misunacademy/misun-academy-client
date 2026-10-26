@@ -107,7 +107,13 @@ export default function AdminReports() {
     const coursePopularityData = (data.courseWiseStats || []).map((course, index) => ({
       name: course.courseTitle || `Course ${index + 1}`,
       value: course.totalEnrollments || 0,
-      color: ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'][index % 5],
+      color: [
+        'hsl(var(--chart-1))',
+        'hsl(var(--chart-2))',
+        'hsl(var(--chart-3))',
+        'hsl(var(--chart-4))',
+        'hsl(var(--chart-5))',
+      ][index % 5],
     }));
 
     return {

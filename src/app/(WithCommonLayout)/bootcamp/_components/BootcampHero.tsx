@@ -16,10 +16,10 @@ export const BootcampHero = () => (
             sizes="100vw"
             className="pointer-events-none absolute inset-0 object-cover opacity-40 [mask-image:radial-gradient(75%_75%_at_50%_40%,black,transparent)]"
         />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-12 md:pt-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 pb-16 pt-12 md:pt-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
             <div>
                 <FadeIn>
-                    <p className="font-bangla text-sm font-semibold tracking-wide text-white/60">
+                    <p className="font-bangla text-sm font-semibold tracking-wide text-white/70">
                         {bootcamp.eyebrow}
                     </p>
                 </FadeIn>
@@ -59,7 +59,7 @@ export const BootcampHero = () => (
                             {bootcamp.cta}
                         </a>
                         <div className="rounded-lg border border-[#e5484d]/40 bg-[#e5484d]/10 px-4 py-2">
-                            <p className="font-bangla text-xs text-white/60">মাত্র</p>
+                            <p className="font-bangla text-xs text-white/70">মাত্র</p>
                             <p className="font-bangla text-2xl font-bold leading-none text-[#ffd60a]">
                                 {bootcamp.fee}
                                 <span className="ml-1 text-sm font-semibold text-white/80">

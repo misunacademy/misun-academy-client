@@ -53,15 +53,15 @@ export default function TeamMemberCard({ member }: { member: TeamMember }) {
                     </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-white/90
+                <h3 className="text-xl font-bold text-white
                     transition-all duration-300
-                    group-hover:text-white group-hover:tracking-wide mb-1"
+                    group-hover:tracking-wide mb-1"
                 >
                     {member.name}
                 </h3>
 
-                <p className="text-sm font-semibold text-primary/80 mb-1">{member.role}</p>
-                <p className="text-xs text-white/40">{member.company}</p>
+                <p className="text-sm font-semibold text-primary-glow mb-1">{member.role}</p>
+                <p className="readable-micro-label">{member.company}</p>
             </div>
         </div>
     );

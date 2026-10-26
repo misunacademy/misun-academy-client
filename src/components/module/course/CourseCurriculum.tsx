@@ -21,8 +21,8 @@ const CourseCurriculum = () => (
       aria-hidden="true"
       className="absolute -bottom-48 left-[-140px] w-[460px] h-[460px] rounded-full bg-primary/[0.07] blur-[130px] pointer-events-none"
     />
-    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-    <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" aria-hidden="true" />
+    <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" aria-hidden="true" />
 
     <div className="relative z-10 py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <SectionHeader />
@@ -39,20 +39,20 @@ function SectionHeader() {
     <div className="text-center mb-16">
       <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-5">
         <span className="relative flex h-1.5 w-1.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+          <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" aria-hidden="true" />
           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
         </span>
-        <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">
+        <span className="text-xs font-semibold text-primary-glow">
           পাঠ্যক্রম
         </span>
       </div>
-      <h2 className="text-4xl md:text-5xl font-bold mb-4 font-bangla bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">
+      <h2 className="text-4xl md:text-5xl font-bold mb-4 font-bangla text-white">
         কোর্স{" "}
-        <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_18px_hsl(156_70%_42%/0.4)]">
+        <span className="text-primary-glow">
           কারিকুলাম
         </span>
       </h2>
-      <p className="text-sm md:text-base font-bangla text-white/50 max-w-2xl mx-auto">
+      <p className="readable-body font-bangla max-w-2xl mx-auto">
         একেবারে শুরু থেকে প্রফেশনাল ডিজাইনার হওয়ার একটি পূর্ণাঙ্গ পথ—হাতে-কলমে প্রজেক্ট ও ক্লায়েন্ট হান্টিং কৌশলসহ।
       </p>
     </div>
@@ -80,7 +80,7 @@ function SummaryBar() {
 
   return (
     <div className="mt-10 relative overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-r from-primary/8 via-transparent to-primary/8">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" aria-hidden="true" />
       <div className="grid grid-cols-2 lg:grid-cols-4">
         {items.map(({ icon: Icon, label, value }, i) => (
           <div
@@ -99,10 +99,10 @@ function SummaryBar() {
               <Icon size={20} className="text-primary" />
             </div>
             <div>
-              <p className="text-2xl font-black bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
+              <p className="text-2xl font-bold text-primary-glow">
                 {value}
               </p>
-              <p className="text-[15px] text-white/40 font-bangla tracking-wide">{label}</p>
+              <p className="text-[15px] text-white/80 font-bangla">{label}</p>
             </div>
           </div>
         ))}

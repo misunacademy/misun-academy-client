@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { staggerContainerVariants, staggerItemVariants } from '@/lib/motion';
 
 interface StaggerContainerProps {
   children: React.ReactNode;
@@ -29,15 +30,7 @@ export function StaggerContainer({
 
   return (
     <motion.div
-      variants={{
-        hidden: {},
-        visible: {
-          transition: {
-            staggerChildren,
-            delayChildren,
-          },
-        },
-      }}
+      variants={staggerContainerVariants(staggerChildren, delayChildren)}
       initial="hidden"
       whileInView="visible"
       viewport={{ once, amount: viewportAmount }}
@@ -45,23 +38,7 @@ export function StaggerContainer({
     >
       {React.Children.map(children, (child) => {
         if (!React.isValidElement(child)) return child;
-        return (
-          <motion.div
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: {
-                opacity: 1,
-                y: 0,
-                transition: {
-                  duration: 0.5,
-                  ease: [0.21, 0.47, 0.32, 0.98],
-                },
-              },
-            }}
-          >
-            {child}
-          </motion.div>
-        );
+        return <motion.div variants={staggerItemVariants}>{child}</motion.div>;
       })}
     </motion.div>
   );

@@ -21,7 +21,7 @@ interface PaymentMethodSelectorProps {
 
 export function PaymentMethodSelector({ value, onChange }: PaymentMethodSelectorProps) {
   return (
-    <div className="grid gap-3">
+    <div className="grid gap-3" role="radiogroup" aria-label="পেমেন্ট পদ্ধতি">
       <SSLCommerzOption selected={value === "SSLCommerz"} onSelect={() => onChange("SSLCommerz")} />
       <PhonePayOption selected={value === "phonePay"} onSelect={() => onChange("phonePay")} />
     </div>
@@ -38,12 +38,13 @@ function SSLCommerzOption({ selected, onSelect }: { selected: boolean; onSelect:
       }`}
       onClick={onSelect}
       role="radio"
+      aria-label="SSLCommerz"
       aria-checked={selected}
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelect(); }}
     >
-      <span className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-500/15 border border-yellow-500/30 text-yellow-400">
-        Popular
+      <span className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full text-[11px] font-bold bg-yellow-500/15 border border-yellow-500/30 text-yellow-400">
+        জনপ্রিয়
       </span>
       <div className="space-y-3">
         <div className="flex items-center gap-3">
@@ -56,11 +57,11 @@ function SSLCommerzOption({ selected, onSelect }: { selected: boolean; onSelect:
           <RadioIndicator selected={selected} />
         </div>
         <div className="items-center gap-2 pt-2 border-t border-primary/15">
-          <span className="text-xs text-white/40 mb-2 block">Pay with:</span>
+          <span className="text-xs text-white/70 mb-2 block">পেমেন্ট করুন:</span>
           <div className="grid grid-cols-3 gap-1.5">
             {GATEWAY_ICONS.map((src, i) => (
               <div key={i} className="bg-white rounded-lg overflow-hidden flex items-center justify-center h-[52px]">
-                <Image src={src} alt="payment gateway" className="object-contain w-full h-full p-1.5" />
+                <Image src={src} alt="" className="object-contain w-full h-full p-1.5" />
               </div>
             ))}
           </div>
@@ -80,6 +81,7 @@ function PhonePayOption({ selected, onSelect }: { selected: boolean; onSelect: (
       }`}
       onClick={onSelect}
       role="radio"
+      aria-label="Phone Pay"
       aria-checked={selected}
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelect(); }}
@@ -94,7 +96,7 @@ function PhonePayOption({ selected, onSelect }: { selected: boolean; onSelect: (
         <RadioIndicator selected={selected} />
       </div>
       <div className="border-t border-primary/15 pt-3">
-        <p className="text-xs text-white/45 pb-2">Pay with your phone pay account:</p>
+        <p className="text-xs text-white/70 pb-2">Phone Pay অ্যাকাউন্ট দিয়ে পেমেন্ট করুন:</p>
         <div className="bg-white rounded-lg overflow-hidden flex items-center justify-center h-[56px] max-w-[200px]">
           <Image src={phonepay} alt="Phone Pay" className="object-contain w-full h-full p-2" />
         </div>

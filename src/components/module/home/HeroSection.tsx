@@ -4,6 +4,8 @@ import { HeroBg } from '@/assets/svg';
 import { Briefcase, Video, UserCheck, Clock, Home, PenTool, Palette, Layers, Crop, MousePointer2 } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
+import { AIPoweredBadge } from '@/components/ui/ai-powered-badge';
+import Antigravity from './Antigravity';
 
 export default function HeroSection() {
   return (
@@ -18,12 +20,24 @@ export default function HeroSection() {
         backgroundColor: '#060f0a', // Fallback surface
       }}
     >
-      {/* ── Background Overlays & Animated Rings ── */}
-      <div className="absolute inset-0 bg-gradient-to-b from-surface/80 via-surface/40 to-surface z-0" />
-      <div className="absolute inset-x-0 top-0 h-[500px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent z-0" />
+      <Antigravity
+        className="absolute inset-0 z-[1] opacity-90 pointer-events-none"
+        colors={['#FF3B30', '#FF9500', '#FFCC00', '#34C759', '#00C7BE', '#007AFF', '#5856D6', '#AF52DE']}
+        colorMode="conic"
+        count={1200}
+        magnetRadius={9}
+        ringRadius={7}
+        particleSize={0.9}
+        autoAnimate
+      />
 
-      <div className="absolute top-1/4 -left-20 lg:left-10 w-64 h-64 md:w-96 md:h-96 border-[8px] md:border-[16px] border-primary/10 rounded-full animate-zoom-in-out z-0 blur-xl md:blur-2xl" />
-      <div className="absolute bottom-10 -right-20 lg:right-1/4 w-80 h-80 md:w-[30rem] md:h-[30rem] border-[12px] md:border-[24px] border-primary/5 rounded-full animate-zoom-in-out z-0 blur-2xl md:blur-3xl" style={{ animationDelay: '4s' }} />
+      {/* ── Background Overlays & Animated Rings ── */}
+      {/* bg-gradient-to-b from-surface/80 via-surface/40 to-surface  */}
+      <div className="absolute inset-0  bg-gradient-to-b from-surface/80 via-surface/40 to-surface   z-[1]" />
+      <div className="absolute inset-x-0 top-0 h-[500px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent z-[1]" />
+
+      <div className="absolute top-1/4 -left-20 lg:left-10 w-64 h-64 md:w-96 md:h-96 border-[8px] md:border-[16px] border-primary/10 rounded-full animate-zoom-in-out z-[2] blur-xl md:blur-2xl" />
+      <div className="absolute bottom-10 -right-20 lg:right-1/4 w-80 h-80 md:w-[30rem] md:h-[30rem] border-[12px] md:border-[24px] border-primary/5 rounded-full animate-zoom-in-out z-[2] blur-2xl md:blur-3xl" style={{ animationDelay: '4s' }} />
 
       {/* ── Main Content Container ── */}
       <div className="relative z-10 min-h-screen pt-16 pb-20 flex flex-col justify-center">
@@ -47,28 +61,29 @@ export default function HeroSection() {
 
             {/* Headings */}
             <div className="space-y-4">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.2] text-white drop-shadow-lg">
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-lg text-base font-bold tracking-wide text-neutral-900 mb-5">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-neutral-900">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.25] text-white">
+                {/* <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-lg text-base font-bold tracking-wide text-neutral-900 mb-5">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-neutral-900" aria-hidden="true">
                     <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" />
                     <path d="M19 14l.9 3.1L23 18l-3.1.9L19 22l-.9-3.1L15 18l3.1-.9L19 14z" />
                   </svg>
                   AI Powered
-                </span>
+                </span> */}
+                   <AIPoweredBadge/>
                 <br />
-                <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_24px_hsl(156_70%_42%/0.35)]">
+                <span className="text-white">
                   কমপ্লিট গ্রাফিক ডিজাইন
                 </span>{" "}
-                উইথ ফ্রিল্যান্সিং
+                <span className="text-primary-glow">উইথ ফ্রিল্যান্সিং</span>
               </h1>
-              <h2 className="text-2xl sm:text-3xl font-semibold text-white/90 leading-snug">
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white leading-snug">
                 আপনার ক্রিয়েটিভ <span className="text-primary-glow">ক্যারিয়ার</span> শুরু করুন আজই!
               </h2>
             </div>
 
             {/* Paragraph */}
-            <p className="text-white/60 text-base sm:text-lg leading-relaxed max-w-xl font-light">
-              ডিজিটাল এই যুগে সঠিক স্কিল শেখার মাধ্যমেই তৈরি হবে আপনার সফল ক্যারিয়ার। আর সেই পথটা সহজ করতে, শুরু থেকে শেষ পর্যন্ত আপনার পাশে থাকবে <strong className="text-primary font-medium tracking-wide">MISUN Academy</strong>। শুধু শেখানো নয়, আমরা বিশ্বাস করি একজন শিক্ষার্থীর পরিপূর্ণ ক্যারিয়ার গঠনে গাইড করাটাই সবচেয়ে গুরুত্বপূর্ণ।
+            <p className="readable-body max-w-xl">
+              ডিজিটাল এই যুগে সঠিক স্কিল শেখার মাধ্যমেই তৈরি হবে আপনার সফল ক্যারিয়ার। আর সেই পথটা সহজ করতে, শুরু থেকে শেষ পর্যন্ত আপনার পাশে থাকবে <strong className="font-semibold text-white">MISUN Academy</strong>। শুধু শেখানো নয়, আমরা বিশ্বাস করি একজন শিক্ষার্থীর পরিপূর্ণ ক্যারিয়ার গঠনে গাইড করাটাই সবচেয়ে গুরুত্বপূর্ণ।
             </p>
 
             {/* Platform Highlights (Glass Pill) */}
@@ -79,8 +94,8 @@ export default function HeroSection() {
                   <UserCheck size={18} className="text-primary-glow" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-white">এক্সপার্ট মেন্টরশিপ</div>
-                  <div className="text-[11px] text-white/50 uppercase tracking-wider mt-0.5">সবসময় গাইডেন্স</div>
+                  <div className="readable-micro-label font-semibold text-white">এক্সপার্ট মেন্টরশিপ</div>
+                  <div className="readable-micro-label mt-0.5">সবসময় গাইডেন্স</div>
                 </div>
               </div>
 
@@ -92,8 +107,8 @@ export default function HeroSection() {
                   <Video size={18} className="text-blue-400" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-white">লাইভ সাপোর্ট</div>
-                  <div className="text-[11px] text-white/50 uppercase tracking-wider mt-0.5">নিয়মিত প্র্যাকটিস</div>
+                  <div className="text-sm sm:text-base font-semibold text-white">লাইভ সাপোর্ট</div>
+                  <div className="readable-micro-label mt-0.5">নিয়মিত প্র্যাকটিস</div>
                 </div>
               </div>
 
@@ -105,40 +120,35 @@ export default function HeroSection() {
                   <Clock size={18} className="text-yellow-400" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-white">লাইফটাইম এক্সেস</div>
-                  <div className="text-[11px] text-white/50 uppercase tracking-wider mt-0.5">কোর্স রেকর্ডিং</div>
+                  <div className="text-sm sm:text-base font-semibold text-white">লাইফটাইম এক্সেস</div>
+                  <div className="readable-micro-label mt-0.5">কোর্স রেকর্ডিং</div>
                 </div>
               </div>
             </div>
 
             {/* CTA */}
             <div className="pt-4">
-              <Link href="/courses">
-                {/* Spinning glowing border wrapper */}
-                <div className="relative inline-flex p-[2px] rounded-xl overflow-hidden
-                  shadow-[0_4px_24px_rgba(32,180,134,0.35)]
-                  hover:shadow-[0_8px_36px_rgba(32,180,134,0.60)]
-                  hover:scale-105 hover:-translate-y-0.5
-                  active:scale-95 active:translate-y-0
+              <Link href="/course-details" className="group relative inline-flex overflow-hidden rounded-xl p-[2px]
+                shadow-[0_4px_24px_rgba(32,180,134,0.35)]
+                hover:shadow-[0_8px_36px_rgba(32,180,134,0.60)]
+                hover:scale-105 hover:-translate-y-0.5
+                active:scale-95 active:translate-y-0
+                transition-all duration-300 ease-out">
+                <AnimatedBorder />
+                <span className="relative overflow-hidden
+                  inline-flex items-center gap-2
+                  px-8 py-3.5
+                  text-base font-bold tracking-wide rounded-[10px]
+                  bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
+                  text-white
+                  hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
                   transition-all duration-300 ease-out">
-                  <AnimatedBorder />
-                  <button className="group relative overflow-hidden
-                    inline-flex items-center gap-2
-                    px-8 py-3.5
-                    text-base font-bold tracking-wide rounded-[10px]
-                    bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
-                    text-white
-                    hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
-                    transition-all duration-300 ease-out">
-                    <span className="relative z-10 flex items-center gap-2">
-                      {/* আমাদের কোর্সসমূহ দেখুন */}
-                      আমাদের কোর্সটি দেখুন
-                      <MousePointer2 className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
-                    </span>
-                    {/* Shine sweep */}
-                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
-                  </button>
-                </div>
+                  <span className="relative z-10 flex items-center gap-2">
+                    আমাদের কোর্সটি দেখুন
+                    <MousePointer2 className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
+                  </span>
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                </span>
               </Link>
             </div>
 
@@ -146,7 +156,6 @@ export default function HeroSection() {
 
           {/* ── Right Column: Hero Image & 3D Floating Elements ── */}
           <div className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square flex items-center justify-center mt-12 lg:mt-0">
-
             {/* The Main Image */}
             <div className="relative z-10 w-[85%] h-[85%] transition-transform duration-1000 ease-out hover:scale-105 hover:rotate-1">
               {/* Image Glow Underneath */}
@@ -166,21 +175,21 @@ export default function HeroSection() {
 
             {/* ── 3D Floating Glass Elements ── */}
             {/* Top Left: Palette */}
-            <div className="absolute top-[10%] left-[5%] z-20 animate-[bounce_5s_infinite_ease-in-out]">
+            <div aria-hidden="true" className="hidden md:block absolute top-[10%] left-[5%] z-20 animate-[bounce_5s_infinite_ease-in-out] motion-reduce:animate-none">
               <div className="flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.3)] transform -rotate-12 transition-transform hover:scale-110 hover:rotate-0 hover:border-primary/50 cursor-default">
                 <Palette className="w-6 h-6 md:w-8 md:h-8 text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.6)]" />
               </div>
             </div>
 
             {/* Top Right: Pen Tool */}
-            <div className="absolute top-[20%] right-[5%] z-20 animate-[bounce_4s_infinite_ease-in-out_1s]">
+            <div aria-hidden="true" className="hidden md:block absolute top-[20%] right-[5%] z-20 animate-[bounce_4s_infinite_ease-in-out_1s] motion-reduce:animate-none">
               <div className="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 backdrop-blur-md shadow-[0_10px_30px_hsla(156,70%,42%,0.2)] transform rotate-12 transition-transform hover:scale-110 hover:-rotate-12 hover:border-primary cursor-default">
                 <PenTool className="w-5 h-5 md:w-6 md:h-6 text-primary-glow drop-shadow-[0_0_8px_hsla(156,70%,42%,0.8)]" />
               </div>
             </div>
 
             {/* Bottom Left: Layers */}
-            <div className="absolute bottom-[25%] left-[2%] z-20 animate-[bounce_6s_infinite_ease-in-out_2s]">
+            <div aria-hidden="true" className="hidden md:block absolute bottom-[25%] left-[2%] z-20 animate-[bounce_6s_infinite_ease-in-out_2s] motion-reduce:animate-none">
               <div className="flex items-center justify-center w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20 backdrop-blur-md shadow-[0_10px_30px_rgba(59,130,246,0.2)] transform -rotate-6 transition-transform hover:scale-110 hover:rotate-6 hover:border-blue-400/50 cursor-default">
                 <div className="relative">
                   <Layers className="w-7 h-7 md:w-9 md:h-9 text-blue-400 drop-shadow-[0_0_10px_rgba(96,165,250,0.6)]" />
@@ -191,15 +200,15 @@ export default function HeroSection() {
             </div>
 
             {/* Bottom Right: Crop Tool */}
-            <div className="absolute bottom-[15%] right-[10%] z-20 animate-[bounce_4.5s_infinite_ease-in-out_0.5s]">
+            <div aria-hidden="true" className="hidden md:block absolute bottom-[15%] right-[10%] z-20 animate-[bounce_4.5s_infinite_ease-in-out_0.5s] motion-reduce:animate-none">
               <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-yellow-500/10 to-transparent border border-yellow-500/20 backdrop-blur-md shadow-[0_10px_30px_rgba(234,179,8,0.2)] transform rotate-6 transition-transform hover:scale-110 hover:-rotate-6 hover:border-yellow-400/50 cursor-default">
                 <Crop className="w-5 h-5 md:w-7 md:h-7 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" />
               </div>
             </div>
 
             {/* Center Background Tech Dots (Decorative) */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full border border-dashed border-white/5 rounded-full animate-[spin_60s_linear_infinite] pointer-events-none -z-10" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] border border-dashed border-primary/10 rounded-full animate-[spin_40s_linear_infinite_reverse] pointer-events-none -z-10" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full border border-dashed border-white/5 rounded-full animate-[spin_60s_linear_infinite] motion-reduce:animate-none pointer-events-none -z-10" aria-hidden="true" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] border border-dashed border-primary/10 rounded-full animate-[spin_40s_linear_infinite_reverse] motion-reduce:animate-none pointer-events-none -z-10" aria-hidden="true" />
 
           </div>
 

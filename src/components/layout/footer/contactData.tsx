@@ -21,7 +21,7 @@ export const contactItems = [
 
 export const companyLinks = [
   { href: '/', label: 'হোম' },
-  { href: '/courses', label: 'কোর্সসমূহ' },
+  { href: '/course-details', label: 'কোর্সের বিস্তারিত' },
   { href: '/about', label: 'আমাদের সম্পর্কে' },
   { href: '/terms-and-conditions', label: 'শর্তাবলী' },
   { href: '/privacy-policy', label: 'গোপনীয়তা নীতি' },

@@ -3,7 +3,7 @@ import { bootcampDoses } from './bootcampData';
 
 export const BootcampDoseSchedule = () => (
     <section className="bg-[#0a0a0b] py-14 text-white">
-        <div className="mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-7xl px-4">
             <FadeIn>
                 <p className="font-mona text-xs font-bold uppercase tracking-[0.3em] text-[#ffd60a]">
                     Dosage Schedule
@@ -11,7 +11,7 @@ export const BootcampDoseSchedule = () => (
                 <h2 className="mt-2 font-bangla text-2xl font-bold sm:text-3xl">
                     ৪ দিনের ডোজ শিডিউল
                 </h2>
-                <p className="mt-2 max-w-2xl font-bangla text-sm text-white/60">
+                <p className="mt-2 max-w-2xl font-bangla text-sm text-white/70">
                     প্রতিদিন রাত ৯টায় একটি করে ডোজ — জুমে লাইভ।
                 </p>
             </FadeIn>

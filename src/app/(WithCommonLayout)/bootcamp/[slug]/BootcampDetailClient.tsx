@@ -51,24 +51,24 @@ export default function BootcampDetailClient() {
 
     if (isLoading) {
         return (
-            <main className="bg-[#0a0a0b]">
-                <div className="mx-auto max-w-6xl px-4 py-16">
+            <div className="bg-[#0a0a0b]">
+                <div className="mx-auto max-w-7xl px-4 py-16">
                     <div className="h-80 animate-pulse rounded-2xl bg-white/5" />
                 </div>
-            </main>
+            </div>
         );
     }
 
     if (error || !data?.data) {
         return (
-            <main className="bg-[#0a0a0b]">
+            <div className="bg-[#0a0a0b]">
                 <div className="mx-auto max-w-3xl px-4 py-20 text-center">
                     <p className="font-bangla text-xl text-white/70">বুটক্যাম্প পাওয়া যায়নি।</p>
                     <Link href="/bootcamp" className="mt-6 inline-block rounded-xl bg-[#ffd60a] px-6 py-3 font-bangla font-bold text-black">
                         সব বুটক্যাম্প দেখুন
                     </Link>
                 </div>
-            </main>
+            </div>
         );
     }
 
@@ -84,11 +84,11 @@ export default function BootcampDetailClient() {
     };
 
     return (
-        <main className="bg-[#0a0a0b] pb-20 text-white lg:pb-0">
+        <div className="bg-[#0a0a0b] pb-20 text-white lg:pb-0">
             <DetailHero bootcamp={bootcamp} hasPurchased={hasPurchased} onBuy={handleBuy} watchUrl={watchUrl} />
 
             {hasPurchased ? (
-                <section className="mx-auto max-w-6xl px-4 py-6">
+                <section className="mx-auto max-w-7xl px-4 py-6">
                     <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-[#ffd60a]/25 bg-[#ffd60a]/[0.06] p-6 sm:flex-row sm:items-center">
                         <div>
                             <p className="font-bangla text-lg font-bold">
@@ -113,7 +113,7 @@ export default function BootcampDetailClient() {
             <DetailPainPoints items={bootcamp.painPoints} />
 
             {bootcamp.perks && bootcamp.perks.length > 0 ? (
-                <section className="mx-auto max-w-6xl px-4 py-10">
+                <section className="mx-auto max-w-7xl px-4 py-10">
                     <p className="font-bangla text-sm font-semibold text-[#ffd60a]">অন্তর্ভুক্ত</p>
                     <h2 className="mt-1 font-bangla text-2xl font-bold sm:text-3xl">যা যা পাচ্ছেন</h2>
                     <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -152,6 +152,6 @@ export default function BootcampDetailClient() {
                 price={bootcamp.recordedPrice}
             />
             <BreadcrumbJsonLd />
-        </main>
+        </div>
     );
 }

@@ -1,20 +1,17 @@
 'use client';
 
 import { memo } from 'react';
-import { useCountUp } from '@/hooks/useCountUp';
+import Counter from '@/components/shared/Counter';
 
 interface StatCardProps {
   icon: React.ReactNode;
   target: number;
   suffix: string;
   label: string;
-  animate: boolean;
   delay?: number;
 }
 
-export const StatCard = memo(function StatCard({ icon, target, suffix, label, animate, delay = 0 }: StatCardProps) {
-  const count = useCountUp(target, 1800, animate);
-
+export const StatCard = memo(function StatCard({ icon, target, suffix, label, delay = 0 }: StatCardProps) {
   return (
     <div
       className="relative p-[2px] rounded-2xl overflow-hidden mx-12 md:mx-0 group
@@ -22,7 +19,8 @@ export const StatCard = memo(function StatCard({ icon, target, suffix, label, an
       style={{ animationDelay: `${delay}ms` }}
     >
       <span
-        className="absolute inset-[-100%] animate-[spin_4s_linear_infinite]"
+        aria-hidden="true"
+        className="absolute inset-[-100%] animate-[spin_4s_linear_infinite] motion-reduce:animate-none"
         style={{
           background:
             'conic-gradient(from 0deg, transparent 0%, transparent 25%, hsl(156 70% 42% / 0.6) 38%, hsl(156 80% 58%) 48%, hsl(156 90% 80%) 53%, hsl(0 0% 100% / 0.9) 56%, hsl(156 90% 80%) 59%, hsl(156 80% 58%) 64%, hsl(156 70% 42% / 0.4) 72%, transparent 82%)',
@@ -48,12 +46,18 @@ export const StatCard = memo(function StatCard({ icon, target, suffix, label, an
           <div className="text-white">{icon}</div>
         </div>
 
-        <span className="relative z-10 text-5xl md:text-6xl font-bold mt-5 tabular-nums
-          bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent">
-          {count}{suffix}
+        <span className="relative z-10 text-5xl md:text-6xl font-bold mt-5 tabular-nums text-primary-glow">
+          <Counter
+            value={target}
+            suffix={suffix}
+            locale="bn-BD"
+            fontSize="inherit"
+            fontWeight="inherit"
+            textColor="inherit"
+          />
         </span>
 
-        <span className="relative z-10 mt-3 text-base md:text-lg font-medium text-white/60 group-hover:text-white/90 transition-colors duration-300 font-bangla text-center leading-relaxed">
+        <span className="relative z-10 mt-3 text-base md:text-lg font-medium text-white/85 font-bangla text-center leading-relaxed">
           {label}
         </span>
       </div>

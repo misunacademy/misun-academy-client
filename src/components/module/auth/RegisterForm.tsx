@@ -30,7 +30,7 @@ interface RegisterFormProps {
   onRegister: (data: RegisterFormData & { agreedToTerms: boolean }) => void;
 }
 
-const INPUT_CLASSES = "h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/30 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors autofill:shadow-[inset_0_0_0px_1000px_rgb(13,31,18)] autofill:[-webkit-text-fill-color:white]";
+const INPUT_CLASSES = "h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/50 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors autofill:shadow-[inset_0_0_0px_1000px_rgb(13,31,18)] autofill:[-webkit-text-fill-color:white]";
 
 const RegisterForm = ({ onRegister }: RegisterFormProps) => {
   const { signInWithGoogle } = useAuth();
@@ -77,11 +77,11 @@ const RegisterForm = ({ onRegister }: RegisterFormProps) => {
               checked={agreeToTerms}
               onChange={(e) => setAgreeToTerms(e.target.checked)}
             />
-            <span className="text-white/45 leading-relaxed">
+            <span className="text-white/75 leading-relaxed">
               আমি{' '}
-              <Link href="/terms-and-conditions" target="_blank" className="text-primary/80 hover:text-primary underline underline-offset-2">শর্তাবলী</Link>
+              <Link href="/terms-and-conditions" target="_blank" className="text-primary-glow hover:text-white underline underline-offset-2">শর্তাবলী</Link>
               {' '}এবং{' '}
-              <Link href="/privacy-policy" target="_blank" className="text-primary/80 hover:text-primary underline underline-offset-2">গোপনীয়তা নীতি</Link>
+              <Link href="/privacy-policy" target="_blank" className="text-primary-glow hover:text-white underline underline-offset-2">গোপনীয়তা নীতি</Link>
               {' '}সম্মত
             </span>
           </label>

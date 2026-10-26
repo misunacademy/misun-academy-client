@@ -84,20 +84,20 @@ const Feedback = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
               </span>
-              <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">রিভিউ</span>
+              <span className="text-xs font-semibold text-primary-glow">রিভিউ</span>
             </div>
 
-            <h2 className="text-3xl lg:text-4xl font-bold leading-[140%]">
-              <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent pt-2">আমাদের শিক্ষার্থীরা কী </span>
-              <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_16px_hsl(156_70%_42%/0.4)]">বলছে?</span>
+            <h2 className="text-3xl lg:text-4xl font-bold leading-[1.4] text-white">
+              <span className="text-white pt-2">আমাদের শিক্ষার্থীরা কী </span>
+              <span className="text-primary-glow">বলছে?</span>
             </h2>
 
             <div className="flex justify-center items-center gap-4 mt-6 flex-wrap">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/8 border border-primary/15">
-                <span className="text-xs text-white/55">মোট পর্যালোচনা: <strong className="text-white/80">{filteredTestimonials.length}</strong></span>
+                <span className="text-xs text-white/80">মোট পর্যালোচনা: <strong className="text-white">{filteredTestimonials.length}</strong></span>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/8 border border-primary/15">
-                <span className="text-xs text-white/55">পৃষ্ঠা <strong className="text-primary">{currentPage}</strong> / {totalPages}</span>
+                <span className="text-xs text-white/80">পৃষ্ঠা <strong className="text-primary-glow">{currentPage}</strong> / {totalPages}</span>
               </div>
             </div>
 
@@ -153,8 +153,8 @@ const Feedback = () => {
                   <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-primary/40 rounded-tr-2xl" />
                   <Users className="w-10 h-10 text-primary/40" />
                 </div>
-                <h3 className="text-lg font-semibold text-white/70 mb-2">কোনো পর্যালোচনা পাওয়া যায়নি</h3>
-                <p className="text-white/35 text-sm">নির্বাচিত ব্যাচে কোনো শিক্ষার্থীর মতামত নেই।</p>
+                <h3 className="text-lg font-semibold text-white mb-2">কোনো পর্যালোচনা পাওয়া যায়নি</h3>
+                <p className="readable-micro-label">নির্বাচিত ব্যাচে কোনো শিক্ষার্থীর মতামত নেই।</p>
               </div>
             )}
           </div>

@@ -25,15 +25,15 @@ export default function FeedbackHeroSection() {
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
                     </span>
-                    <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">শিক্ষার্থীদের মতামত</span>
+                    <span className="text-xs font-semibold text-primary-glow">শিক্ষার্থীদের মতামত</span>
                 </div>
 
-                <h1 className="text-4xl md:text-6xl font-bold leading-[140%] mb-6">
-                    <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent pt-2">শিক্ষার্থীদের </span>
-                    <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.45)]">সফলতার গল্প</span>
+                <h1 className="text-4xl md:text-6xl font-bold leading-[1.4] mb-6 text-white">
+                    <span className="text-white pt-2">শিক্ষার্থীদের </span>
+                    <span className="text-primary-glow">সফলতার গল্প</span>
                 </h1>
 
-                <p className="text-lg md:text-xl text-white/55 max-w-2xl mx-auto leading-relaxed mb-14">
+                <p className="readable-body max-w-2xl mx-auto mb-14">
                     MISUN Academy-র শিক্ষার্থীদের বাস্তব অভিজ্ঞতা ও সফলতার গল্প যা আপনাকে অনুপ্রাণিত করবে
                 </p>
 
@@ -53,8 +53,8 @@ export default function FeedbackHeroSection() {
                             <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-primary/40 rounded-tr-2xl" />
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className="flex justify-center mb-2">{stat.icon}</div>
-                            <div className="text-2xl md:text-3xl font-black bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">{stat.value}</div>
-                            <div className="text-xs text-white/40 uppercase tracking-widest mt-1">{stat.label}</div>
+                            <div className="text-2xl md:text-3xl font-black text-white">{stat.value}</div>
+                            <div className="readable-micro-label mt-1">{stat.label}</div>
                         </div>
                     ))}
                 </div>

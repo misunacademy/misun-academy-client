@@ -11,7 +11,7 @@ export function DetailMentor({
 }) {
   if (!mentor?.name) return null;
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10">
+    <section className="mx-auto max-w-7xl px-4 py-10">
       <p className="font-bangla text-sm font-semibold text-[#ffd60a]">মেন্টর</p>
       <h2 className="mt-1 font-bangla text-2xl font-bold sm:text-3xl">
         যার কাছ থেকে শিখবেন

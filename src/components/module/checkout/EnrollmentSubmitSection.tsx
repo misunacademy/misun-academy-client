@@ -27,7 +27,7 @@ export function EnrollmentSubmitSection({
       <div className="relative overflow-hidden rounded-xl bg-primary/8 border border-primary/20 p-4">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
         <div className="flex justify-between items-center font-semibold text-lg">
-          <span className="text-white/70">Total Amount:</span>
+          <span className="text-white/80">সর্বমোট:</span>
           <span className="text-primary font-bold">৳{totalPrice?.toLocaleString?.('en-IN')}</span>
         </div>
       </div>
@@ -36,7 +36,7 @@ export function EnrollmentSubmitSection({
         <div className="rounded-xl bg-yellow-500/8 border border-yellow-500/20 p-3 text-center">
           <p className="text-sm text-yellow-400 font-medium">এনরোলমেন্ট উইন্ডো এখনো খোলা হয়নি</p>
           {(batch.enrollmentStartDate as string) && (
-            <p className="text-xs text-white/40 mt-1">
+            <p className="text-xs text-white/70 mt-1">
               শুরু: {new Date(batch.enrollmentStartDate as string).toLocaleDateString('bn-BD', {
                 day: 'numeric', month: 'long', year: 'numeric'
               })}
@@ -53,36 +53,37 @@ export function EnrollmentSubmitSection({
             onChange={() => onAgreeChange(!agreed)}
             className="mt-1 accent-primary"
           />
-          <span className="text-white/50 leading-relaxed">
-            I have read and agree to the{' '}
+          <span className="text-white/75 leading-relaxed">
+            আমি{' '}
             <a href="/terms-and-conditions" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">
-              Terms & Conditions
+              শর্তাবলী
             </a>,{' '}
             <a href="/privacy-policy" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">
-              Privacy Policy
-            </a>, and{' '}
+              প্রাইভেসি পলিসি
+            </a> এবং{' '}
             <a href="/refund-policy" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">
-              Return, Refund & Cancellation Policy
-            </a>.
+              রিটার্ন, রিফান্ড ও ক্যান্সেলেশন পলিসি
+            </a>{' '}
+            পড়েছি এবং সম্মত আছি।
           </span>
         </label>
 
-        <div className={`relative p-[1.5px] rounded-xl overflow-hidden transition-opacity ${isDisabled ? 'opacity-50' : ''}`}>
+        <div className="relative p-[1.5px] rounded-xl overflow-hidden">
           <AnimatedBorder variant="simple" speed="3s" />
           <button
             type="submit"
             disabled={isDisabled}
-            className="relative w-full bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep disabled:cursor-not-allowed transition-all duration-300 text-white font-bold py-3.5 rounded-xl text-base"
+            className="relative w-full bg-primary hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-emerald-darker disabled:text-white disabled:ring-1 disabled:ring-inset disabled:ring-primary/25 transition-colors duration-300 text-primary-foreground font-bold py-3.5 rounded-xl text-base"
           >
             {isProcessing ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Processing...
+                প্রসেস হচ্ছে...
               </span>
             ) : !isEnrollmentOpen && batch ? (
               'এনরোলমেন্ট শুরু হয়নি'
             ) : (
-              'Complete Enrollment'
+              'এনরোলমেন্ট সম্পন্ন করুন'
             )}
           </button>
         </div>

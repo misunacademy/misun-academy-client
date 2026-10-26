@@ -28,7 +28,7 @@ export const BootcampFaq = () => (
                             <AccordionTrigger className="font-bangla text-base font-semibold text-white/90 hover:text-[#ffd60a] hover:no-underline">
                                 {faq.question}
                             </AccordionTrigger>
-                            <AccordionContent className="font-bangla text-sm leading-relaxed text-white/60">
+                            <AccordionContent className="font-bangla text-sm leading-relaxed text-white/70">
                                 {faq.answer}
                             </AccordionContent>
                         </AccordionItem>
@@ -43,7 +43,7 @@ export const BootcampFaq = () => (
                         sizes="320px"
                         className="w-64 max-w-full"
                     />
-                    <p className="max-w-md font-bangla text-sm text-white/60">
+                    <p className="max-w-md font-bangla text-sm text-white/70">
                         ৩৫০ টাকার এই ডোজ মিস করবেন না — সিট নিশ্চিত করতে আজই রেজিস্ট্রেশন
                         করে ফেলুন।
                     </p>

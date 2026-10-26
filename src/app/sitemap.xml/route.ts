@@ -3,7 +3,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!;
 const URLS = [
     '/',
     '/about',
-    '/courses',
+    '/course-details',
     '/privacy-policy',
     '/terms-and-conditions',
     '/refund-policy',

@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import { useLenis } from 'lenis/react';
 
 interface ScrollProgress {
@@ -11,34 +12,49 @@ export function useScrollProgress(threshold = 200): ScrollProgress {
   const [isVisible, setIsVisible] = useState(false);
   const [progress, setProgress] = useState(0);
   const lenis = useLenis();
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
-    const handleScroll = () => {
+    let frame = 0;
+
+    const update = () => {
+      frame = 0;
+
       const winScroll = window.scrollY;
       const height =
         document.documentElement.scrollHeight - document.documentElement.clientHeight;
 
       if (height > 0) {
-        const scrolled = (winScroll / height) * 100;
-        setProgress(scrolled);
+        setProgress((winScroll / height) * 100);
       }
 
       setIsVisible(winScroll > threshold);
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    const handleScroll = () => {
+      if (frame !== 0) return;
+      frame = window.requestAnimationFrame(update);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
 
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.cancelAnimationFrame(frame);
+    };
   }, [threshold]);
 
   const scrollToTop = useCallback(() => {
     if (lenis) {
-      lenis.scrollTo(0, { duration: 1.2 });
+      lenis.scrollTo(0, { duration: prefersReducedMotion ? 0 : 1.2 });
     } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({
+        top: 0,
+        behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      });
     }
-  }, [lenis]);
+  }, [lenis, prefersReducedMotion]);
 
   return { isVisible, progress, scrollToTop };
 }

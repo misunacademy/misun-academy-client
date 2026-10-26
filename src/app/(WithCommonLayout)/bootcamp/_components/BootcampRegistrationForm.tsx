@@ -105,7 +105,7 @@ export const BootcampRegistrationForm = () => {
                                     <h2 className="mt-5 font-bangla text-2xl font-bold">
                                         রেজিস্ট্রেশন সম্পন্ন!
                                     </h2>
-                                    <p className="mx-auto mt-3 max-w-md font-bangla text-sm leading-relaxed text-white/60">
+                                    <p className="mx-auto mt-3 max-w-md font-bangla text-sm leading-relaxed text-white/70">
                                         আপনার তথ্য পেয়ে গেছি। পেমেন্ট যাচাইয়ের পর বুটক্যাম্পের
                                         জুম লিংক ও প্রয়োজনীয় সব তথ্য আপনাকে জানিয়ে দেওয়া
                                         হবে।
@@ -128,7 +128,7 @@ export const BootcampRegistrationForm = () => {
                                             <h2 className="font-bangla text-xl font-bold sm:text-2xl">
                                                 রেজিস্ট্রেশন ফর্ম
                                             </h2>
-                                            <p className="mt-1 font-bangla text-sm text-white/55">
+                                            <p className="mt-1 font-bangla text-sm text-white/65">
                                                 ৩৫০ টাকা সেন্ড মানি করে ফর্মটি পূরণ করুন।
                                             </p>
                                         </div>

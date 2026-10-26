@@ -19,12 +19,12 @@ describe("ManualPaymentForm currency", () => {
   it("defaults to the INR manual-payment account", () => {
     expect(paymentInfo.currency).toBe("INR");
     renderForm();
-    expect(screen.getByText(/Amount: INR/)).toBeInTheDocument();
+    expect(screen.getByText(/পরিমাণ: INR/)).toBeInTheDocument();
   });
 
   it("renders the batch currency when provided (e.g. BDT batches)", () => {
     renderForm({ manualCurrency: "BDT" });
-    expect(screen.getByText(/Amount: ৳/)).toBeInTheDocument();
+    expect(screen.getByText(/পরিমাণ: ৳/)).toBeInTheDocument();
     expect(screen.queryByText(/INR/)).not.toBeInTheDocument();
   });
 });

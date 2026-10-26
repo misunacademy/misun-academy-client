@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, type MouseEvent } from 'react';
+import { useEffect, useState, type MouseEvent } from 'react';
 import { Skeleton } from 'boneyard-js/react'
-import Link from 'next/link';
-import { CalendarCheck, CalendarX, Rocket, X } from 'lucide-react';
+// import Link from 'next/link';
+import { ArrowRight, CalendarCheck, CalendarX, X } from 'lucide-react';
 import { BatchResponse } from '@/redux/api/batchApi';
 import { useCurrentBatch } from '@/hooks/useCurrentBatch';
 import { formatDate } from './EnrollmentSection';
@@ -15,6 +15,19 @@ type EnrollmentFixedContentProps = {
 
 function EnrollmentFixedContent({ batch, onScrollToEnroll }: EnrollmentFixedContentProps) {
     const [isOpen, setIsOpen] = useState(true);
+    const [isFooterVisible, setIsFooterVisible] = useState(false);
+
+    useEffect(() => {
+        const footer = document.querySelector('footer');
+        if (!footer) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => setIsFooterVisible(entry.isIntersecting),
+            { rootMargin: '0px 0px -25% 0px' }
+        );
+        observer.observe(footer);
+        return () => observer.disconnect();
+    }, []);
 
     const safeFormatDate = (date?: Date | string | null) => {
         if (!date) return 'তথ্য পাওয়া যায়নি';
@@ -26,18 +39,19 @@ function EnrollmentFixedContent({ batch, onScrollToEnroll }: EnrollmentFixedCont
         }
     };
 
-    if (!isOpen) return null;
+    if (!isOpen || isFooterVisible) return null;
 
     return (
         <div className=''>
             <div
                 className="
-        fixed bottom-5 left-5 
-        bg-[#07120d]/95 border border-primary/20 
-        shadow-[0_12px_30px_hsl(156_70%_42%/0.18)] rounded-md 
-        p-4 max-w-xs 
-        font-bangla text-white/80 
-        text-sm font-medium
+        fixed bottom-3 left-3 right-3 sm:bottom-5 sm:left-5 sm:right-auto
+        sm:w-[calc(100vw-2.5rem)] max-w-[210px] sm:max-w-[344px]
+        bg-surface border border-primary/25
+        shadow-[0_12px_30px_hsl(156_70%_42%/0.18)] rounded-xl
+        p-2.5 pr-12 sm:p-4 sm:pr-14
+        font-bangla text-white/85
+        text-xs sm:text-base font-medium
         z-50
       "
                 style={{ backdropFilter: 'blur(6px)' }}
@@ -46,43 +60,40 @@ function EnrollmentFixedContent({ batch, onScrollToEnroll }: EnrollmentFixedCont
                     type="button"
                     aria-label="পপআপ বন্ধ করুন"
                     onClick={() => setIsOpen(false)}
-                    className="absolute -top-2 -right-2 grid h-6 w-6 place-items-center rounded-full border border-primary/30 bg-[#0b1d14] text-white/70 shadow-md transition hover:scale-105 hover:text-white"
+                    className="absolute top-1.5 right-1.5 grid h-11 w-11 min-h-[44px] min-w-[44px] place-items-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
-                    <X size={14} />
+                    <X size={16} />
                 </button>
 
-                <div className="flex items-center gap-2 mb-2">
-                    <CalendarCheck size={20} className="text-green-600" />
-                    <p>
-                        এনরোলমেন্ট শুরু: <span className="text-primary font-semibold">{safeFormatDate(batch.enrollmentStartDate)}</span>
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
-                    <CalendarX size={20} className="text-red-600" />
-                    <p>
-                        এনরোলমেন্ট শেষ: <span className="text-primary font-semibold">{safeFormatDate(batch.enrollmentEndDate)}</span>
-                    </p>
-                </div>
-                <Link
-                    href="#enroll-now"
-                    onClick={onScrollToEnroll}
-                    aria-label="এনরোলমেন্ট করুন"
-                    className="fixed left-[260px] bottom-[17px] z-50 group hidden sm:block"
-                >
-                    <span className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400/55 via-cyan-400/45 to-blue-500/55 blur-lg group-hover:blur-xl transition-all duration-300" />
-                    <span className="absolute inset-[-7px] rounded-full border border-cyan-200/60 animate-ping" />
-                    <span className="absolute inset-[-10px] rounded-full border border-dashed border-white/35 animate-[spin_7s_linear_infinite]" />
-                    <span className="absolute -top-1 -right-0.5 h-2.5 w-2.5 rounded-full bg-amber-300 shadow-[0_0_14px_rgba(251,191,36,0.95)] animate-pulse" />
+                <div className="flex items-center gap-3 sm:block">
+                    <div className="min-w-0 flex-1 space-y-0.5 sm:space-y-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                            <CalendarCheck size={16} className="shrink-0 text-primary-glow sm:h-5 sm:w-5" aria-hidden="true" />
+                            <p className="truncate">
+                                <span className="hidden sm:inline">এনরোলমেন্ট শুরু: </span>
+                                <span className="sm:hidden">শুরু: </span>
+                                <span className="text-primary-glow font-semibold">{safeFormatDate(batch.enrollmentStartDate)}</span>
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                            <CalendarX size={16} className="shrink-0 text-red-400 sm:h-5 sm:w-5" aria-hidden="true" />
+                            <p className="truncate">
+                                <span className="hidden sm:inline">এনরোলমেন্ট শেষ: </span>
+                                <span className="sm:hidden">শেষ: </span>
+                                <span className="text-primary-glow font-semibold">{safeFormatDate(batch.enrollmentEndDate)}</span>
+                            </p>
+                        </div>
+                    </div>
 
-                    <span className="relative grid h-11 w-11 place-items-center rounded-full border border-white/45 bg-gradient-to-br from-emerald-500 via-cyan-500 to-blue-600 text-white shadow-[0_12px_30px_rgba(6,182,212,0.52)] ring-1 ring-white/15 transition-all duration-300 group-hover:scale-110 group-hover:-translate-y-0.5 group-hover:rotate-6">
-                        <span className="absolute inset-[3px] rounded-full bg-gradient-to-br from-white/28 via-white/10 to-transparent" />
-                        <Rocket className="relative h-4.5 w-4.5 animate-bounce" />
-                    </span>
-
-                    <span className="pointer-events-none absolute left-1/2 top-full mt-2 -translate-x-1/2 rounded-full border border-cyan-200/40 bg-slate-900/85 px-2 py-0.5 text-[9px] font-semibold tracking-[0.16em] text-cyan-100 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0.5">
-                        ENROLL
-                    </span>
-                </Link>
+                    {/* <Link
+                        href="#enroll-now"
+                        onClick={onScrollToEnroll}
+                        className="inline-flex shrink-0 min-h-[44px] items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:mt-4 sm:w-full sm:gap-2 sm:px-4 sm:py-2.5"
+                    >
+                        এনরোল করুন
+                        <ArrowRight size={16} aria-hidden="true" />
+                    </Link> */}
+                </div>
             </div>
         </div>
     );

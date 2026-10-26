@@ -55,9 +55,10 @@ export function CourseSelector({ courses, active, onSelect, configs }: CourseSel
                 />
               </div>
               <button
+                type="button"
                 onClick={() => onSelect(i)}
                 aria-pressed={isActive}
-                className="group relative overflow-hidden text-left rounded-2xl p-3.5 w-full lg:ml-10 transition-all duration-300 cursor-pointer"
+                className="group relative overflow-hidden text-left rounded-2xl p-3.5 w-full lg:ml-10 transition-all duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none"
                 style={{
                   background: isActive
                     ? `linear-gradient(135deg, ${cf.bg} 0%, ${cf.bgMid} 100%) padding-box, linear-gradient(135deg, ${cf.color}80, transparent 45%, ${cf.color}cc) border-box`
@@ -115,13 +116,13 @@ export function CourseSelector({ courses, active, onSelect, configs }: CourseSel
                   <div className="min-w-0">
                     <p
                       className="text-[13px] font-bold truncate pr-4"
-                      style={{ color: isActive ? "#fff" : "rgba(255,255,255,0.55)" }}
+                      style={{ color: isActive ? "#fff" : "rgba(255,255,255,0.8)" }}
                     >
                       {c.title}
                     </p>
                     <p
-                      className="text-[10px] mt-0.5 flex items-center gap-1.5"
-                      style={{ color: isActive ? cf.color : "rgba(255,255,255,0.30)" }}
+                      className="text-[11px] mt-0.5 flex items-center gap-1.5"
+                      style={{ color: isActive ? cf.color : "rgba(255,255,255,0.7)" }}
                     >
                       {c.modules.length + (c.projects?.length ?? 0)} items
                     </p>

@@ -25,7 +25,7 @@ const NavbarAuthSection = dynamic(() => import('./NavbarAuthSection'), {
 
 const NAV_LINKS = [
   { name: 'হোম', path: '/' },
-  { name: 'কোর্সের বিস্তারিত', path: '/courses' },
+  { name: 'কোর্সের বিস্তারিত', path: '/course-details' },
   { name: 'শিক্ষার্থীদের মতামত', path: '/feedback' },
   { name: 'আমাদের সম্পর্কে', path: '/about' },
   { name: 'বুটক্যাম্প', path: '/bootcamp' },
@@ -68,9 +68,9 @@ const Navbar = memo(function Navbar() {
                 <Link
                   key={link.path}
                   href={link.path}
-                  className="relative group py-2"
+                  className="relative group py-2 min-h-[44px] inline-flex items-center"
                 >
-                  <span className="group-hover:text-primary transition-colors duration-300 text-xs">
+                  <span className="group-hover:text-primary transition-colors duration-300 text-sm font-semibold">
                     {link.name}
                   </span>
                   <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-primary-glow group-hover:w-full transition-all duration-300 ease-out" />
@@ -79,7 +79,7 @@ const Navbar = memo(function Navbar() {
 
               <NavbarAuthSection hydrated={isHydrated} />
             </div>
-            <div className="md:hidden px-3">
+            <div className="md:hidden px-3 min-h-[44px] min-w-[44px] flex items-center justify-center">
               <MobileNavbar />
             </div>
           </div>

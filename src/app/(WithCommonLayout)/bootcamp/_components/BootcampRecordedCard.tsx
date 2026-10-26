@@ -57,10 +57,10 @@ export const BootcampRecordedCard = ({ item }: { item: Card }) => {
                     {item.title}
                 </h3>
                 {item.tagline ? (
-                    <p className="line-clamp-2 font-bangla text-sm text-white/60">{item.tagline}</p>
+                    <p className="line-clamp-2 font-bangla text-sm text-white/70">{item.tagline}</p>
                 ) : null}
                 <div className="flex items-center justify-between pt-1">
-                    <span className="flex items-center gap-1 font-bangla text-xs text-white/55">
+                    <span className="flex items-center gap-1 font-bangla text-xs text-white/65">
                         <Clock className="h-3.5 w-3.5" />
                         {hours} • লাইফটাইম অ্যাক্সেস
                     </span>

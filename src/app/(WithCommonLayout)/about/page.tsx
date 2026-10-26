@@ -40,14 +40,14 @@ const AboutUs = () => {
         <div className="relative z-10 max-w-7xl mx-auto px-4 py-20">
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-6">
-              <Users className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">Our Team</span>
+              <Users className="w-3.5 h-3.5 text-primary-glow" aria-hidden="true" />
+              <span className="text-xs font-semibold text-primary-glow">টিম</span>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold leading-[140%]">
-              <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">Meet Our </span>
-              <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.45)]">Visionary Team</span>
+            <h2 className="text-3xl md:text-5xl font-bold leading-[1.4] text-white">
+              <span className="text-white">আমাদের </span>
+              <span className="text-primary-glow">ভিশনারি টিম</span>
             </h2>
-            <p className="mt-4 text-white/50 max-w-2xl mx-auto">
+            <p className="mt-4 readable-body max-w-2xl mx-auto">
               ডিজিটাল শিক্ষার রূপান্তরের পেছনে MISUN Academy&apos;র প্রতিভাবান টিমের সদস্যরা
             </p>
           </div>

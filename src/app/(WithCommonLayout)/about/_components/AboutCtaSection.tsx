@@ -16,15 +16,15 @@ export default function AboutCtaSection() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
           </span>
-          <span className="text-xs font-semibold uppercase text-primary/90">এখনই যোগ দিন</span>
+          <span className="text-xs font-semibold text-primary-glow">এখনই যোগ দিন</span>
         </div>
 
-        <h2 className="text-3xl md:text-4xl font-bold leading-[145%] mb-5">
-          <span className="bg-gradient-to-r from-white via-white/95 to-white/85 bg-clip-text text-transparent">আপনার ক্যারিয়ার </span>
-          <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.5)]">এখনই শুরু করুন</span>
+        <h2 className="text-3xl md:text-4xl font-bold leading-[1.45] mb-5 text-white">
+          <span className="text-white">আপনার ক্যারিয়ার </span>
+          <span className="text-primary-glow">এখনই শুরু করুন</span>
         </h2>
 
-        <p className="text-white/50 mb-10 leading-relaxed">
+        <p className="readable-body mb-10">
           হাজারো শিক্ষার্থীর মতো আপনিও MISUN Academy-র সাথে যুক্ত হয়ে ডিজিটাল স্কিল অর্জন করুন এবং ফ্রিল্যান্সিং বা লোকাল মার্কেটে সফল হোন।
         </p>
 
@@ -39,20 +39,16 @@ export default function AboutCtaSection() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/checkout">
-            <div className="inline-block relative p-[1.5px] rounded-xl overflow-hidden">
+          <Link href="/checkout" className="relative inline-block overflow-hidden rounded-xl p-[1.5px]">
               <AnimatedBorder variant="simple" speed="3s" />
-              <button className="relative bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep transition-all duration-300 text-white font-bold text-base px-8 py-3.5 rounded-xl shadow-[0_0_24px_hsl(156_70%_42%/0.4)] hover:shadow-[0_0_36px_hsl(156_70%_42%/0.6)] cursor-pointer flex items-center gap-2">
+              <span className="relative min-h-[44px] bg-primary hover:bg-primary/90 transition-all duration-300 text-primary-foreground font-bold text-base px-8 py-3.5 rounded-xl shadow-[0_0_24px_hsl(156_70%_42%/0.4)] hover:shadow-[0_0_36px_hsl(156_70%_42%/0.6)] inline-flex items-center gap-2">
                 এখনই এনরোল করুন
-                <ArrowRight className="w-4 h-4 text-white/70 ml-2" />
-              </button>
-            </div>
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </span>
           </Link>
-          <Link href="/courses">
-            <button className="inline-flex items-center gap-2 bg-surface border border-primary/30 text-white/70 hover:border-primary/60 hover:text-white transition-all duration-300 px-8 py-3.5 rounded-xl text-base font-semibold cursor-pointer">
-              <ArrowRight className="w-4 h-4 text-primary/70" />
+          <Link href="/course-details" className="inline-flex items-center justify-center gap-2 min-h-[44px] bg-surface border border-primary/30 text-white hover:border-primary/60 transition-all duration-300 px-8 py-3.5 rounded-xl text-base font-semibold">
+              <ArrowRight className="w-4 h-4 text-primary-glow" aria-hidden="true" />
               কোর্স দেখুন
-            </button>
           </Link>
         </div>
       </div>

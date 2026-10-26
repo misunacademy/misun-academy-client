@@ -27,13 +27,11 @@ export function CoursesTab({ enrolledCourses }: { enrolledCourses: EnrolledCours
             আপনি এখনো কোনো কোর্সে ভর্তি হননি। শেখা শুরু করতে কোর্সগুলো ব্রাউজ করুন।
           </p>
         </div>
-        <Link href="/courses" className="relative">
-          <button className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm
+        <Link href="/course-details" className="relative inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm
             bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark text-white
             shadow-[0_0_20px_hsl(156_70%_42%/0.3)] hover:shadow-[0_0_30px_hsl(156_70%_42%/0.5)]
             transition-all duration-300 hover:-translate-y-0.5">
             Browse Courses
-          </button>
         </Link>
       </div>
     );

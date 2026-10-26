@@ -22,7 +22,7 @@ const resetPasswordSchema = z.object({
 
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
-const INPUT_CLASSES = "h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/30 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors";
+const INPUT_CLASSES = "h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/50 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors";
 
 const ResetPasswordForm = () => {
   const router = useRouter();
@@ -70,7 +70,7 @@ const ResetPasswordForm = () => {
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-white/55 hover:text-white transition-colors text-sm font-medium px-3 py-1.5 rounded-lg border border-primary/20 hover:border-primary/40"
+            className="flex items-center gap-2 text-white/80 hover:text-white transition-colors text-sm font-medium px-3 py-1.5 rounded-lg border border-primary/20 hover:border-primary/40"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
@@ -106,7 +106,7 @@ const ResetPasswordForm = () => {
               <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">Reset your </span>
               <span className="bg-gradient-to-r from-primary via-emerald-400 to-primary bg-clip-text text-transparent drop-shadow-[0_0_16px_hsl(156_70%_42%/0.5)]">password</span>
             </h1>
-            <p className="text-white/40 text-sm mt-2">নতুন পাসওয়ার্ড দিয়ে আপনার অ্যাকাউন্ট সুরক্ষিত করুন</p>
+            <p className="text-white/75 text-sm mt-2">নতুন পাসওয়ার্ড দিয়ে আপনার অ্যাকাউন্ট সুরক্ষিত করুন</p>
           </div>
 
           <div className="relative overflow-hidden rounded-2xl bg-surface border border-primary/20 shadow-[0_0_60px_hsl(156_70%_42%/0.12)]">
