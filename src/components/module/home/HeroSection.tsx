@@ -1,44 +1,53 @@
 import Image from 'next/image';
 import { HeroBanner } from '@/assets/images';
-import { HeroBg } from '@/assets/svg';
+// import { HeroBg } from '@/assets/svg';
 import { Briefcase, Video, UserCheck, Clock, Home, PenTool, Palette, Layers, Crop, MousePointer2 } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { AIPoweredBadge } from '@/components/ui/ai-powered-badge';
-import Antigravity from './Antigravity';
+import Galaxy from './Galaxy';
 
 export default function HeroSection() {
   return (
     <section
       data-dark-section
-      className="relative w-full min-h-screen border-b border-white/5 overflow-hidden"
-      style={{
-        backgroundImage: `url(${HeroBg.src})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundColor: '#060f0a', // Fallback surface
-      }}
+      className="relative w-full min-h-screen border-b border-white/5 overflow-hidden bg-[#060f0a]"
+      //    style={{
+      //   backgroundImage: `url(${HeroBg.src})`,
+      //   backgroundSize: 'cover',
+      //   backgroundPosition: 'center',
+      //   backgroundRepeat: 'no-repeat',
+      //   backgroundColor: '#060f0a', // Fallback surface
+      // }}
     >
-      <Antigravity
-        className="absolute inset-0 z-[1] opacity-90 pointer-events-none"
-        colors={['#FF3B30', '#FF9500', '#FFCC00', '#34C759', '#00C7BE', '#007AFF', '#5856D6', '#AF52DE']}
-        colorMode="conic"
-        count={1200}
-        magnetRadius={9}
-        ringRadius={7}
-        particleSize={0.9}
-        autoAnimate
-      />
-
-      {/* ── Background Overlays & Animated Rings ── */}
+      {/* ── WebThreads background weave ── */}
+      <div className="absolute inset-0 z-0 ">
+        {/* <WebThreads
+          colors={['#10b981', '#34d399']}
+          coreColor="#ffffff"
+          threadCount={4}
+          spread={0.15}
+          opacity={0.3}
+          glow={0.02}
+          brightness={0.5}
+          mouseInteraction={false}
+        /> */}
+           <Galaxy
+          density={1}
+          glowIntensity={0.1}
+          flareIntensity={0.5}
+          starSpeed={0.15}
+          mouseRepulsion
+          clickWarp
+        />
+      </div>
+   {/* ── Background Overlays & Animated Rings ── */}
       {/* bg-gradient-to-b from-surface/80 via-surface/40 to-surface  */}
-      <div className="absolute inset-0  bg-gradient-to-b from-surface/80 via-surface/40 to-surface   z-[1]" />
-      <div className="absolute inset-x-0 top-0 h-[500px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent z-[1]" />
+      {/* <div className="absolute inset-0 bg-gradient-to-b from-[#07120d]/85 via-[#07120d]/55 to-[#060f0a]/95 z-[1]" />
+      <div className="absolute inset-x-0 top-0 h-[500px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent z-[1]" /> */}
 
       <div className="absolute top-1/4 -left-20 lg:left-10 w-64 h-64 md:w-96 md:h-96 border-[8px] md:border-[16px] border-primary/10 rounded-full animate-zoom-in-out z-[2] blur-xl md:blur-2xl" />
       <div className="absolute bottom-10 -right-20 lg:right-1/4 w-80 h-80 md:w-[30rem] md:h-[30rem] border-[12px] md:border-[24px] border-primary/5 rounded-full animate-zoom-in-out z-[2] blur-2xl md:blur-3xl" style={{ animationDelay: '4s' }} />
-
       {/* ── Main Content Container ── */}
       <div className="relative z-10 min-h-screen pt-16 pb-20 flex flex-col justify-center">
         <div className="container mx-auto px-4 max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center">
@@ -61,7 +70,7 @@ export default function HeroSection() {
 
             {/* Headings */}
             <div className="space-y-4">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.25] text-white">
+              <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.25] text-white">
                 {/* <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-lg text-base font-bold tracking-wide text-neutral-900 mb-5">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="text-neutral-900" aria-hidden="true">
                     <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" />
@@ -76,7 +85,7 @@ export default function HeroSection() {
                 </span>{" "}
                 <span className="text-primary-glow">উইথ ফ্রিল্যান্সিং</span>
               </h1>
-              <h2 className="text-2xl sm:text-3xl font-semibold text-white leading-snug">
+              <h2 className="text-xl sm:text-3xl font-semibold text-white leading-snug">
                 আপনার ক্রিয়েটিভ <span className="text-primary-glow">ক্যারিয়ার</span> শুরু করুন আজই!
               </h2>
             </div>
@@ -157,7 +166,7 @@ export default function HeroSection() {
           {/* ── Right Column: Hero Image & 3D Floating Elements ── */}
           <div className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square flex items-center justify-center mt-12 lg:mt-0">
             {/* The Main Image */}
-            <div className="relative z-10 w-[85%] h-[85%] transition-transform duration-1000 ease-out hover:scale-105 hover:rotate-1">
+            <div className="relative z-10 w-[100%] h-[100%] transition-transform duration-1000 ease-out hover:scale-105 hover:rotate-1">
               {/* Image Glow Underneath */}
               <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full scale-90" />
 

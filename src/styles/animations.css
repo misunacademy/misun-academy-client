@@ -1,132 +1,377 @@
-.radial-image-mask {
-  mask-image: radial-gradient(circle, black 0%, transparent 75%);
+/* =========================================================
+   AI POWERED BADGE
+   Dark pill · neon gradients · glowing orbit
+   ========================================================= */
+
+@property --ai-ring-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
 }
 
-.linear-image-mask {
-  mask-image: linear-gradient(180deg, black 80%, transparent 85%);
+.ai-powered-badge {
+  --ai-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Icon palette: mint → aqua → sky */
+  --ai-icon-a: 150 100% 72%;
+  --ai-icon-b: 172 100% 50%;
+  --ai-icon-c: 198 100% 62%;
+
+  /* Text palette: mint-white → neon green → lime */
+  --ai-text-a: 150 100% 90%;
+  --ai-text-b: 146 100% 52%;
+  --ai-text-c: 84 100% 58%;
+
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  border-radius: 9999px;
+
+  background:
+    radial-gradient(
+      120% 160% at 0% 0%,
+      hsl(160 100% 40% / 0.28),
+      transparent 55%
+    ),
+    linear-gradient(135deg, hsl(168 55% 7%), hsl(150 45% 11%));
+
+  box-shadow:
+    inset 0 1px 0 hsl(150 100% 85% / 0.18),
+    inset 0 -8px 16px -10px hsl(160 100% 50% / 0.35),
+    0 0 0 1px hsl(150 100% 50% / 0.12),
+    0 0 22px -4px hsl(150 100% 50% / 0.45),
+    0 12px 28px -12px hsl(160 100% 40% / 0.7);
+
+  transition:
+    box-shadow 320ms var(--ai-ease),
+    transform 320ms var(--ai-ease);
 }
 
-.nav-mask-bg {
-  mask-image: linear-gradient(black 20%, transparent 90%);
+/* ---------- Orbiting comet border + blurred glow copy ---------- */
+
+.ai-powered-badge::before,
+.ai-powered-badge::after {
+  content: "";
+  position: absolute;
+  border-radius: inherit;
+  pointer-events: none;
+
+  background: conic-gradient(
+    from var(--ai-ring-angle),
+    transparent 0deg,
+    hsl(var(--ai-icon-c) / 0.12) 120deg,
+    transparent 170deg,
+    transparent 215deg,
+    hsl(var(--ai-text-c) / 0.5) 262deg,
+    hsl(var(--ai-text-b)) 308deg,
+    hsl(var(--ai-icon-b)) 336deg,
+    hsl(0 0% 100%) 355deg,
+    transparent 360deg
+  );
+
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+
+  animation: ai-ring-orbit 4.2s linear infinite;
 }
 
-.nav-mask-sm {
-  mask-image: linear-gradient(black 50%, transparent 100%);
+/* Crisp ring */
+.ai-powered-badge::before {
+  inset: 0;
+  padding: 1.5px;
 }
 
-.nav-mask-md {
-  mask-image: linear-gradient(black 30%, transparent 80%);
+/* Soft neon glow riding the same ring */
+.ai-powered-badge::after {
+  inset: -3px;
+  padding: 4px;
+  filter: blur(7px);
+  opacity: 0.9;
 }
 
-.nav-mask-lg {
-  mask-image: linear-gradient(black 10%, transparent 60%);
+@keyframes ai-ring-orbit {
+  to {
+    --ai-ring-angle: 360deg;
+  }
 }
 
-.h1 {
-  font-size: clamp(2rem, 5vw, 3rem);
+.ai-powered-badge:hover {
+  transform: translateY(-1px) scale(1.03);
+
+  box-shadow:
+    inset 0 1px 0 hsl(150 100% 85% / 0.25),
+    inset 0 -8px 16px -10px hsl(160 100% 50% / 0.5),
+    0 0 0 1px hsl(150 100% 50% / 0.25),
+    0 0 34px -2px hsl(150 100% 50% / 0.65),
+    0 16px 34px -12px hsl(160 100% 40% / 0.85);
 }
 
-.h2 {
-  font-size: clamp(1.8rem, 5vw, 2rem);
+.ai-powered-badge:hover::before,
+.ai-powered-badge:hover::after {
+  animation-duration: 2.2s;
 }
 
-.icon-container {
-  display: flex;
-  flex-direction: column;
+/* ---------- Icon ---------- */
+
+.ai-badge-icon-wrap {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  background-color: white;
-  width: 100px;
+  flex: none;
+  border-radius: 9999px;
+
+  background: radial-gradient(
+    circle at 34% 26%,
+    hsl(var(--ai-icon-b) / 0.38),
+    hsl(var(--ai-icon-b) / 0.06) 75%
+  );
+
+  box-shadow:
+    inset 0 0 0 1px hsl(var(--ai-icon-a) / 0.4),
+    0 0 12px hsl(var(--ai-icon-b) / 0.45);
 }
 
-@keyframes glow-move-horizontal {
-  0% { left: 0%; width: 0%; opacity: 0.3; }
-  50% { left: 50%; width: 50%; opacity: 1; }
-  100% { left: 100%; width: 0%; opacity: 0.3; }
+.ai-badge-spark {
+  overflow: visible;
+  filter: drop-shadow(0 0 3px hsl(var(--ai-icon-b) / 0.85))
+    drop-shadow(0 0 7px hsl(var(--ai-icon-c) / 0.5));
 }
 
-@keyframes glow-move-vertical {
-  0% { top: 0%; height: 0%; opacity: 0.3; }
-  50% { top: 50%; height: 50%; opacity: 1; }
-  100% { top: 100%; height: 0%; opacity: 0.3; }
+.ai-badge-stop-1 {
+  stop-color: hsl(var(--ai-icon-a));
 }
 
-/* ── Design tool floating animations (BannerSection 3D decorations) ── */
-@keyframes designToolFloat {
-  0%, 100% { transform: perspective(500px) rotateY(-18deg) rotateX(12deg) translateY(0px); }
-  50%       { transform: perspective(500px) rotateY(-10deg) rotateX(6deg)  translateY(-14px); }
-}
-@keyframes designToolFloat2 {
-  0%, 100% { transform: perspective(500px) rotateY(18deg) rotateX(12deg) translateY(-8px); }
-  50%       { transform: perspective(500px) rotateY(10deg) rotateX(6deg)  translateY(8px); }
-}
-@keyframes designFloat {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-12px); }
-}
-@keyframes designFloat2 {
-  0%, 100% { transform: translateY(-6px); }
-  50%       { transform: translateY(8px); }
+.ai-badge-stop-2 {
+  stop-color: hsl(var(--ai-icon-b));
 }
 
-/* Horizontal Glow Effect */
-.glow-border-horizontal::after {
+.ai-badge-stop-3 {
+  stop-color: hsl(var(--ai-icon-c));
+}
+
+.ai-badge-spark-main,
+.ai-badge-spark-small {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.ai-badge-spark-main {
+  animation: ai-spark-breathe 3.6s ease-in-out infinite;
+}
+
+.ai-badge-spark-small {
+  animation: ai-spark-twinkle 3.6s ease-in-out 0.8s infinite;
+}
+
+/* Comet trail */
+.ai-badge-spark-trace {
+  fill: none;
+  stroke: hsl(0 0% 100%);
+  stroke-dasharray: 0.22 0.78;
+  stroke-dashoffset: 0.22;
+  opacity: 0;
+  animation: ai-spark-trace var(--trace-dur, 3.2s) linear
+    var(--trace-delay, 0s) infinite;
+}
+
+/* White-hot head riding the same path */
+.ai-badge-spark-orb {
+  offset-rotate: 0deg;
+  offset-distance: 0%;
+  fill: hsl(0 0% 100%);
+  opacity: 0;
+  filter: drop-shadow(0 0 2px hsl(var(--ai-icon-a)))
+    drop-shadow(0 0 5px hsl(var(--ai-icon-b)));
+  animation: ai-orb-travel var(--trace-dur, 3.2s) linear
+    var(--trace-delay, 0s) infinite;
+}
+
+@keyframes ai-spark-breathe {
+  0%,
+  100% {
+    opacity: 0.92;
+    transform: scale(0.92) rotate(0deg);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.1) rotate(8deg);
+  }
+}
+
+@keyframes ai-spark-twinkle {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+
+  45% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes ai-spark-trace {
+  0% {
+    stroke-dashoffset: 0.22;
+    opacity: 0;
+  }
+
+  8%,
+  85% {
+    opacity: 0.95;
+  }
+
+  100% {
+    stroke-dashoffset: -0.78;
+    opacity: 0;
+  }
+}
+
+@keyframes ai-orb-travel {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+
+  8%,
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+
+/* ---------- Text ---------- */
+
+.ai-text-sheen {
+  background-image: linear-gradient(
+    100deg,
+    hsl(var(--ai-text-a)) 0%,
+    hsl(var(--ai-text-b)) 25%,
+    hsl(var(--ai-text-c)) 50%,
+    hsl(var(--ai-text-b)) 75%,
+    hsl(var(--ai-text-a)) 100%
+  );
+
+  background-size: 200% 100%;
+  background-repeat: repeat-x;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+
+  filter: drop-shadow(0 0 6px hsl(var(--ai-text-b) / 0.55));
+  animation: ai-text-sheen 4.5s linear infinite;
+}
+
+@keyframes ai-text-sheen {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* ---------- Status dot ---------- */
+
+.ai-badge-dot {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 9999px;
+
+  background: hsl(var(--ai-text-c));
+  box-shadow: 0 0 8px hsl(var(--ai-text-c)), 0 0 14px hsl(var(--ai-text-b) / 0.7);
+}
+
+.ai-badge-dot::after {
   content: "";
   position: absolute;
-  height: 2px;
-  background: rgba(249, 85, 2, 0.8);
-  box-shadow: 0 0 8px rgba(235, 103, 3, 0.8);
-  animation: glow-move-horizontal 2s linear infinite alternate;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid hsl(var(--ai-text-c));
+  animation: ai-dot-ping 2.2s ease-out infinite;
 }
 
-/* Vertical Glow Effect */
-.glow-border-vertical::after {
-  content: "";
-  position: absolute;
-  width: 2px;
-  background: rgba(252, 82, 9, 0.8);
-  box-shadow: 0 0 8px rgba(243, 119, 4, 0.8);
-  animation: glow-move-vertical 2s linear infinite alternate;
+@keyframes ai-dot-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: scale(3.2);
+    opacity: 0;
+  }
 }
 
-@keyframes ring {
-  0%   { transform: rotate(0deg); }
-  10%  { transform: rotate(12deg); }
-  20%  { transform: rotate(-12deg); }
-  30%  { transform: rotate(10deg); }
-  40%  { transform: rotate(-10deg); }
-  50%  { transform: rotate(0deg); }
-  100% { transform: rotate(0deg); }
-}
 
-@keyframes rail-flow {
-  0%   { transform: translateY(-100%); opacity: 0; }
-  15%  { opacity: 1; }
-  85%  { opacity: 1; }
-  100% { transform: translateY(1000%); opacity: 0; }
-}
-
-@keyframes iso-float {
-  0%   { transform: translateY(0px); }
-  100% { transform: translateY(-5px); }
-}
+/* =========================================================
+   GENERAL PREMIUM INTERACTIONS
+   ========================================================= */
 
 .animate-ring {
-  animation: ring 1s ease-in-out infinite;
+  animation: ring 1.8s ease-in-out infinite;
   transform-origin: top center;
 }
 
+
+/* =========================================================
+   ACCESSIBILITY — REDUCED MOTION
+   ========================================================= */
+
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+  .ai-powered-badge::before,
+  .ai-powered-badge::after,
+  .ai-badge-spark-main,
+  .ai-badge-spark-small,
+  .ai-badge-spark-trace,
+  .ai-badge-spark-orb,
+  .ai-text-sheen,
+  .ai-badge-dot::after,
+  .animate-ring {
+    animation: none !important;
+  }
+
+  .ai-badge-spark-trace,
+  .ai-badge-spark-orb,
+  .ai-badge-dot::after {
+    opacity: 0;
+  }
+
+  .ai-badge-spark-main,
+  .ai-badge-spark-small {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Keep a static glowing ring */
+  .ai-powered-badge::before {
+    --ai-ring-angle: 200deg;
+  }
+
+  .ai-text-sheen {
+    background-position: 50% 50%;
+  }
+
+  .ai-powered-badge {
+    transition: none;
+  }
+
+  .ai-powered-badge:hover {
+    transform: none;
   }
 }

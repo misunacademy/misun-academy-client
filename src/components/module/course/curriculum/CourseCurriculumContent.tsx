@@ -1,125 +1,107 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import dynamic from 'next/dynamic'
-import { GitBranch, List } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { useIsMobile } from '@/hooks/use-mobile'
-import { courseCurriculum } from '@/data/courseCurriculum'
-import { CourseSelector, StatsCard, ContentPanel } from '.'
-import type { CourseConfig } from './curriculumData'
-
-const CurriculumMap = dynamic(
-  () => import('./explorer/CurriculumMap').then((mod) => mod.CurriculumMap),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        className="flex h-[420px] animate-pulse items-center justify-center rounded-2xl border border-white/10 bg-white/[0.02]"
-        role="status"
-        aria-live="polite"
-      >
-        <span className="sr-only">ম্যাপ লোড হচ্ছে…</span>
-      </div>
-    ),
-  }
-)
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react"
+import {
+  courseCurriculum,
+  findCourseIndexById,
+  getCourseStats,
+} from "@/data/courseCurriculum"
+import { CourseSelector } from "./CourseSelector"
+import type { CourseConfig } from "./curriculumData"
+import { CoursePanel } from "./CoursePanel"
 
 const courses = courseCurriculum.courses
+const ID_PREFIX = "curriculum"
+
+/** true from the lg breakpoint (1024px) up. Server and first paint assume false. */
+function useIsDesktop() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const query = window.matchMedia("(min-width: 1024px)")
+      query.addEventListener("change", onChange)
+      return () => query.removeEventListener("change", onChange)
+    },
+    () => window.matchMedia("(min-width: 1024px)").matches,
+    () => false
+  )
+}
 
 interface CourseCurriculumContentProps {
   courseConfigs: readonly CourseConfig[]
 }
 
-type CurriculumView = 'list' | 'map'
-
 export function CourseCurriculumContent({ courseConfigs }: CourseCurriculumContentProps) {
   const [active, setActive] = useState(0)
-  const [view, setView] = useState<CurriculumView>('list')
-  const isMobile = useIsMobile()
-  const effectiveView = isMobile ? 'list' : view
-  const cfg = courseConfigs[active]
-  const course = courses[active]
+  const isDesktop = useIsDesktop()
 
-  const modules = course.modules ?? []
-  const projects = course.projects ?? []
-  const parse = (s: string) => parseFloat(s) || 0
-  const totalHours = [...modules, ...projects].reduce((acc, m) => acc + parse(m.duration), 0)
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("course")
+    if (!id) return
+
+    let cancelled = false
+    queueMicrotask(() => {
+      if (!cancelled) setActive(findCourseIndexById(id))
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (process.env.NODE_ENV !== "production" && courseConfigs.length !== courses.length) {
+    console.warn(
+      `CourseCurriculumContent: ${courseConfigs.length} course configs for ${courses.length} courses. They are matched by position.`
+    )
+  }
+
+
+  const handleSelect = useCallback((index: number) => {
+    setActive(index)
+    const url = new URL(window.location.href)
+    url.searchParams.set("course", courses[index].id)
+    window.history.replaceState(null, "", url)
+  }, [])
+
+  const activeCourse = courses[active]
+  const stats = getCourseStats(activeCourse)
+  const summary = `${activeCourse.title}: ${stats.sectionCounts
+    .map((count, i) => `${count} ${activeCourse.sections[i].label}`)
+    .join(", ")}, ${stats.totalHours} hours in total`
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
-      <div className="flex flex-col w-full lg:w-[260px] shrink-0">
-        <CourseSelector courses={courses} active={active} onSelect={setActive} configs={courseConfigs} />
-        <StatsCard config={cfg} modules={modules.length} projects={projects.length} totalHours={totalHours} />
-      </div>
+    <div className="flex flex-col gap-6">
+      <CourseSelector
+        courses={courses}
+        configs={courseConfigs}
+        active={active}
+        onSelect={handleSelect}
+        idPrefix={ID_PREFIX}
+      />
 
-      <div className="flex w-full min-w-0 flex-1 flex-col gap-4">
-        <div className="hidden items-center justify-end gap-3 md:flex">
-          <span className="font-bangla text-[11px] font-semibold text-white/55">
-            দেখার ধরন
-          </span>
-          <div
-            role="group"
-            aria-label="পাঠ্যক্রম দেখানোর ধরন"
-            className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-black/30 p-1"
-          >
-            <ViewButton
-              active={view === 'list'}
-              onClick={() => setView('list')}
-              icon={<List className="h-3.5 w-3.5" aria-hidden="true" />}
-              label="তালিকা"
-            />
-            <ViewButton
-              active={view === 'map'}
-              onClick={() => setView('map')}
-              icon={<GitBranch className="h-3.5 w-3.5" aria-hidden="true" />}
-              label="ম্যাপ"
-            />
-          </div>
-        </div>
+      {/* Announces the new course to screen readers when the tab changes */}
+      <p className="sr-only" aria-live="polite">
+        {summary}
+      </p>
 
-        {effectiveView === 'map' ? (
-          <CurriculumMap course={course} config={cfg} courseIndex={active} />
-        ) : (
-          <ContentPanel
-            course={course}
-            config={cfg}
-            modules={modules}
-            projects={projects}
-            configs={courseConfigs}
-            activeCourse={active}
-          />
-        )}
+      {/* Keep inactive panels mounted without letting them determine the
+          container height. The active panel remains in normal flow. */}
+      <div className="relative">
+        {courses.map((course, i) => {
+          const config = courseConfigs[i]
+          if (!config) return null
+          return (
+            <CoursePanel
+              key={course.id}
+              course={course}
+              config={config}
+              isActive={i === active}
+              isDesktop={isDesktop}
+              panelId={`${ID_PREFIX}-panel-${i}`}
+              tabId={`${ID_PREFIX}-tab-${i}`}
+            />
+          )
+        })}
       </div>
     </div>
-  )
-}
-
-function ViewButton({
-  active,
-  onClick,
-  icon,
-  label,
-}: {
-  active: boolean
-  onClick: () => void
-  icon: React.ReactNode
-  label: string
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        'inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-3.5 font-bangla text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60',
-        active
-          ? 'bg-primary text-primary-foreground'
-          : 'text-white/70 hover:bg-white/[0.06] hover:text-white'
-      )}
-    >
-      {icon}
-      {label}
-    </button>
   )
 }

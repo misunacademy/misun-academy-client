@@ -1,25 +1,17 @@
 import type { LucideIcon } from "lucide-react"
+import type { ItemType } from "@/data/courseCurriculum"
 
-export interface CourseModule {
-  id: number
-  title: string
-  type: string
-  duration: string
-}
-
-export interface CourseProject {
-  title: string
-  duration: string
-}
-
-export interface Course {
-  title: string
-  description: string
-  totalModules?: number
-  level?: string
-  modules: CourseModule[]
-  projects?: CourseProject[]
-}
+/**
+ * Data types (Course, CurriculumSection, CurriculumItem, ItemType) now live
+ * next to the data in "@/data/courseCurriculum". They are re-exported here so
+ * existing imports from "./curriculumData" keep working.
+ */
+export type {
+  Course,
+  CurriculumItem,
+  CurriculumSection,
+  ItemType,
+} from "@/data/courseCurriculum"
 
 export interface CourseConfig {
   abbr: string
@@ -35,6 +27,11 @@ export interface CourseConfig {
   num: string
 }
 
+/**
+ * IMPORTANT: this array is matched to the courses by position.
+ * [0] = Photoshop Hero, [1] = Illustrator Wizard, [2] = Guardian in Client Hunting
+ * (same order as `courseCurriculum.courses`).
+ */
 export const COURSE_CONFIG: readonly CourseConfig[] = [
   {
     abbr: "Ps",
@@ -77,7 +74,7 @@ export const COURSE_CONFIG: readonly CourseConfig[] = [
   },
 ] as const
 
-export const TYPE_STYLES: Record<string, { label: string; color: string; bg: string }> = {
+export const TYPE_STYLES: Record<ItemType, { label: string; color: string; bg: string }> = {
   theory: { label: "Theory", color: "#a78bfa", bg: "rgba(167,139,250,0.12)" },
   practical: { label: "Practical", color: "#34d399", bg: "rgba(52,211,153,0.10)" },
   strategy: { label: "Strategy", color: "#fbbf24", bg: "rgba(251,191,36,0.10)" },

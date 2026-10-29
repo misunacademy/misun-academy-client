@@ -2,11 +2,10 @@
 
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/ui/FadeIn';
-import TimelineCard from './TimelineCard';
+import TimelineItem from './TimelineItem';
 import { features, stats } from './whyUsData';
 
 const WhyChooseSection = () => {
@@ -25,11 +24,9 @@ const WhyChooseSection = () => {
         }}
       />
 
-      {/* ── Ambient glows ── */}
-      <div className="absolute top-[-80px] left-1/2 -translate-x-1/2 w-[560px] h-[280px] bg-primary/12 rounded-full blur-[110px] pointer-events-none" />
-      <div className="absolute top-1/3 left-[5%] w-[300px] h-[220px] bg-primary/7 rounded-full blur-[90px] pointer-events-none" />
-      <div className="absolute top-1/3 right-[5%] w-[280px] h-[200px] bg-primary/6 rounded-full blur-[80px] pointer-events-none" />
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[480px] h-[220px] bg-primary/8 rounded-full blur-[100px] pointer-events-none" />
+      {/* ── Ambient light (two cheap gradients instead of four blurred layers) ── */}
+      <div className="absolute inset-x-0 top-0 h-80 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+      <div className="absolute inset-x-0 bottom-0 h-60 bg-gradient-to-t from-primary/[0.08] to-transparent pointer-events-none" />
 
       <div className="container relative max-w-7xl mx-auto px-4">
 
@@ -38,7 +35,7 @@ const WhyChooseSection = () => {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full
             bg-primary/10 border border-primary/25 backdrop-blur-sm mb-5">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary motion-safe:animate-pulse" />
             <span className="text-xs font-semibold text-primary-glow font-bangla">
               প্রিমিয়াম গ্রাফিক্স ডিজাইন কোর্স
             </span>
@@ -88,106 +85,19 @@ const WhyChooseSection = () => {
           </div>
         </FadeIn>
 
-        {/* ── Timeline ── */}
-        <div className="relative">
-
-          {/* Vertical connector line */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-[2px] hidden md:block"
-            style={{
-              background: 'linear-gradient(to bottom, transparent, hsl(156 70% 42%) 8%, hsl(156 85% 70%) 50%, hsl(156 70% 42%) 92%, transparent)',
-              boxShadow: '0 0 14px hsl(156 70% 42% / 0.6)',
-            }}
-          />
-          {/* Mobile connector line */}
-          <div className="absolute left-5 top-0 bottom-0 w-[2px] md:hidden"
-            style={{
-              background: 'linear-gradient(to bottom, transparent, hsl(156 70% 42%) 5%, hsl(156 70% 42%) 95%, transparent)',
-              boxShadow: '0 0 10px hsl(156 70% 42% / 0.5)',
-            }}
-          />
-
-          <div className="flex flex-col gap-10">
-            {features.map((feature, index) => {
-              const isEven = index % 2 === 0;
-              const Icon = feature.icon;
-
-              return (
-                <div key={index} className="relative flex items-center gap-0 md:gap-0">
-
-                  {/* ── Desktop zigzag layout ── */}
-                  {/* Left card slot (even index) */}
-                  <div className={`hidden md:flex flex-1 ${isEven ? 'justify-end pr-10' : 'justify-end pr-10 invisible pointer-events-none'}`}>
-                    {isEven && (
-                      <motion.div
-                        className="w-full"
-                        initial={{ opacity: 0, x: -48 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true, amount: 0.4 }}
-                        transition={{ duration: 0.55, ease: [0.21, 0.47, 0.32, 0.98] }}
-                      >
-                        <TimelineCard feature={feature} index={index} Icon={Icon} />
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* Step circle — centred on the line */}
-                  <motion.div
-                    className="hidden md:flex flex-shrink-0 relative z-10"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true, amount: 0.4 }}
-                    transition={{ duration: 0.4, delay: 0.15, ease: [0.21, 0.47, 0.32, 0.98] }}
-                  >
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-emerald-darker via-primary to-emerald-dark
-                      flex items-center justify-center font-bold text-white text-sm
-                      shadow-lg shadow-primary/50 ring-4 ring-surface
-                      hover:scale-110 transition-transform duration-300">
-                      {index + 1}
-                    </div>
-                  </motion.div>
-
-                  {/* Right card slot (odd index) */}
-                  <div className={`hidden md:flex flex-1 ${!isEven ? 'justify-start pl-10' : 'justify-start pl-10 invisible pointer-events-none'}`}>
-                    {!isEven && (
-                      <motion.div
-                        className="w-full"
-                        initial={{ opacity: 0, x: 48 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true, amount: 0.4 }}
-                        transition={{ duration: 0.55, ease: [0.21, 0.47, 0.32, 0.98] }}
-                      >
-                        <TimelineCard feature={feature} index={index} Icon={Icon} />
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* ── Mobile layout ── */}
-                  <motion.div
-                    className="flex md:hidden items-start gap-5 w-full pl-2"
-                    initial={{ opacity: 0, y: 32 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.35 }}
-                    transition={{ duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
-                  >
-                    {/* Step circle on the line */}
-                    <div className="flex-shrink-0 relative z-10 mt-1">
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-darker via-primary to-emerald-dark
-                        flex items-center justify-center font-bold text-white text-xs
-                        shadow-md shadow-primary/40 ring-2 ring-surface">
-                        {index + 1}
-                      </div>
-                    </div>
-                    {/* Card */}
-                    <div className="flex-1">
-                      <TimelineCard feature={feature} index={index} Icon={Icon} />
-                    </div>
-                  </motion.div>
-
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        {/* ── Timeline: one <li> per feature, each owns its spine segment and curved branch ── */}
+        <ol role="list" className="relative m-0 list-none p-0">
+          {features.map((feature, index) => (
+            <TimelineItem
+              key={index}
+              feature={feature}
+              index={index}
+              Icon={feature.icon}
+              isFirst={index === 0}
+              isLast={index === features.length - 1}
+            />
+          ))}
+        </ol>
 
         {/* ── CTA ── */}
         <FadeIn delay={0.4} direction="up" className="text-center mt-20">

@@ -5,7 +5,7 @@
 }
 
 .success-stories__stage .flex-carousel__count {
-  font-size: 0.75rem;
+  display: none;
 }
 
 .success-stories__play {

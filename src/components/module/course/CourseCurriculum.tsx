@@ -1,5 +1,5 @@
 import { Layers, Trophy, Clock, Users } from "lucide-react"
-import { courseCurriculum } from "@/data/courseCurriculum"
+import { courseCurriculum, type Course } from "@/data/courseCurriculum"
 import { CourseCurriculumContent, COURSE_CONFIG } from "./curriculum"
 
 const courses = courseCurriculum.courses
@@ -61,13 +61,11 @@ function SectionHeader() {
 
 function SummaryBar() {
   const totalModules = courses.reduce(
-    (a: number, c: { modules?: { duration: string }[]; projects?: { duration: string }[] }) =>
-      a + (c.modules?.length ?? 0),
+    (total: number, course: Course) => total + course.sections[0].items.length,
     0
   )
   const totalProjects = courses.reduce(
-    (a: number, c: { modules?: { duration: string }[]; projects?: { duration: string }[] }) =>
-      a + (c.projects?.length ?? 0),
+    (total: number, course: Course) => total + course.sections[1].items.length,
     0
   )
 

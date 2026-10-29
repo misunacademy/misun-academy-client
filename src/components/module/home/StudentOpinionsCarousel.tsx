@@ -7,8 +7,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import Image from 'next/image';
 
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { FadeIn } from '../../ui/FadeIn';
 import { Quote } from 'lucide-react';
@@ -19,10 +20,65 @@ interface StudentFeedback {
   studentId: string;
   testimonial: string;
   post_link?: string;
+  facebook?: string;
 }
 
 interface StudentOpinionsCarouselProps {
   studentFeedbacks: StudentFeedback[];
+}
+
+function getFacebookAvatarUrl(facebook?: string) {
+  if (!facebook?.trim()) return null;
+
+  const value = facebook.trim();
+  let identifier = value;
+
+  try {
+    const url = new URL(value);
+    if (!/(^|\.)facebook\.com$|(^|\.)fb\.com$/.test(url.hostname)) {
+      return null;
+    }
+
+    identifier = url.searchParams.get('id') || '';
+    if (!identifier) {
+      const pathSegments = url.pathname.split('/').filter(Boolean);
+      const [firstSegment] = pathSegments;
+      if (firstSegment === 'profile.php' || firstSegment === 'share' || firstSegment === 'groups') {
+        return null;
+      }
+      identifier = firstSegment || '';
+    }
+  } catch {
+    // Keep supporting the existing raw Facebook ID format.
+  }
+
+  return identifier
+    ? `https://graph.facebook.com/${encodeURIComponent(identifier)}/picture?type=normal`
+    : null;
+}
+
+function StudentAvatar({ name, facebook }: Pick<StudentFeedback, 'name' | 'facebook'>) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const imageUrl = getFacebookAvatarUrl(facebook);
+
+  return (
+    <div className="relative h-10 w-10 shrink-0 rounded-full overflow-hidden shadow-md shadow-primary/30">
+      {imageUrl && !imageFailed ? (
+        <Image
+          src={imageUrl}
+          alt={name}
+          fill
+          sizes="40px"
+          className="object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-darker via-primary to-emerald-dark text-white font-bold">
+          {name.charAt(0)}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export const StudentOpinionsCarousel = memo(function StudentOpinionsCarousel({
@@ -93,9 +149,10 @@ export const StudentOpinionsCarousel = memo(function StudentOpinionsCarousel({
                   </div>
 
                   <div className="flex items-center gap-3 mt-auto pt-4 border-t border-white/10">
-                    <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-emerald-darker via-primary to-emerald-dark flex items-center justify-center text-white font-bold overflow-hidden shadow-md shadow-primary/30">
-                      {item.name.charAt(0)}
-                    </div>
+                    <StudentAvatar
+                      name={item.name}
+                      facebook={item.facebook || item.post_link}
+                    />
                     <div>
                       <h4 className="text-sm font-semibold text-white line-clamp-1">{item.name}</h4>
                       <div className="flex items-center gap-2">

@@ -19,6 +19,7 @@ import { useGetAllCoursesQuery } from '@/redux/api/courseApi';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useCreateBatchMutation } from '@/redux/api/batchApi';
+import { dateInputToDate } from '@/lib/date-input';
 
 const batchSchema = z.object({
     title: z.string().min(1, "Title is required"),
@@ -72,10 +73,10 @@ export default function BatchCrate() {
             manualPaymentPrice: data.manualPaymentPrice ? Number(data.manualPaymentPrice) : undefined,
             status: data.status as "draft" | "upcoming" | "running" | "completed",
             courseId: data.selectedCourse,
-            startDate: data.startDate ? new Date(data.startDate) : undefined,
-            endDate: data.endDate ? new Date(data.endDate) : undefined,
-            enrollmentStartDate: data.enrollmentStartDate ? new Date(data.enrollmentStartDate) : undefined,
-            enrollmentEndDate: data.enrollmentEndDate ? new Date(data.enrollmentEndDate) : undefined,
+            startDate: data.startDate ? dateInputToDate(data.startDate) : undefined,
+            endDate: data.endDate ? dateInputToDate(data.endDate, "end") : undefined,
+            enrollmentStartDate: data.enrollmentStartDate ? dateInputToDate(data.enrollmentStartDate) : undefined,
+            enrollmentEndDate: data.enrollmentEndDate ? dateInputToDate(data.enrollmentEndDate, "end") : undefined,
             description: data.description || undefined,
         };
 

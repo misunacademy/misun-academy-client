@@ -22,6 +22,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useGetBatchByIdQuery, useUpdateBatchMutation, type CourseInfo } from '@/redux/api/batchApi';
 import { Loader2 } from 'lucide-react';
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import { dateInputToDate, dateToInputValue } from "@/lib/date-input";
 
 const batchSchema = z.object({
     title: z.string().min(1, "Title is required"),
@@ -90,10 +91,10 @@ export default function BatchEdit() {
             manualPaymentPrice: d.manualPaymentPrice?.toString() || "",
             status: (d.status as "draft" | "upcoming" | "running" | "completed") || "draft",
             selectedCourse,
-            startDate: d.startDate ? new Date(d.startDate).toISOString().split("T")[0] : "",
-            endDate: d.endDate ? new Date(d.endDate).toISOString().split("T")[0] : "",
-            enrollmentStartDate: d.enrollmentStartDate ? new Date(d.enrollmentStartDate).toISOString().split("T")[0] : "",
-            enrollmentEndDate: d.enrollmentEndDate ? new Date(d.enrollmentEndDate).toISOString().split("T")[0] : "",
+            startDate: d.startDate ? dateToInputValue(d.startDate) : "",
+            endDate: d.endDate ? dateToInputValue(d.endDate) : "",
+            enrollmentStartDate: d.enrollmentStartDate ? dateToInputValue(d.enrollmentStartDate) : "",
+            enrollmentEndDate: d.enrollmentEndDate ? dateToInputValue(d.enrollmentEndDate) : "",
             description: (d as { description?: string }).description || "",
         });
     }, [batch, form]);
@@ -124,10 +125,10 @@ export default function BatchEdit() {
             manualPaymentPrice: data.manualPaymentPrice ? Number(data.manualPaymentPrice) : undefined,
             status: data.status as "draft" | "upcoming" | "running" | "completed",
             courseId: data.selectedCourse,
-            startDate: data.startDate ? new Date(data.startDate) : undefined,
-            endDate: data.endDate ? new Date(data.endDate) : undefined,
-            enrollmentStartDate: data.enrollmentStartDate ? new Date(data.enrollmentStartDate) : undefined,
-            enrollmentEndDate: data.enrollmentEndDate ? new Date(data.enrollmentEndDate) : undefined,
+            startDate: data.startDate ? dateInputToDate(data.startDate) : undefined,
+            endDate: data.endDate ? dateInputToDate(data.endDate, "end") : undefined,
+            enrollmentStartDate: data.enrollmentStartDate ? dateInputToDate(data.enrollmentStartDate) : undefined,
+            enrollmentEndDate: data.enrollmentEndDate ? dateInputToDate(data.enrollmentEndDate, "end") : undefined,
             description: data.description || undefined,
         };
 

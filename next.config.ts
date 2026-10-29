@@ -50,6 +50,7 @@ const nextConfig: NextConfig = {
   },
   reactStrictMode: true,
   cacheComponents: true,
+  partialPrefetching: false,
   // Slim production image: `server.js` + traced deps only.
   output: 'standalone',
   experimental: {
@@ -105,6 +106,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'graph.facebook.com',
       },
       {
         protocol: 'https',

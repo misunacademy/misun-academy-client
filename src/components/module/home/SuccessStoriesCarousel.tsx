@@ -77,10 +77,10 @@ export const SuccessStoriesCarousel = memo(function SuccessStoriesCarousel({
 
   const items = useMemo<FlexCarouselItem[]>(
     () =>
-      successStories.map((story, index) => ({
+      successStories.map((story) => ({
         src: thumbnailUrl(story.videoId),
-        alt: `সফলতার গল্প ${toBanglaNumber(index + 1)} ভিডিওর থাম্বনেইল`,
-        title: `সফলতার গল্প ${toBanglaNumber(index + 1)}`,
+        alt: `${story.title} ভিডিওর থাম্বনেইল`,
+        title: story.title,
         subtitle: VIDEO_SUBTITLE,
       })),
     [successStories]
@@ -144,7 +144,8 @@ export const SuccessStoriesCarousel = memo(function SuccessStoriesCarousel({
                   gap={16}
                   radius={14}
                   squeeze={0.18}
-                  autoplay={false}
+                  autoplay
+                  interval={5}
                   captureWheel={false}
                   focusOnClick={false}
                   label={CAROUSEL_LABEL}
@@ -188,7 +189,7 @@ export const SuccessStoriesCarousel = memo(function SuccessStoriesCarousel({
                       <button
                         type="button"
                         onClick={() => openVideo(index)}
-                        aria-label={`সফলতার গল্প ${toBanglaNumber(index + 1)} ভিডিও চালান`}
+                        aria-label={`${story.title} ভিডিও চালান`}
                         className="group block w-[240px] text-left
                           focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary
                           sm:w-[320px]"
@@ -196,7 +197,7 @@ export const SuccessStoriesCarousel = memo(function SuccessStoriesCarousel({
                         <span className="relative block aspect-video w-full overflow-hidden rounded-xl border border-primary/15 bg-black/50">
                           <Image
                             src={thumbnailUrl(story.videoId)}
-                            alt={`সফলতার গল্প ${toBanglaNumber(index + 1)} ভিডিওর থাম্বনেইল`}
+                            alt={`${story.title} ভিডিওর থাম্বনেইল`}
                             fill
                             sizes="(max-width: 640px) 240px, 320px"
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -209,7 +210,7 @@ export const SuccessStoriesCarousel = memo(function SuccessStoriesCarousel({
                           </span>
                         </span>
                         <span className="mt-3 block text-sm font-semibold text-white">
-                          সফলতার গল্প {toBanglaNumber(index + 1)}
+                          {story.title}
                         </span>
                         <span className="block text-xs text-white/55">{VIDEO_SUBTITLE}</span>
                       </button>
@@ -220,9 +221,9 @@ export const SuccessStoriesCarousel = memo(function SuccessStoriesCarousel({
             )}
           </div>
 
-          <p className="mt-4 text-center text-xs text-white/40">
+          {/* <p className="mt-4 text-center text-xs text-white/40">
             সোয়াইপ, ড্র্যাগ বা তীর চিহ্ন দিয়ে ভিডিওগুলো দেখুন
-          </p>
+          </p> */}
         </div>
       </div>
 
@@ -236,7 +237,8 @@ export const SuccessStoriesCarousel = memo(function SuccessStoriesCarousel({
           <DialogHeader className="sr-only">
             <DialogTitle>
               {playing
-                ? `সফলতার গল্প ${toBanglaNumber(playing.index + 1)}`
+                ? successStories[playing.index]?.title ??
+                  `সফলতার গল্প ${toBanglaNumber(playing.index + 1)}`
                 : CAROUSEL_LABEL}
             </DialogTitle>
             <DialogDescription>{VIDEO_SUBTITLE}</DialogDescription>
@@ -246,7 +248,10 @@ export const SuccessStoriesCarousel = memo(function SuccessStoriesCarousel({
               key={playing.videoId}
               className="w-full h-full"
               src={`https://www.youtube.com/embed/${playing.videoId}?rel=0&autoplay=1`}
-              title={`সফলতার গল্প ${toBanglaNumber(playing.index + 1)}`}
+              title={
+                successStories[playing.index]?.title ??
+                `সফলতার গল্প ${toBanglaNumber(playing.index + 1)}`
+              }
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
