@@ -4,6 +4,7 @@ export interface StudentFeedback {
   studentId: string;
   testimonial: string;
   post_link?: string;
+  facebook?: string;
 }
 
 export async function getFeedbacks(): Promise<StudentFeedback[]> {

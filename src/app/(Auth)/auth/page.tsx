@@ -150,7 +150,7 @@ const AuthPage = () => {
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
                                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
                             </span>
-                            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">MISUN Academy</span>
+                            <span className="text-xs font-semibold text-primary-glow">MISUN Academy</span>
                         </div>
                         <h1 className="text-2xl font-bold">
                             <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">
@@ -160,7 +160,7 @@ const AuthPage = () => {
                                 {authMode === 'login' ? 'back' : 'account'}
                             </span>
                         </h1>
-                        <p className="text-white/40 text-sm mt-2">
+                        <p className="text-white/75 text-sm mt-2">
                             {authMode === 'login'
                                 ? 'Sign in to continue your learning journey'
                                 : 'Join thousands of students already learning'}
@@ -179,7 +179,7 @@ const AuthPage = () => {
                                 <button
                                     key={tab}
                                     onClick={() => switchAuthMode(tab)}
-                                    className={`flex-1 py-3.5 text-sm font-semibold transition-all duration-200 relative ${authMode === tab ? 'text-primary' : 'text-white/40 hover:text-white/70'
+                                    className={`flex-1 py-3.5 text-sm font-semibold transition-all duration-200 relative ${authMode === tab ? 'text-primary-glow' : 'text-white/75 hover:text-white'
                                         }`}
                                 >
                                     {tab === 'login' ? 'লগইন' : 'রেজিস্টার'}
@@ -190,7 +190,7 @@ const AuthPage = () => {
                             ))}
                         </div>
 
-                        <div className="p-6 space-y-5">
+                        <div className="p-5 sm:p-6 space-y-5">
                             {authMode === 'login' && (
                                 <LoginForm
                                     onForgotPassword={() => setShowForgotPassword(true)}

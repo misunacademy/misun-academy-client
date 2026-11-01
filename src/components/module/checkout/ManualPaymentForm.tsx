@@ -13,8 +13,8 @@ import { paymentInfo } from "@/constants/payment";
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 
 const paymentSchema = z.object({
-    senderNumber: z.string().regex(/^[+\d][\d\s-]{9,19}$/, "Please enter a valid phone number"),
-    transactionId: z.string().trim().min(5, "Please enter a valid transaction ID").max(100),
+    senderNumber: z.string().regex(/^[+\d][\d\s-]{9,19}$/, "সঠিক ফোন নম্বর দিন"),
+    transactionId: z.string().trim().min(5, "সঠিক ট্রানজেকশন আইডি দিন").max(100),
 });
 
 type PaymentForm = z.infer<typeof paymentSchema>;
@@ -82,12 +82,14 @@ const ManualPaymentForm = ({
     const effectiveCurrency = manualCurrency ?? paymentInfo.currency;
     const currencyLabel = CURRENCY_SYMBOLS[effectiveCurrency] ?? effectiveCurrency;
     const formattedAmount = `${currencyLabel} ${displayAmount.toLocaleString('en-US')}`;
-    const dynamicInstructions = paymentInfo.instructions.map((instruction) => {
-        if (instruction.toLowerCase().includes('enter the exact amount')) {
-            return `Enter the exact amount: ${formattedAmount}`;
-        }
-        return instruction;
-    });
+    const instructions = [
+        "PhonePe অ্যাপ খুলুন",
+        "উপরের নম্বরে টাকা পাঠান",
+        `সঠিক পরিমাণ পাঠান: ${formattedAmount}`,
+        batch ? `রেফারেন্সে ব্যাচ নম্বর দিন (যেমন 'MA-${batch}')` : "রেফারেন্সে আপনার ব্যাচ নম্বর দিন",
+        "পেমেন্ট সম্পন্ন করুন",
+        "নিচে আপনার পেমেন্টের তথ্য দিন",
+    ];
 
     return (
         <div className="space-y-5">
@@ -98,8 +100,8 @@ const ManualPaymentForm = ({
                 <div className="absolute top-0 right-0 w-5 h-5 border-t border-r border-primary/40 rounded-tr-2xl" />
 
                 <div className="p-5 border-b border-primary/10">
-                    <h3 className="text-lg font-bold text-white/90 text-center">Pay with PhonePe</h3>
-                    <p className="text-sm text-white/45 text-center mt-1">Send payment to complete your enrollment</p>
+                    <h3 className="text-lg font-bold text-white/90 text-center">PhonePe দিয়ে পেমেন্ট করুন</h3>
+                    <p className="text-sm text-white/70 text-center mt-1">পেমেন্ট পাঠিয়ে ভর্তি সম্পন্ন করুন</p>
                 </div>
 
                 <div className="p-6 space-y-5">
@@ -117,7 +119,7 @@ const ManualPaymentForm = ({
                                 <div className="w-8 h-8 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
                                     <User className="w-4 h-4 text-primary" />
                                 </div>
-                                <span className="text-white/55 font-medium text-sm">Recipient</span>
+                                <span className="text-white/80 font-medium text-sm">প্রাপক</span>
                             </div>
                             <span className="font-semibold text-white/85 text-sm">{paymentInfo.recipientName}</span>
                         </div>
@@ -127,7 +129,7 @@ const ManualPaymentForm = ({
                                 <div className="w-8 h-8 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
                                     <Phone className="w-4 h-4 text-primary" />
                                 </div>
-                                <span className="text-white/55 font-medium text-sm">Phone</span>
+                                <span className="text-white/80 font-medium text-sm">ফোন</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="font-mono font-semibold text-white/85">{paymentInfo.phoneNumber}</span>
@@ -135,12 +137,12 @@ const ManualPaymentForm = ({
                                     type="button"
                                     onClick={() => copyToClipboard(paymentInfo.phoneNumber)}
                                     className="relative w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center hover:bg-primary/20 transition-colors"
-                                    title="Copy phone number"
+                                    title="ফোন নম্বর কপি করুন"
                                 >
                                     {copied ? <CheckCircle className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5 text-primary/70" />}
                                     {copied && (
-                                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-surface border border-primary/25 text-primary text-[10px] rounded px-2 py-0.5 whitespace-nowrap">
-                                            Copied!
+                                        <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-surface border border-primary/25 text-primary text-[11px] rounded px-2 py-0.5 whitespace-nowrap">
+                                            কপি হয়েছে!
                                         </span>
                                     )}
                                 </button>
@@ -152,23 +154,21 @@ const ManualPaymentForm = ({
                     <div className="flex justify-center">
                         <div className="relative overflow-hidden rounded-xl bg-red-500/8 border border-red-500/25 px-6 py-2.5">
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
-                            <span className="font-bold text-red-400 text-lg">Amount: {formattedAmount}</span>
+                            <span className="font-bold text-red-400 text-lg">পরিমাণ: {formattedAmount}</span>
                         </div>
                     </div>
 
                     {/* Instructions */}
                     <div className="relative overflow-hidden rounded-xl bg-primary/6 border border-primary/15 p-4">
                         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-                        <h4 className="font-semibold text-white/75 text-sm mb-3">Payment Instructions:</h4>
+                        <h4 className="font-semibold text-white/75 text-sm mb-3">পেমেন্টের নির্দেশনা:</h4>
                         <ol className="space-y-2.5">
-                            {dynamicInstructions.map((instruction, index) => (
+                            {instructions.map((instruction, index) => (
                                 <li key={index} className="flex items-start gap-3">
-                                    <div className="w-5 h-5 bg-primary/15 border border-primary/30 text-primary rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">
+                                    <div className="w-5 h-5 bg-primary/15 border border-primary/30 text-primary rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5">
                                         {index + 1}
                                     </div>
-                                    {/* Only substitute the concrete reference when we have one —
-                                        otherwise show the generic template instead of "MA-". */}
-                                    <span className="text-sm text-white/55 leading-relaxed">{instruction.includes("MA") && batch ? `Add reference: 'MA-${batch}'` : instruction}</span>
+                                    <span className="text-sm text-white/80 leading-relaxed">{instruction}</span>
                                 </li>
                             ))}
                         </ol>
@@ -180,7 +180,7 @@ const ManualPaymentForm = ({
             <div className="relative overflow-hidden rounded-2xl bg-surface border border-primary/15">
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
                 <div className="p-5 border-b border-primary/10">
-                    <h3 className="text-lg font-bold text-white/90">Confirm Your Payment</h3>
+                    <h3 className="text-lg font-bold text-white/90">পেমেন্ট নিশ্চিত করুন</h3>
                 </div>
                 <div className="p-5">
                     <Form {...form}>
@@ -190,13 +190,13 @@ const ManualPaymentForm = ({
                                 name="senderNumber"
                                 render={({ field, fieldState }) => (
                                     <FormItem>
-                                        <FormLabel className="text-white/65 text-sm">Your Phone Pay Number *</FormLabel>
+                                        <FormLabel className="text-white/85 text-sm">আপনার Phone Pay নম্বর *</FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="Enter your phone pay number"
+                                                placeholder="Phone Pay নম্বর লিখুন"
                                                 {...field}
                                                 className={cn(
-                                                    "h-12 bg-[#0a1812] border-primary/25 text-white placeholder:text-white/30 focus:border-primary/55 focus-visible:ring-primary/40 autofill:shadow-[inset_0_0_0px_1000px_rgb(10,24,18)] autofill:[-webkit-text-fill-color:white]",
+                                                    "h-12 bg-[#0a1812] border-primary/25 text-white placeholder:text-white/50 focus:border-primary/55 focus-visible:ring-primary/40 autofill:shadow-[inset_0_0_0px_1000px_rgb(10,24,18)] autofill:[-webkit-text-fill-color:white]",
                                                     fieldState.invalid
                                                         ? "border-red-500/60 focus-visible:ring-red-500/30"
                                                         : fieldState.isTouched && field.value
@@ -215,13 +215,13 @@ const ManualPaymentForm = ({
                                 name="transactionId"
                                 render={({ field, fieldState }) => (
                                     <FormItem>
-                                        <FormLabel className="text-white/65 text-sm">Transaction ID *</FormLabel>
+                                        <FormLabel className="text-white/85 text-sm">ট্রানজেকশন আইডি *</FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="Enter transaction ID from phone pay"
+                                                placeholder="Phone Pay-এর ট্রানজেকশন আইডি লিখুন"
                                                 {...field}
                                                 className={cn(
-                                                    "h-12 font-mono bg-[#0a1812] border-primary/25 text-white placeholder:text-white/30 focus:border-primary/55 focus-visible:ring-primary/40 autofill:shadow-[inset_0_0_0px_1000px_rgb(10,24,18)] autofill:[-webkit-text-fill-color:white]",
+                                                    "h-12 font-mono bg-[#0a1812] border-primary/25 text-white placeholder:text-white/50 focus:border-primary/55 focus-visible:ring-primary/40 autofill:shadow-[inset_0_0_0px_1000px_rgb(10,24,18)] autofill:[-webkit-text-fill-color:white]",
                                                     fieldState.invalid
                                                         ? "border-red-500/60 focus-visible:ring-red-500/30"
                                                         : fieldState.isTouched && field.value
@@ -240,18 +240,16 @@ const ManualPaymentForm = ({
 
                             <div className="flex gap-3 pt-2">
                                 <button type="button" onClick={onBack}
-                                    className="flex-1 flex items-center justify-center gap-2 border border-primary/25 text-white/60 hover:border-primary/50 hover:text-white/90 transition-all duration-200 rounded-xl py-2.5 text-sm font-medium cursor-pointer">
+                                    className="flex-1 flex items-center justify-center gap-2 border border-primary/25 text-white/85 hover:border-primary/50 hover:text-white transition-all duration-200 rounded-xl py-2.5 text-sm font-medium cursor-pointer">
                                     <ArrowLeft className="w-4 h-4" />
-                                    Back
+                                    ফিরে যান
                                 </button>
-                                <div className={`flex-1 relative p-[1.5px] rounded-xl overflow-hidden ${
-                                    !form.formState.isValid ? 'opacity-50' : ''
-                                }`}>
+                                <div className="flex-1 relative p-[1.5px] rounded-xl overflow-hidden">
                                     <AnimatedBorder variant="simple" speed="3s" />
                                     <button
                                         type="submit"
                                         disabled={!form.formState.isValid || isSubmitting}
-                                        className="relative w-full bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep disabled:cursor-not-allowed transition-all duration-300 text-white font-bold py-2.5 rounded-xl text-sm"
+                                        className="relative w-full bg-primary hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-emerald-darker disabled:text-white disabled:ring-1 disabled:ring-inset disabled:ring-primary/25 transition-colors duration-300 text-primary-foreground font-bold py-2.5 rounded-xl text-sm"
                                     >
                                         Submit Payment Info
                                     </button>

@@ -9,6 +9,7 @@
   *:focus-visible {
     @apply outline-2 outline-offset-2 outline-primary/60;
   }
+
   :root {
     --background: 0 0% 100%;
     --background-secondary: 0 0% 95%;
@@ -100,5 +101,119 @@
   ::-webkit-scrollbar-thumb {
     background: hsl(var(--primary));
     border-radius: 999px;
+  }
+}
+
+@layer components {
+  /* ── Shared readability tokens (WCAG 2.2 AA, Bangla-first) ── */
+  .readable-body {
+    @apply text-base sm:text-lg leading-relaxed font-normal text-white/85;
+  }
+  .readable-muted {
+    @apply text-sm sm:text-base leading-relaxed font-normal text-white/75;
+  }
+  .readable-heading-solid {
+    @apply text-white;
+  }
+  .readable-accent-solid {
+    @apply text-primary-glow;
+  }
+  /* Bangla micro-labels: never below 12px, no uppercase tracking on Bangla */
+  .readable-micro-label {
+    @apply text-xs font-medium text-white/75;
+  }
+}
+
+/* UNBangla has a smaller visual x-height than the previous Bangla face. */
+.font-bangla {
+  font-size-adjust: 0.60;
+}
+
+/* enroll now button pulse  */
+
+.border-pulse-button {
+  --pulse-color: 34, 197, 94;
+
+  position: relative;
+  isolation: isolate;
+  border: 2px solid rgba(var(--pulse-color), 0.9);
+
+  background: linear-gradient(
+    to right,
+    #0d5c36,
+    hsl(156 70% 42%),
+    #0a5f38
+  );
+
+  animation: button-border-pulse 2.4s ease-in-out infinite;
+}
+
+/* Multiple expanding waves */
+.border-pulse-button::before,
+.border-pulse-button::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border: 1px solid rgba(var(--pulse-color), 0.8);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+
+  animation: multiple-ring-wave 2.4s ease-out infinite;
+}
+
+.border-pulse-button::after {
+  animation-delay: 1.2s;
+}
+
+@keyframes button-border-pulse {
+  0%,
+  100% {
+    border-color: rgba(var(--pulse-color), 0.45);
+    box-shadow: 0 0 4px rgba(var(--pulse-color), 0.08);
+  }
+
+  50% {
+    border-color: rgba(var(--pulse-color), 1);
+    box-shadow: 0 0 16px rgba(var(--pulse-color), 0.3);
+  }
+}
+
+@keyframes multiple-ring-wave {
+  0% {
+    transform: scale(1);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.85;
+  }
+
+  70% {
+    opacity: 0.4;
+  }
+
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+.border-pulse-button:hover:not(:disabled) {
+  border-color: rgb(var(--pulse-color));
+}
+
+.border-pulse-button:disabled,
+.border-pulse-button:disabled::before,
+.border-pulse-button:disabled::after {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .border-pulse-button,
+  .border-pulse-button::before,
+  .border-pulse-button::after {
+    animation: none;
   }
 }

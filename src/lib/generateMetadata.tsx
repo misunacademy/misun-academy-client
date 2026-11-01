@@ -26,7 +26,7 @@ export const generateMetadata = ({
         title,
         description,
         keywords,
-        metadataBase: new URL(BASE_URL),
+        metadataBase: BASE_URL,
         alternates: {
             canonical: url,
         },

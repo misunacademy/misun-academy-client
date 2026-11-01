@@ -20,6 +20,7 @@ export enum EnrollmentStatus {
     Suspended = 'suspended',
     Refunded = 'refunded',
     PaymentFailed = 'payment-failed',
+    Expired = 'expired',
 }
 
 export enum BatchStatus {

@@ -6,7 +6,7 @@ import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import AuthGuard from "@/components/shared/AuthGuard";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { authServerApi } from "@/lib/auth-server-api";
 
 import { ProfileMainTab } from "@/components/module/profile/ProfileMainTab";
@@ -73,7 +73,7 @@ export default function StudentProfile() {
     if (sessionLoading || profileLoading) {
         return (
             <div className="flex bg-surface items-center justify-center min-h-[calc(100vh-80px)]">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <Skeleton className="w-8 h-8 shrink-0 rounded-full bg-white/10" />
             </div>
         );
     }
@@ -81,7 +81,7 @@ export default function StudentProfile() {
     if (!user) {
         return (
             <div className="flex bg-surface items-center justify-center min-h-[calc(100vh-80px)]">
-                <p className="text-red-500">Error loading profile data</p>
+                <p className="text-destructive">Error loading profile data</p>
             </div>
         );
     }

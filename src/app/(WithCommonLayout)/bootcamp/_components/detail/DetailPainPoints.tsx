@@ -10,7 +10,7 @@ interface Item {
 export function DetailPainPoints({ items }: { items?: Item[] }) {
   if (!items || items.length === 0) return null;
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10">
+    <section className="mx-auto max-w-7xl px-4 py-10">
       <p className="font-bangla text-sm font-semibold text-[#ffd60a]">
         আপনার সাথে মিলিয়ে দেখুন
       </p>

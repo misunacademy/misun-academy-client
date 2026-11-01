@@ -13,6 +13,7 @@ import {
     useGetCurrentBootcampQuery,
     useGetPastBootcampsQuery,
 } from '@/redux/api/bootcampApi';
+import BootcampLoading from './loading';
 
 const BootcampPage = () => {
     const { data: currentData, isLoading: currentLoading } = useGetCurrentBootcampQuery();
@@ -23,23 +24,14 @@ const BootcampPage = () => {
 
     if (currentLoading || pastLoading) {
         return (
-            <main className="bg-[#0a0a0b]">
-                <div className="mx-auto max-w-6xl px-4 py-20">
-                    <div className="h-64 animate-pulse rounded-2xl bg-white/5" />
-                    <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                        {[0, 1, 2].map((i) => (
-                            <div key={i} className="h-64 animate-pulse rounded-2xl bg-white/5" />
-                        ))}
-                    </div>
-                </div>
-            </main>
+            <BootcampLoading />
         );
     }
 
     if (!current) {
         return (
-            <main className="bg-[#0a0a0b]">
-                <section className="mx-auto max-w-6xl px-4 pb-2 pt-12">
+            <div className="bg-[#0a0a0b]">
+                <section className="mx-auto max-w-7xl px-4 pb-2 pt-12">
                     <p className="font-bangla text-sm font-semibold tracking-wide text-[#ffd60a]">
                         রেকর্ডিং লাইব্রেরি
                     </p>
@@ -53,7 +45,7 @@ const BootcampPage = () => {
                 {past.length > 0 ? (
                     <PreviousBootcampsGrid items={past} title="সব রেকর্ডিং বুটক্যাম্প" />
                 ) : (
-                    <section className="mx-auto max-w-6xl px-4 py-14">
+                    <section className="mx-auto max-w-7xl px-4 py-14">
                         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
                             <p className="font-bangla text-lg text-white/70">
                                 এখনো কোনো রেকর্ডিং প্রকাশ হয়নি। শিগগিরই আসছে।
@@ -62,12 +54,12 @@ const BootcampPage = () => {
                     </section>
                 )}
                 <BreadcrumbJsonLd />
-            </main>
+            </div>
         );
     }
 
     return (
-        <main className="bg-[#0a0a0b]">
+        <div className="bg-[#0a0a0b]">
             <BootcampHero />
             <BootcampPerks />
             <BootcampDoseSchedule />
@@ -77,7 +69,7 @@ const BootcampPage = () => {
             <BootcampFaq />
             <PreviousBootcampsGrid items={past} />
             <BreadcrumbJsonLd />
-        </main>
+        </div>
     );
 };
 

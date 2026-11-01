@@ -22,26 +22,27 @@ describe('useScrollProgress', () => {
     expect(result.current.progress).toBe(0);
   });
 
-  it('becomes visible after scrolling past the threshold', () => {
-    const { result } = renderHook(() => useScrollProgress(200));
-    act(() => {
-      Object.defineProperty(window, 'scrollY', { value: 500, configurable: true });
+  const scrollTo = async (value: number) => {
+    Object.defineProperty(window, 'scrollY', { value, configurable: true });
+    await act(async () => {
       window.dispatchEvent(new Event('scroll'));
+      await new Promise<void>((resolve) => {
+        window.requestAnimationFrame(() => resolve());
+      });
     });
+  };
+
+  it('becomes visible after scrolling past the threshold', async () => {
+    const { result } = renderHook(() => useScrollProgress(200));
+    await scrollTo(500);
     expect(result.current.isVisible).toBe(true);
   });
 
-  it('hides again when scrolled back above the threshold', () => {
+  it('hides again when scrolled back above the threshold', async () => {
     const { result } = renderHook(() => useScrollProgress(200));
-    act(() => {
-      Object.defineProperty(window, 'scrollY', { value: 500, configurable: true });
-      window.dispatchEvent(new Event('scroll'));
-    });
+    await scrollTo(500);
     expect(result.current.isVisible).toBe(true);
-    act(() => {
-      Object.defineProperty(window, 'scrollY', { value: 0, configurable: true });
-      window.dispatchEvent(new Event('scroll'));
-    });
+    await scrollTo(0);
     expect(result.current.isVisible).toBe(false);
   });
 

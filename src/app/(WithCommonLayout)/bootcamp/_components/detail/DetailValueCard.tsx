@@ -14,7 +14,7 @@ interface Props {
 export function DetailValueCard({ bootcamp, hasPurchased, onBuy, watchUrl }: Props) {
   if (hasPurchased && !bootcamp.guaranteeNote) return null;
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10">
+    <section className="mx-auto max-w-7xl px-4 py-10">
       <div className="rounded-3xl border border-[#ffd60a]/25 bg-gradient-to-b from-[#ffd60a]/[0.08] to-transparent p-6 sm:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>

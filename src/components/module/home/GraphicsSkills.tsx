@@ -1,5 +1,7 @@
+'use client';
+
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import { StaticImageData } from 'next/image';
 import { IllustratorImg, PhotoshopImg } from '@/assets/images';
 import Link from 'next/link';
@@ -10,6 +12,7 @@ import SkillBadge from './SkillBadge';
 import { featureCards } from './featureCardsData';
 
 export default function GraphicsSkills() {
+    const prefersReducedMotion = useReducedMotion();
     const skills: { image: StaticImageData; name: string }[] = [
         { image: PhotoshopImg, name: "ফটোশপ" },
         { image: IllustratorImg, name: "ইলাস্ট্রেটর" },
@@ -32,7 +35,7 @@ export default function GraphicsSkills() {
 
                     {/* Modern Glass Badge */}
                     <FadeIn delay={0.1} direction="up">
-                        <div className="mb-8 flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-primary backdrop-blur-md transition-colors hover:bg-primary/20">
+                        <div className="mb-8 flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-xs font-semibold text-primary-glow backdrop-blur-md transition-colors hover:bg-primary/20">
                             <span className="relative flex h-1.5 w-1.5">
                                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
                                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary/80" />
@@ -48,15 +51,15 @@ export default function GraphicsSkills() {
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-primary/20 blur-[80px] rounded-full pointer-events-none" />
 
                         {/* Mixed background bubbles */}
-                        <motion.div animate={{ y: [0, -10, 0], opacity: [0.5, 1, 0.5] }} transition={{ duration: 3, repeat: Infinity }} className="absolute -left-12 top-0 h-2 w-2 rounded-full bg-primary/40 shadow-[0_0_10px_rgba(32,180,134,0.6)] z-10 hidden md:block pointer-events-none" />
-                        <motion.div animate={{ y: [0, 15, 0], opacity: [0.4, 0.8, 0.4] }} transition={{ duration: 5, repeat: Infinity }} className="absolute left-1/4 -bottom-10 h-4 w-4 rounded-full bg-primary/30 shadow-[0_0_15px_rgba(32,180,134,0.5)] z-10 hidden md:block pointer-events-none" />
-                        <motion.div animate={{ y: [0, -20, 0], opacity: [0.3, 0.7, 0.3] }} transition={{ duration: 4.5, repeat: Infinity }} className="absolute right-1/4 -top-8 h-3 w-3 rounded-full bg-primary/50 shadow-[0_0_12px_rgba(32,180,134,0.6)] z-10 hidden md:block pointer-events-none" />
-                        <motion.div animate={{ y: [0, 10, 0], opacity: [0.6, 1, 0.6] }} transition={{ duration: 3.5, repeat: Infinity }} className="absolute -right-10 bottom-4 h-2.5 w-2.5 rounded-full bg-primary/60 shadow-[0_0_12px_rgba(32,180,134,0.8)] z-10 hidden md:block pointer-events-none" />
+                        <motion.div animate={prefersReducedMotion ? undefined : { y: [0, -10, 0], opacity: [0.5, 1, 0.5] }} transition={prefersReducedMotion ? undefined : { duration: 3, repeat: Infinity }} className="absolute -left-12 top-0 h-2 w-2 rounded-full bg-primary/40 shadow-[0_0_10px_rgba(32,180,134,0.6)] z-10 hidden md:block pointer-events-none" />
+                        <motion.div animate={prefersReducedMotion ? undefined : { y: [0, 15, 0], opacity: [0.4, 0.8, 0.4] }} transition={prefersReducedMotion ? undefined : { duration: 5, repeat: Infinity }} className="absolute left-1/4 -bottom-10 h-4 w-4 rounded-full bg-primary/30 shadow-[0_0_15px_rgba(32,180,134,0.5)] z-10 hidden md:block pointer-events-none" />
+                        <motion.div animate={prefersReducedMotion ? undefined : { y: [0, -20, 0], opacity: [0.3, 0.7, 0.3] }} transition={prefersReducedMotion ? undefined : { duration: 4.5, repeat: Infinity }} className="absolute right-1/4 -top-8 h-3 w-3 rounded-full bg-primary/50 shadow-[0_0_12px_rgba(32,180,134,0.6)] z-10 hidden md:block pointer-events-none" />
+                        <motion.div animate={prefersReducedMotion ? undefined : { y: [0, 10, 0], opacity: [0.6, 1, 0.6] }} transition={prefersReducedMotion ? undefined : { duration: 3.5, repeat: Infinity }} className="absolute -right-10 bottom-4 h-2.5 w-2.5 rounded-full bg-primary/60 shadow-[0_0_12px_rgba(32,180,134,0.8)] z-10 hidden md:block pointer-events-none" />
 
                         {/* Floating Ps Icon (Desktop & Tablet) */}
                         <motion.div
-                            animate={{ y: [0, -15, 0] }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                            animate={prefersReducedMotion ? undefined : { y: [0, -15, 0] }}
+                            transition={prefersReducedMotion ? undefined : { duration: 4, repeat: Infinity, ease: "easeInOut" }}
                             className="absolute -left-6 md:-left-12 lg:-left-4 top-40 md:top-44 hidden sm:block z-20"
                         >
                             <SkillBadge image={skills[0].image} name={skills[0].name} delay={1} />
@@ -66,8 +69,8 @@ export default function GraphicsSkills() {
 
                         {/* Floating Ai Icon (Desktop & Tablet) */}
                         <motion.div
-                            animate={{ y: [0, 15, 0] }}
-                            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                            animate={prefersReducedMotion ? undefined : { y: [0, 15, 0] }}
+                            transition={prefersReducedMotion ? undefined : { duration: 5, repeat: Infinity, ease: "easeInOut" }}
                             className="absolute -right-6 md:-right-12 lg:-right-4 top-28 md:top-32 hidden sm:block z-20"
                         >
                             <SkillBadge image={skills[1].image} name={skills[1].name} delay={2} />
@@ -78,7 +81,7 @@ export default function GraphicsSkills() {
                         <FadeIn delay={0.2} direction="up" className="relative z-30 w-full pointer-events-none">
                             <h2 className="mb-6 text-4xl font-semibold tracking-tight text-white md:text-5xl lg:text-7xl lg:leading-[1.1] pointer-events-auto">
                                 ক্রিয়েটিভ{" "}
-                                <span className="bg-gradient-to-br from-white via-primary to-emerald-700 bg-clip-text text-transparent">
+                                <span className="text-primary-glow">
                                     ডিজাইন স্কিলস
                                 </span>
                             </h2>
@@ -101,7 +104,7 @@ export default function GraphicsSkills() {
                                 {skills.map((skill, i) => (
                                     <div key={skill.name} className="flex flex-col items-center gap-3">
                                         <SkillBadge {...skill} delay={i + 1} />
-                                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">
+                                        <span className="text-xs font-semibold text-primary-glow">
                                             {skill.name}
                                         </span>
                                     </div>
@@ -109,29 +112,27 @@ export default function GraphicsSkills() {
                             </div>
 
                             <div className="pt-4 hidden md:inline-flex">
-                                <Link href="/checkout">
-                                    <div className="relative inline-flex p-[2px] rounded-xl overflow-hidden
-                                              shadow-[0_4px_24px_rgba(32,180,134,0.35)]
-                                              hover:shadow-[0_8px_36px_rgba(32,180,134,0.60)]
-                                              hover:scale-105 hover:-translate-y-0.5
-                                              active:scale-95 active:translate-y-0
-                                              transition-all duration-300 ease-out">
-                                        <AnimatedBorder />
-                                        <button className="group relative overflow-hidden
-                                                inline-flex items-center gap-2
-                                                px-8 py-3.5
-                                                text-base font-bold tracking-wide rounded-[10px]
-                                                bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
-                                                text-white
-                                                hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
-                                                transition-all duration-300 ease-out">
-                                            <span className="relative z-10 flex items-center gap-2">
-                                                আপনার যাত্রা শুরু করুন
-                                                <MousePointer2 className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
-                                            </span>
-                                            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
-                                        </button>
-                                    </div>
+                                <Link href="/checkout" className="group relative inline-flex overflow-hidden rounded-xl p-[2px]
+                                          shadow-[0_4px_24px_rgba(32,180,134,0.35)]
+                                          hover:shadow-[0_8px_36px_rgba(32,180,134,0.60)]
+                                          hover:scale-105 hover:-translate-y-0.5
+                                          active:scale-95 active:translate-y-0
+                                          transition-all duration-300 ease-out">
+                                    <AnimatedBorder />
+                                    <span className="relative overflow-hidden
+                                            inline-flex items-center gap-2
+                                            px-8 py-3.5
+                                            text-base font-bold tracking-wide rounded-[10px]
+                                            bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
+                                            text-white
+                                            hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
+                                            transition-all duration-300 ease-out">
+                                        <span className="relative z-10 flex items-center gap-2">
+                                            আপনার যাত্রা শুরু করুন
+                                            <MousePointer2 className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
+                                        </span>
+                                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                                    </span>
                                 </Link>
                             </div>
                         </div>
@@ -144,7 +145,7 @@ export default function GraphicsSkills() {
 
                             <div className="flex items-center gap-2">
                                 <span className="text-primary/60 text-xl select-none">←</span>
-                                <span className="relative inline-block px-4 py-1 bg-primary/10 border border-primary/20 rounded-full text-md font-medium uppercase text-primary backdrop-blur-md shadow-sm">
+                                <span className="relative inline-block px-4 py-1 bg-primary/10 border border-primary/20 rounded-full text-sm font-medium text-primary-glow backdrop-blur-md shadow-sm">
                                     চার মাসের পুরো এই জার্নিতে যা শিখবেন
                                     <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 bg-gradient-to-r from-primary to-emerald-500 blur-lg" />
                                 </span>
@@ -164,29 +165,27 @@ export default function GraphicsSkills() {
                 </div>
 
                 <div className="pt-4 md:hidden  flex justify-center items-center">
-                    <Link href="/checkout">
-                        <div className="relative inline-flex p-[2px] rounded-xl overflow-hidden
-                                              shadow-[0_4px_24px_rgba(32,180,134,0.35)]
-                                              hover:shadow-[0_8px_36px_rgba(32,180,134,0.60)]
-                                              hover:scale-105 hover:-translate-y-0.5
-                                              active:scale-95 active:translate-y-0
-                                              transition-all duration-300 ease-out">
-                            <AnimatedBorder />
-                            <button className="group relative overflow-hidden
-                                                inline-flex items-center gap-2
-                                                px-8 py-3.5
-                                                text-base font-bold tracking-wide rounded-[10px]
-                                                bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
-                                                text-white
-                                                hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
-                                                transition-all duration-300 ease-out">
-                                <span className="relative z-10 flex items-center gap-2">
-                                    আপনার যাত্রা শুরু করুন
-                                    <MousePointer2 className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
-                                </span>
-                                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
-                            </button>
-                        </div>
+                    <Link href="/checkout" className="group relative inline-flex overflow-hidden rounded-xl p-[2px]
+                                          shadow-[0_4px_24px_rgba(32,180,134,0.35)]
+                                          hover:shadow-[0_8px_36px_rgba(32,180,134,0.60)]
+                                          hover:scale-105 hover:-translate-y-0.5
+                                          active:scale-95 active:translate-y-0
+                                          transition-all duration-300 ease-out">
+                        <AnimatedBorder />
+                        <span className="relative overflow-hidden
+                                            inline-flex items-center gap-2
+                                            px-8 py-3.5
+                                            text-base font-bold tracking-wide rounded-[10px]
+                                            bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
+                                            text-white
+                                            hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
+                                            transition-all duration-300 ease-out">
+                            <span className="relative z-10 flex items-center gap-2">
+                                আপনার যাত্রা শুরু করুন
+                                <MousePointer2 className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
+                            </span>
+                            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+                        </span>
                     </Link>
                 </div>
             </div>

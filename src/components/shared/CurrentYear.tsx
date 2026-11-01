@@ -1,5 +1,15 @@
 'use client';
 
+import { useSyncExternalStore } from 'react';
+
+const subscribe = () => () => {};
+
 export default function CurrentYear() {
-  return <>{new Date().getFullYear()}</>;
+  const year = useSyncExternalStore(
+    subscribe,
+    () => String(new Date().getFullYear()),
+    () => ''
+  );
+
+  return <>{year}</>;
 }

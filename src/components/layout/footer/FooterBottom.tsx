@@ -21,9 +21,9 @@ export default function FooterBottom() {
       <div className="relative z-10 mt-2">
         <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
         <div className="flex w-full justify-center py-5">
-          <p className="text-white/40 text-sm tracking-wide">
+          <p className="text-sm leading-relaxed text-white/80">
             © <CurrentYear />{' '}
-            <span className="text-primary/70 font-medium">Misun Academy</span>
+            <span className="text-primary-glow font-medium">Misun Academy</span>
             {' '}— All rights reserved.
           </p>
         </div>

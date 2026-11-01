@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
 import Image from "next/image";
 import { Wrench, Clock } from "lucide-react";
-import { Skeleton } from "boneyard-js/react";
+import { LoadingBoundary } from "@/components/shared/LoadingBoundary";
 import PageBackground from "@/components/shared/PageBackground";
 
 const FALLBACK_TITLE = "We'll Be Back Soon";
@@ -31,7 +31,7 @@ export default function MaintenancePage() {
 	const maintenanceMessage = data?.data?.maintenanceMessage?.trim() || FALLBACK_MESSAGE;
 
 	return (
-		<Skeleton name="maintenance-page" loading={isLoading}>
+		<LoadingBoundary loading={isLoading}>
 		<PageBackground
 			gradient="bg-surface flex items-center justify-center"
 			dotOpacity="opacity-[0.04]"
@@ -118,6 +118,6 @@ export default function MaintenancePage() {
 
 			</div>
 		</PageBackground>
-		</Skeleton>
+		</LoadingBoundary>
 	);
 }

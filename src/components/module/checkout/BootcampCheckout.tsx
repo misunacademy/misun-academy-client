@@ -16,6 +16,7 @@ import {
     isBatchEnrollmentOpen,
     resolveBatchRef,
 } from '@/lib/enrollment-checkout';
+import { getApiErrorMessage } from '@/lib/api-helpers';
 
 export default function BootcampCheckout({
     batchId,
@@ -70,8 +71,7 @@ export default function BootcampCheckout({
             // External gateway URL — full navigation, not next/router.
             window.location.href = url;
         } catch (e: unknown) {
-            const err = e as { data?: { message?: string } };
-            toast.error(err?.data?.message || 'Payment initiation failed.');
+            toast.error(getApiErrorMessage(e, 'Payment initiation failed.'));
             setIsProcessing(false);
         }
     };
@@ -88,8 +88,7 @@ export default function BootcampCheckout({
                 router.push('/');
             }
         } catch (e: unknown) {
-            const err = e as { data?: { message?: string } };
-            toast.error(err?.data?.message || 'Manual payment failed.');
+            toast.error(getApiErrorMessage(e, 'Manual payment failed.'));
         } finally {
             setIsProcessing(false);
         }

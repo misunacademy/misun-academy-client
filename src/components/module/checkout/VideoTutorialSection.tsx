@@ -68,8 +68,8 @@ export function VideoTutorialSection({ show, onToggle }: VideoTutorialSectionPro
             <Play className="w-4 h-4 text-primary" />
           </div>
           <div className="text-left">
-            <h4 className="font-semibold text-white/85 text-sm">Payment Tutorial Video</h4>
-            <p className="text-xs text-white/45">Learn how to complete your payment step by step</p>
+            <h4 className="font-semibold text-white/85 text-sm">পেমেন্ট টিউটোরিয়াল ভিডিও</h4>
+            <p className="text-xs text-white/70">ধাপে ধাপে পেমেন্ট সম্পন্ন করা শিখুন</p>
           </div>
         </div>
         {show ? <ChevronUp className="w-5 h-5 text-primary/60" /> : <ChevronDown className="w-5 h-5 text-primary/60" />}
@@ -80,18 +80,18 @@ export function VideoTutorialSection({ show, onToggle }: VideoTutorialSectionPro
             <iframe
               className="w-full h-full"
               src={videoUrl}
-              title="Payment Tutorial"
+              title="পেমেন্ট টিউটোরিয়াল"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
           </div>
           <div className="bg-primary/8 border border-primary/15 rounded-lg p-3 text-sm">
-            <p className="font-medium mb-2 text-white/70">📋 Quick Steps:</p>
-            <ol className="list-decimal list-inside space-y-1 text-white/50 text-xs">
-              <li>Select your preferred payment method below</li>
-              <li>For SSLCommerz: You&lsquo;ll be redirected to secure payment gateway</li>
-              <li>For Phone Pay: Follow manual payment instructions</li>
-              <li>Complete payment and wait for confirmation</li>
+            <p className="font-medium mb-2 text-white/70">সংক্ষিপ্ত ধাপ:</p>
+            <ol className="list-decimal list-inside space-y-1 text-white/75 text-xs">
+              <li>নিচ থেকে পছন্দের পেমেন্ট পদ্ধতি বাছুন</li>
+              <li>SSLCommerz: নিরাপদ পেমেন্ট গেটওয়েতে নিয়ে যাওয়া হবে</li>
+              <li>Phone Pay: ম্যানুয়াল পেমেন্টের নির্দেশনা অনুসরণ করুন</li>
+              <li>পেমেন্ট সম্পন্ন করে কনফার্মেশনের জন্য অপেক্ষা করুন</li>
             </ol>
           </div>
         </div>

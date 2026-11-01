@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from "react";
-import { Edit, Plus, Trash2 } from "lucide-react";
-import { useForm, useFieldArray, FormProvider } from "react-hook-form";
+import { Edit, Plus, Trash2, Briefcase, Link as LinkIcon, MapPin } from "lucide-react";
+import { useForm, useFieldArray, FormProvider, type Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
 import type { ProfileData, EducationEntry } from "@/redux/api/profileApi";
 import { toast } from "sonner";
@@ -16,19 +18,21 @@ interface AdditionalInfoProps {
     refetch: () => void;
 }
 
-interface FormValues {
-    bio: string;
-    timeZone?: string;
-    dateOfBirth?: string;
-    address?: string;
-    linkedinUrl?: string;
-    education?: {
-        degree: string;
-        institution: string;
-        passingYear: string;
-        result?: string;
-    }[];
-}
+const additionalInfoSchema = z.object({
+    bio: z.string().optional(),
+    timeZone: z.string().optional(),
+    dateOfBirth: z.string().optional(),
+    address: z.string().optional(),
+    linkedinUrl: z.string().url("Invalid LinkedIn URL").optional().or(z.literal("")),
+    education: z.array(z.object({
+        degree: z.string().optional(),
+        institution: z.string().optional(),
+        passingYear: z.string().optional(),
+        result: z.string().optional(),
+    })).optional(),
+});
+
+type AdditionalInfoFormValues = z.infer<typeof additionalInfoSchema>;
 
 const INPUT_CLASSES = "bg-primary/5 border-primary/20 text-white placeholder:text-white/30";
 
@@ -36,7 +40,8 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [updateProfile] = useUpdateUserProfileMutation();
 
-    const form = useForm<FormValues>({
+    const form = useForm<AdditionalInfoFormValues>({
+        resolver: zodResolver(additionalInfoSchema) as Resolver<AdditionalInfoFormValues>,
         defaultValues: {
             bio: profile?.bio || "",
             timeZone: profile?.timeZone || "",
@@ -54,7 +59,7 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
         name: "education",
     });
 
-    const onSubmit = async (data: FormValues) => {
+    const onSubmit = async (data: AdditionalInfoFormValues) => {
         try {
             const payload = { ...data };
             if (payload.dateOfBirth) {
@@ -76,6 +81,18 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
         }
     };
 
+    const renderInfoCard = (Icon: typeof Briefcase, label: string, content: React.ReactNode) => (
+        <div className="p-4 rounded-xl border border-primary/10 bg-primary/5 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                <Icon className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-white/40 text-sm mb-1">{label}</p>
+                <p className="text-white font-medium text-[15px] leading-relaxed">{content}</p>
+            </div>
+        </div>
+    );
+
     return (
         <div className="flex-1 flex flex-col gap-8">
             <div className="bg-surface rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
@@ -85,6 +102,7 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
                     <h2 className="text-primary text-2xl font-semibold">Additional Info</h2>
                     <button
                         onClick={() => setIsEditing(!isEditing)}
+                        aria-label={isEditing ? "Cancel editing" : "Edit additional info"}
                         className="text-white/50 hover:text-primary transition-colors"
                     >
                         <Edit className="w-5 h-5" />
@@ -128,8 +146,8 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
 
                             <div className="space-y-6">
                                 {fields.map((field, index) => (
-                                    <div key={field.id} className="p-4 rounded-xl border border-primary/20 bg-primary/5 relative">
-                                        <button type="button" onClick={() => remove(index)} className="absolute top-4 right-4 text-white/40 hover:text-red-400 transition-colors">
+                                    <div key={field.id} className="p-4 rounded-xl border border-primary/10 bg-primary/5 relative">
+                                        <button type="button" onClick={() => remove(index)} aria-label={`Remove education ${index + 1}`} className="absolute top-4 right-4 text-white/40 hover:text-destructive transition-colors">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                         <h3 className="text-primary font-medium mb-4">Education #{index + 1}</h3>
@@ -181,7 +199,7 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
                                 <Button type="button" variant="outline" onClick={() => setIsEditing(false)} className="bg-transparent border-primary/20 text-white hover:bg-white/5">
                                     Cancel
                                 </Button>
-                                <SubmitButton className="bg-primary hover:bg-primary-glow text-white">
+                                <SubmitButton className="bg-primary hover:bg-primary/90 text-white">
                                     Save Changes
                                 </SubmitButton>
                             </div>
@@ -190,46 +208,65 @@ export function AdditionalInfoTab({ profile, refetch }: AdditionalInfoProps) {
                 ) : (
                     <div className="relative z-10 grid gap-6 max-w-3xl">
                         <div className="col-span-1 md:col-span-2">
-                            <p className="text-white/40 text-sm mb-1.5">Bio</p>
-                            <p className="text-white font-medium text-[15px] leading-relaxed max-w-3xl">
-                                {profile?.bio || <span className="text-white/30 italic">Not provided</span>}
-                            </p>
+                            {renderInfoCard(Briefcase, "Bio", 
+                                profile?.bio ? (
+                                    <p className="text-white font-medium text-[15px] leading-relaxed max-w-3xl">{profile.bio}</p>
+                                ) : (
+                                    <span className="text-white/30 italic">Not provided</span>
+                                )
+                            )}
                         </div>
                         <div>
-                            <p className="text-white/40 text-sm mb-1.5">Date of Birth</p>
-                            <p className="text-white font-medium text-[15px]">
-                                {profile?.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString() : <span className="text-white/30 italic">Not provided</span>}
-                            </p>
+                            {renderInfoCard(MapPin, "Date of Birth",
+                                profile?.dateOfBirth ? (
+                                    <p className="text-white font-medium text-[15px]">{new Date(profile.dateOfBirth).toLocaleDateString()}</p>
+                                ) : (
+                                    <span className="text-white/30 italic">Not provided</span>
+                                )
+                            )}
                         </div>
                         <div>
-                            <p className="text-white/40 text-sm mb-1.5">LinkedIn Profile</p>
-                            <p className="text-white font-medium text-[15px]">
-                                {profile?.linkedinUrl ? (
-                                    <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                                        View Link
+                            {renderInfoCard(LinkIcon, "LinkedIn Profile",
+                                profile?.linkedinUrl ? (
+                                    <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1">
+                                        View Link <LinkIcon className="w-4 h-4" />
                                     </a>
-                                ) : <span className="text-white/30 italic">Not added</span>}
-                            </p>
+                                ) : (
+                                    <span className="text-white/30 italic">Not added</span>
+                                )
+                            )}
                         </div>
                         <div>
-                            <p className="text-white/40 text-sm mb-1.5">Address</p>
-                            <p className="text-white font-medium text-[15px] leading-relaxed">
-                                {profile?.address || <span className="text-white/30 italic">Not provided</span>}
-                            </p>
+                            {renderInfoCard(MapPin, "Address",
+                                profile?.address ? (
+                                    <p className="text-white font-medium text-[15px] leading-relaxed">{profile.address}</p>
+                                ) : (
+                                    <span className="text-white/30 italic">Not provided</span>
+                                )
+                            )}
                         </div>
                         <div className="col-span-1 md:col-span-2">
-                            <p className="text-white/40 text-sm mb-1.5">Education</p>
-                            {profile?.education && profile.education.length > 0 ? (
-                                profile.education.map((edu: EducationEntry, idx: number) => (
-                                    <div key={idx} className="mb-4">
-                                        <h3 className="text-white font-semibold">{edu.degree}</h3>
-                                        <p className="text-white/70">{edu.institution} &bull; {edu.passingYear}</p>
-                                        {edu.result && <p className="text-white/50 text-sm">Result: {edu.result}</p>}
+                            <div className="p-4 rounded-xl border border-primary/10 bg-primary/5">
+                                <div className="flex items-start gap-3 mb-4">
+                                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                                        <Briefcase className="w-4 h-4" />
                                     </div>
-                                ))
-                            ) : (
-                                <p className="text-white/30 italic">No education added</p>
-                            )}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-white/40 text-sm mb-1">Education</p>
+                                    </div>
+                                </div>
+                                {profile?.education && profile.education.length > 0 ? (
+                                    profile.education.map((edu: EducationEntry, idx: number) => (
+                                        <div key={idx} className="p-3 rounded-lg border border-primary/10 bg-primary/5 mb-3 last:mb-0">
+                                            <h3 className="text-white font-semibold text-[15px]">{edu.degree}</h3>
+                                            <p className="text-white/70 text-sm">{edu.institution} &bull; {edu.passingYear}</p>
+                                            {edu.result && <p className="text-white/50 text-xs mt-1">Result: {edu.result}</p>}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-white/30 italic text-sm">No education added</p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}

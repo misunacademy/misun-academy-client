@@ -2,8 +2,10 @@
 
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Shield, Loader2, User } from "lucide-react";
-import { useForm, FormProvider } from "react-hook-form";
+import { Camera, Shield, Loader2 } from "lucide-react";
+import { useForm, FormProvider, type Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { useUpdateUserProfileMutation } from "@/redux/api/profileApi";
@@ -18,6 +20,17 @@ interface PasswordFormValues {
     newPassword: string;
     confirmPassword: string;
 }
+
+const passwordSchema = z.object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string().min(6, "Password must be at least 6 characters long"),
+    confirmPassword: z.string().min(1, "Please confirm your new password"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+});
+
+const INPUT_CLASSES = "bg-primary/5 border-primary/20 text-white placeholder:text-white/30";
 
 export function SettingsTab() {
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -34,6 +47,7 @@ export function SettingsTab() {
         .slice(0, 2) || "U";
 
     const passwordForm = useForm<PasswordFormValues>({
+        resolver: zodResolver(passwordSchema) as Resolver<PasswordFormValues>,
         defaultValues: {
             currentPassword: "",
             newPassword: "",
@@ -110,8 +124,6 @@ export function SettingsTab() {
             const result = await authServerApi.changePassword({
                 currentPassword,
                 newPassword,
-                // A password change implies possible compromise: revoke all
-                // other sessions so a stolen session does not survive it.
                 revokeOtherSessions: true,
             });
 
@@ -150,7 +162,7 @@ export function SettingsTab() {
     if (!user) {
         return (
             <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
-                <p className="text-red-400">Error loading user data</p>
+                <p className="text-destructive">Error loading user data</p>
             </div>
         );
     }
@@ -169,111 +181,117 @@ export function SettingsTab() {
             </div>
 
             <div className="relative z-10 grid gap-8">
-                <div className="flex flex-col gap-6 p-6 rounded-xl border border-primary/10 bg-primary/5">
-                    <div className="flex items-center gap-2 mb-2 border-b border-white/5 pb-4">
-                        <User className="w-5 h-5 text-primary" />
-                        <h3 className="text-white font-medium text-lg leading-tight">Profile Photo</h3>
-                    </div>
+                {/* Profile Photo Section */}
+             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5 p-5 sm:p-6 rounded-xl border border-primary/20 bg-primary/5">
+    {/* Avatar (clickable) */}
+    <button
+        type="button"
+        onClick={handlePhotoClick}
+        disabled={uploadLoading || updateLoading}
+        aria-label="Change profile photo"
+        className="group relative w-20 h-20 shrink-0 rounded-full p-1 bg-gradient-to-tr from-primary via-primary-glow to-primary shadow-[0_0_15px_hsl(156_70%_42%/0.4)] disabled:opacity-60"
+    >
+        <div className="relative w-full h-full rounded-full border-2 border-surface overflow-hidden bg-surface flex items-center justify-center">
+            {user?.image ? (
+                <Image
+                    src={user.image}
+                    alt={user.name ?? "Profile photo"}
+                    fill
+                    sizes="80px"
+                    className="object-cover"
+                />
+            ) : (
+                <span className="text-2xl font-semibold text-primary/80 font-bangla">
+                    {userInitials}
+                </span>
+            )}
 
-                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-                        <div className="relative w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-primary via-primary-glow to-primary shadow-[0_0_20px_hsl(156_70%_42%/0.4)] flex-shrink-0">
-                            <div className="w-full h-full rounded-full border-4 border-surface overflow-hidden bg-[#0a1510] relative flex items-center justify-center">
-                                {user.image ? (
-                                    <Image src={user.image} alt={user.name!} fill sizes="96px" className="object-cover" />
-                                ) : (
-                                    <div className="text-2xl font-bold text-white/50">
-                                        {userInitials}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <Camera className="h-5 w-5 text-white" />
+            </div>
+        </div>
+    </button>
 
-                        <div className="flex flex-col items-center sm:items-start gap-4 flex-1">
-                            <div className="text-center sm:text-left">
-                                <p className="text-white font-medium">{user?.name}</p>
-                                <p className="text-white/50 text-sm">{user?.email}</p>
-                            </div>
+    {/* Identity */}
+    <div className="flex-1 min-w-0 w-full text-center sm:text-left">
+        <p className="text-white font-semibold text-base truncate">{user?.name}</p>
+        <p className="text-white/50 text-sm truncate">{user?.email}</p>
+        <p className="mt-2 text-xs text-white/40">
+            JPEG, PNG or WEBP · Max 5MB
+        </p>
+    </div>
 
-                            <Button
-                                variant="outline"
-                                onClick={handlePhotoClick}
-                                disabled={uploadLoading || updateLoading}
-                                className="bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 transition-colors w-full sm:w-auto"
-                            >
-                                {uploadLoading ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Uploading...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Camera className="mr-2 h-4 w-4" />
-                                        Change Photo
-                                    </>
-                                )}
-                            </Button>
-                            <p className="text-xs text-white/30 text-center sm:text-left">
-                                Supported formats: JPEG, PNG, WEBP. Max size: 5MB.
-                            </p>
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handlePhotoChange}
-                            />
-                        </div>
-                    </div>
-                </div>
+    {/* Action */}
+    <Button
+        variant="outline"
+        onClick={handlePhotoClick}
+        disabled={uploadLoading || updateLoading}
+        className="w-full sm:w-auto shrink-0 bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 hover:border-primary/40 transition-all whitespace-nowrap"
+    >
+        {uploadLoading ? (
+            <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Uploading...
+            </>
+        ) : (
+            <>
+                <Camera className="mr-2 h-4 w-4" />
+                Change Photo
+            </>
+        )}
+    </Button>
 
-                <div className="flex flex-col gap-6 p-6 rounded-xl border border-primary/10 bg-primary/5">
-                    <div className="flex items-center gap-2 mb-2 border-b border-white/5 pb-4">
+    <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={handlePhotoChange}
+    />
+</div>
+
+                {/* Security Section */}
+                <div className="flex flex-col gap-4 p-6 rounded-xl border border-primary/20 bg-primary/5">
+                    <div className="flex items-center gap-2 mb-2 border-b border-dashed border-primary/20 pb-4">
                         <Shield className="w-5 h-5 text-primary" />
-                        <h3 className="text-white font-medium text-lg leading-tight">Security</h3>
+                        <h3 className="text-white font-medium text-lg">Security</h3>
                     </div>
+                    <p className="text-white/50 text-sm">Change your account password.</p>
+                    <div className="pt-1">
+                        <FormProvider {...passwordForm}>
+                            <form onSubmit={passwordForm.handleSubmit(handleChangePassword)} className="space-y-5 max-w-md">
+                                <PasswordField
+                                    name="currentPassword"
+                                    label="Current Password"
+                                    labelClassName="text-white/70"
+                                    required
+                                    placeholder="Enter current password"
+                                    className={INPUT_CLASSES}
+                                />
+                                <PasswordField
+                                    name="newPassword"
+                                    label="New Password"
+                                    labelClassName="text-white/70"
+                                    required
+                                    placeholder="Enter new password"
+                                    className={INPUT_CLASSES}
+                                />
+                                <PasswordField
+                                    name="confirmPassword"
+                                    label="Confirm New Password"
+                                    labelClassName="text-white/70"
+                                    required
+                                    placeholder="Confirm new password"
+                                    className={INPUT_CLASSES}
+                                />
 
-                    <FormProvider {...passwordForm}>
-                        <form onSubmit={passwordForm.handleSubmit(handleChangePassword)} className="space-y-6 max-w-md">
-                            <PasswordField
-                                name="currentPassword"
-                                label="Current Password"
-                                labelClassName="text-white/70"
-                                required
-                                rules={{ required: "Current password is required" }}
-                                placeholder="Enter current password"
-                                className="bg-primary/5 border-primary/20 text-white placeholder:text-white/20"
-                            />
-                            <PasswordField
-                                name="newPassword"
-                                label="New Password"
-                                labelClassName="text-white/70"
-                                required
-                                rules={{
-                                    required: "New password is required",
-                                    minLength: { value: 6, message: "Password must be at least 6 characters long" }
-                                }}
-                                placeholder="Enter new password"
-                                className="bg-primary/5 border-primary/20 text-white placeholder:text-white/20"
-                            />
-                            <PasswordField
-                                name="confirmPassword"
-                                label="Confirm New Password"
-                                labelClassName="text-white/70"
-                                required
-                                rules={{
-                                    required: "Please confirm your new password",
-                                    validate: (value: string) =>
-                                        value === passwordForm.getValues("newPassword") || "Passwords do not match"
-                                }}
-                                placeholder="Confirm new password"
-                                className="bg-primary/5 border-primary/20 text-white placeholder:text-white/20"
-                            />
-
-                            <SubmitButton className="bg-primary hover:bg-primary-glow text-white w-full sm:w-auto mt-2">
-                                Change Password
-                            </SubmitButton>
-                        </form>
-                    </FormProvider>
+                                <SubmitButton className="bg-primary hover:bg-primary/90 text-white w-full sm:w-auto mt-2">
+                                    Change Password
+                                </SubmitButton>
+                            </form>
+                        </FormProvider>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,0 +1,55 @@
+{"level":30,"time":1792991373114,"pid":29441,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"No config file found — using defaults"}
+{"level":30,"time":1792991373115,"pid":29441,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Starting MCP server..."}
+{"level":30,"time":1792991373115,"pid":29441,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Transport: stdio"}
+{"level":30,"time":1792991373119,"pid":29441,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"✅ MCP server v0.2.0 started (stdio)"}
+{"level":30,"time":1792991373119,"pid":29441,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"Tools: get_project_summary, explain_file, get_related_files, recent_changes, search_codebase, get_symbol_context, get_dependency_chain, explain_module, find_entry_points, get_recent_architecture_changes"}
+{"level":30,"time":1792992122110,"pid":36519,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"No config file found — using defaults"}
+{"level":30,"time":1792992122111,"pid":36519,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Starting MCP server..."}
+{"level":30,"time":1792992122111,"pid":36519,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Transport: stdio"}
+{"level":30,"time":1792992122115,"pid":36519,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"✅ MCP server v0.2.0 started (stdio)"}
+{"level":30,"time":1792992122115,"pid":36519,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"Tools: get_project_summary, explain_file, get_related_files, recent_changes, search_codebase, get_symbol_context, get_dependency_chain, explain_module, find_entry_points, get_recent_architecture_changes"}
+{"level":30,"time":1792994621689,"pid":56407,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"No config file found — using defaults"}
+{"level":30,"time":1792994621689,"pid":56407,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Starting MCP server..."}
+{"level":30,"time":1792994621689,"pid":56407,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Transport: stdio"}
+{"level":30,"time":1792994621694,"pid":56407,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"✅ MCP server v0.2.0 started (stdio)"}
+{"level":30,"time":1792994621694,"pid":56407,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"Tools: get_project_summary, explain_file, get_related_files, recent_changes, search_codebase, get_symbol_context, get_dependency_chain, explain_module, find_entry_points, get_recent_architecture_changes"}
+{"level":30,"time":1793006140014,"pid":110576,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"No config file found — using defaults"}
+{"level":30,"time":1793006140014,"pid":110576,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Starting MCP server..."}
+{"level":30,"time":1793006140014,"pid":110576,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Transport: stdio"}
+{"level":30,"time":1793006140021,"pid":110576,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"✅ MCP server v0.2.0 started (stdio)"}
+{"level":30,"time":1793006140021,"pid":110576,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"Tools: get_project_summary, explain_file, get_related_files, recent_changes, search_codebase, get_symbol_context, get_dependency_chain, explain_module, find_entry_points, get_recent_architecture_changes"}
+{"level":30,"time":1793008929508,"pid":131886,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"No config file found — using defaults"}
+{"level":30,"time":1793008929509,"pid":131886,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Starting MCP server..."}
+{"level":30,"time":1793008929509,"pid":131886,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Transport: stdio"}
+{"level":30,"time":1793008929519,"pid":131886,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"✅ MCP server v0.2.0 started (stdio)"}
+{"level":30,"time":1793008929519,"pid":131886,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"Tools: get_project_summary, explain_file, get_related_files, recent_changes, search_codebase, get_symbol_context, get_dependency_chain, explain_module, find_entry_points, get_recent_architecture_changes"}
+{"level":30,"time":1793009236571,"pid":134353,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"No config file found — using defaults"}
+{"level":30,"time":1793009236571,"pid":134353,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Starting MCP server..."}
+{"level":30,"time":1793009236571,"pid":134353,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Transport: stdio"}
+{"level":30,"time":1793009236580,"pid":134353,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"✅ MCP server v0.2.0 started (stdio)"}
+{"level":30,"time":1793009236580,"pid":134353,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"Tools: get_project_summary, explain_file, get_related_files, recent_changes, search_codebase, get_symbol_context, get_dependency_chain, explain_module, find_entry_points, get_recent_architecture_changes"}
+{"level":30,"time":1793009366399,"pid":137703,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"No config file found — using defaults"}
+{"level":30,"time":1793009366399,"pid":137703,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Starting MCP server..."}
+{"level":30,"time":1793009366399,"pid":137703,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Transport: stdio"}
+{"level":30,"time":1793009366410,"pid":137703,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"✅ MCP server v0.2.0 started (stdio)"}
+{"level":30,"time":1793009366410,"pid":137703,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"Tools: get_project_summary, explain_file, get_related_files, recent_changes, search_codebase, get_symbol_context, get_dependency_chain, explain_module, find_entry_points, get_recent_architecture_changes"}
+{"level":30,"time":1793009546194,"pid":139163,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"No config file found — using defaults"}
+{"level":30,"time":1793009546195,"pid":139163,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Starting MCP server..."}
+{"level":30,"time":1793009546195,"pid":139163,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Transport: stdio"}
+{"level":30,"time":1793009546204,"pid":139163,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"✅ MCP server v0.2.0 started (stdio)"}
+{"level":30,"time":1793009546204,"pid":139163,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"Tools: get_project_summary, explain_file, get_related_files, recent_changes, search_codebase, get_symbol_context, get_dependency_chain, explain_module, find_entry_points, get_recent_architecture_changes"}
+{"level":30,"time":1793010577165,"pid":147611,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"No config file found — using defaults"}
+{"level":30,"time":1793010577166,"pid":147611,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Starting MCP server..."}
+{"level":30,"time":1793010577166,"pid":147611,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Transport: stdio"}
+{"level":30,"time":1793010577173,"pid":147611,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"✅ MCP server v0.2.0 started (stdio)"}
+{"level":30,"time":1793010577173,"pid":147611,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"Tools: get_project_summary, explain_file, get_related_files, recent_changes, search_codebase, get_symbol_context, get_dependency_chain, explain_module, find_entry_points, get_recent_architecture_changes"}
+{"level":30,"time":1793121720568,"pid":261922,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"No config file found — using defaults"}
+{"level":30,"time":1793121720569,"pid":261922,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Starting MCP server..."}
+{"level":30,"time":1793121720569,"pid":261922,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Transport: stdio"}
+{"level":30,"time":1793121720580,"pid":261922,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"✅ MCP server v0.2.0 started (stdio)"}
+{"level":30,"time":1793121720580,"pid":261922,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"Tools: get_project_summary, explain_file, get_related_files, recent_changes, search_codebase, get_symbol_context, get_dependency_chain, explain_module, find_entry_points, get_recent_architecture_changes"}
+{"level":30,"time":1793121844732,"pid":263283,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"No config file found — using defaults"}
+{"level":30,"time":1793121844732,"pid":263283,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Starting MCP server..."}
+{"level":30,"time":1793121844732,"pid":263283,"hostname":"mehedi-Modern-15-A5M","module":"cli","msg":"Transport: stdio"}
+{"level":30,"time":1793121844738,"pid":263283,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"✅ MCP server v0.2.0 started (stdio)"}
+{"level":30,"time":1793121844738,"pid":263283,"hostname":"mehedi-Modern-15-A5M","module":"mcp","msg":"Tools: get_project_summary, explain_file, get_related_files, recent_changes, search_codebase, get_symbol_context, get_dependency_chain, explain_module, find_entry_points, get_recent_architecture_changes"}

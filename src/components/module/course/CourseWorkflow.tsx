@@ -4,8 +4,7 @@ import Clock from "@/assets/icons/Clock";
 import Container from "@/components/ui/container";
 import WorkflowCard from "./WorkFlowCard";
 import { Duration, Scic, SearchOnline, Session, SubmitAssignment, SupportSession, WeekCourse } from "@/assets/icons";
-import Link from "next/link";
-import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
+import { StarEnrollButton } from './StarEnrollButton';
 interface BannerSectionProps {
     courseSlug?: string;
 }
@@ -96,50 +95,34 @@ export default function CourseWorkflow({ courseSlug }: BannerSectionProps = {}) 
                         {/* Badge */}
                         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-6">
                             <span className="relative flex h-1.5 w-1.5">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                                <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" aria-hidden="true" />
                                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
                             </span>
-                            <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">কোর্স পরিচালনা</span>
+                            <span className="text-xs font-semibold text-primary-glow">কোর্স পরিচালনা</span>
                         </div>
 
-                        <h2 className="text-3xl lg:text-5xl font-bold font-bangla uppercase leading-[150%] bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">
+                        <h2 className="text-3xl lg:text-5xl font-bold font-bangla leading-[1.4] text-white">
                             কোর্স যেভাবে{' '}
-                            <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_16px_hsl(156_70%_42%/0.4)]">পরিচালিত</span>
+                            <span className="text-primary-glow">পরিচালিত</span>
                             {' '}হবে
                         </h2>
 
-                        <p className="mt-4 text-white/60 text-center font-bangla max-w-2xl mx-auto">
+                        <p className="readable-body mt-4 text-center font-bangla max-w-2xl mx-auto">
                             AI-এর যুগে ডিজাইন করা হয়েছে সহজ, কিন্তু সাফল্যের চাবিকাঠি এখন সঠিক জিনিসটা শিখে, সঠিক জায়গায় প্রয়োগ করা। এই কোর্সে আপনি শুধু সফটওয়্যার শেখা নয়, বরং একদম প্রফেশনাল লেভেলের বাস্তব কাজ শেখার সুযোগ পাবেন।
                         </p>
 
                         {/* Enroll CTA */}
                         <div className="mt-8 mb-10">
-                            <Link href={`/checkout?course=${courseSlug}`}>
-                                <div className="inline-block relative p-[1.5px] rounded-xl overflow-hidden">
-                                    <AnimatedBorder variant="simple" speed="3s" />
-                                  <button className="relative bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep transition-all duration-300 text-white font-semibold font-bangla text-lg px-10 py-4 rounded-xl shadow-[0_0_20px_hsl(156_70%_42%/0.35)] cursor-pointer flex items-center gap-2">
-                <span className=''>
-
-                  এনরোল করুন
-                </span>
-                {/* Arrow */}
-                <svg
-                  className="relative w-4 h-4 group-hover:translate-x-1 transition-transform duration-300 shrink-0"
-                  style={{ color: 'hsla(0, 0%, 100%, 1.00)' }}
-                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                >
-                  <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
-                </svg>
-              </button>
-                                </div>
-                            </Link>
+                            <StarEnrollButton href={`/checkout?course=${courseSlug}`}>
+                                এনরোল করুন
+                            </StarEnrollButton>
                         </div>
                  
                     </div>
                 </div>
 
                 {/* Decorative divider */}
-                <div className="flex items-center gap-3 w-full max-w-xs mx-auto mb-10">
+                <div className="flex items-center gap-3 w-full max-w-xs mx-auto mb-10" aria-hidden="true">
                     <div className="flex-1 h-px bg-gradient-to-r from-transparent to-primary/40" />
                     <div className="flex gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary/60" />

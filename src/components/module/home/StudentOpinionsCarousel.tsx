@@ -4,13 +4,15 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from '@/components/ui/carousel';
+import Image from 'next/image';
 
-import Autoplay from 'embla-carousel-autoplay';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { FadeIn } from '../../ui/FadeIn';
-import { Star, Quote } from 'lucide-react';
+import { Quote } from 'lucide-react';
 
 interface StudentFeedback {
   name: string;
@@ -18,10 +20,65 @@ interface StudentFeedback {
   studentId: string;
   testimonial: string;
   post_link?: string;
+  facebook?: string;
 }
 
 interface StudentOpinionsCarouselProps {
   studentFeedbacks: StudentFeedback[];
+}
+
+function getFacebookAvatarUrl(facebook?: string) {
+  if (!facebook?.trim()) return null;
+
+  const value = facebook.trim();
+  let identifier = value;
+
+  try {
+    const url = new URL(value);
+    if (!/(^|\.)facebook\.com$|(^|\.)fb\.com$/.test(url.hostname)) {
+      return null;
+    }
+
+    identifier = url.searchParams.get('id') || '';
+    if (!identifier) {
+      const pathSegments = url.pathname.split('/').filter(Boolean);
+      const [firstSegment] = pathSegments;
+      if (firstSegment === 'profile.php' || firstSegment === 'share' || firstSegment === 'groups') {
+        return null;
+      }
+      identifier = firstSegment || '';
+    }
+  } catch {
+    // Keep supporting the existing raw Facebook ID format.
+  }
+
+  return identifier
+    ? `https://graph.facebook.com/${encodeURIComponent(identifier)}/picture?type=normal`
+    : null;
+}
+
+function StudentAvatar({ name, facebook }: Pick<StudentFeedback, 'name' | 'facebook'>) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const imageUrl = getFacebookAvatarUrl(facebook);
+
+  return (
+    <div className="relative h-10 w-10 shrink-0 rounded-full overflow-hidden shadow-md shadow-primary/30">
+      {imageUrl && !imageFailed ? (
+        <Image
+          src={imageUrl}
+          alt={name}
+          fill
+          sizes="40px"
+          className="object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-emerald-darker via-primary to-emerald-dark text-white font-bold">
+          {name.charAt(0)}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export const StudentOpinionsCarousel = memo(function StudentOpinionsCarousel({
@@ -35,15 +92,14 @@ export const StudentOpinionsCarousel = memo(function StudentOpinionsCarousel({
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full
               bg-primary/10 border border-primary/25 backdrop-blur-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-xs font-semibold  uppercase text-primary/90">
+              <span className="text-xs font-semibold text-primary-glow">
                 রিয়েল রিভিউ
               </span>
             </div>
           </div>
-          <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold font-bangla uppercase
-            bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent pt-2">
+          <h2 className="text-2xl md:text-3xl lg:text-5xl font-bold font-bangla text-white pt-2">
 
-            <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent relative inline-block py-2">
+            <span className="text-primary-glow relative inline-block py-2">
               স্টুডেন্টদের
               <span className="absolute -bottom-1 left-0 w-full h-[3px] rounded-full bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
             </span>{' '}
@@ -65,11 +121,7 @@ export const StudentOpinionsCarousel = memo(function StudentOpinionsCarousel({
             loop: true,
             align: 'start',
           }}
-          plugins={[
-            Autoplay({
-              delay: 4000,
-            }),
-          ]}
+          aria-label="স্টুডেন্টদের মতামত"
           className="w-full cursor-grab active:cursor-grabbing"
         >
           <CarouselContent className="-ml-2 md:-ml-4 py-4">
@@ -89,28 +141,22 @@ export const StudentOpinionsCarousel = memo(function StudentOpinionsCarousel({
                   <div className="absolute top-0 right-0 w-5 h-5 border-t border-r border-primary/30 rounded-tr-xl" />
                   <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                   <div>
-                    <div className="flex justify-between items-start mb-4">
-                      <Quote className="h-6 w-6 text-primary opacity-50 rotate-180" />
-                      <div className="flex gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                        ))}
-                      </div>
-                    </div>
+                    <Quote aria-hidden="true" className="mb-4 h-6 w-6 rotate-180 text-primary opacity-50" />
 
-                    <p className="text-sm text-gray-300 mb-6 line-clamp-6 leading-relaxed">
+                    <p className="text-sm sm:text-base text-white/85 mb-6 line-clamp-6 leading-relaxed">
                       {item.testimonial || ''}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-3 mt-auto pt-4 border-t border-white/10">
-                    <div className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-br from-emerald-darker via-primary to-emerald-dark flex items-center justify-center text-white font-bold overflow-hidden shadow-md shadow-primary/30">
-                      {item.name.charAt(0)}
-                    </div>
+                    <StudentAvatar
+                      name={item.name}
+                      facebook={item.facebook || item.post_link}
+                    />
                     <div>
                       <h4 className="text-sm font-semibold text-white line-clamp-1">{item.name}</h4>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] sm:text-xs text-gray-400">{item.batch}</span>
+                        <span className="text-xs text-white/75">{item.batch}</span>
                       </div>
                     </div>
                   </div>
@@ -118,6 +164,10 @@ export const StudentOpinionsCarousel = memo(function StudentOpinionsCarousel({
               </CarouselItem>
             ))}
           </CarouselContent>
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <CarouselPrevious className="static left-auto top-auto h-11 w-11 translate-y-0 border-primary/30 bg-surface text-white hover:bg-primary/10" />
+            <CarouselNext className="static right-auto top-auto h-11 w-11 translate-y-0 border-primary/30 bg-surface text-white hover:bg-primary/10" />
+          </div>
         </Carousel>
       </div>
     </>

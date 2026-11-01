@@ -4,7 +4,7 @@ import { ShieldAlert } from "lucide-react";
 
 export function DetailCopyright() {
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-2">
+    <div className="mx-auto max-w-7xl pb-2">
       <div className="flex items-start gap-3 rounded-2xl border border-red-400/20 bg-red-500/[0.04] p-4 sm:items-center">
         <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-red-300/80" />
         <p className="font-bangla text-xs leading-relaxed text-white/55 sm:text-sm">

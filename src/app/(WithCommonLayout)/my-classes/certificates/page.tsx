@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Skeleton } from 'boneyard-js/react'
+import { LoadingBoundary } from "@/components/shared/LoadingBoundary";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
@@ -76,7 +76,7 @@ export default function MyClassesCertificatesPage() {
 
   return (
     <AuthGuard>
-      <Skeleton name="CertificatesPage" loading={isLoading || isEnrollmentsLoading}>
+      <LoadingBoundary loading={isLoading || isEnrollmentsLoading}>
       <PageBackground>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-6">
           <div className="flex items-center justify-between gap-3">
@@ -114,7 +114,7 @@ export default function MyClassesCertificatesPage() {
           />
         </div>
       </PageBackground>
-      </Skeleton>
+      </LoadingBoundary>
     </AuthGuard>
   );
 }

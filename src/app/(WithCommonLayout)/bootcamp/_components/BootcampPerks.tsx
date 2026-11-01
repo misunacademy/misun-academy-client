@@ -5,7 +5,7 @@ const perkMarkers = ['✚', '◆', '●', '✦', '▲'];
 
 export const BootcampPerks = () => (
     <section className="border-y border-white/10 bg-[#0a0a0b] py-14 text-white">
-        <div className="mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-7xl px-4">
             <FadeIn>
                 <p className="font-mona text-xs font-bold uppercase tracking-[0.3em] text-[#ffd60a]">
                     4-Day Bootcamp · Special Dose
@@ -25,7 +25,7 @@ export const BootcampPerks = () => (
                                 {perkMarkers[index % perkMarkers.length]}
                             </span>
                             <h3 className="mt-4 font-bangla text-lg font-bold">{perk.title}</h3>
-                            <p className="mt-1.5 font-bangla text-sm leading-relaxed text-white/60">
+                            <p className="mt-1.5 font-bangla text-sm leading-relaxed text-white/70">
                                 {perk.description}
                             </p>
                         </li>

@@ -29,7 +29,7 @@ const EmailVerificationModal = (
                 <div className="absolute top-0 left-0 w-5 h-5 border-t border-l border-primary/40 rounded-tl-2xl" />
                 <div className="absolute top-0 right-0 w-5 h-5 border-t border-r border-primary/40 rounded-tr-2xl" />
                 <button onClick={onClose}
-                    className="absolute top-3 right-3 w-7 h-7 rounded-lg bg-primary/8 border border-primary/20 text-white/40 hover:text-white/80 hover:bg-primary/15 transition-all flex items-center justify-center text-lg leading-none">
+                    className="absolute top-3 right-3 w-11 h-11 rounded-lg bg-primary/8 border border-primary/20 text-white/70 hover:text-white hover:bg-primary/15 transition-all flex items-center justify-center text-xl leading-none">
                     &#x2715;
                 </button>
                 <div className="p-7">
@@ -44,28 +44,28 @@ const EmailVerificationModal = (
                         </div>
                     </div>
                     <h2 className="text-xl font-bold text-white/90 text-center mb-1">ইমেইল যাচাই করুন</h2>
-                    <p className="text-sm text-white/45 text-center mb-6">
+                    <p className="text-sm text-white/75 text-center mb-6">
                         আপনার অ্যাকাউন্ট সক্রিয় করতে, অনুগ্রহ করে আপনার ইমেইল যাচাই করুন।
                     </p>
                     <div className="space-y-4">
                         <div className="relative overflow-hidden rounded-xl bg-primary/6 border border-primary/20 p-4">
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-                            <p className="text-sm text-white/65">
+                            <p className="text-sm text-white/85">
                                 <span className="text-white/40">ইমেইল: </span>
                                 <span className="text-primary font-medium">{registeredEmail}</span>
                             </p>
-                            <p className="text-sm text-white/45 mt-2 leading-relaxed">
+                            <p className="text-sm text-white/75 mt-2 leading-relaxed">
                                 আমরা আপনার ইমেইলে একটি যাচাই লিঙ্ক পাঠিয়েছি। অনুগ্রহ করে আপনার ইমেইল চেক করুন এবং লিঙ্কে ক্লিক করে আপনার অ্যাকাউন্ট যাচাই করুন।
                             </p>
                         </div>
-                        <p className="text-xs text-white/35 text-center">
+                        <p className="text-xs text-white/60 text-center">
                             ইমেইল পাননি? স্প্যাম ফোল্ডার চেক করুন।
                         </p>
                         <div className="flex gap-3">
                             <button
                                 onClick={handleResend}
                                 disabled={resending}
-                                className="flex-1 py-2.5 rounded-xl border border-primary/25 text-white/55 hover:border-primary/45 hover:text-white/80 transition-all text-sm font-medium disabled:opacity-50">
+                                className="flex-1 py-2.5 rounded-xl border border-primary/25 text-white/80 hover:border-primary/45 hover:text-white/80 transition-all text-sm font-medium disabled:opacity-50">
                                 {resending ? 'পাঠানো হচ্ছে…' : 'আবার পাঠান'}
                             </button>
                             <div className="flex-1 relative p-[1.5px] rounded-xl overflow-hidden">

@@ -28,6 +28,16 @@ describe("getApiErrorMessage", () => {
     expect(getApiErrorMessage({ message: "from-message" }, "fb")).toBe("from-message");
   });
 
+  it("appends a short support reference when the server sends a correlation id", () => {
+    expect(
+      getApiErrorMessage(
+        { data: { message: "Something went wrong !", correlationId: "877e10ccdd3b848f9baa880d9d234ba42" } },
+        "fb"
+      )
+    ).toBe("Something went wrong ! (ref: 877e10cc)");
+    expect(getApiErrorMessage({ data: { message: "conflict" } }, "fb")).toBe("conflict");
+  });
+
   it("falls back for unknown shapes", () => {
     expect(getApiErrorMessage({}, "fb")).toBe("fb");
     expect(getApiErrorMessage(null, "fb")).toBe("fb");

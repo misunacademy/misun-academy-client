@@ -15,6 +15,7 @@ import { SubmitButton } from "@/components/forms/submit-button";
 import { useCreateBatchMutation, useUpdateBatchMutation } from "@/redux/api/batchApi";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
+import { dateInputToDate } from "@/lib/date-input";
 
 const BATCH_STATUSES = [
   { value: "draft", label: "Draft" },
@@ -86,10 +87,10 @@ export function BatchForm({ mode, courses, coursesLoading, defaultValues, onCanc
       price: Number(values.price),
       status: values.status,
       courseId: values.courseId,
-      startDate: values.startDate ? new Date(values.startDate) : undefined,
-      endDate: values.endDate ? new Date(values.endDate) : undefined,
-      enrollmentStartDate: values.enrollmentStartDate ? new Date(values.enrollmentStartDate) : undefined,
-      enrollmentEndDate: values.enrollmentEndDate ? new Date(values.enrollmentEndDate) : undefined,
+      startDate: values.startDate ? dateInputToDate(values.startDate) : undefined,
+      endDate: values.endDate ? dateInputToDate(values.endDate, "end") : undefined,
+      enrollmentStartDate: values.enrollmentStartDate ? dateInputToDate(values.enrollmentStartDate) : undefined,
+      enrollmentEndDate: values.enrollmentEndDate ? dateInputToDate(values.enrollmentEndDate, "end") : undefined,
       description: values.description || undefined,
     };
 

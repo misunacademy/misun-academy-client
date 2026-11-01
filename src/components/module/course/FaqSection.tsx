@@ -61,24 +61,19 @@ const FaqSection = () => {
                     {/* Badge */}
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-6">
                         <span className="relative flex h-1.5 w-1.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                            <span className="animate-ping motion-reduce:animate-none absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" aria-hidden="true" />
                             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
                         </span>
-                        <span className="text-xs font-semibold tracking-[0.15em] uppercase text-primary/90">FAQ</span>
+                        <span className="text-xs font-semibold text-primary-glow">সাধারণ জিজ্ঞাসা</span>
                     </div>
 
-                    <h2 className="text-3xl lg:text-5xl font-bold font-monaExpanded uppercase leading-[140%]">
-                        <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">
-                            Frequently Asked{" "}
-                        </span>
-                        <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(156_70%_42%/0.45)]">
-                            Questions
-                        </span>
-                        <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">?</span>
+                    <h2 className="text-3xl lg:text-5xl font-bold font-bangla leading-[1.35] text-white">
+                        সাধারণ{" "}
+                        <span className="text-primary-glow">প্রশ্নোত্তর</span>
                     </h2>
 
                     {/* Decorative divider */}
-                    <div className="flex items-center gap-3 w-full max-w-xs mx-auto mt-8">
+                    <div className="flex items-center gap-3 w-full max-w-xs mx-auto mt-8" aria-hidden="true">
                         <div className="flex-1 h-px bg-gradient-to-r from-transparent to-primary/40" />
                         <div className="flex gap-1.5">
                             <div className="w-1.5 h-1.5 rounded-full bg-primary/60" />
@@ -116,24 +111,24 @@ const FaqSection = () => {
                                 >
                                     <AccordionTrigger className="flex items-center justify-between w-full py-5 text-left
                                         text-base md:text-lg font-semibold
-                                        text-white/80 hover:text-white
-                                        data-[state=open]:text-primary
+                                        text-white hover:text-white
+                                        data-[state=open]:text-primary-glow
                                         transition-colors duration-200
                                         no-underline hover:no-underline focus:no-underline
-                                        [&>svg]:text-primary/60 [&>svg]:data-[state=open]:text-primary">
+                                        [&>svg]:text-primary-glow/70 [&>svg]:data-[state=open]:text-primary-glow">
                                         <span className="flex items-center gap-3">
                                             {/* Index dot */}
                                             <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 border border-primary/25
                                                 flex items-center justify-center
-                                                text-xs font-bold text-primary/70
-                                                group-data-[state=open]:bg-primary/20 group-data-[state=open]:border-primary/50 group-data-[state=open]:text-primary
+                                                text-xs font-bold text-primary-glow
+                                                group-data-[state=open]:bg-primary/20 group-data-[state=open]:border-primary/50 group-data-[state=open]:text-primary-glow
                                                 transition-all duration-200">
                                                 {index + 1}
                                             </span>
-                                            <h2 className="font-semibold">{faq.question}</h2>
+                                            <span className="font-semibold">{faq.question}</span>
                                         </span>
                                     </AccordionTrigger>
-                                    <AccordionContent className="pb-5 pl-9 text-base text-white/55 leading-relaxed">
+                                    <AccordionContent className="pb-5 pl-9 readable-body">
                                         {faq.answer}
                                     </AccordionContent>
                                 </AccordionItem>

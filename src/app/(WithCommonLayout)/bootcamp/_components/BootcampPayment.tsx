@@ -20,7 +20,7 @@ export const BootcampPayment = () => {
 
     return (
         <section className="border-y border-white/10 bg-[#0a0a0b] py-14 text-white">
-            <div className="mx-auto max-w-6xl px-4">
+            <div className="mx-auto max-w-7xl px-4">
                 <div className="grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr]">
                     <FadeIn>
                         <p className="font-mona text-xs font-bold uppercase tracking-[0.3em] text-[#ffd60a]">
@@ -30,18 +30,18 @@ export const BootcampPayment = () => {
                             ফি মাত্র{' '}
                             <span className="text-[#ffd60a]">{bootcamp.fee} টাকা</span>
                         </h2>
-                        <p className="mt-3 font-bangla text-sm leading-relaxed text-white/60">
+                        <p className="mt-3 font-bangla text-sm leading-relaxed text-white/70">
                             নিচের যেকোনো নম্বরে <strong className="text-white/85">সেন্ড মানি</strong>{' '}
                             করুন। পেমেন্ট শেষে ফর্মে পেমেন্ট করা নম্বরের{' '}
                             <strong className="text-white/85">শেষ ৪ ডিজিট</strong> লিখুন — এটিই
                             আপনার রেজিস্ট্রেশন যাচাইয়ের রেফারেন্স।
                         </p>
                         <div className="mt-6 inline-flex items-baseline gap-2 rounded-xl border border-[#e5484d]/40 bg-[#e5484d]/10 px-5 py-3">
-                            <span className="font-bangla text-sm text-white/60">ফি:</span>
+                            <span className="font-bangla text-sm text-white/70">ফি:</span>
                             <span className="font-bangla text-3xl font-bold text-[#ffd60a]">
                                 {bootcamp.fee}৳
                             </span>
-                            <span className="font-bangla text-xs text-white/55">
+                            <span className="font-bangla text-xs text-white/65">
                                 ({bootcamp.feeNote})
                             </span>
                         </div>

@@ -14,7 +14,7 @@ export default function WorkflowCard({
     accentColor = "hsl(156 70% 42%)",
 }: WorkflowCardProps) {
     return (
-        <div className="p-2 group cursor-pointer">
+        <div className="p-2 group">
             <div
                 className="relative overflow-hidden rounded-2xl bg-surface border border-white/8
                     py-8 px-7 h-full
@@ -51,10 +51,10 @@ export default function WorkflowCard({
                     <span className="[&_svg]:w-12 [&_svg]:h-12">{icon}</span>
                 </div>
 
-                <h3 className="relative z-10 text-base font-bold mt-1 mb-2.5 font-bangla leading-snug text-white/90 group-hover:text-white transition-colors duration-300">
+                <h3 className="relative z-10 text-base font-bold mt-1 mb-2.5 font-bangla leading-snug text-white">
                     {title}
                 </h3>
-                <p className="relative z-10 text-sm leading-relaxed text-white/50 group-hover:text-white/70 transition-colors font-bangla">
+                <p className="relative z-10 text-[15px] leading-relaxed text-white/80 group-hover:text-white transition-colors font-bangla">
                     {description}
                 </p>
             </div>

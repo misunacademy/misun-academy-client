@@ -1,4 +1,4 @@
-import { ShoppingBagIcon } from "lucide-react";
+import { ShoppingBagIcon, CheckCircle, XCircle, Clock } from "lucide-react";
 import { format, isValid } from "date-fns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -9,10 +9,21 @@ interface EnrollmentsTabProps {
 }
 
 export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
-    const enrollments = profile?.enrollments || [];
-    const hasEnrollments = enrollments.length > 0;
     const normalizeStatus = (status?: string) =>
         (status || "").toLowerCase().replace(/_/g, "-");
+    // Terminal payment failures/expired attempts are internal bookkeeping and
+    // never part of the learner-facing enrollment history.
+    const hiddenStatuses = new Set([
+        "payment-failed",
+        "expired",
+        "failed",
+        "cancelled",
+        "canceled",
+    ]);
+    const enrollments = (profile?.enrollments || []).filter(
+        (enrollment) => !hiddenStatuses.has(normalizeStatus(enrollment.status))
+    );
+    const hasEnrollments = enrollments.length > 0;
 
     const getStatusLabel = (status?: string) => {
         if (!status) return "unknown";
@@ -25,32 +36,52 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
         return isValid(parsed) ? format(parsed, 'MMM dd, yyyy') : "N/A";
     };
 
-    const getStatusStyle = (status?: string) => {
-        switch (normalizeStatus(status)) {
+    const getStatusBadge = (status?: string) => {
+        const normalized = normalizeStatus(status);
+        switch (normalized) {
             case 'active':
-                return 'bg-green-500/10 text-green-400 border-green-500/20';
+                return (
+                    <span className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border bg-primary/10 text-primary border-primary/20">
+                        <CheckCircle className="w-3 h-3" /> Active
+                    </span>
+                );
             case 'completed':
-                return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+                return (
+                    <span className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border bg-primary/20 text-primary border-primary/30">
+                        <CheckCircle className="w-3 h-3" /> Completed
+                    </span>
+                );
             case 'pending':
             case 'payment-pending':
-                return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+                return (
+                    <span className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border bg-primary/10 text-primary border-primary/20">
+                        <Clock className="w-3 h-3" /> Pending
+                    </span>
+                );
             case 'payment-failed':
+            case 'expired':
             case 'failed':
             case 'cancelled':
             case 'canceled':
             case 'suspended':
-                return 'bg-red-500/10 text-red-400 border-red-500/20';
+                return (
+                    <span className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border bg-destructive/10 text-destructive border-destructive/20">
+                        <XCircle className="w-3 h-3" /> {getStatusLabel(status)}
+                    </span>
+                );
             default:
-                return 'bg-white/5 text-white/70 border-white/10';
+                return (
+                    <span className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border bg-white/5 text-muted-foreground border-white/10 capitalize">
+                        {getStatusLabel(status)}
+                    </span>
+                );
         }
     };
 
     return (
         <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
-            {/* Ambient glow inside right panel */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
-            {/* Header */}
             <div className="relative z-10 flex items-center justify-between border-b border-dashed border-primary/20 pb-6 mb-8">
                 <h2 className="text-primary text-2xl font-semibold flex items-center gap-2">
                     <ShoppingBagIcon className="w-6 h-6" />
@@ -59,11 +90,9 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
                 {
                     hasEnrollments &&
                     <div className="hidden md:block">
-                        <Link href="/enrollment-posters" className="">
-                            <Button variant={"outline"} className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-xs">
-                                Get Your Enrollment Posters
-                            </Button>
-                        </Link>
+                        <Button asChild variant="outline" className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-xs">
+                            <Link href="/enrollment-posters">Get Your Enrollment Posters</Link>
+                        </Button>
                     </div>
                 }
             </div>
@@ -79,13 +108,11 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
                                             <span className="text-white/50 text-sm font-mono bg-white/5 px-2 py-1 rounded-md">
                                                 {enrollment?.enrollmentId || "N/A"}
                                             </span>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium border capitalize ${getStatusStyle(enrollment.status)}`}>
-                                                {getStatusLabel(enrollment?.status)}
-                                            </span>
+                                            {getStatusBadge(enrollment.status)}
                                             {
                                                 enrollment?.accessType && enrollment?.accessType === 'special' &&
-                                                (<span className={`px-3 py-1 rounded-full text-xs font-medium border capitalize ${getStatusStyle(enrollment?.accessType)}`}>
-                                                    {getStatusLabel(enrollment?.accessType)}
+                                                (<span className="px-3 py-1 rounded-full text-xs font-medium border bg-accent/10 text-accent-foreground border-accent/20 capitalize">
+                                                    Special Access
                                                 </span>)
                                             }
                                         </div>
@@ -143,7 +170,7 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
                         <ShoppingBagIcon className="w-16 h-16 text-primary/40 mb-4" />
                         <h3 className="text-xl text-white/90 font-medium mb-2">No Enrollments Found</h3>
                         <p className="text-white/50 max-w-md">
-                            You haven&apos;t enrolled in any courses yet. Browse our catalog to start your learning journey!
+                            {'You haven\'t enrolled in any courses yet. Browse our catalog to start your learning journey!'}
                         </p>
                     </div>
                 )}

@@ -3,12 +3,13 @@
 import { motion, useInView, useReducedMotion } from 'framer-motion';
 import { useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { MOTION_DURATION, revealVariants, type RevealDirection } from '@/lib/motion';
 
 interface FadeInProps {
   children: React.ReactNode;
   delay?: number;
   duration?: number;
-  direction?: 'up' | 'down' | 'left' | 'right' | 'none';
+  direction?: RevealDirection;
   className?: string;
   style?: React.CSSProperties;
   amount?: 'some' | 'all' | number;
@@ -18,7 +19,7 @@ interface FadeInProps {
 export function FadeIn({
   children,
   delay = 0,
-  duration = 0.5,
+  duration = MOTION_DURATION.base,
   direction = 'up',
   className,
   style,
@@ -33,31 +34,12 @@ export function FadeIn({
     return <div ref={ref} className={cn('', className)} style={style}>{children}</div>;
   }
 
-  const directions = {
-    up: { y: 40, x: 0 },
-    down: { y: -40, x: 0 },
-    left: { x: 40, y: 0 },
-    right: { x: -40, y: 0 },
-    none: { x: 0, y: 0 },
-  };
-
   return (
     <motion.div
       ref={ref}
-      initial={{
-        opacity: 0,
-        ...directions[direction],
-      }}
-      animate={{
-        opacity: isInView ? 1 : 0,
-        x: isInView ? 0 : directions[direction].x,
-        y: isInView ? 0 : directions[direction].y,
-      }}
-      transition={{
-        duration,
-        delay,
-        ease: [0.21, 0.47, 0.32, 0.98],
-      }}
+      variants={revealVariants({ direction, duration, delay })}
+      initial="hidden"
+      animate={isInView ? 'visible' : 'hidden'}
       className={cn('', className)}
       style={style}
     >

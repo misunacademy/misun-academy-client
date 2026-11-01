@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from 'boneyard-js/react'
+import { LoadingBoundary } from "@/components/shared/LoadingBoundary";
 import { CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
 import Link from "next/link";
 import { useGetMyPaymentsQuery } from "@/redux/api/paymentApi";
@@ -74,7 +74,7 @@ export function PaymentHistoryTab() {
     };
 
     return (
-        <Skeleton name="PaymentHistoryTab" loading={loading}>
+        <LoadingBoundary loading={loading}>
         {error ? (
             <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
                 <p className="text-red-400">Failed to load payment history</p>
@@ -288,6 +288,6 @@ export function PaymentHistoryTab() {
             </div>
         </div>
         )}
-    </Skeleton>
+    </LoadingBoundary>
     );
 }
