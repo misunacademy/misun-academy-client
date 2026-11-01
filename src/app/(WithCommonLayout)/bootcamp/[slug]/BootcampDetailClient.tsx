@@ -127,24 +127,23 @@ export default function BootcampDetailClient() {
     const { data, isLoading, error } = useGetBootcampBySlugQuery(slug, { skip: !slug });
     const { user } = useAuth();
     const [purchaseOpen, setPurchaseOpen] = useState(false);
-    const [paymentModal, setPaymentModal] = useState<PaymentModalType | null>(null);
 
     const hasPurchased = Boolean((data?.data as { hasPurchased?: boolean } | undefined)?.hasPurchased);
 
     const paymentResult = searchParams.get('payment');
     useEffect(() => {
         if (!paymentResult || isLoading) return;
-        if (paymentResult === 'success') {
-            setPaymentModal(hasPurchased ? 'success' : 'error');
-        } else if (paymentResult === 'failed') {
-            setPaymentModal('failed');
-        }
         const remaining = searchParams.toString().replace(/(^|&)payment=[^&]*/g, '');
         void router.replace(`/bootcamp/${slug}${remaining ? `?${remaining}` : ''}`);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [paymentResult, isLoading, hasPurchased]);
 
-    const handlePaymentClose = useCallback(() => setPaymentModal(null), []);
+    const paymentModal: PaymentModalType | null =
+        paymentResult === 'success' ? (hasPurchased ? 'success' : 'error') :
+            paymentResult === 'failed' ? 'failed' : null;
+    const handlePaymentClose = useCallback(() => {
+        void router.replace(`/bootcamp/${slug}`);
+    }, [router, slug]);
 
     if (isLoading) {
         return (
