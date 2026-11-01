@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from 'react';
-import { Skeleton } from 'boneyard-js/react'
+import { LoadingBoundary } from "@/components/shared/LoadingBoundary";
 import { CalendarCheck, CalendarX, ArrowRight } from "lucide-react";
 import Countdown from "../course/Countdown";
 import { format } from "date-fns";
@@ -255,7 +255,7 @@ export const EnrollmentSection = () => {
     const { batch, isLoading, serverTimestamp } = useCurrentBatch();
 
     return (
-        <Skeleton name="EnrollmentSection" loading={isLoading}>
+        <LoadingBoundary loading={isLoading}>
             {!batch ? null : (
                 <section
                     id="enroll-now"
@@ -320,6 +320,6 @@ export const EnrollmentSection = () => {
                     <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
                 </section>
             )}
-        </Skeleton>
+        </LoadingBoundary>
     );
 };

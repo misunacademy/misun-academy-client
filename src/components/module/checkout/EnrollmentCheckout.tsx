@@ -4,19 +4,34 @@ import { resolveBatchRef } from "@/lib/enrollment-checkout";
 import { CourseInfoSidebar } from "./CourseInfoSidebar";
 import { CheckoutStepOne } from "./CheckoutStepOne";
 import { CheckoutHeader } from "./CheckoutHeader";
+import { EnrollmentStatusNotice } from "./EnrollmentStatusNotice";
 import ManualPaymentForm from "./ManualPaymentForm";
 
 export default function EnrollmentCheckout({ courseSlug }: { courseSlug?: string } = {}) {
   const {
     form, currentStep, agreed, isProcessing, showTutorial,
-    isDataLoading, isEnrollmentOpen, resolvedCourse, resolvedBatch,
-    manualPaymentAmount, manualPaymentCurrency,
-    setAgreed, setShowTutorial, setCurrentStep, onSubmit, goBack, handleManualPaymentComplete,
+    isDataLoading, isEnrollmentOpen, checkoutState, checkoutEnrollment, isCheckoutBlocked,
+    resolvedCourse, resolvedBatch, manualPaymentAmount, manualPaymentCurrency,
+    setAgreed, setShowTutorial, setCurrentStep, onSubmit, resumePayment, goBack,
+    handleManualPaymentComplete,
   } = useEnrollmentCheckout(courseSlug);
 
   const batchPrice = (resolvedBatch?.price as number) || 0;
   const course = resolvedCourse as Record<string, unknown>;
   const batch = resolvedBatch as Record<string, unknown>;
+  const enrollmentReference = checkoutEnrollment?.enrollmentId;
+
+  const headerTitle = isCheckoutBlocked
+    ? "এনরোলমেন্ট স্ট্যাটাস"
+    : currentStep === 1
+      ? "পেমেন্ট পদ্ধতি বেছে নিন"
+      : "ম্যানুয়াল পেমেন্ট";
+
+  const headerSubtitle = isCheckoutBlocked
+    ? "আপনার বর্তমান এনরোলমেন্টের তথ্য"
+    : currentStep === 1
+      ? "পছন্দের পদ্ধতি বেছে নিয়ে ভর্তি সম্পন্ন করুন"
+      : "আপনার পেমেন্টের তথ্য দিন";
 
   return (
     <div className="min-h-screen bg-surface">
@@ -34,30 +49,48 @@ export default function EnrollmentCheckout({ courseSlug }: { courseSlug?: string
 
               <div className="p-4 pb-2 sm:p-6 sm:pb-2 border-b border-primary/10">
                 <h2 className="text-2xl font-bold text-white/90">
-                  {currentStep === 1 ? 'পেমেন্ট পদ্ধতি বেছে নিন' : 'ম্যানুয়াল পেমেন্ট'}
+                  {headerTitle}
                 </h2>
                 <p className="text-sm text-white/70 mt-1">
-                  {currentStep === 1
-                    ? 'পছন্দের পদ্ধতি বেছে নিয়ে ভর্তি সম্পন্ন করুন'
-                    : 'আপনার পেমেন্টের তথ্য দিন'}
+                  {headerSubtitle}
                 </p>
               </div>
 
               <div className="p-4 sm:p-6">
-                {currentStep === 1 ? (
-                  <CheckoutStepOne
-                    form={form}
-                    batch={batch}
-                    course={course}
-                    agreed={agreed}
-                    isProcessing={isProcessing}
-                    isEnrollmentOpen={isEnrollmentOpen}
-                    showTutorial={showTutorial}
-                    batchPrice={batchPrice}
-                    onAgreeChange={setAgreed}
-                    onTutorialToggle={() => setShowTutorial(!showTutorial)}
-                    onSubmit={onSubmit}
+                {isDataLoading ? (
+                  <div className="space-y-3 animate-pulse" aria-busy="true">
+                    <div className="h-24 rounded-2xl bg-white/5" />
+                    <div className="h-40 rounded-2xl bg-white/5" />
+                  </div>
+                ) : isCheckoutBlocked ? (
+                  <EnrollmentStatusNotice
+                    state={checkoutState as "active" | "under-review"}
+                    enrollmentId={enrollmentReference}
                   />
+                ) : currentStep === 1 ? (
+                  <div className="space-y-4">
+                    {checkoutState === "resume" && (
+                      <EnrollmentStatusNotice
+                        state="resume"
+                        onResume={resumePayment}
+                        isResuming={isProcessing}
+                        enrollmentId={enrollmentReference}
+                      />
+                    )}
+                    <CheckoutStepOne
+                      form={form}
+                      batch={batch}
+                      course={course}
+                      agreed={agreed}
+                      isProcessing={isProcessing}
+                      isEnrollmentOpen={isEnrollmentOpen}
+                      showTutorial={showTutorial}
+                      batchPrice={batchPrice}
+                      onAgreeChange={setAgreed}
+                      onTutorialToggle={() => setShowTutorial(!showTutorial)}
+                      onSubmit={onSubmit}
+                    />
+                  </div>
                 ) : (
                   <ManualPaymentForm
                     onBack={() => setCurrentStep(1)}

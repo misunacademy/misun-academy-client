@@ -1,6 +1,7 @@
 import { Layers, Trophy, Clock, Users } from "lucide-react"
 import { courseCurriculum, type Course } from "@/data/courseCurriculum"
 import { CourseCurriculumContent, COURSE_CONFIG } from "./curriculum"
+import { DownloadOutlineButton } from "./curriculum/DownloadOutlineButton"
 
 const courses = courseCurriculum.courses
 
@@ -28,7 +29,14 @@ const CourseCurriculum = () => (
       <SectionHeader />
 
       <CourseCurriculumContent courseConfigs={COURSE_CONFIG} />
-
+      {/* ── Outline download ── */}
+      <div className="relative z-20 mt-8 flex justify-center">
+        <DownloadOutlineButton
+          href="/outlines/misun-academy-course-outline.pdf"
+          fileName="Misun-Academy-Course-Outline.pdf"
+          color="#147a5b"
+        />
+      </div>
       <SummaryBar />
     </div>
   </section>

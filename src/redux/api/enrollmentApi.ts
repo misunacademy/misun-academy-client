@@ -12,7 +12,7 @@ export interface GrantAccessRequest {
 
 export interface EnrollmentResponse {
   _id: string;
-  enrollmentId: string;
+  enrollmentId?: string;
   studentId?: string;
   userId: string;
   student?: {
@@ -34,7 +34,7 @@ export interface EnrollmentResponse {
       level?: string;
     };
   };
-  status: 'pending' | 'payment-pending' | 'active' | 'completed' | 'suspended' | 'refunded' | 'payment-failed';
+  status: 'pending' | 'payment-pending' | 'active' | 'completed' | 'suspended' | 'refunded' | 'payment-failed' | 'expired';
   accessType?: 'standard' | 'special';
   enrolledAt?: Date;
   // Lifetime access - no expiry field

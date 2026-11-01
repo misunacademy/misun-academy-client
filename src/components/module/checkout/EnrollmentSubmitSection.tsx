@@ -70,11 +70,29 @@ export function EnrollmentSubmitSection({
 
         <div className="relative p-[1.5px] rounded-xl overflow-hidden">
           <AnimatedBorder variant="simple" speed="3s" />
+
           <button
             type="submit"
             disabled={isDisabled}
-            className="relative w-full bg-primary hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-emerald-darker disabled:text-white disabled:ring-1 disabled:ring-inset disabled:ring-primary/25 transition-colors duration-300 text-primary-foreground font-bold py-3.5 rounded-xl text-base"
+            className="
+            relative w-full
+            bg-primary text-primary-foreground
+            hover:bg-primary/90
+            active:bg-primary/80
+            disabled:cursor-not-allowed
+            disabled:bg-emerald-darker
+            disabled:text-white
+            disabled:ring-1 disabled:ring-inset
+            disabled:ring-primary/25
+            transition-colors duration-200 ease-in-out
+            font-bold py-3.5 rounded-xl text-base
+            focus-visible:outline-none
+            focus-visible:ring-2
+            focus-visible:ring-primary/50
+            focus-visible:ring-offset-2
+          "
           >
+
             {isProcessing ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />

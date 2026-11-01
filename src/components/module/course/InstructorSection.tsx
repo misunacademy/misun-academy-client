@@ -2,7 +2,6 @@ import Image from "next/image";
 import MithunSarkar from "@/assets/images/Mithun-Sarkar.png";
 import Container from "@/components/ui/container";
 import Counter from "@/components/shared/Counter";
-import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 
 const stats = [
     { value: 6, suffix: "+", label: "বছরের অভিজ্ঞতা" },

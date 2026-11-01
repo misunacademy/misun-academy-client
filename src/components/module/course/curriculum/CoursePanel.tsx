@@ -341,6 +341,7 @@ export function CoursePanel({
           />
         )}
       </div>
+    
     </div>
   )
 }

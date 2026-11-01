@@ -9,7 +9,6 @@ import localFont from "next/font/local";
 import OrganizationJsonLd from '@/components/seo/OrganizationJsonLd';
 import WebSiteJsonLd from '@/components/seo/WebSiteJsonLd';
 import './globals.css';
-import '../bones/registry';
 
 const unBangla = localFont({
   src: [

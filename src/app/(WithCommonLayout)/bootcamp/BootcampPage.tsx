@@ -13,6 +13,7 @@ import {
     useGetCurrentBootcampQuery,
     useGetPastBootcampsQuery,
 } from '@/redux/api/bootcampApi';
+import BootcampLoading from './loading';
 
 const BootcampPage = () => {
     const { data: currentData, isLoading: currentLoading } = useGetCurrentBootcampQuery();
@@ -23,16 +24,7 @@ const BootcampPage = () => {
 
     if (currentLoading || pastLoading) {
         return (
-            <div className="bg-[#0a0a0b]">
-                <div className="mx-auto max-w-7xl px-4 py-20">
-                    <div className="h-64 animate-pulse rounded-2xl bg-white/5" />
-                    <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                        {[0, 1, 2].map((i) => (
-                            <div key={i} className="h-64 animate-pulse rounded-2xl bg-white/5" />
-                        ))}
-                    </div>
-                </div>
-            </div>
+            <BootcampLoading />
         );
     }
 

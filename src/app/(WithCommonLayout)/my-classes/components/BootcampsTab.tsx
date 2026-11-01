@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { memo } from "react";
 import {
-  useGetMyBootcampPurchasesQuery,
   type BootcampPurchase,
 } from "@/redux/api/bootcampApi";
 
@@ -131,31 +130,11 @@ const BootcampPurchaseCard = memo(function BootcampPurchaseCard({
   );
 });
 
-export function BootcampsTab() {
-  const { data, isLoading, error } = useGetMyBootcampPurchasesQuery();
-  const purchases = data?.data ?? [];
+export function BootcampsTab(
+  { bootcamps }: { bootcamps: BootcampPurchase[] }
+) {
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-4">
-        {[0, 1].map((i) => (
-          <div key={i} className="h-44 animate-pulse rounded-2xl bg-white/5 border border-white/10" />
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="rounded-2xl border border-red-400/20 bg-red-500/5 p-8 text-center">
-        <p className="font-bangla text-sm text-red-300">
-          বুটক্যাম্প পারচেজ লোড করা যায়নি। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।
-        </p>
-      </div>
-    );
-  }
-
-  if (purchases.length === 0) {
+  if (bootcamps.length === 0) {
     return (
       <div className="relative rounded-2xl border border-primary/20 bg-surface overflow-hidden flex flex-col items-center justify-center py-20 gap-5 text-center px-6">
         <div
@@ -189,7 +168,7 @@ export function BootcampsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      {purchases.map((purchase) => (
+      {bootcamps.map((purchase) => (
         <BootcampPurchaseCard key={purchase._id} purchase={purchase} />
       ))}
     </div>

@@ -20,6 +20,7 @@ import {
 } from '@/redux/api/bootcampApi';
 import { LessonVideoPlayer } from '@/components/shared/lesson-video-player';
 import { DetailCopyright } from '../../_components/detail/DetailCopyright';
+import BootcampWatchLoading from './loading';
 
 function ResourcesBlock({ video }: { video: BootcampVideo }) {
     const resources = video.resources ?? [];
@@ -87,11 +88,7 @@ export default function BootcampWatchClient() {
 
     if (isLoading || (hasPurchased && videosLoading)) {
         return (
-            <div className="bg-[#0a0a0b]">
-                <div className="mx-auto max-w-7xl px-4 py-16">
-                    <div className="h-80 animate-pulse rounded-2xl bg-white/5" />
-                </div>
-            </div>
+            <BootcampWatchLoading />
         );
     }
 

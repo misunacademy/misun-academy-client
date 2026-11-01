@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle2, Play } from 'lucide-react';
+import { CheckCircle2, Play, XCircle } from 'lucide-react';
 import { useGetBootcampBySlugQuery } from '@/redux/api/bootcampApi';
 import { useAuth } from '@/hooks/useAuth';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
@@ -17,7 +17,107 @@ import { DetailValueCard } from '../_components/detail/DetailValueCard';
 import { DetailTestimonials } from '../_components/detail/DetailTestimonials';
 import { DetailFaq } from '../_components/detail/DetailFaq';
 import { DetailStickyBar } from '../_components/detail/DetailStickyBar';
-import { toast } from 'sonner';
+import BootcampDetailLoading from './loading';
+
+type PaymentModalType = 'success' | 'error' | 'failed';
+
+function PaymentModal({
+    type,
+    onClose,
+    onPrimary,
+    secondaryLabel,
+    onSecondary,
+}: {
+    type: PaymentModalType;
+    onClose: () => void;
+    onPrimary: () => void;
+    secondaryLabel?: string;
+    onSecondary?: () => void;
+}) {
+    const previouslyFocused = useRef<HTMLElement | null>(null);
+    const modalRef = useRef<HTMLDivElement>(null);
+    const focusableRef = useRef<HTMLButtonElement | null>(null);
+
+    useEffect(() => {
+        previouslyFocused.current = document.activeElement as HTMLElement | null;
+        const firstFocusable = modalRef.current?.querySelector<HTMLElement>('button, a, [tabindex]');
+        firstFocusable?.focus();
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key !== 'Tab') return;
+            e.preventDefault();
+            firstFocusable?.focus();
+        };
+
+        const modalNode = modalRef.current;
+        modalNode?.addEventListener('keydown', handleKeyDown);
+        return () => {
+            modalNode?.removeEventListener('keydown', handleKeyDown);
+            previouslyFocused.current?.focus?.({ preventScroll: true });
+        };
+    }, [type]);
+
+    const iconColor = type === 'success' ? '#22c55e' : '#f43f5e';
+    const Icon = type === 'success' ? CheckCircle2 : XCircle;
+
+    const labels: Record<PaymentModalType, { title: string; desc: string; primary: string }> = {
+        success: {
+            title: 'পেমেন্ট সফল হয়েছে',
+            desc: 'আপনার রেকর্ডিং আনলক হয়ে গেছে। ক্লাসরুমে যেতে নিচের বাটন চাপুন।',
+            primary: 'ক্লাসরুমে যান',
+        },
+        error: {
+            title: 'পেমেন্ট যাচাই করা যায়নি',
+            desc: 'সফল হলে রেকর্ডিং এখানে আনলক হবে। দয়া করে আবার চেষ্টা করুন।',
+            primary: 'আবার চেষ্টা করুন',
+        },
+        failed: {
+            title: 'পেমেন্ট ব্যর্থ হয়েছে',
+            desc: 'পেমেন্ট সফল হয়নি। আবার চেষ্টা করুন।',
+            primary: 'আবার চেষ্টা করুন',
+        },
+    };
+
+    const { title, desc, primary } = labels[type];
+
+    return (
+        <div
+            ref={modalRef}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
+        >
+            <div className="max-w-md w-full rounded-[2rem] border border-white/10 bg-[#0a0a0b] p-8 shadow-2xl text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full">
+                    <Icon className={`h-6 w-6 ${iconColor}`} />
+                </div>
+                <h2 className="mt-6 font-bangla text-lg font-bold text-white">{title}</h2>
+                <p className="mt-2 font-bangla text-sm text-white/60">{desc}</p>
+                <div className="mt-8">
+                    <button
+                        ref={focusableRef}
+                        onClick={() => {
+                            onClose();
+                            onPrimary();
+                        }}
+                        className="inline-block rounded-xl bg-[#ffd60a] px-6 py-3 font-bangla font-bold text-black shadow-[0_0_28px_rgba(255,214,10,0.35)] hover:scale-[1.02]"
+                    >
+                        {primary}
+                    </button>
+                    {secondaryLabel && onSecondary && (
+                        <button
+                            onClick={onSecondary}
+                            className="inline-block mt-4 sm:mt-0 sm:ml-3 rounded-xl border border-white/10 px-6 py-3 font-bangla font-bold text-white/90 hover:bg-white/5"
+                        >
+                            {secondaryLabel}
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export default function BootcampDetailClient() {
     const params = useParams();
@@ -27,35 +127,28 @@ export default function BootcampDetailClient() {
     const { data, isLoading, error } = useGetBootcampBySlugQuery(slug, { skip: !slug });
     const { user } = useAuth();
     const [purchaseOpen, setPurchaseOpen] = useState(false);
+    const [paymentModal, setPaymentModal] = useState<PaymentModalType | null>(null);
 
     const hasPurchased = Boolean((data?.data as { hasPurchased?: boolean } | undefined)?.hasPurchased);
 
     const paymentResult = searchParams.get('payment');
     useEffect(() => {
         if (!paymentResult || isLoading) return;
-        // Never celebrate on URL alone: ?payment=success is trivially
-        // spoofable. Confirm against the server-derived hasPurchased flag.
         if (paymentResult === 'success') {
-            if (hasPurchased) {
-                toast.success('পেমেন্ট সফল হয়েছে! আপনার রেকর্ডিং আনলক হয়ে গেছে।');
-            } else {
-                toast.error('পেমেন্ট যাচাই করা যায়নি। সফল হলে রেকর্ডিং এখানে আনলক হবে।');
-            }
+            setPaymentModal(hasPurchased ? 'success' : 'error');
         } else if (paymentResult === 'failed') {
-            toast.error('পেমেন্ট সফল হয়নি। আবার চেষ্টা করুন।');
+            setPaymentModal('failed');
         }
         const remaining = searchParams.toString().replace(/(^|&)payment=[^&]*/g, '');
         void router.replace(`/bootcamp/${slug}${remaining ? `?${remaining}` : ''}`);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [paymentResult, isLoading, hasPurchased]);
 
+    const handlePaymentClose = useCallback(() => setPaymentModal(null), []);
+
     if (isLoading) {
         return (
-            <div className="bg-[#0a0a0b]">
-                <div className="mx-auto max-w-7xl px-4 py-16">
-                    <div className="h-80 animate-pulse rounded-2xl bg-white/5" />
-                </div>
-            </div>
+            <BootcampDetailLoading />
         );
     }
 
@@ -151,6 +244,29 @@ export default function BootcampDetailClient() {
                 title={`${bootcamp.title} ${bootcamp.season}`}
                 price={bootcamp.recordedPrice}
             />
+            {paymentModal === 'success' && (
+                <PaymentModal
+                    type="success"
+                    onClose={handlePaymentClose}
+                    onPrimary={() => router.push(watchUrl)}
+                />
+            )}
+            {paymentModal === 'error' && (
+                <PaymentModal
+                    type="error"
+                    onClose={handlePaymentClose}
+                    onPrimary={() => router.replace(`/bootcamp/${slug}`)}
+                />
+            )}
+            {paymentModal === 'failed' && (
+                <PaymentModal
+                    type="failed"
+                    onClose={handlePaymentClose}
+                    onPrimary={() => router.replace(`/bootcamp/${slug}`)}
+                    secondaryLabel="বন্ধ করুন"
+                    onSecondary={handlePaymentClose}
+                />
+            )}
             <BreadcrumbJsonLd />
         </div>
     );

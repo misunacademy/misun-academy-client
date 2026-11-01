@@ -54,13 +54,6 @@ export function useWebGLContext(
     const canvas = canvasRef.current;
 
     if (!canvas) {
-      setState({
-        context: null,
-        isLost: false,
-        isSupported: false,
-        isInitialized: false,
-      });
-
       return;
     }
 
@@ -75,14 +68,19 @@ export function useWebGLContext(
       canvas.getContext("webgl", contextOptions)) as ManagedWebGLContext | null;
 
     if (!gl) {
-      setState({
-        context: null,
-        isLost: false,
-        isSupported: false,
-        isInitialized: false,
+      queueMicrotask(() => {
+        if (!active) return;
+        setState({
+          context: null,
+          isLost: false,
+          isSupported: false,
+          isInitialized: false,
+        });
       });
 
-      return;
+      return () => {
+        active = false;
+      };
     }
 
     const updateState = (updater: (previous: WebGLContextState) => WebGLContextState) => {

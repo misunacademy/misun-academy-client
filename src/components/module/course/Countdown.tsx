@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Skeleton } from 'boneyard-js/react'
+import { LoadingBoundary } from "@/components/shared/LoadingBoundary";
 import { intervalToDuration, isBefore, isAfter } from "date-fns";
 import { FadeIn } from '@/components/ui/FadeIn';
 import { useCurrentBatch } from '@/hooks/useCurrentBatch';
@@ -156,7 +156,7 @@ const Countdown = ({ batch: batchProp, courseSlug, serverTimestamp: serverTimest
   }, [batch, enrollmentStart, enrollmentEnd, serverTimestamp]);
 
   return (
-    <Skeleton name="Countdown" loading={isLoading}>
+    <LoadingBoundary loading={isLoading}>
       {!batch || !timeLeft || !label ? null : (
         <FadeIn delay={0.1} className="mt-8 mb-4" style={themeVars}>
           <div className="text-center space-y-6">
@@ -187,7 +187,7 @@ const Countdown = ({ batch: batchProp, courseSlug, serverTimestamp: serverTimest
           </div>
         </FadeIn>
       )}
-    </Skeleton>
+    </LoadingBoundary>
   );
 };
 

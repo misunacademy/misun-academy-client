@@ -1,19 +1,18 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from 'react';
-import { Skeleton } from 'boneyard-js/react'
+import { useEffect, useState } from 'react';
+import { LoadingBoundary } from "@/components/shared/LoadingBoundary";
 // import Link from 'next/link';
-import { ArrowRight, CalendarCheck, CalendarX, X } from 'lucide-react';
+import { CalendarCheck, CalendarX, X } from 'lucide-react';
 import { BatchResponse } from '@/redux/api/batchApi';
 import { useCurrentBatch } from '@/hooks/useCurrentBatch';
 import { formatDate } from './EnrollmentSection';
 
 type EnrollmentFixedContentProps = {
     batch: BatchResponse;
-    onScrollToEnroll: (e: MouseEvent<HTMLAnchorElement>) => void;
 };
 
-function EnrollmentFixedContent({ batch, onScrollToEnroll }: EnrollmentFixedContentProps) {
+function EnrollmentFixedContent({ batch }: EnrollmentFixedContentProps) {
     const [isOpen, setIsOpen] = useState(true);
     const [isFooterVisible, setIsFooterVisible] = useState(false);
 
@@ -100,61 +99,16 @@ function EnrollmentFixedContent({ batch, onScrollToEnroll }: EnrollmentFixedCont
 }
 
 export default function EnrollmentFixed() {
-    const scrollToEnrollSection = (e: MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault();
-
-        const targetSectionId = 'enroll-now';
-        const fallbackAnchorId = 'enroll-now-anchor';
-        const scrollToElement = (el: HTMLElement) => {
-            const targetTop = el.getBoundingClientRect().top + window.scrollY - 24;
-            window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
-        };
-
-        const scrollToCurrentBestTarget = () => {
-            const section = document.getElementById(targetSectionId);
-            if (section) {
-                scrollToElement(section);
-                return true;
-            }
-
-            const fallback = document.getElementById(fallbackAnchorId);
-            if (fallback) {
-                scrollToElement(fallback);
-                return true;
-            }
-
-            return false;
-        };
-
-        window.history.replaceState(null, '', `#${targetSectionId}`);
-        scrollToCurrentBestTarget();
-
-        const startedAt = Date.now();
-        const retryUntilReady = () => {
-            const hasRealSection = !!document.getElementById(targetSectionId);
-            if (hasRealSection) {
-                scrollToCurrentBestTarget();
-                return;
-            }
-
-            if (Date.now() - startedAt < 4000) {
-                window.setTimeout(retryUntilReady, 180);
-            }
-        };
-
-        window.setTimeout(retryUntilReady, 180);
-    };
     const { batch, isLoading, isError } = useCurrentBatch();
 
     return (
-        <Skeleton name="EnrollmentFixed" loading={isLoading}>
+        <LoadingBoundary loading={isLoading}>
             {isError || !batch ? null : (
                 <EnrollmentFixedContent
                     key={batch._id ?? 'batch'}
                     batch={batch}
-                    onScrollToEnroll={scrollToEnrollSection}
                 />
             )}
-        </Skeleton>
+        </LoadingBoundary>
     );
 }

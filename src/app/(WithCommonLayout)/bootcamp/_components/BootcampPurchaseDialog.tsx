@@ -54,8 +54,8 @@ export default function BootcampPurchaseDialog({
                 </DialogHeader>
 
                 <p className="font-bangla text-sm text-white/70">
-                    কার্ড, বিকাশ, নগদ — সব ধরনের পেমেন্ট নেওয়া হয়। পেমেন্ট শেষে এই পেজেই ভিডিও আনলক
-                    হবে।
+                    SSLCommerz-এর নিরাপদ পেমেন্ট পেজে পেমেন্ট সম্পন্ন করুন। পেমেন্ট সফল হলে এই
+                    পেজেই ভিডিও আনলক হবে।
                 </p>
 
                 <DialogFooter>

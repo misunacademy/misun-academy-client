@@ -1,0 +1,43 @@
+// @vitest-environment jsdom
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { EnrollmentStatusNotice } from "./EnrollmentStatusNotice";
+
+describe("EnrollmentStatusNotice", () => {
+  it("tells an already-enrolled learner to go to class instead of paying", () => {
+    render(<EnrollmentStatusNotice state="active" enrollmentId="MA-3202600001" />);
+
+    expect(screen.getByText(/ইতিমধ্যে এই ব্যাচে ভর্তি আছেন/)).toBeInTheDocument();
+    expect(screen.getByText(/MA-3202600001/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "ক্লাসে যান" })).toHaveAttribute(
+      "href",
+      "/my-classes"
+    );
+    expect(screen.queryByRole("button", { name: /পেমেন্ট চালিয়ে যান/ })).not.toBeInTheDocument();
+  });
+
+  it("warns a learner whose manual payment is under review not to pay again", () => {
+    render(<EnrollmentStatusNotice state="under-review" />);
+
+    expect(screen.getByText(/পেমেন্ট যাচাই চলছে/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /প্রোফাইলে/ })).toHaveAttribute("href", "/profile");
+    expect(screen.queryByRole("button", { name: /পেমেন্ট চালিয়ে যান/ })).not.toBeInTheDocument();
+  });
+
+  it("resumes the abandoned payment when the learner clicks the button", () => {
+    const onResume = vi.fn();
+    render(<EnrollmentStatusNotice state="resume" onResume={onResume} />);
+
+    expect(screen.getByText(/অসম্পূর্ণ এনরোলমেন্ট/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /পেমেন্ট চালিয়ে যান/ }));
+    expect(onResume).toHaveBeenCalledTimes(1);
+  });
+
+  it("disables the resume button while the gateway is being prepared", () => {
+    render(<EnrollmentStatusNotice state="resume" onResume={vi.fn()} isResuming />);
+
+    const button = screen.getByRole("button");
+    expect(button).toBeDisabled();
+    expect(button).toHaveTextContent(/প্রসেস হচ্ছে/);
+  });
+});

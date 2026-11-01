@@ -31,7 +31,7 @@ export function CoursesTab({ enrolledCourses }: { enrolledCourses: EnrolledCours
             bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark text-white
             shadow-[0_0_20px_hsl(156_70%_42%/0.3)] hover:shadow-[0_0_30px_hsl(156_70%_42%/0.5)]
             transition-all duration-300 hover:-translate-y-0.5">
-            Browse Courses
+            Browse Course
         </Link>
       </div>
     );
