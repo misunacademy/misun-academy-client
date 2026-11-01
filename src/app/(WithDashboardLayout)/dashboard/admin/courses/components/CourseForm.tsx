@@ -12,7 +12,7 @@ import { useCreateCourseMutation, useUpdateCourseMutation, useGetCourseByIdQuery
 import { useUploadSingleImageMutation } from "@/redux/api/uploadApi";
 import { toast } from "sonner";
 import { Book } from "lucide-react";
-import { InstructorAssignDialog } from "../[courseId]/page";
+import { InstructorAssignDialog } from "../[courseId]/_components/CoursesCourseidClient";
 import { splitLines, splitTags } from "./CourseFormHelpers";
 import { CourseFormFields } from "./CourseFormFields";
 import { SubmitButton } from "@/components/forms/submit-button";
@@ -93,9 +93,12 @@ export default function CourseForm({ courseId, isNew = false }: CourseFormProps)
         instructor: c.instructor || "", features: c.features || [], highlights: c.highlights || [],
       });
 
-      setPreviews({ thumbnailImage: c.thumbnailImage || undefined, coverImage: c.coverImage || undefined });
-      setFeatures(c.features || []);
-      setHighlights(c.highlights || []);
+      const frame = requestAnimationFrame(() => {
+        setPreviews({ thumbnailImage: c.thumbnailImage || undefined, coverImage: c.coverImage || undefined });
+        setFeatures(c.features || []);
+        setHighlights(c.highlights || []);
+      });
+      return () => cancelAnimationFrame(frame);
     }
   }, [course, form]);
 

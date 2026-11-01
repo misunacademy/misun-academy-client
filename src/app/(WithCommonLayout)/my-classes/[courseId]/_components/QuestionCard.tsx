@@ -26,7 +26,11 @@ export function QuestionCard({ question, index, selectedAnswer, onSelect }: Ques
 
       <div className="grid grid-cols-2 gap-2.5">
         {question.options.map((opt, optIdx) => {
-          const value = String(optIdx);
+          // Option VALUE convention (shared with the admin form, the review
+          // screen and server-side scoring): option text, falling back to
+          // `option-<index>` for textless options. Never the bare index —
+          // correctAnswer stores text, so indices never match.
+          const value = opt.text || `option-${optIdx}`;
           const isSelected = selectedAnswer === value;
           return (
             <button
@@ -40,6 +44,14 @@ export function QuestionCard({ question, index, selectedAnswer, onSelect }: Ques
               <span className={`shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200
                 ${isSelected ? "border-primary bg-primary" : "border-white/30 group-hover:border-white/50"}`}>
                 {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+              </span>
+              {/* Letter of the DISPLAYED position (A/B/C/…). The recorded
+                value is the option text, not this letter — but with option
+                shuffling on, positions move, so the letter keeps "tap A"
+                unambiguous for the learner. Hidden from assistive tech so the
+                button name stays the pure option text. */}
+              <span aria-hidden="true" className="shrink-0 text-xs font-bold text-white/40">
+                {String.fromCharCode(65 + optIdx)}.
               </span>
               <ContentBlockDisplay content={opt} />
             </button>

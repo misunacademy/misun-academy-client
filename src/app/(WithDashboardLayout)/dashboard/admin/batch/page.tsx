@@ -1,3 +1,5 @@
+export const instant = false
+
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
 import BatchDashboard from './components/Batch';
 import { Plus } from 'lucide-react';

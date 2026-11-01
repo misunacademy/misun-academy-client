@@ -10,7 +10,7 @@ import { Form } from "@/components/ui/form"
 import { InputField } from "@/components/forms/input-field"
 import { SelectField } from "@/components/forms/select-field"
 import { SubmitButton } from "@/components/forms/submit-button"
-import { useUpdateUserMutation } from "@/redux/api/adminApi"
+import { useUpdateUserMutation, useUpdateUserStatusMutation } from "@/redux/api/adminApi"
 import { toast } from "sonner"
 
 interface User {
@@ -60,6 +60,7 @@ const STATUS_OPTIONS = [
 
 const EditingDialog = ({ user, open, onOpenChange, onSuccess }: EditingDialogProps) => {
   const [updateUserMutation, { isLoading }] = useUpdateUserMutation()
+  const [updateStatusMutation, { isLoading: isStatusLoading }] = useUpdateUserStatusMutation()
 
   const form = useForm<EditUserFormValues>({
     resolver: zodResolver(editUserSchema) as Resolver<EditUserFormValues>,
@@ -85,7 +86,14 @@ const EditingDialog = ({ user, open, onOpenChange, onSuccess }: EditingDialogPro
   const handleSubmit = async (values: EditUserFormValues) => {
     if (!user) return
     try {
-      await updateUserMutation({ id: user._id, data: values }).unwrap()
+      // Profile fields + role go through PUT /users/:id. Status has its own
+      // audited endpoint (PATCH /users/:id/status) — sending it with PUT is
+      // silently ignored server-side, so split the calls explicitly.
+      const { status, ...profile } = values
+      await updateUserMutation({ id: user._id, data: profile }).unwrap()
+      if (status !== user.status) {
+        await updateStatusMutation({ id: user._id, status }).unwrap()
+      }
       toast.success("User updated successfully")
       onSuccess()
     } catch (error) {
@@ -111,7 +119,7 @@ const EditingDialog = ({ user, open, onOpenChange, onSuccess }: EditingDialogPro
             <SelectField name="status" label="Status" options={STATUS_OPTIONS} />
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <SubmitButton disabled={isLoading}>Update User</SubmitButton>
+              <SubmitButton disabled={isLoading || isStatusLoading}>Update User</SubmitButton>
             </div>
           </form>
         </Form>

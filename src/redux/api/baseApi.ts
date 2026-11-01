@@ -25,30 +25,62 @@ const baseQuery = fetchBaseQuery({
     },
 });
 
+// Set once a 401 redirect starts so concurrent failures sign out exactly once.
+let authRedirectInFlight = false;
+
 const baseQueryWithSessionHandling = async (args: FetchArgs, api: BaseQueryApi, extraOptions: object) => {
     const result = await baseQuery(args, api, extraOptions);
 
     const error = result.error as { status: number; data: { message?: string } } | undefined;
     const errorData = error?.data;
+    // Background/polling queries opt out of toasts via extraOptions.silent —
+    // a 404 on a 30s poll must not spam the user. 401 handling below still runs.
+    const silent = (extraOptions as { silent?: boolean } | undefined)?.silent === true;
 
-    if (error?.status === 404) {
+    if (!silent && error?.status === 404) {
         toast.error(errorData?.message || "Something went wrong");
     }
-    if (error?.status === 403) {
+    if (!silent && error?.status === 403) {
         toast.error(errorData?.message || "Forbidden");
     }
     if (error?.status === 401) {
+        const requestUrl = typeof args === "string" ? args : args.url;
+        const isAuthRequest = requestUrl.includes("/auth/");
+        const onAuthPage =
+            typeof window !== "undefined" && window.location.pathname.startsWith("/auth");
+        // Never react to auth-endpoint 401s (e.g. get-session) and never
+        // redirect from the login page itself — both cause sign-out loops.
+        // Dedupe concurrent 401s so N failing queries = one sign-out + toast.
+        if (!isAuthRequest && !onAuthPage && !authRedirectInFlight) {
+            authRedirectInFlight = true;
+            // Better Auth handles sessions via HTTP-only cookies
+            // Sign out and redirect to login
+            try {
+                await authServerApi.signOut();
+            } catch {
+                // Sign-out itself failing must not block the redirect.
+            }
+            // Purge cached dashboard data so the next user never sees the
+            // previous user's queries.
+            api.dispatch(baseApi.util.resetApiState());
 
-        // Better Auth handles sessions via HTTP-only cookies
-        // Sign out and redirect to login
-        await authServerApi.signOut();
+            if (typeof window !== 'undefined') {
+                toast.error('Your session has expired. Please login again.');
+                const loginUrl = new URL('/auth', window.location.origin);
+                // Preserve where the user was (incl. mid-checkout) so login
+                // can send them straight back — minus secret query params
+                // (?token= from reset/verify links must not leak into history).
+                const redirectPath = `${window.location.pathname}${window.location.search}`;
+                const cleanRedirect = redirectPath.replace(/([?&])token=[^&]*/g, '$1token=[REDACTED]').replace(/[?&]$/, '');
+                loginUrl.searchParams.set('redirect_url', cleanRedirect);
+                window.location.href = loginUrl.toString();
+            }
 
-        if (typeof window !== 'undefined') {
-            toast.error('Your session has expired. Please login again.');
-            const loginUrl = new URL('/auth', window.location.origin);
-            const redirectPath = `${window.location.pathname}${window.location.search}`;
-            loginUrl.searchParams.set('redirect_url', redirectPath);
-            window.location.href = loginUrl.toString();
+            // Page normally unloads on redirect; reset only as a fallback so
+            // a cancelled navigation doesn't wedge future handling.
+            setTimeout(() => {
+                authRedirectInFlight = false;
+            }, 5000);
         }
 
         return result;
@@ -69,6 +101,7 @@ export const baseApi = createApi({
         'CourseEnrollments',
         'Profile',
         'Payments',
+        'Refunds',
         'Recordings',
         'Certificates',
         'Instructors',
@@ -87,6 +120,7 @@ export const baseApi = createApi({
         'Zames',
         'AuditLogs',
         'Bootcamp',
+        'Announcements',
     ],
     endpoints: () => ({}),
 });

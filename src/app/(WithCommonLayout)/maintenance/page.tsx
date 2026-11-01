@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
 import Image from "next/image";
 import { Wrench, Clock } from "lucide-react";
@@ -12,7 +14,18 @@ const FALLBACK_MESSAGE =
 
 	
 export default function MaintenancePage() {
-	const { data, isLoading } = useGetSettingsQuery();
+	const router = useRouter();
+	const { data, isLoading } = useGetSettingsQuery(undefined, {
+		// Re-check periodically: when maintenance flips off, leave this page.
+		pollingInterval: 30000,
+	});
+
+	const maintenanceEnabled = (data as { data?: { maintenanceEnabled?: boolean } } | undefined)?.data?.maintenanceEnabled;
+	useEffect(() => {
+		if (!isLoading && maintenanceEnabled === false) {
+			router.replace('/');
+		}
+	}, [isLoading, maintenanceEnabled, router]);
 
 	const maintenanceTitle = data?.data?.maintenanceTitle?.trim() || FALLBACK_TITLE;
 	const maintenanceMessage = data?.data?.maintenanceMessage?.trim() || FALLBACK_MESSAGE;

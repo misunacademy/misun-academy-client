@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Controller, useForm, useWatch, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -14,6 +15,7 @@ import { useSendBatchProgressReminderMutation } from "@/redux/api/adminApi"
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi"
 import type { CourseResponse } from "@/redux/api/courseApi"
 import { Form } from "@/components/ui/form"
+import ConfirmDialog from "@/components/shared/ConfirmDialog"
 
 const reminderSchema = z.object({
   courseId: z.string().min(1, "Select a course"),
@@ -24,6 +26,8 @@ type ReminderFormValues = z.infer<typeof reminderSchema>
 
 export default function BatchProgressReminderCard({ courses }: { courses: CourseResponse[] }) {
   const [sendReminder, { isLoading }] = useSendBatchProgressReminderMutation()
+  // Validated values awaiting confirmation in the dialog below.
+  const [pendingReminder, setPendingReminder] = useState<ReminderFormValues | null>(null)
 
   const form = useForm<ReminderFormValues>({
     resolver: zodResolver(reminderSchema) as Resolver<ReminderFormValues>,
@@ -43,11 +47,18 @@ export default function BatchProgressReminderCard({ courses }: { courses: Course
   }
 
   const handleSubmit = async (values: ReminderFormValues) => {
+    // Confirm first — this emails the whole batch.
+    setPendingReminder(values)
+  }
+
+  const handleConfirmSend = async () => {
+    if (!pendingReminder) return
     try {
-      const result = await sendReminder(values).unwrap()
+      const result = await sendReminder(pendingReminder).unwrap()
       toast.success(result.message || `Batch progress reminders sent to ${result.data.count} students!`, {
         description: <span className="text-foreground/50">Emails have been queued and will be sent shortly.</span>,
       })
+      setPendingReminder(null)
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } }
       toast.error("Failed to send batch progress reminders", {
@@ -57,6 +68,7 @@ export default function BatchProgressReminderCard({ courses }: { courses: Course
   }
 
   return (
+    <>
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
@@ -150,5 +162,16 @@ export default function BatchProgressReminderCard({ courses }: { courses: Course
         </Form>
       </CardContent>
     </Card>
+    <ConfirmDialog
+      open={pendingReminder !== null}
+      onOpenChange={(open) => { if (!open) setPendingReminder(null); }}
+      title="Send progress reminders?"
+      description="Reminders go to the whole batch. This cannot be undone."
+      confirmLabel="Send Reminders"
+      variant="default"
+      confirming={isLoading}
+      onConfirm={() => { void handleConfirmSend(); }}
+    />
+    </>
   )
 }

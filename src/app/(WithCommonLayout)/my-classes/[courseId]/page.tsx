@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { toast } from "sonner";
 import { PlayCircle, ChevronLeft, FileText, Gem, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import AuthGuard from "@/components/shared/AuthGuard";
 import NotificationBell from "@/components/shared/NotificationBell";
-import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
+import { LessonVideoPlayer } from "@/components/shared/lesson-video-player";
 import { useCourseNavigation } from "@/hooks/useCourseNavigation";
 import { useGetZamesStatsQuery } from "@/redux/api/gamificationApi";
 import type { IZamesStats } from "@/types/quiz";
@@ -53,6 +54,7 @@ export default function CourseDetails() {
     handlePrevLesson,
     toggleModule,
     selectLesson,
+    selectQuizModule,
     setShowCongratulations,
     setShowCookingMessage,
     courseId,
@@ -62,8 +64,24 @@ export default function CourseDetails() {
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
-  const handleSelectQuiz = (quizId: string) => {
+  const handleSelectQuiz = (moduleIdx: number, quizId: string) => {
+    const quizzes = curriculum[moduleIdx]?.quizzes || [];
+    const quizIdx = quizzes.findIndex((q) => q.quizId === quizId);
+    if (quizIdx >= 0 && !isQuizUnlocked(moduleIdx, quizIdx)) {
+      toast.error("This module is locked. Complete previous modules before attempting its lessons.");
+      return;
+    }
+    selectQuizModule(moduleIdx);
     setActiveQuizId(quizId);
+  };
+
+  const handleSelectLesson = (moduleIdx: number, lessonIdx: number) => {
+    if (!isLessonUnlocked(moduleIdx, lessonIdx)) {
+      toast.error("This module is locked. Complete previous modules before attempting its lessons.");
+      return;
+    }
+    setActiveQuizId(null);
+    selectLesson(moduleIdx, lessonIdx);
   };
 
   const handleQuizComplete = useCallback(async () => {
@@ -99,12 +117,22 @@ export default function CourseDetails() {
     const currentQuizIndex = quizzes.findIndex(q => q.quizId === activeQuizId);
 
     if (currentQuizIndex >= 0 && currentQuizIndex < quizzes.length - 1) {
+      // Mirror the lesson path: never walk into locked content. The server
+      // would reject it anyway, stranding the UI on refused content.
+      if (!isQuizUnlocked(currentModuleIndex, currentQuizIndex + 1)) {
+        toast.error("Complete previous content to unlock this quiz.");
+        return;
+      }
       setActiveQuizId(quizzes[currentQuizIndex + 1].quizId);
     } else if (currentModuleIndex < curriculum.length - 1) {
+      if (!isLessonUnlocked(currentModuleIndex + 1, 0)) {
+        toast.error("This module is locked. Complete previous modules first.");
+        return;
+      }
       setActiveQuizId(null);
       selectLesson(currentModuleIndex + 1, 0);
     }
-  }, [currentModule, activeQuizId, currentModuleIndex, curriculum, selectLesson]);
+  }, [currentModule, activeQuizId, currentModuleIndex, curriculum, selectLesson, isQuizUnlocked, isLessonUnlocked]);
 
   const currentQuizIndex = activeQuizId
     ? (currentModule?.quizzes || []).findIndex(q => q.quizId === activeQuizId)
@@ -208,13 +236,14 @@ export default function CourseDetails() {
                     </div>
                   </div>
                   <div className="p-4">
-                    {currentLesson.media?.url ? (
-                      <div className="relative aspect-video w-full rounded-xl overflow-hidden">
-                        <YoutubePrivatePlayer
-                          url={currentLesson.media.url}
-                          className="absolute inset-0 w-full h-full"
-                        />
-                      </div>
+                    {currentLesson.media?.url || currentLesson.media?.videoId ? (
+                      <LessonVideoPlayer
+                        key={`${currentLesson.lessonId}-${currentLesson.media?.url || currentLesson.media?.videoId}`}
+                        url={currentLesson.media?.url}
+                        type={currentLesson.media?.type}
+                        videoId={currentLesson.media?.videoId}
+                        title={currentLesson.title}
+                      />
                     ) : (
                       <div className="aspect-video rounded-xl border border-white/[0.04] bg-white/[0.02] flex flex-col items-center justify-center gap-3">
                         <FileText className="h-12 w-12 text-white/20" />
@@ -278,7 +307,7 @@ export default function CourseDetails() {
               isLessonUnlocked={isLessonUnlocked}
               isQuizCompleted={isQuizCompleted}
               isQuizUnlocked={isQuizUnlocked}
-              onSelectLesson={(moduleIdx, lessonIdx) => { setActiveQuizId(null); selectLesson(moduleIdx, lessonIdx); }}
+              onSelectLesson={handleSelectLesson}
               onSelectQuiz={handleSelectQuiz}
             />
           </div>

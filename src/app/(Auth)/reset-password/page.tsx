@@ -13,8 +13,8 @@ import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import PageBackground from '@/components/shared/PageBackground';
 
 const resetPasswordSchema = z.object({
-  newPassword: z.string().min(6, "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে"),
-  confirmPassword: z.string().min(6, "পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন"),
+  newPassword: z.string().min(8, "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে"),
+  confirmPassword: z.string().min(8, "পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন"),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "পাসওয়ার্ড মিলছে না",
   path: ["confirmPassword"],
@@ -45,6 +45,12 @@ const ResetPasswordForm = () => {
   const handleResetPassword = async (data: ResetPasswordFormData) => {
     if (!token) return;
     await resetPassword(data.newPassword, token);
+    // Token is single-use: strip it from history/referers after submit.
+    try {
+      window.history.replaceState(null, '', window.location.pathname);
+    } catch {
+      // ignore
+    }
   };
 
   if (!token) {

@@ -1,13 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { UserPlus, Send, Mail, Loader2 } from 'lucide-react';
 import { useSendEnrollmentReminderMutation } from '@/redux/api/adminApi';
+import ConfirmDialog from '@/components/shared/ConfirmDialog';
 
 export default function EnrollmentReminderCard() {
   const [sendEnrollmentReminder, { isLoading }] = useSendEnrollmentReminderMutation();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const handleSend = async () => {
     try {
@@ -15,6 +18,7 @@ export default function EnrollmentReminderCard() {
       toast.success(result.message || `Enrollment reminders sent to ${result.data.count} users!`, {
         description: <span className="text-foreground/50">Emails have been queued and will be sent shortly.</span>,
       });
+      setConfirmOpen(false);
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } };
       toast.error('Failed to send enrollment reminders', {
@@ -24,6 +28,7 @@ export default function EnrollmentReminderCard() {
   };
 
   return (
+    <>
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
@@ -53,7 +58,7 @@ export default function EnrollmentReminderCard() {
           <span>Only verified, active users without enrollments</span>
         </div>
 
-        <Button className="w-full" onClick={handleSend} disabled={isLoading}>
+        <Button className="w-full" onClick={() => setConfirmOpen(true)} disabled={isLoading}>
           {isLoading ? (
             <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending...</>
           ) : (
@@ -62,5 +67,16 @@ export default function EnrollmentReminderCard() {
         </Button>
       </CardContent>
     </Card>
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title="Send enrollment reminders?"
+      description="Reminders go to ALL unenrolled students. This cannot be undone."
+      confirmLabel="Send Reminders"
+      variant="default"
+      confirming={isLoading}
+      onConfirm={() => { void handleSend(); }}
+    />
+    </>
   );
 }

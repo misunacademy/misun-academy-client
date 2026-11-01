@@ -110,7 +110,9 @@ export function SettingsTab() {
             const result = await authServerApi.changePassword({
                 currentPassword,
                 newPassword,
-                revokeOtherSessions: false,
+                // A password change implies possible compromise: revoke all
+                // other sessions so a stolen session does not survive it.
+                revokeOtherSessions: true,
             });
 
             if (result.error) {
@@ -121,7 +123,6 @@ export function SettingsTab() {
             toast.success("Password changed successfully.");
             passwordForm.reset();
         } catch (error) {
-            console.error("Password change error:", error);
             let errorMessage = "Failed to change password.";
 
             if (error && typeof error === 'object') {

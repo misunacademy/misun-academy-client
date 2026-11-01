@@ -15,7 +15,9 @@ interface CourseProgressData {
 export const CourseCard = memo(function CourseCard({ enrollment }: { enrollment: EnrolledCourse }) {
   const { data: progressData } = useGetCourseProgressQuery(
     { courseId: enrollment.courseId, batchId: enrollment.batchId },
-    { skip: !enrollment.courseId }
+    // Wait for the batch: an unbatched request is unscoped (wrong progress)
+    // and fires one useless request per card on every visit.
+    { skip: !enrollment.courseId || !enrollment.batchId }
   );
 
   const isActive = enrollment.status === "active";

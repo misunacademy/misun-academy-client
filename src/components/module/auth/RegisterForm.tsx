@@ -17,8 +17,8 @@ import { Divider } from "@/components/shared/Divider";
 const registerSchema = z.object({
   name: z.string().min(2, "নাম কমপক্ষে ২ অক্ষরের হতে হবে"),
   email: z.string().email("অনুগ্রহ করে সঠিক ইমেইল ঠিকানা দিন"),
-  password: z.string().min(6, "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে"),
-  confirmPassword: z.string().min(6, "পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন"),
+  password: z.string().min(8, "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে"),
+  confirmPassword: z.string().min(8, "পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "পাসওয়ার্ড মিলছে না",
   path: ["confirmPassword"],
@@ -27,7 +27,7 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 interface RegisterFormProps {
-  onRegister: (data: RegisterFormData) => void;
+  onRegister: (data: RegisterFormData & { agreedToTerms: boolean }) => void;
 }
 
 const INPUT_CLASSES = "h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/30 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors autofill:shadow-[inset_0_0_0px_1000px_rgb(13,31,18)] autofill:[-webkit-text-fill-color:white]";
@@ -48,7 +48,13 @@ const RegisterForm = ({ onRegister }: RegisterFormProps) => {
   };
 
   const handleRegister = async (data: RegisterFormData) => {
-    await onRegister(data);
+    // The submit button disables without agreement, but Enter-key submits
+    // bypass it — enforce here too (and the server requires it as well).
+    if (!agreeToTerms) {
+      toast.error('Please accept the Terms & Conditions to create an account');
+      return;
+    }
+    await onRegister({ ...data, agreedToTerms: true });
   };
 
   return (

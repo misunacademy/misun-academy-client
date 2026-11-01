@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -11,6 +12,7 @@ import { InputField } from "@/components/forms/input-field"
 import { TextareaField } from "@/components/forms/textarea-field"
 import { SubmitButton } from "@/components/forms/submit-button"
 import { useSendNewsUpdateMutation } from "@/redux/api/adminApi"
+import ConfirmDialog from "@/components/shared/ConfirmDialog"
 
 const newsSchema = z.object({
   subject: z.string().min(1, "Subject is required").max(200, "Max 200 characters"),
@@ -21,6 +23,8 @@ type NewsFormValues = z.infer<typeof newsSchema>
 
 export default function NewsUpdatesCard() {
   const [sendNewsUpdate, { isLoading }] = useSendNewsUpdateMutation()
+  // Validated values awaiting confirmation in the dialog below.
+  const [pendingNews, setPendingNews] = useState<NewsFormValues | null>(null)
 
   const form = useForm<NewsFormValues>({
     resolver: zodResolver(newsSchema) as Resolver<NewsFormValues>,
@@ -28,11 +32,18 @@ export default function NewsUpdatesCard() {
   })
 
   const handleSubmit = async (values: NewsFormValues) => {
+    // Confirm first — this emails ALL students.
+    setPendingNews(values)
+  }
+
+  const handleConfirmSend = async () => {
+    if (!pendingNews) return
     try {
-      const result = await sendNewsUpdate(values).unwrap()
+      const result = await sendNewsUpdate(pendingNews).unwrap()
       toast.success(result.message || `News update sent to ${result.data.count} enrolled students!`, {
         description: <span className="text-foreground/50">Emails have been queued and will be sent shortly.</span>,
       })
+      setPendingNews(null)
       form.reset()
     } catch (error: unknown) {
       const err = error as { data?: { message?: string } }
@@ -43,6 +54,7 @@ export default function NewsUpdatesCard() {
   }
 
   return (
+    <>
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
@@ -89,5 +101,16 @@ export default function NewsUpdatesCard() {
         </Form>
       </CardContent>
     </Card>
+    <ConfirmDialog
+      open={pendingNews !== null}
+      onOpenChange={(open) => { if (!open) setPendingNews(null); }}
+      title="Send this news update?"
+      description="It will be emailed to ALL students. This cannot be undone."
+      confirmLabel="Send Update"
+      variant="default"
+      confirming={isLoading}
+      onConfirm={() => { void handleConfirmSend(); }}
+    />
+    </>
   )
 }

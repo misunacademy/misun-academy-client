@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
+import { normalizeVideoId } from "@/lib/youtube/utils";
 import type { InstructorCourse } from "@/redux/api/instructorApi";
 
 const recordingSchema = z.object({
@@ -57,7 +58,7 @@ const RecordingForm = ({ defaultValues, courses, onSubmit, isLoading }: Recordin
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit((values) => onSubmit({ ...values, videoId: normalizeVideoId(values.videoSource, values.videoId) || values.videoId }))} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -191,21 +192,21 @@ const RecordingForm = ({ defaultValues, courses, onSubmit, isLoading }: Recordin
           name="videoId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Video ID <span className="text-red-500">*</span></FormLabel>
+              <FormLabel>Video ID or URL <span className="text-red-500">*</span></FormLabel>
               <FormControl>
                 <Input
                   {...field}
                   placeholder={
                     watchedVideoSource === "youtube"
-                      ? "YouTube video ID (e.g., dQw4w9WgXcQ)"
-                      : "Google Drive file ID"
+                      ? "YouTube ID or full link (e.g., dQw4w9WgXcQ)"
+                      : "Drive file ID or full link"
                   }
                 />
               </FormControl>
               <p className="text-xs text-muted-foreground">
                 {watchedVideoSource === "youtube"
-                  ? "Extract from: https://www.youtube.com/watch?v=VIDEO_ID"
-                  : "Extract from: https://drive.google.com/file/d/FILE_ID/view"}
+                  ? "Paste a full YouTube link or just the ID — e.g. https://www.youtube.com/watch?v=VIDEO_ID"
+                  : "Paste a full Drive link or just the file ID — e.g. https://drive.google.com/file/d/FILE_ID/view"}
               </p>
               <FormMessage />
             </FormItem>

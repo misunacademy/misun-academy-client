@@ -1,3 +1,5 @@
+export const instant = false
+
 import { LeaderboardPage } from "../../_components/leaderboard/LeaderboardPage";
 
 export default function AdminLeaderboard() {

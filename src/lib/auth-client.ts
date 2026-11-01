@@ -1,8 +1,14 @@
 import { createAuthClient } from "better-auth/react"
 import { inferAdditionalFields } from "better-auth/client/plugins"
 
+const baseApiUrl = process.env.NEXT_PUBLIC_BASE_API_URL;
+if (!baseApiUrl) {
+  // Fail fast with context instead of building "undefined/auth" URLs.
+  throw new Error('Missing NEXT_PUBLIC_BASE_API_URL (required by auth-client)');
+}
+
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_BASE_API_URL! + '/auth',
+  baseURL: `${baseApiUrl}/auth`,
   fetchOptions: {
     credentials: "include", // Important for cookies and session management
   },

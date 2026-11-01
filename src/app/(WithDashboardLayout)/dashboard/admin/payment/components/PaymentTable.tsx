@@ -26,6 +26,10 @@ import { usePaymentColumns } from './paymentColumns';
 import { PaymentPagination } from './PaymentPagination';
 
 const PaymentTable = () => {
+    // Opt out of React Compiler: TanStack Table's `useReactTable()` returns
+    // fresh function identities every render by design, so this component
+    // cannot be memoized safely (react-hooks/incompatible-library).
+    "use no memo";
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -35,6 +39,14 @@ const PaymentTable = () => {
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
     const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 
+    // Debounce search: without this every keystroke fires a payments-history
+    // aggregation query.
+    const [debouncedSearch, setDebouncedSearch] = useState(search);
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(search), 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
     const { data: coursesData } = useGetAllCoursesQuery({});
     const batchesQueryParams = useMemo(() => ({
         courseId: selectedCourseId !== 'all' ? selectedCourseId : undefined,
@@ -43,15 +55,15 @@ const PaymentTable = () => {
     const courses = useMemo(() => coursesData?.data || [], [coursesData]);
     const batches = useMemo(() => batchesData?.data || [], [batchesData]);
 
-    useEffect(() => { setPage(1); }, [search, statusFilter, selectedCourseId, selectedBatchId]);
+    useEffect(() => { setPage(1); }, [debouncedSearch, statusFilter, selectedCourseId, selectedBatchId]);
 
     const paymentsQueryParams = useMemo(() => ({
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         status: statusFilter !== 'all' ? statusFilter : undefined,
         courseId: selectedCourseId !== 'all' ? selectedCourseId : undefined,
         batchId: selectedBatchId !== 'all' ? selectedBatchId : undefined,
         page: page > 1 ? page : undefined,
-    } as Record<string, string | number | undefined>), [search, statusFilter, selectedCourseId, selectedBatchId, page]);
+    } as Record<string, string | number | undefined>), [debouncedSearch, statusFilter, selectedCourseId, selectedBatchId, page]);
 
     const { data, isLoading, isError, refetch } = useGetAllPaymentsQuery(paymentsQueryParams);
     const [updatePaymentStatus] = useUpdatePaymentStatusMutation();
@@ -88,7 +100,7 @@ const PaymentTable = () => {
     const handlePrevPage = useCallback(() => setPage((prev) => Math.max(prev - 1, 1)), []);
     const handleNextPage = useCallback(() => setPage((prev) => Math.min(prev + 1, meta.totalPages)), [meta.totalPages]);
 
-    // eslint-disable-next-line react-hooks/incompatible-library
+    // eslint-disable-next-line react-hooks/incompatible-library -- useReactTable returns unmemoizable functions by design; component opts out via "use no memo" above
     const table = useReactTable({
         data: payments,
         columns,

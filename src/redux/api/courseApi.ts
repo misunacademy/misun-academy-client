@@ -98,6 +98,18 @@ const courseApi = baseApi.injectEndpoints({
       providesTags: ["Courses"],
     }),
 
+    // Classroom assembly WITH watchable content. Server-verified enrollment
+    // required (403 otherwise) — the public getCourseById above is
+    // syllabus-only by design.
+    getClassroomCourse: build.query<CourseResponse, { id: string; batchId?: string }>({
+      query: (arg) => ({
+        url: `/courses/${arg.id}/classroom`,
+        params: arg.batchId ? { batchId: arg.batchId } : undefined,
+      }),
+      transformResponse: (response: { data: CourseResponse }) => response.data,
+      providesTags: ["Courses", "CourseEnrollments"],
+    }),
+
     createCourse: build.mutation<unknown, Partial<CourseResponse>>({
       query: (data) => ({
         url: "/courses",
@@ -121,7 +133,7 @@ const courseApi = baseApi.injectEndpoints({
         url: `/courses/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Courses"],
+      invalidatesTags: ["Courses", "Batches", "Modules", "Lessons", "Quizzes"],
     }),
 
     assignCourseInstructor: build.mutation<unknown, { courseId: string; instructorId: string | null }>({
@@ -147,6 +159,7 @@ export const {
   useGetAllCoursesQuery,
   useGetCourseBySlugQuery,
   useGetCourseByIdQuery,
+  useGetClassroomCourseQuery,
   useCreateCourseMutation,
   useUpdateCourseMutation,
   useDeleteCourseMutation,

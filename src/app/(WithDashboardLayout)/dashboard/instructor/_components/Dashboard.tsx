@@ -57,7 +57,11 @@ export default function InstructorDashboardPage() {
   const [deleteModule] = useDeleteInstructorModuleMutation();
 
   const dashData = dashboardData?.data as { course?: { instructorId?: { name?: string; image?: string } | null }; enrolledStudents?: number; activeBatches?: number; totalBatches?: number } | undefined;
-  const course = (coursesData?.data?.[0]) as InstructorCourse | undefined;
+  const coursesList = (coursesData?.data ?? []) as InstructorCourse[];
+  // Instructors may own several courses — let them switch instead of
+  // pinning to [0] (which hid every other course).
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
+  const course = (coursesList.find((c) => c._id === selectedCourseId) ?? coursesList[0]) as InstructorCourse | undefined;
   const courseId = course?._id || "";
   const [selectedBatchId, setSelectedBatchId] = useState<string>("");
   const batchIds = course?.batches?.map((batch) => batch._id) || [];
@@ -185,7 +189,21 @@ export default function InstructorDashboardPage() {
       {course && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Course Modules</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-semibold">Course Modules</h2>
+              {coursesList.length > 1 && (
+                <Select value={courseId} onValueChange={(v) => { setSelectedCourseId(v); setSelectedBatchId(""); }}>
+                  <SelectTrigger className="w-[240px]">
+                    <SelectValue placeholder="Select a course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {coursesList.map((c) => (
+                      <SelectItem key={c._id} value={c._id}>{c.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Batch</span>
               <Select value={activeBatchId} onValueChange={setSelectedBatchId}>

@@ -44,11 +44,16 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
 
   const enrollment = React.useMemo<EnrollmentResponse | undefined>(() => {
     if (!enrollments?.data) return undefined;
-    return enrollments.data.find((e) => {
+    const list = enrollments.data;
+    const matches = (e: EnrollmentResponse) => {
       const courseRef = e.batchId?.courseId;
       const cId = typeof courseRef === "object" && courseRef !== null ? courseRef._id : courseRef;
-      return cId === courseId;
-    });
+      const slug = typeof courseRef === "object" && courseRef !== null ? courseRef.slug : undefined;
+      return cId === courseId || slug === courseId;
+    };
+    // Prefer an active enrollment so progress/attempts land on the right record
+    // when a learner has several enrollments for the same course.
+    return list.find((e) => matches(e) && e.status === "active") ?? list.find(matches);
   }, [enrollments, courseId]);
   const enrollmentId = enrollment?._id || "";
 
@@ -69,12 +74,16 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
   const [timeRemaining, setTimeRemaining] = React.useState<number | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [reviewAttemptId, setReviewAttemptId] = React.useState<string | null>(null);
+  // In-flight guard: phase state lags a tick, so a ref prevents double
+  // submits from double-clicks and timer-expiry races.
+  const submittingRef = React.useRef(false);
 
   React.useEffect(() => {
     if (phase !== "loading") return;
     if (infoLoading) return;
     if (!quizInfo) return;
-    setPhase(determinedPhase);
+    const frame = requestAnimationFrame(() => setPhase(determinedPhase));
+    return () => cancelAnimationFrame(frame);
   }, [phase, infoLoading, quizInfo, determinedPhase]);
 
   const timerActive = phase === "active" && timeRemaining !== null && timeRemaining > 0;
@@ -118,8 +127,17 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
       setQuestions(data.questions);
       setCurrentIndex(0);
       setAnswers({});
+      setReviewAttemptId(null);
       if (data.quiz.timeLimit) {
-        setTimeRemaining(data.quiz.timeLimit * 60);
+        // Resumed in-progress attempts carry the original startedAt, so
+        // count down only the time that is actually left.
+        const elapsed = Math.max(
+          0,
+          Math.floor((Date.now() - new Date(data.attempt.startedAt).getTime()) / 1000)
+        );
+        setTimeRemaining(Math.max(0, data.quiz.timeLimit * 60 - elapsed));
+      } else {
+        setTimeRemaining(null);
       }
       setPhase("active");
     } catch (err) {
@@ -145,7 +163,8 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
   };
 
   const handleSubmit = React.useCallback(async () => {
-    if (!attemptId) return;
+    if (!attemptId || submittingRef.current) return;
+    submittingRef.current = true;
     setPhase("submitting");
     try {
       const timeTaken = quizInfo?.timeLimit
@@ -166,12 +185,15 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
     } catch (err) {
       setError(getApiErrorMessage(err, "Failed to submit quiz"));
       setPhase("active");
+    } finally {
+      submittingRef.current = false;
     }
   }, [attemptId, answers, quizInfo, quizId, submitAttempt, timeRemaining]);
 
   React.useEffect(() => {
     if (timeRemaining === 0 && phase === "active") {
-      handleSubmit();
+      const frame = requestAnimationFrame(() => handleSubmit());
+      return () => cancelAnimationFrame(frame);
     }
   }, [timeRemaining, phase, handleSubmit]);
 
@@ -192,6 +214,13 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
   const isLastQuestion = currentIndex === questions.length - 1;
   const canGoNext = selectedAnswer !== null;
   const canGoPrev = currentIndex > 0;
+  // Free jumping is limited to answered questions so learners cannot skip
+  // ahead and submit partial attempts; unanswered ones are reached via Next.
+  const canJumpTo = (idx: number) =>
+    idx === currentIndex || answers[questions[idx]?._id] !== undefined;
+  const allAnswered =
+    questions.length > 0 &&
+    questions.every((q) => answers[q._id] !== undefined && answers[q._id] !== null);
 
   if (infoLoading || phase === "loading") {
     return (
@@ -224,6 +253,7 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
               completedCount={completedAttempts.length}
               maxAttempts={maxAttempts}
               canReAttempt={canReAttempt}
+              hasPassed={completedAttempts.some((a) => a.passed)}
               onReAttempt={handleStart}
               onReviewAnswers={handleReviewAnswers}
               onContinue={onComplete}
@@ -270,8 +300,10 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
                   {questions.map((_, idx) => (
                     <button
                       key={idx}
-                      onClick={() => setCurrentIndex(idx)}
-                      className={` flex-1 rounded-full transition-all duration-200 ${
+                      aria-label={`Go to question ${idx + 1}`}
+                      onClick={() => { if (canJumpTo(idx)) setCurrentIndex(idx); }}
+                      disabled={!canJumpTo(idx)}
+                      className={` flex-1 rounded-full transition-all duration-200 disabled:cursor-not-allowed ${
                         idx === currentIndex
                           ? "bg-primary"
                           : answers[questions[idx]._id] !== undefined
@@ -311,7 +343,8 @@ export function QuizPlayer({ quizId, courseId, onComplete, onBack }: QuizPlayerP
                 {isLastQuestion ? (
                   <button
                     onClick={handleSubmit}
-                    disabled={submitting}
+                    disabled={submitting || !allAnswered}
+                    title={allAnswered ? "Submit quiz" : `Answer all questions (${answeredCount}/${questions.length})`}
                     className="flex items-center gap-1.5 px-5 py-2 rounded-lg text-sm font-semibold bg-primary hover:bg-primary/90 text-white transition-all disabled:opacity-50"
                   >
                     {submitting ? "Submitting..." : "Submit"}
@@ -412,7 +445,7 @@ function QuizIntroScreen({ quizInfo, error, onStart, starting }: { quizInfo: IQu
 }
 
 function QuizSummaryScreen({
-  quizInfo, lastAttempt, completedCount, maxAttempts, canReAttempt,
+  quizInfo, lastAttempt, completedCount, maxAttempts, canReAttempt, hasPassed,
   onReAttempt, onReviewAnswers, onContinue, onBack, isStarting, error
 }: {
   quizInfo: IQuiz;
@@ -420,6 +453,7 @@ function QuizSummaryScreen({
   completedCount: number;
   maxAttempts: number;
   canReAttempt: boolean;
+  hasPassed: boolean;
   onReAttempt: () => void;
   onReviewAnswers: (attemptId: string) => void;
   onContinue: () => void;
@@ -457,6 +491,13 @@ function QuizSummaryScreen({
           </>
         )}
       </div>
+
+      {maxAttempts > 0 && remaining <= 0 && !hasPassed && (
+        <p className="rounded-lg border border-amber-400/20 bg-amber-400/5 px-4 py-3 text-center text-xs leading-relaxed text-amber-200/80">
+          You&apos;ve used all {maxAttempts} attempt{maxAttempts !== 1 ? "s" : ""} without passing.
+          Contact your instructor to reset your attempts so you can try again and continue.
+        </p>
+      )}
 
       {error && <p className="text-red-400 text-sm text-center">{error}</p>}
 
@@ -630,8 +671,8 @@ function QuizResultView({
         <div className="space-y-4 text-left">
           {questions.map((q: IQuestionReview, idx: number) => {
             const ans = answerMap.get(q._id);
-            const selectedIdx = ans?.selectedAnswer;
-            const correctIdx = q.correctAnswer;
+            const selectedValue = ans?.selectedAnswer;
+            const correctValue = q.correctAnswer;
             const isCorrect = ans?.isCorrect;
 
             return (
@@ -649,8 +690,9 @@ function QuizResultView({
 
                 <div className="space-y-1.5 pl-9">
                   {q.options.map((opt: IContentBlock, optIdx: number) => {
-                    const isSelected = String(optIdx) === selectedIdx;
-                    const isRightAnswer = String(optIdx) === correctIdx;
+                    const optionValue = opt.text || `option-${optIdx}`;
+                    const isSelected = optionValue === selectedValue;
+                    const isRightAnswer = optionValue === correctValue;
                     let style = "border-white/[0.06] text-white/50";
                     if (isRightAnswer) style = "border-green-500/40 bg-green-500/8 text-green-300";
                     else if (isSelected && !isCorrect) style = "border-red-500/40 bg-red-500/8 text-red-300";

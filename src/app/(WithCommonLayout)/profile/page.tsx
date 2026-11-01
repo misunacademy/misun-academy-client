@@ -28,17 +28,18 @@ export default function StudentProfile() {
     const profile = profileData?.data;
 
     useEffect(() => {
+        if (!user) return;
         const fetchSessions = async () => {
             try {
                 const result = await authServerApi.listSessions();
                 if (result.error) throw new Error(result.error.message);
                 if (Array.isArray(result.data)) setSessions(result.data);
-            } catch (error) {
-                console.error("Failed to fetch sessions", error);
+            } catch {
+                return;
             }
         };
         fetchSessions();
-    }, []);
+    }, [user]);
 
     const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

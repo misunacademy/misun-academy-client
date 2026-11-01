@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Skeleton } from 'boneyard-js/react'
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { useGetEnrollmentsQuery, type EnrollmentResponse } from "@/redux/api/enr
 import CertificateStatsCards from "./_components/CertificateStatsCards";
 import CertificateRequestList from "./_components/CertificateRequestList";
 import CertificateHistoryList from "./_components/CertificateHistoryList";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 const getEnrollmentId = (certificate: CertificateResponse) =>
   typeof certificate.enrollmentId === "string"
@@ -34,6 +36,8 @@ export default function MyClassesCertificatesPage() {
   const { data, isLoading, refetch } = useGetMyCertificatesQuery();
   const { data: enrollmentsData, isLoading: isEnrollmentsLoading } = useGetEnrollmentsQuery();
   const [requestCertificate, { isLoading: isRequesting }] = useRequestCertificateMutation();
+  // Enrollment awaiting confirmation in the dialog below.
+  const [pendingRequest, setPendingRequest] = useState<string | null>(null);
 
   const certificates = data?.data || [];
   const enrollments = (enrollmentsData?.data || []) as (EnrollmentResponse & { isCertificateAvailable?: boolean })[];
@@ -54,10 +58,12 @@ export default function MyClassesCertificatesPage() {
   const approvedCount = certificates.filter((c) => normalizeStatus(c.status) === "approved").length;
   const rejectedCount = certificates.filter((c) => normalizeStatus(c.status) === "rejected").length;
 
-  const handleRequestCertificate = async (enrollmentId: string) => {
+  const handleRequestCertificate = async () => {
+    if (!pendingRequest) return;
     try {
-      await requestCertificate(enrollmentId).unwrap();
+      await requestCertificate(pendingRequest).unwrap();
       toast.success("Certificate request submitted. Awaiting admin approval.");
+      setPendingRequest(null);
       refetch();
     } catch (error: unknown) {
       const message =
@@ -92,9 +98,20 @@ export default function MyClassesCertificatesPage() {
 
           <CertificateStatsCards pendingCount={pendingCount} approvedCount={approvedCount} rejectedCount={rejectedCount} />
 
-          <CertificateRequestList requestableEnrollments={requestableEnrollments} isRequesting={isRequesting} onRequest={handleRequestCertificate} />
+          <CertificateRequestList requestableEnrollments={requestableEnrollments} isRequesting={isRequesting} onRequest={(enrollmentId) => setPendingRequest(enrollmentId)} />
 
           <CertificateHistoryList certificates={certificates} getCourseTitle={getCourseTitle} getBatchTitle={getBatchTitle} />
+
+          <ConfirmDialog
+            open={pendingRequest !== null}
+            onOpenChange={(open) => { if (!open) setPendingRequest(null); }}
+            title="Request a certificate?"
+            description="Your request will be sent for admin approval."
+            confirmLabel="Request Certificate"
+            variant="default"
+            confirming={isRequesting}
+            onConfirm={() => { void handleRequestCertificate(); }}
+          />
         </div>
       </PageBackground>
       </Skeleton>

@@ -4,6 +4,14 @@ import { Eye, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { BootcampRegistration } from "@/redux/api/bootcampApi";
 
+const toWaMe = (value: string): string => {
+  const cleaned = value.replace(/[^\d+]/g, "");
+  if (!cleaned) return "";
+  if (cleaned.startsWith("+")) return cleaned.slice(1);
+  if (cleaned.startsWith("0")) return `88${cleaned}`;
+  return cleaned;
+};
+
 export const bootcampColumns = (
   getStatusBadge: (status: string) => ReactNode,
   onViewDetails: (registration: BootcampRegistration) => void,
@@ -22,10 +30,11 @@ export const bootcampColumns = (
   {
     id: "contact",
     header: "WhatsApp",
-    cell: ({ row }) =>
-      row.original.whatsapp ? (
+    cell: ({ row }) => {
+      const waNumber = row.original.whatsapp ? toWaMe(row.original.whatsapp) : "";
+      return waNumber ? (
         <a
-          href={`https://wa.me/88${row.original.whatsapp}`}
+          href={`https://wa.me/${waNumber}`}
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary underline-offset-4 hover:underline"
@@ -34,7 +43,8 @@ export const bootcampColumns = (
         </a>
       ) : (
         "—"
-      ),
+      );
+    },
   },
   {
     id: "address",

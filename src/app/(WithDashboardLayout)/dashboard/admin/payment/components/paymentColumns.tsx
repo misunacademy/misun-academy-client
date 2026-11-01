@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import type { PaymentResponse } from "@/redux/api/paymentApi";
+import { PaymentDetailDialog } from "./paymentDetailDialog";
 
 interface GatewayResponse { senderNumber?: string; phonePeTransactionId?: string; card_issuer?: string; bank_tran_id?: string }
 
@@ -16,6 +17,11 @@ export function usePaymentColumns(
   handleConfirmStatusChange: () => Promise<void>,
 ): ColumnDef<PaymentResponse>[] {
   return [
+    {
+      id: "actions",
+      header: "Details",
+      cell: ({ row }) => <PaymentDetailDialog transactionId={row.original.transactionId} />,
+    },
     {
       accessorKey: "transactionId",
       header: "Transaction ID",

@@ -1,10 +1,27 @@
 
+import { useState } from "react";
 import { toast } from "sonner";
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
+import { authServerApi } from '@/lib/auth-server-api';
 
 const EmailVerificationModal = (
     { email: registeredEmail, onClose }: { email: string; onClose: () => void }
 ) => {
+    const [resending, setResending] = useState(false);
+
+    const handleResend = async () => {
+        if (resending) return;
+        setResending(true);
+        try {
+            const result = await authServerApi.sendVerificationEmail({ email: registeredEmail });
+            if (result.error) throw new Error(result.error.message);
+            toast.success('Verification email sent. Please check your inbox (and spam).');
+        } catch {
+            toast.error('Could not resend right now. It will also be sent when you try to log in.');
+        } finally {
+            setResending(false);
+        }
+    };
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
             <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-surface border border-primary/25 shadow-[0_0_60px_hsl(156_70%_42%/0.2)]">
@@ -46,9 +63,10 @@ const EmailVerificationModal = (
                         </p>
                         <div className="flex gap-3">
                             <button
-                                onClick={async () => { toast.info('A new verification email will be sent when you try to log in.'); }}
-                                className="flex-1 py-2.5 rounded-xl border border-primary/25 text-white/55 hover:border-primary/45 hover:text-white/80 transition-all text-sm font-medium">
-                                আবার পাঠান
+                                onClick={handleResend}
+                                disabled={resending}
+                                className="flex-1 py-2.5 rounded-xl border border-primary/25 text-white/55 hover:border-primary/45 hover:text-white/80 transition-all text-sm font-medium disabled:opacity-50">
+                                {resending ? 'পাঠানো হচ্ছে…' : 'আবার পাঠান'}
                             </button>
                             <div className="flex-1 relative p-[1.5px] rounded-xl overflow-hidden">
                                 <AnimatedBorder variant="simple" speed="3s" />

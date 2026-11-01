@@ -4,7 +4,6 @@ const URLS = [
     '/',
     '/about',
     '/courses',
-    '/checkout',
     '/privacy-policy',
     '/terms-and-conditions',
     '/refund-policy',

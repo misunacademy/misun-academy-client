@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import AuthGuard from '@/components/shared/AuthGuard';
@@ -9,6 +9,7 @@ import { useCurrentBatch } from '@/hooks/useCurrentBatch';
 import BreadcrumbJsonLd from '@/components/seo/BreadcrumbJsonLd';
 import { v4 as uuid } from "uuid";
 import { track } from '@/lib/metaPixel';
+import { hasGrantedConsent } from '@/lib/consent';
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { isWindowOpen } from './_components/CourseEnrollmentCard';
 import EnrollmentNotOpenModal from './_components/EnrollmentNotOpenModal';
@@ -38,29 +39,33 @@ function CheckoutContent() {
     const hasTracked = useRef(false);
     const [openModal, setOpenModal] = useState(false);
 
-    const { course, batch, isLoading: allLoading } = useCurrentBatch();
+    const { course, batch, isLoading: allLoading, serverTimestamp } = useCurrentBatch();
 
     const enrollmentStart = batch?.enrollmentStartDate as string | undefined;
     const enrollmentEnd = batch?.enrollmentEndDate as string | undefined;
-    const enrollmentRunning = isWindowOpen(enrollmentStart, enrollmentEnd);
+    const enrollmentRunning = isWindowOpen(enrollmentStart, enrollmentEnd, serverTimestamp);
 
-    const courseFee = (batch?.price as number) ?? (course?.price as number) ?? 4500;
+    const courseFee = (batch?.price as number) ?? (course?.price as number);
     const courseTitle = (course?.name as string) ?? 'MISUN Academy Course Enrollment';
 
     useEffect(() => {
         if (!allLoading && !enrollmentRunning && user) {
-            setOpenModal(true);
+            const frame = requestAnimationFrame(() => setOpenModal(true));
+            return () => cancelAnimationFrame(frame);
         }
     }, [allLoading, enrollmentRunning, user]);
 
     useEffect(() => {
         if (!user?.email) return;
         if (hasTracked.current) return;
+        // Marketing events require opt-in consent; the track() helper
+        // no-ops without it, and the CAPI call is skipped here too.
+        if (!hasGrantedConsent()) return;
         hasTracked.current = true;
         const eventId = uuid();
-        track('Purchase', {
-            value: courseFee,
-            currency: 'BDT',
+        const knownFee = typeof courseFee === 'number' ? courseFee : undefined;
+        track('InitiateCheckout', {
+            ...(knownFee !== undefined ? { value: knownFee, currency: 'BDT' } : {}),
             content_name: courseTitle,
             content_type: 'course',
         }, { eventID: eventId });
@@ -68,9 +73,9 @@ function CheckoutContent() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                eventName: "Purchase",
+                eventName: "InitiateCheckout",
                 email: user.email,
-                value: courseFee,
+                value: knownFee,
                 currency: "BDT",
                 eventId,
             }),
@@ -108,7 +113,9 @@ function CheckoutContent() {
 export default function Page() {
     return (
         <AuthGuard>
-            <CheckoutContent />
+            <Suspense fallback={<Spinner />}>
+                <CheckoutContent />
+            </Suspense>
         </AuthGuard>
     );
 }

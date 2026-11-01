@@ -29,6 +29,9 @@ const resolveUrl = (recording: Recording): string | null => {
   if (recording.videoSource === "youtube" && recording.videoId) {
     return `https://www.youtube.com/watch?v=${recording.videoId}`;
   }
+  if (recording.videoSource === "googledrive" && recording.videoId) {
+    return `https://drive.google.com/file/d/${recording.videoId}/preview`;
+  }
   return null;
 };
 

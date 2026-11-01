@@ -28,6 +28,7 @@ export function useUserColumns(
   handleToggleStatus: (id: string, currentStatus: boolean) => void,
   setUserToDelete: React.Dispatch<React.SetStateAction<string | null>>,
   setDeleteDialogOpen: React.Dispatch<React.SetStateAction<boolean>>,
+  canDeleteUsers = false,
 ): ColumnDef<User>[] {
   return [
     {
@@ -101,18 +102,25 @@ export function useUserColumns(
             <Button variant="ghost" size="sm" aria-label={`Edit user ${u.name}`} title={`Edit user ${u.name}`} onClick={() => { setEditUser(u); setEditDialogOpen(true) }}>
               <Edit className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label={u.status === "active" ? `Suspend user ${u.name}` : `Activate user ${u.name}`}
-              title={u.status === "active" ? `Suspend user ${u.name}` : `Activate user ${u.name}`}
-              onClick={() => handleToggleStatus(u._id, u.status === "active")}
-            >
-              {u.status !== "active" ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
-            </Button>
-            <Button variant="ghost" size="sm" aria-label={`Delete user ${u.name}`} title={`Delete user ${u.name}`} onClick={() => { setUserToDelete(u._id); setDeleteDialogOpen(true) }}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            {(u.status === "active" || u.status === "suspended") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label={u.status === "active" ? `Suspend user ${u.name}` : `Activate user ${u.name}`}
+                title={u.status === "active" ? `Suspend user ${u.name}` : `Activate user ${u.name}`}
+                onClick={() => handleToggleStatus(u._id, u.status === "active")}
+              >
+                {u.status !== "active" ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
+              </Button>
+            )}
+            {/* User deletion is server-enforced superadmin-only
+                (see Roles page). Hide the button for other roles so admins
+                don't hit a silent 403. */}
+            {canDeleteUsers && (
+              <Button variant="ghost" size="sm" aria-label={`Delete user ${u.name}`} title={`Delete user ${u.name}`} onClick={() => { setUserToDelete(u._id); setDeleteDialogOpen(true) }}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         )
       },

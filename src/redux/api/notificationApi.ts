@@ -59,6 +59,8 @@ const notificationApi = baseApi.injectEndpoints({
         url: "/notifications/unread-count",
       }),
       providesTags: ["Notifications"],
+      // Polled every 30s: never toast on transient failures.
+      extraOptions: { silent: true },
     }),
 
     markAsRead: build.mutation<Notification, string>({

@@ -2,8 +2,13 @@
 
 import { Skeleton } from 'boneyard-js/react'
 import { CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
+import Link from "next/link";
 import { useGetMyPaymentsQuery } from "@/redux/api/paymentApi";
 import type { PaymentResponse } from "@/redux/api/paymentApi";
+import {
+    useGetMyBootcampPurchasesQuery,
+    type BootcampPurchase,
+} from "@/redux/api/bootcampApi";
 
 interface GatewayResponse {
     bank_tran_id?: string;
@@ -19,8 +24,14 @@ interface GatewayResponse {
 
 export function PaymentHistoryTab() {
     const { data, isLoading, error } = useGetMyPaymentsQuery();
+    const { data: bootcampData, isLoading: bootcampLoading } = useGetMyBootcampPurchasesQuery();
 
     const payments = data?.data || [];
+    const bootcampPurchases = bootcampData?.data || [];
+    const loading = isLoading || bootcampLoading;
+
+    const bootcampStatus = (status: BootcampPurchase['status']) =>
+        status === 'paid' ? 'success' : status === 'rejected' ? 'failed' : 'pending';
 
 
     const getStatusStyle = (status: string) => {
@@ -63,7 +74,7 @@ export function PaymentHistoryTab() {
     };
 
     return (
-        <Skeleton name="PaymentHistoryTab" loading={isLoading}>
+        <Skeleton name="PaymentHistoryTab" loading={loading}>
         {error ? (
             <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex items-center justify-center min-h-[400px]">
                 <p className="text-red-400">Failed to load payment history</p>
@@ -85,7 +96,7 @@ export function PaymentHistoryTab() {
             </div>
 
             <div className="relative z-10 grid gap-6">
-                {payments.length === 0 ? (
+                {payments.length === 0 && bootcampPurchases.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-primary/20 rounded-xl bg-primary/5">
                         <CreditCard className="w-16 h-16 text-primary/40 mb-4" />
                         <h3 className="text-xl text-white/90 font-medium mb-2">No Payment Records Found</h3>
@@ -94,6 +105,65 @@ export function PaymentHistoryTab() {
                         </p>
                     </div>
                 ) : (
+                    bootcampPurchases.map((purchase: BootcampPurchase) => (
+                        <div key={purchase._id} className="flex flex-col gap-6 p-6 rounded-xl border border-primary/10 bg-primary/5 hover:bg-primary/10 transition-colors">
+                            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/5 pb-4">
+                                <div className="space-y-1">
+                                    <h3 className="text-white font-medium text-lg leading-tight">
+                                        {purchase.bootcamp?.title || 'Bootcamp recording'}
+                                    </h3>
+                                    <p className="text-white/50 text-sm">
+                                        Bootcamp{ purchase.bootcamp?.season ? (
+                                            <span className="text-white/80"> • {purchase.bootcamp.season}</span>
+                                        ) : null}
+                                    </p>
+                                </div>
+                                <div>
+                                    {getStatusStyle(bootcampStatus(purchase.status))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
+                                    <div>
+                                        <p className="text-white/40 text-xs mb-1">Transaction ID</p>
+                                        <p className="font-mono text-white/80 text-xs break-all">{purchase.transactionId}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-white/40 text-xs mb-1">Amount</p>
+                                        <p className="font-semibold text-primary text-lg">
+                                            <span className="text-primary/70 text-sm">৳</span>{" "}
+                                            {purchase.amount?.toLocaleString()}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-white/40 text-xs mb-1">Payment Method</p>
+                                        <p className="capitalize text-white/80 font-medium">{purchase.method || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-white/40 text-xs mb-1">Date</p>
+                                        <p className="text-white/80">
+                                            {purchase.createdAt ? new Date(purchase.createdAt).toLocaleDateString('en-US') : 'N/A'}
+                                        </p>
+                                        <p className="text-xs text-white/40">
+                                            {purchase.createdAt ? new Date(purchase.createdAt).toLocaleTimeString('en-US') : ''}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {purchase.status === 'paid' && purchase.bootcamp?.slug && (
+                                    <Link
+                                        href={`/bootcamp/${purchase.bootcamp.slug}#bootcamp-videos`}
+                                        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                                    >
+                                        Watch recording →
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
+                    ))
+                )}
+                {payments.length > 0 && (
                     payments.map((payment: PaymentResponse) => {
                         const gw = payment.gatewayResponse as GatewayResponse | undefined;
                         return (

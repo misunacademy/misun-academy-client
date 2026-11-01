@@ -131,7 +131,8 @@ export default function HeroSection() {
                     hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep
                     transition-all duration-300 ease-out">
                     <span className="relative z-10 flex items-center gap-2">
-                      আমাদের কোর্সসমূহ দেখুন
+                      {/* আমাদের কোর্সসমূহ দেখুন */}
+                      আমাদের কোর্সটি দেখুন
                       <MousePointer2 className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
                     </span>
                     {/* Shine sweep */}

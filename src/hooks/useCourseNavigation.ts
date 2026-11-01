@@ -6,14 +6,20 @@ export function useCourseNavigation() {
   const progress = useCurriculumProgress();
   const nav = useLessonNav(progress.curriculum, progress.progress?.currentLesson);
 
-  const hasCompletedCourse = false;
+  // Completion = every lesson + quiz done. Was a hardcoded `false`, which
+  // made the completion card unreachable. (calculatedPercentage is 0 when
+  // there is nothing to complete, so >= 100 safely implies completion.)
+  const hasCompletedCourse = progress.calculatedPercentage >= 100;
 
   const onNextLesson = useCallback(async (navigateToQuiz?: (quizId: string) => void) => {
     const m = nav.currentModule;
     const l = nav.currentLessonItem;
     if (!m || !l) return;
     if (!progress.isLessonCompleted(m.moduleId, l.lessonId)) {
-      await progress.handleCompleteLesson(m.moduleId, l.lessonId);
+      const ok = await progress.handleCompleteLesson(m.moduleId, l.lessonId);
+      // Backend rejected (e.g. module is locked): stay put instead of
+      // drifting into locked content the server will refuse.
+      if (!ok) return;
     }
 
     const quizzes = m.quizzes || [];
@@ -60,6 +66,7 @@ export function useCourseNavigation() {
     handlePrevLesson: nav.handlePrevLesson,
     toggleModule: nav.toggleModule,
     selectLesson: nav.selectLesson,
+    selectQuizModule: nav.selectQuizModule,
     setShowCongratulations: nav.setShowCongratulations,
     setShowCookingMessage: nav.setShowCookingMessage,
   };

@@ -39,7 +39,10 @@ const dashboardApi = baseApi.injectEndpoints({
       query: () => ({
         url: "/dashboard/student",
       }),
-      providesTags: ["Students"],
+      // CourseEnrollments: purchase/progress mutations invalidate this tag,
+      // so /my-classes refreshes right after payment instead of showing a
+      // stale "no courses" cache.
+      providesTags: ["Students", "CourseEnrollments"],
     }),
   }),
 });

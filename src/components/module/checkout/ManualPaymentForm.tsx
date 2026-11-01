@@ -13,8 +13,8 @@ import { paymentInfo } from "@/constants/payment";
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 
 const paymentSchema = z.object({
-    senderNumber: z.string().min(10, "Please enter a valid phone number"),
-    transactionId: z.string().min(5, "Please enter a valid transaction ID"),
+    senderNumber: z.string().regex(/^[+\d][\d\s-]{9,19}$/, "Please enter a valid phone number"),
+    transactionId: z.string().trim().min(5, "Please enter a valid transaction ID").max(100),
 });
 
 type PaymentForm = z.infer<typeof paymentSchema>;
@@ -24,6 +24,7 @@ interface ManualPaymentFormProps {
     onPaymentComplete: (data: { senderNumber: string; transactionId: string }) => void;
     manualAmount: number;
     manualCurrency?: string;
+    isSubmitting?: boolean;
     batch:string
 }
 
@@ -31,10 +32,16 @@ const ManualPaymentForm = ({
     onBack,
     onPaymentComplete,
     manualAmount,
+    manualCurrency,
+    isSubmitting = false,
     batch
 }: ManualPaymentFormProps) => {
     const form = useForm<PaymentForm>({
         resolver: zodResolver(paymentSchema),
+        // onChange: the submit button is gated on `isValid`, which only
+        // updates live in a validating mode — in default onSubmit mode it
+        // stays false until a submit that the disabled button prevents.
+        mode: "onChange",
         defaultValues: {
             senderNumber: "",
             transactionId: ""
@@ -43,10 +50,25 @@ const ManualPaymentForm = ({
 
     const [copied, setCopied] = useState(false);
 
-    const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+    const copyToClipboard = async (text: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            } catch {
+                // Last resort: user copies by hand.
+            }
+            document.body.removeChild(ta);
+        }
     };
 
     const onSubmit = (data: PaymentForm) => {
@@ -54,9 +76,15 @@ const ManualPaymentForm = ({
     };
 
     const displayAmount = manualAmount ?? 0;
+    // Batches carry their own currency (BDT batches vs INR manual payments
+    // for Indian students) — never hardcode it.
+    const CURRENCY_SYMBOLS: Record<string, string> = { INR: "INR", BDT: "৳" };
+    const effectiveCurrency = manualCurrency ?? paymentInfo.currency;
+    const currencyLabel = CURRENCY_SYMBOLS[effectiveCurrency] ?? effectiveCurrency;
+    const formattedAmount = `${currencyLabel} ${displayAmount.toLocaleString('en-US')}`;
     const dynamicInstructions = paymentInfo.instructions.map((instruction) => {
         if (instruction.toLowerCase().includes('enter the exact amount')) {
-            return `Enter the exact amount: INR ${displayAmount.toLocaleString('en-IN')}`;
+            return `Enter the exact amount: ${formattedAmount}`;
         }
         return instruction;
     });
@@ -124,7 +152,7 @@ const ManualPaymentForm = ({
                     <div className="flex justify-center">
                         <div className="relative overflow-hidden rounded-xl bg-red-500/8 border border-red-500/25 px-6 py-2.5">
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
-                            <span className="font-bold text-red-400 text-lg">Amount: INR {displayAmount.toLocaleString('en-IN')}</span>
+                            <span className="font-bold text-red-400 text-lg">Amount: {formattedAmount}</span>
                         </div>
                     </div>
 
@@ -138,7 +166,9 @@ const ManualPaymentForm = ({
                                     <div className="w-5 h-5 bg-primary/15 border border-primary/30 text-primary rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">
                                         {index + 1}
                                     </div>
-                                    <span className="text-sm text-white/55 leading-relaxed">{instruction.includes("MA")?`Add reference: 'MA-${batch}'`:instruction}</span>
+                                    {/* Only substitute the concrete reference when we have one —
+                                        otherwise show the generic template instead of "MA-". */}
+                                    <span className="text-sm text-white/55 leading-relaxed">{instruction.includes("MA") && batch ? `Add reference: 'MA-${batch}'` : instruction}</span>
                                 </li>
                             ))}
                         </ol>
@@ -220,7 +250,7 @@ const ManualPaymentForm = ({
                                     <AnimatedBorder variant="simple" speed="3s" />
                                     <button
                                         type="submit"
-                                        disabled={!form.formState.isValid}
+                                        disabled={!form.formState.isValid || isSubmitting}
                                         className="relative w-full bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark hover:from-emerald-deep hover:via-emerald-bright hover:to-emerald-deep disabled:cursor-not-allowed transition-all duration-300 text-white font-bold py-2.5 rounded-xl text-sm"
                                     >
                                         Submit Payment Info

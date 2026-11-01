@@ -13,15 +13,17 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { YoutubePrivatePlayer } from "@/components/shared/youtube-private-player";
+import { LessonVideoPlayer } from "@/components/shared/lesson-video-player";
 import {
   ChevronDown, ChevronRight, Edit, Trash2, Video, FileText,
   GripVertical, ArrowUp, ArrowDown, Plus, Eye, ClipboardCheck,
+  Rocket, EyeOff,
 } from "lucide-react";
 import {
   useGetInstructorModuleLessonsQuery,
   useGetInstructorModuleQuizzesQuery,
   useDeleteInstructorLessonMutation,
+  useUpdateInstructorModuleMutation,
   type InstructorModule,
   type InstructorLesson,
   type InstructorModuleQuiz,
@@ -51,6 +53,7 @@ export function ModuleCard({
   const [playingLesson, setPlayingLesson] = useState<InstructorLesson | null>(null);
   const router = useRouter();
   const [deleteLesson] = useDeleteInstructorLessonMutation();
+  const [updateModule, { isLoading: isTogglingPublish }] = useUpdateInstructorModuleMutation();
   const { data: lessonsData, refetch: refetchLessons } = useGetInstructorModuleLessonsQuery(module._id, { skip: !expanded });
   const { data: quizzesData } = useGetInstructorModuleQuizzesQuery(module._id, { skip: !expanded });
   const quizzes: InstructorModuleQuiz[] = quizzesData?.data ?? [];
@@ -77,6 +80,19 @@ export function ModuleCard({
     }
   };
 
+  const isPublished = module.status === "published";
+  const handleTogglePublish = async () => {
+    const nextStatus = isPublished ? "draft" : "published";
+    try {
+      await updateModule({ moduleId: module._id, status: nextStatus }).unwrap();
+      toast.success(isPublished ? "Module unpublished" : "Module published");
+      onRefetch();
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+      toast.error(error?.data?.message || "Failed to update status");
+    }
+  };
+
   return (
     <Card className="border">
       <CardHeader className="cursor-pointer hover:bg-muted/40 transition-colors pb-3" onClick={() => setExpanded(p => !p)}>
@@ -100,6 +116,16 @@ export function ModuleCard({
               <ArrowDown className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm" onClick={onEdit}><Edit className="h-4 w-4" /></Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleTogglePublish}
+              disabled={isTogglingPublish}
+              title={isPublished ? "Unpublish module" : "Publish module"}
+              aria-label={isPublished ? `Unpublish module ${module.title}` : `Publish module ${module.title}`}
+            >
+              {isPublished ? <EyeOff className="h-4 w-4" /> : <Rocket className="h-4 w-4 text-emerald-600" />}
+            </Button>
             <Button variant="ghost" size="sm" onClick={onDelete}><Trash2 className="h-4 w-4 text-destructive" /></Button>
           </div>
         </div>
@@ -188,18 +214,14 @@ export function ModuleCard({
           </DialogHeader>
           {playingLesson ? (() => {
             const lessonUrl = resolveLessonUrl(playingLesson);
-            if (playingLesson.type === "video" && lessonUrl) {
-              if (playingLesson.videoSource === "googledrive") {
-                return (
-                  <div className="relative aspect-video w-full rounded-lg overflow-hidden">
-                    <iframe src={lessonUrl} className="absolute inset-0 w-full h-full" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen title={playingLesson.title} />
-                  </div>
-                );
-              }
+            if (playingLesson.type === "video" && (lessonUrl || playingLesson.videoId)) {
               return (
-                <div className="relative aspect-video w-full rounded-lg overflow-hidden">
-                  <YoutubePrivatePlayer url={lessonUrl} className="absolute inset-0 w-full h-full" />
-                </div>
+                <LessonVideoPlayer
+                  url={lessonUrl}
+                  videoSource={playingLesson.videoSource}
+                  videoId={playingLesson.videoId}
+                  title={playingLesson.title}
+                />
               );
             }
             if (playingLesson.type !== "video" && playingLesson.content) {

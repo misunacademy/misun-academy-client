@@ -67,7 +67,12 @@ export default function NotificationBell() {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="relative bg-background/80 backdrop-blur-sm shadow-sm">
+        <Button
+          variant="outline"
+          size="icon"
+          className="relative bg-background/80 backdrop-blur-sm shadow-sm"
+          aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
+        >
           <Bell className={`h-4 w-4 ${unreadCount > 0 ? 'animate-ring' : ''}`} />
           {unreadCount > 0 && (
             <span className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-red-500 rounded-full text-[10px] font-medium flex items-center justify-center text-white ring-2 ring-background">
@@ -97,7 +102,7 @@ export default function NotificationBell() {
         {recentNotifications.length === 0 ? (
           <div className="flex flex-col items-center py-8 text-center">
             <Bell className="h-8 w-8 text-muted-foreground/40 mb-2" />
-            <p className="text-sm text-muted-foreground">No recentNotifications yet</p>
+            <p className="text-sm text-muted-foreground">No notifications yet</p>
           </div>
         ) : (
           <div className="py-1">
@@ -120,6 +125,7 @@ export default function NotificationBell() {
                           onClick={() => handleMarkAsRead(notification._id)}
                           className="shrink-0 mt-0.5"
                           title="Mark as read"
+                          aria-label="Mark notification as read"
                         >
                           <span className="h-2 w-2 rounded-full bg-blue-500 block" />
                         </button>
@@ -128,6 +134,7 @@ export default function NotificationBell() {
                         onClick={(e) => handleDelete(e, notification._id)}
                         className="shrink-0 mt-0.5 text-muted-foreground hover:text-foreground"
                         title="Delete notification"
+                        aria-label="Delete notification"
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
@@ -144,6 +151,7 @@ export default function NotificationBell() {
                   <Link
                     href={notification.link}
                     className="shrink-0 mt-1"
+                    aria-label="Open notification link"
                     onClick={() => handleMarkAsRead(notification._id)}
                   >
                     <ExternalLink className="h-3 w-3 text-muted-foreground hover:text-foreground transition-colors" />

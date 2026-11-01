@@ -13,6 +13,7 @@ import { TextareaField } from "@/components/forms/textarea-field"
 import { SelectField } from "@/components/forms/select-field"
 import { SwitchField } from "@/components/forms/switch-field"
 import { SubmitButton } from "@/components/forms/submit-button"
+import { normalizeVideoId } from "@/lib/youtube/utils"
 import {
   useCreateInstructorLessonMutation,
   useUpdateInstructorLessonMutation,
@@ -102,6 +103,11 @@ export function LessonFormDialog({ open, mode, moduleId, data, onClose, onSucces
         delete payload.videoId
         delete payload.videoUrl
         delete payload.videoDuration
+      } else if (payload.videoId) {
+        // Accept a pasted URL or a bare id — always store the raw id so the
+        // student player never receives a double-wrapped watch?v=<url> link.
+        payload.videoId = normalizeVideoId(payload.videoSource || "youtube", payload.videoId)
+        delete payload.videoUrl
       }
 
       if (mode === "create") {
@@ -140,7 +146,7 @@ export function LessonFormDialog({ open, mode, moduleId, data, onClose, onSucces
             {watchedType === "video" && (
               <>
                 <SelectField name="videoSource" label="Video Source" options={VIDEO_SOURCE_OPTIONS} />
-                <InputField name="videoId" label="Video ID" placeholder="dQw4w9WgXcQ" />
+                <InputField name="videoId" label="Video ID or URL" placeholder="Paste YouTube / Drive link or ID" description="You can paste a full link — the ID is extracted automatically." />
                 <InputField name="videoDuration" label="Duration (seconds)" type="number" />
               </>
             )}

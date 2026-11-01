@@ -1,3 +1,5 @@
+export const instant = false
+
 import InstructorDashboardPage from "@/app/(WithDashboardLayout)/dashboard/instructor/_components/Dashboard";
 
 const page = () => {

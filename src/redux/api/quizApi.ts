@@ -51,7 +51,9 @@ export const quizApi = baseApi.injectEndpoints({
                 method: 'PUT',
                 body: data,
             }),
-            invalidatesTags: (_result, _err, { quizId }) => [{ type: 'Quizzes', id: quizId }],
+            // Specific id refreshes detail/analytics; base 'Quizzes'
+            // refreshes the admin list (e.g. after publish).
+            invalidatesTags: (_result, _err, { quizId }) => [{ type: 'Quizzes', id: quizId }, 'Quizzes'],
         }),
 
         deleteQuiz: builder.mutation<void, string>({
@@ -59,7 +61,7 @@ export const quizApi = baseApi.injectEndpoints({
                 url: `/admin/quizzes/quizzes/${quizId}`,
                 method: 'DELETE',
             }),
-            invalidatesTags: ['Quizzes'],
+            invalidatesTags: ['Quizzes', 'Questions', 'Modules'],
         }),
 
         reorderQuizzes: builder.mutation<IQuiz[], { moduleId: string; quizOrders: { quizId: string; orderIndex: number }[] }>({
@@ -94,13 +96,18 @@ export const quizApi = baseApi.injectEndpoints({
             ],
         }),
 
-        updateAdminQuestion: builder.mutation<IQuestion, { questionId: string; data: Partial<IQuestion> }>({
+        updateAdminQuestion: builder.mutation<IQuestion, { questionId: string; quizId?: string; data: Partial<IQuestion> }>({
             query: ({ questionId, data }) => ({
                 url: `/admin/quizzes/questions/${questionId}`,
                 method: 'PUT',
                 body: data,
             }),
-            invalidatesTags: (_result, _err, { questionId }) => [{ type: 'Questions', id: questionId }],
+            // The question list is tagged by quizId, so invalidate it too —
+            // otherwise the edited row shows stale data until a manual refresh.
+            invalidatesTags: (_result, _err, { questionId, quizId }) => [
+                { type: 'Questions', id: questionId },
+                ...(quizId ? [{ type: 'Questions', id: quizId } as const] : []),
+            ],
         }),
 
         deleteAdminQuestion: builder.mutation<void, string>({
@@ -133,6 +140,16 @@ export const quizApi = baseApi.injectEndpoints({
             query: (quizId) => ({ url: `/admin/quizzes/quizzes/${quizId}/analytics` }),
             providesTags: (_result, _err, quizId) => [{ type: 'Quizzes', id: quizId }],
         }),
+
+        // ── Attempt recovery (admin): reopen a quiz for a student stuck
+        // after exhausting attempts without ever passing.
+        resetQuizAttempts: builder.mutation<{ deletedAttempts: number }, { quizId: string; userId: string }>({
+            query: ({ quizId, userId }) => ({
+                url: `/admin/quizzes/quizzes/${quizId}/attempts/user/${userId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: (_result, _err, { quizId }) => [{ type: 'Quizzes', id: quizId }, 'Quizzes'],
+        }),
     }),
 });
 
@@ -152,4 +169,5 @@ export const {
     useDuplicateAdminQuestionMutation,
     useReorderAdminQuestionsMutation,
     useGetAdminQuizAnalyticsQuery,
+    useResetQuizAttemptsMutation,
 } = quizApi;

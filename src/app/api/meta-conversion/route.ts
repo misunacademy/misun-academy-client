@@ -11,8 +11,36 @@ const conversionEventSchema = z.object({
   eventId: z.string().optional(),
 });
 
+// Tiny in-memory rate limiter (per-instance). The gateway payment flow is the
+// primary abuse concern server-side; this proxy just needs basic spam cover.
+const RATE_WINDOW_MS = 60_000;
+const RATE_MAX = 30;
+const hits = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(key: string): boolean {
+  const now = Date.now();
+  const entry = hits.get(key);
+  if (!entry || now > entry.resetAt) {
+    hits.set(key, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > RATE_MAX;
+}
+
 export async function POST(req: NextRequest) {
   try {
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
+    if (isRateLimited(ip)) {
+      return NextResponse.json(
+        { success: false, message: "Too many requests" },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
 
     // Validate input
@@ -37,9 +65,10 @@ export async function POST(req: NextRequest) {
       eventId,
     } = validatedData.data;
 
-    // Hash email (required by Meta) if present
-    const hashedEmail = email
-      ? crypto.createHash("sha256").update(email).digest("hex")
+    // Normalize before hashing (Meta match rate) — trim + lowercase.
+    const normalizedEmail = email?.trim().toLowerCase();
+    const hashedEmail = normalizedEmail
+      ? crypto.createHash("sha256").update(normalizedEmail).digest("hex")
       : undefined;
 
     const payload = {
@@ -74,21 +103,27 @@ export async function POST(req: NextRequest) {
     }
 
     const response = await fetch(
-      `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${capiToken}`,
+      `https://graph.facebook.com/v21.0/${pixelId}/events`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          // Never put the token in the URL query — it lands in proxy/Vercel logs.
+          Authorization: `Bearer ${capiToken}`,
+        },
+        body: JSON.stringify({ ...payload, access_token: undefined }),
       }
     );
 
     const result = await response.json();
 
     if (!response.ok) {
-      console.error("Meta API error:", result);
+      // Log server-side, return generic error — raw Meta payloads can leak
+      // account/token details to any caller of this open endpoint.
+      console.error("Meta API error:", response.status);
       return NextResponse.json(
-        { success: false, message: "Failed to send event to Meta", error: result },
-        { status: response.status }
+        { success: false, message: "Failed to send event to Meta" },
+        { status: 502 }
       );
     }
 

@@ -1,3 +1,5 @@
+export const instant = false
+
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
 import PaymentTable from '@/app/(WithDashboardLayout)/dashboard/admin/payment/components/PaymentTable';
 

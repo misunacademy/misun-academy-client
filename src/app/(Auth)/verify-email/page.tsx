@@ -31,20 +31,19 @@ const VerifyEmailPage = () => {
                     setMessage('Email verified successfully! You can now log in.');
                     // Toast and redirect are handled by verifyEmail method
                 } else {
-                    // Check if error suggests already verified
-                    if (result.error?.toLowerCase().includes('already verified') ||
-                        result.error?.toLowerCase().includes('invalid token')) {
-                        // If we get invalid token but we just tried to verify, it might be a race condition
-                        // or user clicked link again. 
-                        // For now, respect the error but maybe show a friendlier message if needed
-                    }
-
                     setStatus('error');
                     setMessage(result.error || 'Verification failed');
                 }
             } catch {
                 setStatus('error');
                 setMessage('An unexpected error occurred');
+            } finally {
+                // Strip ?token= from history/referers once consumed.
+                try {
+                    window.history.replaceState(null, '', window.location.pathname);
+                } catch {
+                    // ignore
+                }
             }
         };
 

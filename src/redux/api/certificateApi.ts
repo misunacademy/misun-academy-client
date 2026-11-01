@@ -55,13 +55,6 @@ const certificateApi = baseApi.injectEndpoints({
       invalidatesTags: ["Certificates"],
     }),
 
-    // Check certificate eligibility
-    checkEligibility: build.query<{ data: { isEligible: boolean } }, string>({
-      query: (enrollmentId) => ({
-        url: `/certificates/enrollment/${enrollmentId}/eligibility`,
-      }),
-    }),
-
     // Get my certificates (includes pending, active, revoked)
     getMyCertificates: build.query<{ data: CertificateResponse[] }, void>({
       query: () => ({
@@ -78,11 +71,14 @@ const certificateApi = baseApi.injectEndpoints({
       providesTags: ["Certificates"],
     }),
 
-    // Verify certificate (public)
+    // Verify certificate (public). Silent: the page renders its own
+    // not-found state, and user-typed IDs 404 routinely.
     verifyCertificate: build.query<{ data: { isValid: boolean; status: string; certificate?: VerifiedCertificate; reason?: string } }, string>({
       query: (certificateId) => ({
         url: `/certificates/verify/${certificateId}`,
       }),
+      providesTags: (_result, _error, certificateId) => [{ type: "Certificates" as const, id: certificateId }],
+      extraOptions: { silent: true },
     }),
 
     // Admin: Get all certificates (pending, approved, rejected)
@@ -144,7 +140,6 @@ const certificateApi = baseApi.injectEndpoints({
 
 export const {
   useRequestCertificateMutation,
-  useCheckEligibilityQuery,
   useGetMyCertificatesQuery,
   useGetCertificateByEnrollmentQuery,
   useVerifyCertificateQuery,

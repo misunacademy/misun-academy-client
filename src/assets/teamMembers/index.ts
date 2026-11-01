@@ -7,3 +7,4 @@ export { default as ruponpaul } from './rupon_paul.jpeg';
 export { default as rohan } from './rohan.jpeg';
 export { default as puspita } from './puspita.jpg';
 export { default as sakin } from './sakin.jpeg';
+export { default as ananda } from './ananda.jpeg';

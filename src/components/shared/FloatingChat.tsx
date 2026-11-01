@@ -14,17 +14,20 @@ export default function FloatingChat() {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
-    setMessages([
-      {
-        id: "init-1",
-        sender: "bot",
-        text: "স্বাগতম! আমি Sun, Misun Academy-এর আপনার AI সহায়ক। কিভাবে আপনাকে সাহায্য করতে পারি?",
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      },
-    ]);
+    const frame = requestAnimationFrame(() => {
+      setMessages([
+        {
+          id: "init-1",
+          sender: "bot",
+          text: "স্বাগতম! আমি Sun, Misun Academy-এর আপনার AI সহায়ক। কিভাবে আপনাকে সাহায্য করতে পারি?",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+      ]);
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -61,12 +64,15 @@ export default function FloatingChat() {
         time: timeNow,
       };
 
+      // Server accepts user turns only (assistant history is untrusted
+      // client input — a jailbreak vector). Send recent genuine user turns;
+      // the service is stateless per request otherwise.
+      const userTurns = messagesRef.current
+        .filter((m) => m.sender === "user")
+        .slice(-10)
+        .map((m) => ({ role: "user" as const, content: m.text }));
       const conversation = [
-        ...messagesRef.current.slice(1).map((m) => ({
-          role:
-            m.sender === "user" ? ("user" as const) : ("assistant" as const),
-          content: m.text,
-        })),
+        ...userTurns,
         { role: "user" as const, content: text.trim() },
       ];
 
@@ -75,11 +81,19 @@ export default function FloatingChat() {
       setIsTyping(true);
 
       try {
+        const csrfMatch =
+          typeof document !== 'undefined'
+            ? document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/)
+            : null;
+        const csrfToken = csrfMatch ? decodeURIComponent(csrfMatch[1]) : null;
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_BASE_API_URL}/chat`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+            },
             credentials: "include",
             body: JSON.stringify({ messages: conversation }),
           },

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useSyncExternalStore, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import type { AuthUser } from '@/types/auth';
@@ -29,6 +29,10 @@ function LoadingFallback() {
     );
 }
 
+const subscribeToMounted = () => () => undefined;
+const getMountedSnapshot = () => true;
+const getMountedServerSnapshot = () => false;
+
 export default function AuthGuard({
     children,
     requiredRoles,
@@ -38,20 +42,19 @@ export default function AuthGuard({
     const router = useRouter();
     const pathname = usePathname();
     const { user, isLoading } = useAuth();
-    const mountedRef = useRef(false);
-
+    const isMounted = useSyncExternalStore(subscribeToMounted, getMountedSnapshot, getMountedServerSnapshot);
     const isAuthenticated = !!user;
     const userRole = (user as AuthUser | undefined)?.role || null;
+    // Roles may arrive in any case ('Admin' vs 'admin') — normalize once and
+    // use the normalized value in BOTH the effect and the render check below.
+    const normalizedRole = (userRole?.toLowerCase() as Role | undefined) || null;
 
     useEffect(() => {
-        mountedRef.current = true;
-    }, []);
-
-    useEffect(() => {
-        if (!mountedRef.current || isLoading) return;
+        if (!isMounted || isLoading) return;
 
         if (!isAuthenticated) {
-            const currentPath = `${window.location.pathname}${window.location.search}`;
+            const rawPath = `${window.location.pathname}${window.location.search}`;
+            const currentPath = rawPath.replace(/([?&])token=[^&]*/g, '$1token=[REDACTED]').replace(/[?&]$/, '');
             const redirectUrl = `/auth?redirect_url=${encodeURIComponent(currentPath)}`;
             router.replace(redirectUrl);
             return;
@@ -96,13 +99,13 @@ export default function AuthGuard({
             router.replace('/my-classes');
             return;
         }
-    }, [isLoading, isAuthenticated, user, userRole, pathname, router, requiredRoles, unauthorizedRedirectTo]);
+    }, [isMounted, isLoading, isAuthenticated, user, userRole, pathname, router, requiredRoles, unauthorizedRedirectTo]);
 
-    if (isLoading || !isAuthenticated) {
+    if (!isMounted || isLoading || !isAuthenticated) {
         return <>{fallback || <LoadingFallback />}</>;
     }
 
-    if (requiredRoles && requiredRoles.length > 0 && !requiredRoles.includes(userRole as Role)) {
+    if (requiredRoles && requiredRoles.length > 0 && normalizedRole && !requiredRoles.includes(normalizedRole)) {
         return <>{fallback || <LoadingFallback />}</>;
     }
 

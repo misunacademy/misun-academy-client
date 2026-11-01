@@ -84,15 +84,15 @@ function SocketController({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
-    if (unreadData?.data?.count !== undefined) {
-      setUnreadCount(unreadData.data.count);
-    }
+    if (unreadData?.data?.count === undefined) return;
+    const frame = requestAnimationFrame(() => setUnreadCount(unreadData.data.count));
+    return () => cancelAnimationFrame(frame);
   }, [unreadData]);
 
   useEffect(() => {
-    if (recentData?.data) {
-      setRecentNotifications(recentData.data);
-    }
+    if (!recentData?.data) return;
+    const frame = requestAnimationFrame(() => setRecentNotifications(recentData.data));
+    return () => cancelAnimationFrame(frame);
   }, [recentData]);
 
   const baseApiUrl = process.env.NEXT_PUBLIC_BASE_API_URL;
@@ -139,6 +139,9 @@ function SocketController({ children }: { children: React.ReactNode }) {
       });
 
       socket.on('notification', (data: NotificationEvent) => {
+        // Ignore pushes addressed to someone else: a misrouted server push
+        // must never increment another user's unread count.
+        if (!data || data.userId !== user?.id) return;
         setRecentNotifications((prev) => [data, ...prev].slice(0, 10));
         setUnreadCount((prev) => prev + 1);
       });

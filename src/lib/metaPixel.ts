@@ -1,13 +1,14 @@
-/* Lightweight Meta Pixel helper — safe to call before the pixel script loads. */
+/* Lightweight Meta Pixel helper — safe to call before the pixel script loads.
+ * All tracking is consent-gated: no-ops until the visitor opts in. */
+
+import { hasGrantedConsent } from './consent';
 
 export function initPixel(pixelId?: string) {
   try {
     if (typeof window === "undefined" || !pixelId) return;
-
-    console.debug('[MetaPixel] init requested', pixelId);
+    if (!hasGrantedConsent()) return;
 
     if (window.fbq) {
-      console.debug('[MetaPixel] fbq already present, skipping stub');
       return;
     }
 
@@ -37,8 +38,6 @@ export function initPixel(pixelId?: string) {
     window.fbq!("init", pixelId);
     window.fbq!("track", "PageView");
 
-    console.debug('[MetaPixel] init completed, PageView sent');
-
     const q = window.__fbqQueue;
     if (Array.isArray(q)) {
       q.forEach((fn) => {
@@ -46,28 +45,28 @@ export function initPixel(pixelId?: string) {
       });
       window.__fbqQueue = [];
     }
-  } catch (err) {
-    console.error("initPixel error", err);
+  } catch {
+    return;
   }
 }
 
 function _queueOrRun(fn: () => void) {
   if (typeof window === "undefined") return;
   if (window.fbq) {
-    console.debug('[MetaPixel] running now');
     try { fn(); } catch { /* ignore */ }
     return;
   }
-  console.debug('[MetaPixel] queuing event until pixel loads');
   window.__fbqQueue = window.__fbqQueue || [];
   window.__fbqQueue.push(fn);
 }
 
 export function track(eventName: string, params?: Record<string, unknown>, options?: Record<string, unknown>) {
+  if (!hasGrantedConsent()) return;
   _queueOrRun(() => window.fbq!("track", eventName, params || {}, options || {}));
 }
 
 export function trackCustom(eventName: string, params?: Record<string, unknown>) {
+  if (!hasGrantedConsent()) return;
   _queueOrRun(() => window.fbq!("trackCustom", eventName, params || {}));
 }
 

@@ -88,6 +88,18 @@ function CongratulationsPage() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Validate before reading into memory: FileReader on a 500MB video
+    // would freeze the tab, and non-images break the canvas pipeline.
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file.");
+      e.target.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Please select an image smaller than 5MB.");
+      e.target.value = "";
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (event) => {
       setUserImage(event.target?.result as string);
@@ -105,7 +117,9 @@ function CongratulationsPage() {
       const url = canvas.toDataURL("image/png");
       const link = document.createElement("a");
       link.href = url;
-      link.download = `misun-academy-${userName}.png`;
+      // userName is freely editable — sanitize the filename.
+      const safeName = userName.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 60) || "student";
+      link.download = `misun-academy-${safeName}.png`;
       link.click();
       toast.success("Poster downloaded");
     } catch {

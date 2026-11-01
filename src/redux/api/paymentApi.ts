@@ -16,7 +16,7 @@ export interface PaymentResponse {
   batchId: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'success' | 'failed' | 'review' | 'cancel';
+  status: 'pending' | 'success' | 'failed' | 'review' | 'risk' | 'cancel' | 'refunded';
   method: string; // Changed from paymentMethod to method to match backend
   gatewayResponse?: unknown;
   verifiedAt?: string; // Date as string from API
@@ -65,12 +65,30 @@ const paymentApi = baseApi.injectEndpoints({
           ? Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== null))
           : undefined;
         if (cleaned && Object.keys(cleaned).length === 0) cleaned = undefined;
-        return {
-          url: "payments/history",
-          params: cleaned,
-        };
+      return {
+        url: "/payments/history",
+        params: cleaned,
+      };
       },
       providesTags: ["Payments"],
+    }),
+
+    // Admin: Payment transaction detail (drilldown)
+    getPaymentDetail: build.query<
+      {
+        success: boolean;
+        message: string;
+        data: {
+          payment: PaymentResponse;
+          enrollment: { enrollmentId: string; status: string; createdAt: string } | null;
+        };
+      },
+      string
+    >({
+      query: (transactionId) => ({
+        url: `/payments/history/${transactionId}`,
+      }),
+      providesTags: (_r, _e, transactionId) => [{ type: "Payments", id: transactionId }],
     }),
 
     // Update payment status (admin)
@@ -94,12 +112,36 @@ const paymentApi = baseApi.injectEndpoints({
       // When an admin verifies a manual payment, it may create/activate an enrollment — invalidate enrollments
       invalidatesTags: ["Payments", "CourseEnrollments"],
     }),
+
+    // Learner: verify my own payment (used by the purchase tracker so
+    // analytics values come from the server, not the URL)
+    verifyMyPayment: build.query<
+      {
+        data: {
+          verified: boolean;
+          paymentStatus: string;
+          courseSlug: string;
+          transactionId: string;
+          amount: number;
+          currency: string;
+        };
+      },
+      string
+    >({
+      query: (transactionId) => ({
+        url: "/payments/verify",
+        params: { t: transactionId },
+      }),
+      providesTags: (_r, _e, transactionId) => [{ type: "Payments", id: transactionId }],
+    }),
   }),
 });
 
 export const {
   useGetMyPaymentsQuery,
   useGetAllPaymentsQuery,
+  useGetPaymentDetailQuery,
   useUpdatePaymentStatusMutation,
   useVerifyManualPaymentMutation,
+  useVerifyMyPaymentQuery,
 } = paymentApi;

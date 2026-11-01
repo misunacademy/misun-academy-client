@@ -12,16 +12,9 @@ import { useRegisterForBootcampMutation } from '@/redux/api/bootcampApi';
 import { bootcampFormFields } from './bootcampData';
 import headerImage from '@/assets/boocamp/paracetamol-for-photoshop-google-header.png';
 
-const validWhatsAppMobile = /^(?:01[3-9]\d{8}|(?:\+?91|0)?[6789]\d{9})$/;
-
 const registrationSchema = z.object({
     name: z.string().trim().min(2, 'আপনার পুরো নাম লিখুন'),
-    whatsapp: z
-        .string()
-        .trim()
-        .regex(validWhatsAppMobile, 'সঠিক হোয়াটসঅ্যাপ নম্বর দিন (যেমন: 01712345678 অথবা 9876543210)')
-        .optional()
-        .or(z.literal('')),
+    whatsapp: z.string().trim().optional().or(z.literal('')),
     address: z.string().trim().min(5, 'আপনার বর্তমান ঠিকানা লিখুন'),
     email: z.string().trim().email('সঠিক ইমেইল ঠিকানা দিন'),
     paymentLast4: z.string().trim().regex(/^\d{4}$/, 'ঠিক ৪ ডিজিটের নম্বর দিন'),
@@ -173,7 +166,7 @@ export const BootcampRegistrationForm = () => {
                                                 type="tel"
                                                 inputMode="numeric"
                                                 autoComplete="tel"
-                                                placeholder="01XXXXXXXXX"
+                                                placeholder="01XXXXXXXXX / +91XXXXXXXXX"
                                                 {...form.register('whatsapp')}
                                                 className={`${inputClasses} font-mona ${
                                                     errors.whatsapp ? 'border-[#e5484d]/60' : ''

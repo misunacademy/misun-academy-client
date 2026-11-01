@@ -9,7 +9,7 @@ interface GenerateMetadataParams {
 }
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://www.misun-academy.com';
-const DEFAULT_IMAGE = `default-og-image.png`;
+const DEFAULT_IMAGE = `preview/default-og-image.png`;
 const SITE_NAME = 'MISUN Academy';
 
 export const generateMetadata = ({
