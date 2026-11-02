@@ -108,4 +108,22 @@ describe("useEnrollmentCheckout — existing enrollment guard", () => {
     expect(mocks.initiateEnrollment).toHaveBeenCalledTimes(1);
     expect(mocks.initiateEnrollment).toHaveBeenCalledWith({ batchId: "batch-1" });
   });
+
+  it.each(["payment-failed", "expired"])(
+    "ignores a terminal %s attempt so checkout starts fresh",
+    (status) => {
+      mocks.enrollments = [
+        {
+          status,
+          enrollmentId: "MA-3202600004",
+          batchId: { _id: "batch-1", courseId: { _id: "course-1" } },
+        },
+      ];
+
+      const { result } = renderHook(() => useEnrollmentCheckout("course"));
+
+      expect(result.current.checkoutState).toBe("none");
+      expect(result.current.isCheckoutBlocked).toBe(false);
+    }
+  );
 });

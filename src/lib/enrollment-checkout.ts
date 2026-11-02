@@ -60,11 +60,13 @@ export function resolveBatchRef(batch: BatchLike): string {
  *   none        — no prior enrollment; the normal form is shown.
  *   active      — already enrolled (or access revoked); never sell again.
  *   under-review— manual payment is in the admin queue; never sell again.
- *   resume      — an abandoned/failed attempt; offer to resume it.
+ *   resume      — an abandoned/open attempt; offer to resume it.
  *
  * `suspended` / `refunded` rows are ignored on purpose: they are handled by
  * support, and the server's (userId, batchId) unique index still blocks a
- * duplicate purchase if one slips through.
+ * duplicate purchase if one slips through. `payment-failed` / `expired` rows
+ * are terminal and hidden by the server; they must never be resumed — retrying
+ * starts a fresh enrollment.
  */
 export type CheckoutEnrollmentState = "none" | "active" | "under-review" | "resume";
 
@@ -110,8 +112,9 @@ const enrollmentPriority = (status: string | undefined): number => {
     case "payment-pending":
       return 1;
     case "pending":
-    case "payment-failed":
       return 2;
+    // Terminal failures must never be resumed. The server hides them too;
+    // ignoring them here keeps an older cached response safe.
     default:
       return -1;
   }

@@ -1,24 +1,21 @@
 "use client";
-
 import { Play, ChevronUp, ChevronDown } from "lucide-react";
 import { useGetSettingsQuery } from "@/redux/api/settingsApi";
+import { useTranslations } from 'next-intl';
 
 const DEFAULT_VIDEO_URL = "https://www.youtube.com/embed/UC4LM-u9TqM";
 
 export function toYouTubeEmbedUrl(rawUrl: string | undefined | null): string {
   const value = rawUrl?.trim();
   if (!value) return "";
-
   const idPattern = /^[A-Za-z0-9_-]{11}$/;
   try {
     const url = new URL(value);
-
     if (url.hostname === "youtu.be") {
       const id = url.pathname.slice(1).split("/")[0];
       if (id && idPattern.test(id)) return `https://www.youtube.com/embed/${id}`;
       return "";
     }
-
     if (url.hostname.endsWith("youtube.com")) {
       if (url.pathname.startsWith("/embed/")) {
         const id = url.pathname.split("/")[2];
@@ -36,9 +33,6 @@ export function toYouTubeEmbedUrl(rawUrl: string | undefined | null): string {
     }
   } catch {
   }
-
-  // Non-YouTube input is rejected: embedding it verbatim would turn a
-  // mistyped CMS URL into an arbitrary iframe.
   return "";
 }
 
@@ -48,6 +42,7 @@ interface VideoTutorialSectionProps {
 }
 
 export function VideoTutorialSection({ show, onToggle }: VideoTutorialSectionProps) {
+  const t = useTranslations('checkout');
   const { data } = useGetSettingsQuery();
   const videoUrl =
     toYouTubeEmbedUrl(data?.data?.maPaymentTutorialVideoUrl) ||
@@ -68,8 +63,8 @@ export function VideoTutorialSection({ show, onToggle }: VideoTutorialSectionPro
             <Play className="w-4 h-4 text-primary" />
           </div>
           <div className="text-left">
-            <h4 className="font-semibold text-white/85 text-sm">পেমেন্ট টিউটোরিয়াল ভিডিও</h4>
-            <p className="text-xs text-white/70">ধাপে ধাপে পেমেন্ট সম্পন্ন করা শিখুন</p>
+            <h4 className="font-semibold text-white/85 text-sm">{t('checkout.paymentDetails')}</h4>
+            <p className="text-xs text-white/70">{t('checkout.paymentVerification')}</p>
           </div>
         </div>
         {show ? <ChevronUp className="w-5 h-5 text-primary/60" /> : <ChevronDown className="w-5 h-5 text-primary/60" />}
@@ -80,18 +75,20 @@ export function VideoTutorialSection({ show, onToggle }: VideoTutorialSectionPro
             <iframe
               className="w-full h-full"
               src={videoUrl}
-              title="পেমেন্ট টিউটোরিয়াল"
+              title={t('checkout.paymentDetails')}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
           </div>
           <div className="bg-primary/8 border border-primary/15 rounded-lg p-3 text-sm">
-            <p className="font-medium mb-2 text-white/70">সংক্ষিপ্ত ধাপ:</p>
+            <p className="font-medium mb-2 text-white/70">{t('checkout.paymentSteps')}</p>
             <ol className="list-decimal list-inside space-y-1 text-white/75 text-xs">
-              <li>নিচ থেকে পছন্দের পেমেন্ট পদ্ধতি বাছুন</li>
-              <li>SSLCommerz: নিরাপদ পেমেন্ট গেটওয়েতে নিয়ে যাওয়া হবে</li>
-              <li>Phone Pay: ম্যানুয়াল পেমেন্টের নির্দেশনা অনুসরণ করুন</li>
-              <li>পেমেন্ট সম্পন্ন করে কনফার্মেশনের জন্য অপেক্ষা করুন</li>
+              <li>{t('checkout.step1')}</li>
+              <li>{t('checkout.step2')}</li>
+              <li>{t('checkout.step3')}</li>
+              <li>{t('checkout.step4')}</li>
+              <li>{t('checkout.step5')}</li>
+              <li>{t('checkout.step6')}</li>
             </ol>
           </div>
         </div>

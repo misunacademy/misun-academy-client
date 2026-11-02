@@ -1,5 +1,8 @@
+'use client';
 import { Loader2 } from "lucide-react";
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
+import { useTranslations } from 'next-intl';
+import { formatBDT } from '@/lib/i18n';
 
 interface EnrollmentSubmitSectionProps {
   totalPrice: number;
@@ -20,6 +23,7 @@ export function EnrollmentSubmitSection({
   batch,
   onAgreeChange,
 }: EnrollmentSubmitSectionProps) {
+  const t = useTranslations('checkout');
   const isDisabled = !(isValid && agreed && isEnrollmentOpen) || isProcessing;
 
   return (
@@ -27,17 +31,17 @@ export function EnrollmentSubmitSection({
       <div className="relative overflow-hidden rounded-xl bg-primary/8 border border-primary/20 p-4">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
         <div className="flex justify-between items-center font-semibold text-lg">
-          <span className="text-white/80">সর্বমোট:</span>
-          <span className="text-primary font-bold">৳{totalPrice?.toLocaleString?.('en-IN')}</span>
+          <span className="text-white/80">{t('checkout.coursePrice')}</span>
+          <span className="text-primary font-bold">{formatBDT(totalPrice)}</span>
         </div>
       </div>
 
       {!isEnrollmentOpen && batch && (
-        <div className="rounded-xl bg-yellow-500/8 border border-yellow-500/20 p-3 text-center">
-          <p className="text-sm text-yellow-400 font-medium">এনরোলমেন্ট উইন্ডো এখনো খোলা হয়নি</p>
+        <div className="relative overflow-hidden rounded-xl bg-yellow-500/8 border border-yellow-500/20 p-3 text-center">
+          <p className="text-sm text-yellow-400 font-medium">{t('checkout.batchClosed')}</p>
           {(batch.enrollmentStartDate as string) && (
             <p className="text-xs text-white/70 mt-1">
-              শুরু: {new Date(batch.enrollmentStartDate as string).toLocaleDateString('bn-BD', {
+              {t('checkout.startDate')}: {new Date(batch.enrollmentStartDate as string).toLocaleDateString('bn-BD', {
                 day: 'numeric', month: 'long', year: 'numeric'
               })}
             </p>
@@ -54,17 +58,10 @@ export function EnrollmentSubmitSection({
             className="mt-1 accent-primary"
           />
           <span className="text-white/75 leading-relaxed">
-            আমি{' '}
-            <a href="/terms-and-conditions" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">
-              শর্তাবলী
-            </a>,{' '}
-            <a href="/privacy-policy" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">
-              প্রাইভেসি পলিসি
-            </a> এবং{' '}
-            <a href="/refund-policy" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">
-              রিটার্ন, রিফান্ড ও ক্যান্সেলেশন পলিসি
-            </a>{' '}
-            পড়েছি এবং সম্মত আছি।
+            {t('checkout.agreeTerms')} <a href="/terms-and-conditions" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">{t('checkout.termsAndConditions')}</a>,{' '}
+            <a href="/privacy-policy" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">{t('checkout.privacyPolicy')}</a> 和{' '}
+            <a href="/refund-policy" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">{t('checkout.refundPolicy')}</a>{' '}
+            {t('checkout.haveReadAndAgreed')}
           </span>
         </label>
 
@@ -96,12 +93,12 @@ export function EnrollmentSubmitSection({
             {isProcessing ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                প্রসেস হচ্ছে...
+                {t('checkout.processing')}
               </span>
             ) : !isEnrollmentOpen && batch ? (
-              'এনরোলমেন্ট শুরু হয়নি'
+              t('checkout.enrollmentNotStarted')
             ) : (
-              'এনরোলমেন্ট সম্পন্ন করুন'
+              t('checkout.enroll')
             )}
           </button>
         </div>

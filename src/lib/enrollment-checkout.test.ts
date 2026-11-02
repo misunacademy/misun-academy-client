@@ -50,7 +50,7 @@ describe("resolveCheckoutEnrollmentState", () => {
     ).toBe("under-review");
   });
 
-  it("treats pending and payment-failed enrollments as resumable", () => {
+  it("treats pending as resumable and ignores terminal failures", () => {
     expect(
       resolveCheckoutEnrollmentState([enrollment("pending")], { batchId, courseId }).state
     ).toBe("resume");
@@ -59,7 +59,13 @@ describe("resolveCheckoutEnrollmentState", () => {
         batchId,
         courseId,
       }).state
-    ).toBe("resume");
+    ).toBe("none");
+    expect(
+      resolveCheckoutEnrollmentState([enrollment("expired")], {
+        batchId,
+        courseId,
+      }).state
+    ).toBe("none");
   });
 
   it("prefers the blocking row when several rows exist for the batch", () => {

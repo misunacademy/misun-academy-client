@@ -5,7 +5,7 @@ import { CourseInfoSidebar } from "./CourseInfoSidebar";
 import { CheckoutStepOne } from "./CheckoutStepOne";
 import { CheckoutHeader } from "./CheckoutHeader";
 import { EnrollmentStatusNotice } from "./EnrollmentStatusNotice";
-import ManualPaymentForm from "./ManualPaymentForm";
+import { ManualPaymentForm } from "./ManualPaymentForm";
 
 export default function EnrollmentCheckout({ courseSlug }: { courseSlug?: string } = {}) {
   const {

@@ -1,3 +1,4 @@
+'use client';
 import { Suspense } from 'react';
 import { Analytics } from "@vercel/analytics/next";
 import Providers from '@/providers/Providers';
@@ -31,7 +32,6 @@ const unBangla = localFont({
   variable: "--font-un-bangla",
   display: "swap",
 });
-
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.misun-academy.com'),
@@ -74,7 +74,7 @@ export default function RootLayout({
               self-hosted/Docker deployments) */}
           {process.env.VERCEL ? <Analytics /> : null}
 
-      
+          
           <div id="main-content">{children}</div>
         </Providers>
       </body>
