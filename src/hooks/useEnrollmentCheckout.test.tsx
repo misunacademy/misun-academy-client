@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { useEnrollmentCheckout } from "@/hooks/useEnrollmentCheckout";
 
 const mocks = vi.hoisted(() => ({
@@ -76,6 +76,7 @@ describe("useEnrollmentCheckout — existing enrollment guard", () => {
     mocks.enrollments = [
       {
         status: "payment-pending",
+        latestPaymentStatus: "review",
         enrollmentId: "MA-3202600002",
         batchId: { _id: "batch-1", courseId: { _id: "course-1" } },
       },
@@ -87,10 +88,11 @@ describe("useEnrollmentCheckout — existing enrollment guard", () => {
     expect(result.current.isCheckoutBlocked).toBe(true);
   });
 
-  it("offers resume for an abandoned attempt and re-initiates the same batch", async () => {
+  it("does not block checkout for a pending/cancelled payment attempt — fresh checkout", () => {
     mocks.enrollments = [
       {
         status: "pending",
+        latestPaymentStatus: "cancel",
         enrollmentId: "MA-3202600003",
         batchId: { _id: "batch-1", courseId: { _id: "course-1" } },
       },
@@ -98,15 +100,8 @@ describe("useEnrollmentCheckout — existing enrollment guard", () => {
 
     const { result } = renderHook(() => useEnrollmentCheckout("course"));
 
-    expect(result.current.checkoutState).toBe("resume");
+    expect(result.current.checkoutState).toBe("none");
     expect(result.current.isCheckoutBlocked).toBe(false);
-
-    await act(async () => {
-      await result.current.resumePayment();
-    });
-
-    expect(mocks.initiateEnrollment).toHaveBeenCalledTimes(1);
-    expect(mocks.initiateEnrollment).toHaveBeenCalledWith({ batchId: "batch-1" });
   });
 
   it.each(["payment-failed", "expired"])(

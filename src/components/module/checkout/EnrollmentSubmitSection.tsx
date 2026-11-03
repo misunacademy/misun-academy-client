@@ -31,17 +31,17 @@ export function EnrollmentSubmitSection({
       <div className="relative overflow-hidden rounded-xl bg-primary/8 border border-primary/20 p-4">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
         <div className="flex justify-between items-center font-semibold text-lg">
-          <span className="text-white/80">{t('checkout.coursePrice')}</span>
+          <span className="text-white/80">{t('coursePrice')}</span>
           <span className="text-primary font-bold">{formatBDT(totalPrice)}</span>
         </div>
       </div>
 
       {!isEnrollmentOpen && batch && (
         <div className="relative overflow-hidden rounded-xl bg-yellow-500/8 border border-yellow-500/20 p-3 text-center">
-          <p className="text-sm text-yellow-400 font-medium">{t('checkout.batchClosed')}</p>
+          <p className="text-sm text-yellow-400 font-medium">{t('batchClosed')}</p>
           {(batch.enrollmentStartDate as string) && (
             <p className="text-xs text-white/70 mt-1">
-              {t('checkout.startDate')}: {new Date(batch.enrollmentStartDate as string).toLocaleDateString('bn-BD', {
+              {t('startDate')}: {new Date(batch.enrollmentStartDate as string).toLocaleDateString('bn-BD', {
                 day: 'numeric', month: 'long', year: 'numeric'
               })}
             </p>
@@ -58,10 +58,10 @@ export function EnrollmentSubmitSection({
             className="mt-1 accent-primary"
           />
           <span className="text-white/75 leading-relaxed">
-            {t('checkout.agreeTerms')} <a href="/terms-and-conditions" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">{t('checkout.termsAndConditions')}</a>,{' '}
-            <a href="/privacy-policy" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">{t('checkout.privacyPolicy')}</a> 和{' '}
-            <a href="/refund-policy" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">{t('checkout.refundPolicy')}</a>{' '}
-            {t('checkout.haveReadAndAgreed')}
+            {t('agreeTerms')} <a href="/terms-and-conditions" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">{t('termsAndConditions')}</a>,{' '}
+            <a href="/privacy-policy" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">{t('privacyPolicy')}</a> 和{' '}
+            <a href="/refund-policy" target="_blank" className="text-primary hover:text-primary/80 underline underline-offset-2">{t('refundPolicy')}</a>{' '}
+            {t('haveReadAndAgreed')}
           </span>
         </label>
 
@@ -93,12 +93,12 @@ export function EnrollmentSubmitSection({
             {isProcessing ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                {t('checkout.processing')}
+                {t('processing')}
               </span>
             ) : !isEnrollmentOpen && batch ? (
-              t('checkout.enrollmentNotStarted')
+              t('enrollmentNotStarted')
             ) : (
-              t('checkout.enroll')
+              t('enroll')
             )}
           </button>
         </div>

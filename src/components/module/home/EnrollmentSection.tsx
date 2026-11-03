@@ -2,14 +2,14 @@
 
 import { useMemo } from 'react';
 import { LoadingBoundary } from "@/components/shared/LoadingBoundary";
-import { CalendarCheck, CalendarX, ArrowRight } from "lucide-react";
+import { CalendarCheck, CalendarX } from "lucide-react";
 import Countdown from "../course/Countdown";
 import { format } from "date-fns";
 import { FadeIn } from "../../ui/FadeIn";
 import { BatchResponse, CourseInfo } from "@/redux/api/batchApi";
-import Link from "next/link";
 import { useCurrentBatch } from '@/hooks/useCurrentBatch';
 import { COURSE_SLUGS } from '@/constants/courses';
+import { StarEnrollButton } from '../course/StarEnrollButton';
 
 export const formatDate = (date: Date | string) => {
     return format(new Date(date), 'dd MMM, yyyy');
@@ -84,7 +84,7 @@ function CourseEnrollmentCard({
                 {/* Inner ambient glow */}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-primary/[0.055] via-transparent to-primary/[0.025]" />
 
-                <div className="relative z-10 flex flex-col gap-6 p-6 md:gap-7 md:p-8">
+                <div className="relative z-10 flex flex-col gap-6 md:gap-7 p-3 sm:p-6">
 
                     {/* ── Course identity row ── */}
                     <div className="flex items-start gap-4">
@@ -116,16 +116,92 @@ function CourseEnrollmentCard({
                         courseSlug={course.slug}
                         serverTimestamp={cardServerTimestamp}
                     />
+                    {/* ── Fee highlight ── */}
+                    <div className="
+                        self-center shrink-0 w-fit
+                        flex items-baseline gap-1.5 rounded-xl
+                        border border-[#ffd60a]/25
+                        bg-gradient-to-br from-[#ffd60a]/15 via-[#ffd60a]/8 to-[#ffd60a]/2
+                        px-3.5 py-2
+                        shadow-[0_0_20px_rgba(255,214,10,0.10)]
+                        group-hover:border-[#ffd60a]/50
+                        group-hover:shadow-[0_0_24px_rgba(255,214,10,0.14)]
+                        transition-all duration-300
+                    ">
+                        <span className="font-bangla text-xs font-medium text-[#ffd60a]/70 uppercase tracking-wider">
+                            ফি
+                        </span>
 
+                        <span className="font-mona text-xl font-black tracking-tight text-[#ffd60a] tabular-nums sm:text-3xl">
+                            {batch.price
+                                ? batch.price.toLocaleString("en-IN")
+                                : "--"}
+                        </span>
+
+                        <span className="font-bangla text-xs font-medium text-[#ffd60a]/60 mt-0.5">
+                            ৳
+                        </span>
+                    </div>
+
+                    {/* Price + CTA */}
+                    <div className="flex w-full shrink-0 items-center justify-center gap-4 sm:w-auto ">
+                        <StarEnrollButton href={`/checkout`}>
+                            এনরোল করুন
+                        </StarEnrollButton>
+                        {/* CTA */}
+                        {/* <Link
+                            href={`/checkout?course=${course.slug}`}
+                            aria-label="এনরোল করুন"
+                            className="
+                                    shrink-0 rounded-xl
+                                    focus-visible:outline-none
+                                    focus-visible:ring-2 focus-visible:ring-primary
+                                    focus-visible:ring-offset-2
+                                    focus-visible:ring-offset-surface
+                                "
+                        >
+                            <div className="
+                                    group/btn relative isolate flex min-h-[46px]
+                                    items-center gap-2 overflow-hidden rounded-xl
+                                    border border-primary/40
+                                    bg-primary px-5 py-3
+                                    font-bangla text-sm font-bold
+                                    text-primary-foreground
+                                    shadow-[0_4px_16px_hsl(var(--primary)/0.18)]
+                                    transition-all duration-300
+                                    hover:-translate-y-0.5
+                                    hover:border-primary/70
+                                    hover:shadow-[0_8px_24px_hsl(var(--primary)/0.32)]
+                                    active:translate-y-0
+                                    cursor-pointer
+                                ">
+                                <span className="
+                                        pointer-events-none absolute inset-0 -z-10
+                                        -translate-x-full
+                                        bg-gradient-to-r from-transparent via-white/15 to-transparent
+                                        transition-transform duration-700
+                                        group-hover/btn:translate-x-full
+                                    " />
+
+                                <span>এনরোল করুন</span>
+
+                                <ArrowRight
+                                    size={15}
+                                    strokeWidth={2.2}
+                                    className="transition-transform duration-300 group-hover/btn:translate-x-1"
+                                />
+                            </div>
+                        </Link> */}
+                    </div>
                     {/* ── Dates + Price row ── */}
                     <div className="
                         flex flex-col items-start justify-between gap-5
                         border-t border-primary/15 pt-5
-                        sm:flex-row sm:items-center
+                         sm:items-center
                     ">
 
                         {/* Dates */}
-                        <div className="flex flex-wrap gap-4 xs:gap-5">
+                        <div className="flex flex-wrap justify-between items-center gap-4 xs:gap-5">
 
                             <div className="flex items-center gap-2.5">
                                 <div className="
@@ -172,76 +248,6 @@ function CourseEnrollmentCard({
                             </div>
                         </div>
 
-                        {/* Price + CTA */}
-                        <div className="flex w-full shrink-0 items-center justify-between gap-4 sm:w-auto sm:justify-start">
-
-                            {/* Price badge */}
-                            <div className="
-                                flex items-baseline gap-1.5 rounded-xl
-                                border border-primary/15
-                                bg-gradient-to-br from-primary/[0.10] to-primary/[0.025]
-                                px-3.5 py-2
-                            ">
-                                <span className="font-bangla text-sm font-semibold text-primary-glow">
-                                    ফি
-                                </span>
-
-                                <span className="font-mona text-xl font-extrabold tracking-tight text-primary-glow tabular-nums sm:text-2xl">
-                                    {batch.price
-                                        ? batch.price.toLocaleString("en-IN")
-                                        : "--"}
-                                </span>
-
-                                <span className="font-bangla text-sm font-semibold text-primary-glow">
-                                    ৳
-                                </span>
-                            </div>
-
-                            {/* CTA */}
-                            <Link
-                                href={`/checkout?course=${course.slug}`}
-                                aria-label="এনরোল করুন"
-                                className="
-                                    shrink-0 rounded-xl
-                                    focus-visible:outline-none
-                                    focus-visible:ring-2 focus-visible:ring-primary
-                                    focus-visible:ring-offset-2
-                                    focus-visible:ring-offset-surface
-                                "
-                            >
-                                <div className="
-                                    group/btn relative isolate flex min-h-[46px]
-                                    items-center gap-2 overflow-hidden rounded-xl
-                                    border border-primary/40
-                                    bg-primary px-5 py-3
-                                    font-bangla text-sm font-bold
-                                    text-primary-foreground
-                                    shadow-[0_4px_16px_hsl(var(--primary)/0.18)]
-                                    transition-all duration-300
-                                    hover:-translate-y-0.5
-                                    hover:border-primary/70
-                                    hover:shadow-[0_8px_24px_hsl(var(--primary)/0.32)]
-                                    active:translate-y-0
-                                    cursor-pointer
-                                ">
-                                    <span className="
-                                        pointer-events-none absolute inset-0 -z-10
-                                        -translate-x-full
-                                        bg-gradient-to-r from-transparent via-white/15 to-transparent
-                                        transition-transform duration-700
-                                        group-hover/btn:translate-x-full
-                                    " />
-
-                                    <span>এনরোল করুন</span>
-
-                                    <ArrowRight
-                                        size={15}
-                                        strokeWidth={2.2}
-                                        className="transition-transform duration-300 group-hover/btn:translate-x-1"
-                                    />
-                                </div>
-                            </Link>
-                        </div>
                     </div>
                 </div>
             </div>

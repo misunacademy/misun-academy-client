@@ -35,8 +35,8 @@ export default function HeroSection() {
            <Galaxy
           density={1}
           glowIntensity={0.1}
-          flareIntensity={0.5}
-          starSpeed={0.15}
+          flareIntensity={0.3}
+          starSpeed={0.1}
           mouseRepulsion
           clickWarp
         />

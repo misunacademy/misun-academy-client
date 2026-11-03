@@ -32,14 +32,14 @@ export function CheckoutStepOne({
           <div className="space-y-4">
             <h3 className="text-base font-semibold flex items-center gap-2.5 text-white/80">
               <StepBadge number={1} />
-              {t('checkout.courseDetails')}
+              {t('courseDetails')}
             </h3>
             <BatchInfoCard batch={batch} course={course} />
           </div>
         ) : (
           <div className="bg-yellow-500/8 border border-yellow-500/20 rounded-xl p-4 text-center">
-            <p className="text-yellow-400 font-medium">{t('checkout.batchClosed')}</p>
-            <p className="text-sm text-white/70 mt-1">{t('checkout.batchClosedDesc')}</p>
+            <p className="text-yellow-400 font-medium">{t('batchClosed')}</p>
+            <p className="text-sm text-white/70 mt-1">{t('batchClosedDesc')}</p>
           </div>
         )}
 
@@ -52,7 +52,7 @@ export function CheckoutStepOne({
         <div className="space-y-4">
           <h3 className="text-base font-semibold flex items-center gap-2.5 text-white/80">
             <StepBadge number={2} />
-            {t('checkout.paymentMethodLabel')}
+            {t('paymentMethodLabel')}
           </h3>
           <FormField
             control={form.control}

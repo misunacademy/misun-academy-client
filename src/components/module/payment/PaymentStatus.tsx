@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { COURSE_SLUGS, FALLBACK_COURSE_TITLE } from '@/constants/courses';
 import Congratulations from '@/components/module/payment/congratulations';
 
-type StatusKey = 'success' | 'pending' | 'review' | 'cancelled' | 'failed' | 'not_found';
+type StatusKey = 'success' | 'pending' | 'review' | 'cancelled' | 'failed' | 'expired' | 'not_found';
 
 interface StatusAction {
   href: string;
@@ -83,12 +83,22 @@ const statusConfig: Record<StatusKey, StatusConfig> = {
     secondary: { href: '/', label: 'হোম পেজে ফিরে যান' },
     isError: true,
   },
+  expired: {
+    icon: AlertCircle,
+    iconClass: 'text-amber-400',
+    wrapClass: 'border-amber-500/30 bg-amber-500/10',
+    title: 'পেমেন্ট সেশনের মেয়াদ শেষ হয়ে গেছে',
+    description: 'পেমেন্ট সেশনের মেয়াদ শেষ হয়ে গেছে। আপনার এনরোলমেন্টটি বাতিল হয়নি—চেকআউট পেজে ফিরে নতুন করে পেমেন্ট শুরু করতে পারেন।',
+    primary: { href: '/checkout', label: 'আবার চেষ্টা করুন' },
+    secondary: { href: '/', label: 'হোম পেজে ফিরে যান' },
+    isError: true,
+  },
   not_found: {
     icon: AlertCircle,
     iconClass: 'text-amber-400',
     wrapClass: 'border-amber-500/30 bg-amber-500/10',
-    title: 'পেমেন্ট পাওয়া যায়নি',
-    description: 'এই লেনদেনের রেকর্ড পাওয়া যায়নি। লেনদেনটি হয় সম্পূর্ণ হয়নি অথবা সেশনের முடি্যা চলে গেছে। চেকআউট পেজে ফিরে আবার চেষ্টা করুন।',
+    title: 'লেনদেনের তথ্য পাওয়া যায়নি',
+    description: 'লেনদেনটি সম্পন্ন হয়নি অথবা আপনার চেকআউট সেশনের মেয়াদ শেষ হয়ে গেছে। অনুগ্রহ করে চেকআউট পেজে ফিরে গিয়ে আবার চেষ্টা করুন।',
     primary: { href: '/checkout', label: 'আবার চেষ্টা করুন' },
     secondary: { href: '/', label: 'হোম পেজে ফিরে যান' },
     isError: true,

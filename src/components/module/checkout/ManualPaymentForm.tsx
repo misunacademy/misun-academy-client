@@ -80,12 +80,12 @@ export function ManualPaymentForm({
     const currencyLabel = CURRENCY_SYMBOLS[effectiveCurrency] ?? effectiveCurrency;
     const formattedAmount = `${currencyLabel} ${displayAmount.toLocaleString('en-US')}`;
     const instructions = [
-        t('checkout.step1'),
-        t('checkout.step2'),
-        `${t('checkout.refAmount', { amount: formattedAmount })}`,
-        batch ? `${t('checkout.paymentRef', { batch })}` : t('checkout.refNumber'),
-        t('checkout.step5'),
-        t('checkout.step6'),
+        t('step1'),
+        t('step2'),
+        `${t('refAmount', { amount: formattedAmount })}`,
+        batch ? `${t('paymentRef', { batch })}` : t('refNumber'),
+        t('step5'),
+        t('step6'),
     ];
 
     return (
@@ -97,7 +97,7 @@ export function ManualPaymentForm({
 
                 <div className="p-5 border-b border-primary/10">
                     <h3 className="text-lg font-bold text-white/90 text-center">ফোনপে দিয়ে পেমেন্ট করুন</h3>
-                    <p className="text-sm text-white/70 text-center mt-1">{t('checkout.paymentDetails')}</p>
+                    <p className="text-sm text-white/70 text-center mt-1">{t('paymentDetails')}</p>
                 </div>
 
                 <div className="p-6 space-y-5">

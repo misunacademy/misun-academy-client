@@ -1,7 +1,8 @@
-import { Layers, Trophy, Clock, Users } from "lucide-react"
+import { Layers, Trophy, Clock, Users} from "lucide-react"
 import { courseCurriculum, type Course } from "@/data/courseCurriculum"
 import { CourseCurriculumContent, COURSE_CONFIG } from "./curriculum"
 import { DownloadOutlineButton } from "./curriculum/DownloadOutlineButton"
+import BatchSpecialSubsection from "./curriculum/BatchSpecialSubsection"
 
 const courses = courseCurriculum.courses
 
@@ -29,6 +30,8 @@ const CourseCurriculum = () => (
       <SectionHeader />
 
       <CourseCurriculumContent courseConfigs={COURSE_CONFIG} />
+        {/* ── Batch 8 Special subsection ── */}
+        <BatchSpecialSubsection />
       {/* ── Outline download ── */}
       <div className="relative z-20 mt-8 flex justify-center">
         <DownloadOutlineButton
@@ -116,5 +119,7 @@ function SummaryBar() {
     </div>
   )
 }
+
+
 
 export default CourseCurriculum

@@ -24,7 +24,7 @@ interface PaymentMethodSelectorProps {
 export function PaymentMethodSelector({ value, onSelect }: PaymentMethodSelectorProps) {
   const t = useTranslations('checkout');
   return (
-    <div className="grid gap-3" role="radiogroup" aria-label={t('checkout.paymentMethodLabel')}>
+    <div className="grid gap-3" role="radiogroup" aria-label={t('paymentMethodLabel')}>
       <SSLCommerzOption selected={value === "SSLCommerz"} onSelect={() => onSelect("SSLCommerz")} t={t} />
       <PhonePayOption selected={value === "phonePay"} onSelect={() => onSelect("phonePay")} t={t} />
     </div>
@@ -47,7 +47,7 @@ function SSLCommerzOption({ selected, onSelect, t }: { selected: boolean; onSele
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelect(); }}
     >
       <span className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full text-[11px] font-bold bg-yellow-500/15 border border-yellow-500/30 text-yellow-400">
-        {t('checkout.popular')}
+        {t('popular')}
       </span>
       <div className="space-y-3">
         <div className="flex items-center gap-3">
@@ -60,7 +60,7 @@ function SSLCommerzOption({ selected, onSelect, t }: { selected: boolean; onSele
           <RadioIndicator selected={selected} />
         </div>
         <div className="items-center gap-2 pt-2 border-t border-primary/15">
-          <span className="text-xs text-white/70 mb-2 block">{t('checkout.paymentVia')}</span>
+          <span className="text-xs text-white/70 mb-2 block">{t('paymentVia')}</span>
           <div className="grid grid-cols-3 gap-1.5">
             {GATEWAY_ICONS.map((src, i) => (
               <div key={i} className="bg-white rounded-lg overflow-hidden flex items-center justify-center h-[52px]">
@@ -99,7 +99,7 @@ function PhonePayOption({ selected, onSelect, t }: { selected: boolean; onSelect
         <RadioIndicator selected={selected} />
       </div>
       <div className="border-t border-primary/15 pt-3">
-        <p className="text-xs text-white/70 pb-2">{t('checkout.phonePeInstruction')}</p>
+        <p className="text-xs text-white/70 pb-2">{t('phonePeInstruction')}</p>
         <div className="bg-white rounded-lg overflow-hidden flex items-center justify-center h-[56px] max-w-[200px]">
           <Image src={phonepay} alt="Phone Pay" className="object-contain w-full h-full p-2" />
         </div>

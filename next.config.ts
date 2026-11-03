@@ -3,6 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { NextConfig } from 'next';
 import withBundleAnalyzer from '@next/bundle-analyzer';
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin();
 
 // Turbopack resolves the workspace root from the parent monorepo (pnpm store)
 // when present; in single-dir Docker contexts it falls back to this package.
@@ -141,4 +144,4 @@ const nextConfig: NextConfig = {
 
 export default withBundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
-})(nextConfig);
+})(withNextIntl(nextConfig));

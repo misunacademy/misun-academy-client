@@ -63,8 +63,8 @@ export function VideoTutorialSection({ show, onToggle }: VideoTutorialSectionPro
             <Play className="w-4 h-4 text-primary" />
           </div>
           <div className="text-left">
-            <h4 className="font-semibold text-white/85 text-sm">{t('checkout.paymentDetails')}</h4>
-            <p className="text-xs text-white/70">{t('checkout.paymentVerification')}</p>
+            <h4 className="font-semibold text-white/85 text-sm">{t('paymentDetails')}</h4>
+            <p className="text-xs text-white/70">{t('paymentVerification')}</p>
           </div>
         </div>
         {show ? <ChevronUp className="w-5 h-5 text-primary/60" /> : <ChevronDown className="w-5 h-5 text-primary/60" />}
@@ -75,20 +75,20 @@ export function VideoTutorialSection({ show, onToggle }: VideoTutorialSectionPro
             <iframe
               className="w-full h-full"
               src={videoUrl}
-              title={t('checkout.paymentDetails')}
+              title={t('paymentDetails')}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
           </div>
           <div className="bg-primary/8 border border-primary/15 rounded-lg p-3 text-sm">
-            <p className="font-medium mb-2 text-white/70">{t('checkout.paymentSteps')}</p>
+            <p className="font-medium mb-2 text-white/70">{t('paymentSteps')}</p>
             <ol className="list-decimal list-inside space-y-1 text-white/75 text-xs">
-              <li>{t('checkout.step1')}</li>
-              <li>{t('checkout.step2')}</li>
-              <li>{t('checkout.step3')}</li>
-              <li>{t('checkout.step4')}</li>
-              <li>{t('checkout.step5')}</li>
-              <li>{t('checkout.step6')}</li>
+              <li>{t('step1')}</li>
+              <li>{t('step2')}</li>
+              <li>{t('step3')}</li>
+              <li>{t('step4')}</li>
+              <li>{t('step5')}</li>
+              <li>{t('step6')}</li>
             </ol>
           </div>
         </div>

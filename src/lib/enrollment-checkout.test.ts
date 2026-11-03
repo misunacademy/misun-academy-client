@@ -43,17 +43,27 @@ describe("resolveCheckoutEnrollmentState", () => {
 
   it("treats a manual payment in review as under-review", () => {
     expect(
-      resolveCheckoutEnrollmentState([enrollment("payment-pending")], {
+      resolveCheckoutEnrollmentState([enrollment("payment-pending", { latestPaymentStatus: "review" })], {
         batchId,
         courseId,
       }).state
     ).toBe("under-review");
   });
 
-  it("treats pending as resumable and ignores terminal failures", () => {
+  it("does NOT offer resume for cancelled/failed/expired/pending — checkout starts fresh", () => {
     expect(
-      resolveCheckoutEnrollmentState([enrollment("pending")], { batchId, courseId }).state
-    ).toBe("resume");
+      resolveCheckoutEnrollmentState(
+        [enrollment("pending")],
+        { batchId, courseId }
+      ).state
+    ).toBe("none");
+    // A cancelled payment does not resume — fresh checkout.
+    expect(
+      resolveCheckoutEnrollmentState(
+        [enrollment("pending", { latestPaymentStatus: "cancel" })],
+        { batchId, courseId }
+      ).state
+    ).toBe("none");
     expect(
       resolveCheckoutEnrollmentState([enrollment("payment-failed")], {
         batchId,
@@ -65,6 +75,33 @@ describe("resolveCheckoutEnrollmentState", () => {
         batchId,
         courseId,
       }).state
+    ).toBe("none");
+  });
+
+  it("treats payment-pending with a cancelled payment as none (fresh tran_id, same enrollment)", () => {
+    expect(
+      resolveCheckoutEnrollmentState(
+        [enrollment("payment-pending", { latestPaymentStatus: "cancel" })],
+        { batchId, courseId }
+      ).state
+    ).toBe("none");
+  });
+
+  it("treats payment-pending with a manual payment under review as under-review (blocked)", () => {
+    expect(
+      resolveCheckoutEnrollmentState(
+        [enrollment("payment-pending", { latestPaymentStatus: "review" })],
+        { batchId, courseId }
+      ).state
+    ).toBe("under-review");
+  });
+
+  it("treats payment-pending with an expired payment as none (fresh checkout)", () => {
+    expect(
+      resolveCheckoutEnrollmentState(
+        [enrollment("payment-pending", { latestPaymentStatus: "expired" })],
+        { batchId, courseId }
+      ).state
     ).toBe("none");
   });
 

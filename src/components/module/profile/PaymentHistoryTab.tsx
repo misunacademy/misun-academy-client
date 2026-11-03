@@ -84,24 +84,21 @@ export function PaymentHistoryTab() {
                 <p className="text-destructive">Failed to load payment history</p>
             </div>
         ) : (
-        <div className="flex-1 bg-surface rounded-3xl border border-primary/20 p-8 flex flex-col shadow-[0_0_60px_hsl(156_70%_42%/0.05)] relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="flex-1 bg-surface rounded-2xl border border-primary/20 p-8 flex flex-col shadow-[0_0_40px_hsl(156_70%_42%/0.03)] relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
-            <div className="relative z-10 flex items-start justify-between border-b border-surface/20 pb-6 mb-8">
-                <div>
-                    <h2 className="text-primary text-2xl font-bold tracking-tight flex items-center gap-2 mb-1">
-                        <CreditCard className="w-6 h-6" />
-                        Payment History
-                    </h2>
-                    <p className="text-white/50 text-sm">List of all your payment transactions</p>
-                </div>
+            <div className="relative z-10 flex items-center justify-between border-b border-dashed border-primary/20 pb-6 mb-8">
+                <h2 className="text-primary text-2xl font-semibold flex items-center gap-2">
+                    <CreditCard className="w-6 h-6" />
+                    Payment History
+                </h2>
             </div>
 
             <div className="relative z-10 grid gap-6">
                 {payments.length === 0 && bootcampPurchases.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-surface/20 rounded-2xl bg-surface/30 backdrop-blur-sm">
-                        <CreditCard className="w-16 h-16 text-primary/20 mb-4" />
-                        <h3 className="text-xl text-white/90 font-bold mb-2">No Payment Records Found</h3>
+                    <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-primary/20 rounded-xl bg-primary/5">
+                        <CreditCard className="w-16 h-16 text-primary/40 mb-4" />
+                        <h3 className="text-xl text-white/90 font-medium mb-2">No Payment Records Found</h3>
                         <p className="text-white/50 max-w-md">
                             {'You haven\'t made any payments yet.'}
                         </p>
