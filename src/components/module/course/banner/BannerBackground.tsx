@@ -1,14 +1,35 @@
+"use client"
+
+import dynamic from "next/dynamic"
 import { StaticImageData } from "next/image"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import SkillBadge from "../../home/SkillBadge"
 import { IllustratorImg, PhotoshopImg } from '@/assets/images';
 
-
-
+// The WebGL ring field is heavy and purely decorative — load it on the client only.
+const MagicRings = dynamic(() => import("@/components/shared/MagicRings"), { ssr: false })
 
 export function BannerBackground() {
   return (
     <>
+      <MagicRings
+        color="#3ddc97"
+        colorTwo="#0f766e"
+        ringCount={7}
+        motion="ripple"
+        speed={0.5}
+        lineThickness={1.5}
+        glow={1.15}
+        baseRadius={0.32}
+        radiusStep={0.085}
+        taper={1.7}
+        opacity={0.55}
+        hoverScale={1.05}
+        hoverIntensity={0.8}
+        parallax={0.04}
+        clickBurst={false}
+        theme="dark"
+      />
       <div
         className="absolute inset-0 opacity-[0.04] pointer-events-none"
         style={{
@@ -22,6 +43,7 @@ export function BannerBackground() {
 
       <DesignToolFloatingIcons />
       <ThreeDElements />
+     
     </>
   )
 }
@@ -95,6 +117,7 @@ function DesignToolFloatingIcons() {
 }
 
 function ThreeDElements() {
+  const prefersReducedMotion = useReducedMotion();
   const skills: { image: StaticImageData; name: string }[] = [
     { image: PhotoshopImg, name: "ফটোশপ" },
     { image: IllustratorImg, name: "ইলাস্ট্রেটর" },
@@ -103,8 +126,8 @@ function ThreeDElements() {
   return (
     <>
       <motion.div
-        animate={{ y: [0, -12, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        animate={prefersReducedMotion ? undefined : { y: [0, -12, 0] }}
+        transition={prefersReducedMotion ? undefined : { duration: 4, repeat: Infinity, ease: "easeInOut" }}
         className="absolute left-16 lg:left-24 xl:left-36 2xl:left-44 top-[46%] hidden lg:block z-20 pointer-events-none"
       >
         <div className="pointer-events-auto">
@@ -114,8 +137,8 @@ function ThreeDElements() {
       </motion.div>
 
       <motion.div
-        animate={{ y: [0, 12, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        animate={prefersReducedMotion ? undefined : { y: [0, 12, 0] }}
+        transition={prefersReducedMotion ? undefined : { duration: 5, repeat: Infinity, ease: "easeInOut" }}
         className="absolute right-16 lg:right-24 xl:right-36 2xl:right-44 top-[34%] hidden lg:block z-20 pointer-events-none"
       >
         <div className="pointer-events-auto">

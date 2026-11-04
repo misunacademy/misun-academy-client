@@ -64,7 +64,7 @@ const VerifyEmailPage = () => {
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
                     <button
                         onClick={() => router.back()}
-                        className="flex items-center gap-2 text-white/55 hover:text-white transition-colors text-sm font-medium px-3 py-1.5 rounded-lg border border-primary/20 hover:border-primary/40"
+                        className="flex items-center gap-2 text-white/80 hover:text-white transition-colors text-sm font-medium px-3 py-1.5 rounded-lg border border-primary/20 hover:border-primary/40"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         Back
@@ -113,7 +113,7 @@ const VerifyEmailPage = () => {
                                 )}
                             </h2>
 
-                            <p className="text-white/45 text-sm mb-7 leading-relaxed">{message}</p>
+                            <p className="text-white/75 text-sm mb-7 leading-relaxed">{message}</p>
 
                             {status === 'loading' && (
                                 <div className="flex items-center justify-center gap-2 text-white/35 text-sm">
@@ -147,7 +147,7 @@ const VerifyEmailPage = () => {
                                 <div className="space-y-3">
                                     <button
                                         onClick={() => router.push('/auth')}
-                                        className="w-full py-3 rounded-xl border border-primary/25 text-white/55 hover:border-primary/45 hover:text-white/80 transition-all text-sm font-medium"
+                                        className="w-full py-3 rounded-xl border border-primary/25 text-white/80 hover:border-primary/45 hover:text-white/80 transition-all text-sm font-medium"
                                     >
                                         লগইন পেজে ফিরুন
                                     </button>

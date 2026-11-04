@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import FooterBg from '@/assets/images/footer.png';
+import FooterBg from '@/assets/images/footer.webp';
 import FooterTop from './footer/FooterTop';
 import FooterColumns from './footer/FooterColumns';
 import FooterBottom from './footer/FooterBottom';

@@ -41,14 +41,14 @@ const TestimonialCard = memo(({ name, batch, studentId, testimonial, postLink, i
                 {/* Header */}
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-col gap-2">
-                        <h3 className="font-bold text-base text-white/90 group-hover:text-white transition-colors duration-300">
+                        <h3 className="font-bold text-base text-white transition-colors duration-300">
                             {name}
                         </h3>
                         <div className="flex items-center gap-2 flex-wrap">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/25 text-xs font-semibold text-primary/90">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/25 text-xs font-semibold text-primary-glow">
                                 {batch} ব্যাচ
                             </span>
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/10 text-[10px] text-white/35">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-white/[0.04] border border-white/10 readable-micro-label">
                                 ID: {studentId}
                             </span>
                         </div>
@@ -64,7 +64,7 @@ const TestimonialCard = memo(({ name, batch, studentId, testimonial, postLink, i
                                         rel="noopener noreferrer"
                                         className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center
                                             bg-primary/8 border border-primary/15
-                                            text-white/40 hover:text-[#1877F2]
+                                            text-white/70 hover:text-[#1877F2]
                                             hover:bg-[#1877F2]/10 hover:border-[#1877F2]/30
                                             transition-all duration-200"
                                     >
@@ -85,7 +85,7 @@ const TestimonialCard = memo(({ name, batch, studentId, testimonial, postLink, i
                 {/* Testimonial */}
                 <blockquote className="relative">
                     <span className="absolute -left-1 -top-2 text-primary/50 text-2xl leading-none select-none">&ldquo;</span>
-                    <p className="pl-3 text-sm text-white/55 leading-relaxed font-bangla group-hover:text-white/70 transition-colors duration-300">
+                    <p className="pl-3 readable-muted font-bangla">
                         {testimonial}
                     </p>
                     <span className="text-primary/50 text-xl leading-none select-none">&rdquo;</span>

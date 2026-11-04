@@ -7,9 +7,9 @@ export default function AboutStorySection() {
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold leading-[140%]">
-            <span className="bg-gradient-to-r from-white via-white/95 to-white/80 bg-clip-text text-transparent">আমাদের </span>
-            <span className="bg-gradient-to-r from-primary via-primary-glow to-primary bg-clip-text text-transparent drop-shadow-[0_0_16px_hsl(156_70%_42%/0.4)]">গল্প</span>
+          <h2 className="text-3xl md:text-4xl font-bold leading-[1.4] text-white">
+            <span className="text-white">আমাদের </span>
+            <span className="text-primary-glow">গল্প</span>
           </h2>
         </div>
 
@@ -20,13 +20,13 @@ export default function AboutStorySection() {
           <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-primary/50 rounded-br-3xl" />
           <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
 
-          <p className="text-base md:text-lg text-white/60 leading-relaxed mb-8">
-            <strong className="text-primary font-semibold">MISUN Academy</strong> একটি উদ্ভাবনী ডিজিটাল লার্নিং প্ল্যাটফর্ম, যা ভবিষ্যৎ প্রজন্মকে দক্ষ ও কর্মক্ষম করে গড়ে তোলার লক্ষ্য নিয়ে প্রতিষ্ঠিত হয়েছে। আমাদের মূল লক্ষ্য—বাংলাদেশসহ বিশ্বের যে কোনো প্রান্তে থাকা শিক্ষার্থীদের আধুনিক প্রযুক্তি ও ডিজিটাল স্কিল (যেমন: গ্রাফিক ডিজাইন, ফ্রিল্যান্সিং, ডিজিটাল মার্কেটিং, ভিডিও এডিটিং ইত্যাদি) শেখার সুযোগ করে দেওয়া।
+          <p className="readable-body mb-8">
+            <strong className="text-primary-glow font-semibold">MISUN Academy</strong> একটি উদ্ভাবনী ডিজিটাল লার্নিং প্ল্যাটফর্ম, যা ভবিষ্যৎ প্রজন্মকে দক্ষ ও কর্মক্ষম করে গড়ে তোলার লক্ষ্য নিয়ে প্রতিষ্ঠিত হয়েছে। আমাদের মূল লক্ষ্য—বাংলাদেশসহ বিশ্বের যে কোনো প্রান্তে থাকা শিক্ষার্থীদের আধুনিক প্রযুক্তি ও ডিজিটাল স্কিল (যেমন: গ্রাফিক ডিজাইন, ফ্রিল্যান্সিং, ডিজিটাল মার্কেটিং, ভিডিও এডিটিং ইত্যাদি) শেখার সুযোগ করে দেওয়া।
           </p>
 
           <div className="relative pl-5 border-l-2 border-primary/50">
             <div className="absolute -left-[5px] top-0 w-2.5 h-2.5 rounded-full bg-primary/70" />
-            <p className="text-base md:text-lg text-white/70 leading-relaxed italic">
+            <p className="readable-body italic">
               আমরা বিশ্বাস করি, প্রত্যেকের মধ্যেই সৃজনশীলতা আছে—সঠিক দিকনির্দেশনা আর প্র্যাকটিক্যাল স্কিল শেখার মাধ্যমে সেই প্রতিভা জাগ্রত করা সম্ভব। MISUN Academy সেই লক্ষ্যেই কাজ করে যাচ্ছে।
             </p>
           </div>

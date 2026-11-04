@@ -345,8 +345,11 @@ const bootcampApi = baseApi.injectEndpoints({
       invalidatesTags: ["Bootcamp"],
     }),
 
-    getMyBootcampPurchases: build.query<{ data: BootcampPurchase[] }, void>({
-      query: () => ({ url: "/bootcamp/my-purchases" }),
+    getMyBootcampPurchases: build.query<{ data: BootcampPurchase[] }, { history?: boolean } | void>({
+      query: (params) => ({
+        url: "/bootcamp/my-purchases",
+        params: params?.history ? { history: "true" } : undefined,
+      }),
       providesTags: ["Bootcamp"],
     }),
 

@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { COURSE_SLUGS, FALLBACK_COURSE_TITLE } from '@/constants/courses';
 import Congratulations from '@/components/module/payment/congratulations';
 
-type StatusKey = 'success' | 'pending' | 'review' | 'cancelled' | 'failed';
+type StatusKey = 'success' | 'pending' | 'review' | 'cancelled' | 'failed' | 'not_found';
 
 interface StatusAction {
   href: string;
@@ -79,6 +79,16 @@ const statusConfig: Record<StatusKey, StatusConfig> = {
     wrapClass: 'border-red-500/30 bg-red-500/10',
     title: 'পেমেন্ট ব্যর্থ হয়েছে',
     description: 'পেমেন্ট প্রক্রিয়া করতে সমস্যা হয়েছে। আবার চেষ্টা করুন অথবা সমস্যা থাকলে আমাদের সাপোর্টে যোগাযোগ করুন।',
+    primary: { href: '/checkout', label: 'আবার চেষ্টা করুন' },
+    secondary: { href: '/', label: 'হোম পেজে ফিরে যান' },
+    isError: true,
+  },
+  not_found: {
+    icon: AlertCircle,
+    iconClass: 'text-amber-400',
+    wrapClass: 'border-amber-500/30 bg-amber-500/10',
+    title: 'পেমেন্ট পাওয়া যায়নি',
+    description: 'এই লেনদেনের রেকর্ড পাওয়া যায়নি। লেনদেনটি হয় সম্পূর্ণ হয়নি অথবা সেশনের முடি্যা চলে গেছে। চেকআউট পেজে ফিরে আবার চেষ্টা করুন।',
     primary: { href: '/checkout', label: 'আবার চেষ্টা করুন' },
     secondary: { href: '/', label: 'হোম পেজে ফিরে যান' },
     isError: true,

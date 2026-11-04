@@ -48,14 +48,14 @@ export default function BootcampPurchaseDialog({
             <DialogContent className="max-w-md border-0 bg-[#111113] text-white">
                 <DialogHeader>
                     <DialogTitle className="font-bangla">রেকর্ডিং কিনুন</DialogTitle>
-                    <DialogDescription className="font-bangla text-white/60">
+                    <DialogDescription className="font-bangla text-white/70">
                         {title} — ৳{price} • লাইফটাইম অ্যাক্সেস
                     </DialogDescription>
                 </DialogHeader>
 
-                <p className="font-bangla text-sm text-white/60">
-                    কার্ড, বিকাশ, নগদ — সব ধরনের পেমেন্ট নেওয়া হয়। পেমেন্ট শেষে এই পেজেই ভিডিও আনলক
-                    হবে।
+                <p className="font-bangla text-sm text-white/70">
+                    SSLCommerz-এর নিরাপদ পেমেন্ট পেজে পেমেন্ট সম্পন্ন করুন। পেমেন্ট সফল হলে এই
+                    পেজেই ভিডিও আনলক হবে।
                 </p>
 
                 <DialogFooter>

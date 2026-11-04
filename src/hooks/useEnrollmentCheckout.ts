@@ -1,15 +1,23 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useGetCourseBySlugQuery } from "@/redux/api/courseApi";
+import { getApiErrorMessage } from "@/lib/api-helpers";
+import { useAuth } from "@/hooks/useAuth";
 import { useGetCurrentEnrollmentBatchQuery, useGetUpcomingBatchesQuery } from "@/redux/api/batchApi";
-import { useEnrollStudentManualMutation, useInitiateEnrollmentMutation } from "@/redux/api/enrollmentApi";
+import {
+  useEnrollStudentManualMutation,
+  useGetEnrollmentsQuery,
+  useInitiateEnrollmentMutation,
+} from "@/redux/api/enrollmentApi";
 import {
   enrollmentCheckoutSchema,
+  type CheckoutEnrollmentLike,
   type EnrollmentCheckoutForm,
   isBatchEnrollmentOpen,
+  resolveCheckoutEnrollmentState,
 } from "@/lib/enrollment-checkout";
 
 const enrollmentSchema = enrollmentCheckoutSchema;
@@ -42,6 +50,12 @@ export function useEnrollmentCheckout(courseSlug?: string) {
 
   const [enrollStudent] = useInitiateEnrollmentMutation();
   const [enrollStudentManual] = useEnrollStudentManualMutation();
+
+  const { user } = useAuth();
+  const { data: enrollmentsRes, isLoading: enrollmentsLoading } = useGetEnrollmentsQuery(
+    undefined,
+    { skip: !user?.id }
+  );
 
   const form = useForm<EnrollmentForm>({
     resolver: zodResolver(enrollmentSchema),
@@ -78,7 +92,25 @@ export function useEnrollmentCheckout(courseSlug?: string) {
     ? isBatchEnrollmentOpen(resolvedBatch as { enrollmentStartDate?: unknown; enrollmentEndDate?: unknown }, serverTimestamp ?? now)
     : false;
 
-  const isDataLoading = !!courseSlug && (courseLoading || (!!courseData && batchLoading));
+  const isDataLoading =
+    !!courseSlug &&
+    (courseLoading || (!!courseData && batchLoading) || enrollmentsLoading);
+
+  // Existing enrollment for the batch being purchased. Drives the checkout
+  // banner so we never sell the same seat twice or start a second manual
+  // payment while the first is still under review.
+  const checkoutEnrollments = enrollmentsRes?.data as CheckoutEnrollmentLike[] | undefined;
+
+  const { state: checkoutState, enrollment: checkoutEnrollment } = useMemo(
+    () =>
+      resolveCheckoutEnrollmentState(checkoutEnrollments, {
+        batchId: resolvedBatchId ? String(resolvedBatchId) : undefined,
+        courseId: (courseData?._id as string | undefined) ?? undefined,
+      }),
+    [checkoutEnrollments, resolvedBatchId, courseData?._id]
+  );
+
+  const isCheckoutBlocked = checkoutState === "active" || checkoutState === "under-review";
 
   // Mirror the server fallback (enrollment.service manualPaymentAmount):
   // explicit manualPaymentPrice wins, otherwise brand-based default. Never
@@ -115,11 +147,21 @@ export function useEnrollmentCheckout(courseSlug?: string) {
       // External gateway URL — must be a full navigation, not next/router.
       window.location.href = paymentUrl;
     } catch (error: unknown) {
-      const paymentError = error as { data?: { message?: string } };
-      toast.error(paymentError?.data?.message || "Payment initiation failed. Please try again.");
+      toast.error(getApiErrorMessage(error, "Payment initiation failed. Please try again."));
       setIsProcessing(false);
     }
   }, [enrollStudent]);
+
+  const resumePayment = useCallback(async () => {
+    if (!resolvedBatchId) {
+      toast.error("Batch information is missing. Please refresh the page.");
+      return;
+    }
+    await processSSLCommerzPayment({
+      batchId: String(resolvedBatchId),
+      paymentMethod: "SSLCommerz",
+    });
+  }, [processSSLCommerzPayment, resolvedBatchId]);
 
   const handleManualPaymentComplete = useCallback(async (paymentData: ManualPaymentData) => {
     if (!enrollmentData) {
@@ -139,8 +181,7 @@ export function useEnrollmentCheckout(courseSlug?: string) {
         router.push('/');
       }
     } catch (err: unknown) {
-      const errM = err as { data: { message: string } };
-      toast.error(errM?.data?.message || "Something went wrong!");
+      toast.error(getApiErrorMessage(err, "Something went wrong!"));
     } finally {
       setIsProcessing(false);
     }
@@ -168,6 +209,9 @@ export function useEnrollmentCheckout(courseSlug?: string) {
     showTutorial,
     isDataLoading,
     isEnrollmentOpen,
+    checkoutState,
+    checkoutEnrollment,
+    isCheckoutBlocked,
     resolvedCourse,
     resolvedBatch,
     manualPaymentAmount,
@@ -176,6 +220,7 @@ export function useEnrollmentCheckout(courseSlug?: string) {
     setShowTutorial,
     setCurrentStep,
     onSubmit,
+    resumePayment,
     goBack,
     handleManualPaymentComplete,
   };

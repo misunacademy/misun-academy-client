@@ -29,7 +29,7 @@ function SuspendedContent() {
           </svg>
         </div>
         <h1 className="relative mb-2 text-xl font-bold text-white">অ্যাকাউন্ট স্থগিত</h1>
-        <p className="relative mb-6 text-sm leading-relaxed text-white/60">
+        <p className="relative mb-6 text-sm leading-relaxed text-white/80">
           আপনার অ্যাকাউন্টটি বর্তমানে স্থগিত রয়েছে। কোর্সে ভর্তি ও ক্লাস অ্যাক্সেস সাময়িকভাবে বন্ধ আছে।
           বিস্তারিত জানতে অনুগ্রহ করে আমাদের সাপোর্ট টিমের সাথে যোগাযোগ করুন।
         </p>

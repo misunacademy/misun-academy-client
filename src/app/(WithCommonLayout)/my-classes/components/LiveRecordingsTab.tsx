@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Skeleton } from 'boneyard-js/react'
+import { LoadingBoundary } from "@/components/shared/LoadingBoundary";
 import { AlertCircle, BookOpen, Clock, PlayCircle, Radio, Video } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -82,7 +82,7 @@ export function LiveRecordingsTab() {
   };
 
   return (
-    <Skeleton name="LiveRecordingsTab" loading={isLoading || isDashboardLoading}>
+    <LoadingBoundary loading={isLoading || isDashboardLoading}>
       {isError ? (
         <Alert variant="destructive" className="border-red-500/30 bg-red-500/10 text-red-100">
           <AlertCircle className="h-4 w-4" />
@@ -211,6 +211,6 @@ export function LiveRecordingsTab() {
       </Dialog>
     </>
       )}
-    </Skeleton>
+    </LoadingBoundary>
   );
 }

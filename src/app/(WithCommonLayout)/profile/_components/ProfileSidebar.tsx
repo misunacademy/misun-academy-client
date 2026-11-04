@@ -42,48 +42,50 @@ export default function ProfileSidebar({
     setActiveTab: (tab: string) => void;
 }) {
     return (
-        <div className="w-full lg:w-[320px] flex-shrink-0 bg-surface rounded-2xl border border-primary/20 overflow-hidden flex flex-col items-center p-6 shadow-[0_0_30px_hsl(156_70%_42%/0.05)]">
-            <div className="w-full flex justify-end">
-                <Info className="w-5 h-5 text-white/30 cursor-pointer hover:text-white/70 transition-colors" />
-            </div>
+        <div className="sm:sticky top-6 lg:sticky lg:top-6 flex-shrink-0 w-full lg:w-[320px] sm:h-[calc(100vh-120px)] flex flex-col overflow-hidden">
+            <div className="flex-1 overflow-y-auto py-6 px-4 lg:p-6">
+                <div className="w-full flex justify-end mb-2">
+                    <Info className="w-5 h-5 text-white/30 cursor-pointer hover:text-white/70 transition-colors" aria-label="More info" />
+                </div>
 
-            <div className="relative mb-4 cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
-                <div className="w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-primary via-primary-glow to-primary shadow-[0_0_20px_hsl(156_70%_42%/0.4)]">
-                    <div className="w-full h-full rounded-full border-4 border-surface overflow-hidden bg-[#0a1510] relative">
-                        {user.image ? (
-                            <Image src={user.image} alt={user.name!} fill sizes="112px" className="object-cover" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center text-3xl font-bold bg-[#2A2A35] text-white/50">
-                                {user.name?.charAt(0)?.toUpperCase()}
+                <div className="flex justify-center mb-6 cursor-pointer group" role="button" aria-label="Change profile photo" onClick={() => fileInputRef.current?.click()}>
+                    <div className="relative w-32 h-32 rounded-full p-[3px] bg-gradient-to-tr from-primary via-primary-glow to-primary shadow-[0_0_25px_hsl(156_70%_42%/0.5)] inline-block">
+                        <div className="w-full h-full rounded-full border-4 border-surface overflow-hidden bg-surface relative">
+                            {user.image ? (
+                                <Image src={user.image} alt={user.name!} fill sizes="128px" className="object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-4xl font-bold bg-surface text-white/40 font-bangla font-semibold">
+                                    {user.name?.charAt(0)?.toUpperCase()}
+                                </div>
+                            )}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                                {uploadLoading ? <Loader2 className="w-7 h-7 animate-spin text-white" /> : <Edit className="w-7 h-7 text-white" />}
                             </div>
-                        )}
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                            {uploadLoading ? <Loader2 className="w-6 h-6 animate-spin text-white" /> : <Edit className="w-6 h-6 text-white" />}
                         </div>
                     </div>
+                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
                 </div>
-                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
-            </div>
 
-            <h2 className="text-white font-semibold text-xl mb-1">{user.name}</h2>
-            <p className="text-white/50 text-xs mb-1 font-mono">{studentId}</p>
-            <p className="text-white/70 text-sm mb-1">{user.email}</p>
-            <p className="text-white/70 text-sm mb-6">{phone}</p>
-
-            <div className="w-full mb-8">
-                <div className="flex justify-between items-center mb-2">
-                    <span className="text-white/70 text-xs font-bangla">প্রোফাইল সম্পূর্ণ করুন</span>
-                    <span className="text-primary text-xs font-semibold">{profileCompletion}%</span>
+                <div className="text-center mb-2">
+                    <h2 className="text-white font-bold text-2xl font-bangla mb-1">{user.name}</h2>
+                    <p className="text-white/50 text-xs font-mono">{studentId}</p>
+                    <p className="text-white/70 text-sm mb-1">{user.email}</p>
+                    <p className="text-white/70 text-sm">{phone}</p>
                 </div>
-                <div className="w-full bg-white/5 rounded-full h-1.5 flex overflow-hidden border border-white/5">
-                    <div className="bg-gradient-to-r from-primary/50 to-primary h-full" style={{ width: `${profileCompletion}%` }} />
+
+                <div className="w-full mb-8 mt-2">
+                    <div className="flex justify-between items-center mb-2 px-2">
+                        <span className="text-white/70 text-xs font-bangla">প্রোফাইল সম্পূর্ণ করুন</span>
+                        <span className="text-primary text-xs font-semibold">{profileCompletion}%</span>
+                    </div>
+                    <div className="w-full bg-white/5 rounded-full h-1.5 flex overflow-hidden border border-white/5">
+                        <div className="bg-gradient-to-r from-primary via-primary-glow to-primary h-full rounded-full shadow-[0_0_15px_hsl(156_70%_42%/0.4)]" style={{ width: `${profileCompletion}%` }} />
+                    </div>
                 </div>
-            </div>
 
-            <div className="w-full border-t border-dashed border-white/10 my-2" />
+                <div className="w-full border-t border-dashed border-white/10 my-4" />
 
-            <div className="w-full mt-4">
-                <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-1 lg:overflow-visible">
+                <div className="flex sm:flex-col justify-evenly items-center gap-2 w-full mt-4 space-y-1 overflow-auto">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = activeTab === item.id;
@@ -91,25 +93,27 @@ export default function ProfileSidebar({
                             <button
                                 key={item.id}
                                 onClick={() => setActiveTab(item.id)}
-                                className={`min-w-[170px] shrink-0 flex items-center justify-between p-3 rounded-xl transition-all lg:w-full lg:min-w-0 ${
+                                className={`w-full flex items-center justify-between gap-4 p-3 rounded-xl transition-all duration-300 ${
                                     isActive
-                                        ? 'bg-primary/10 border border-primary/20 text-primary shadow-[0_0_15px_hsl(156_70%_42%/0.1)]'
-                                        : 'text-white/60 hover:bg-white/5 hover:text-white/90 border border-transparent'
+                                        ? 'bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30 text-primary shadow-[0_0_20px_hsl(156_70%_42%/0.15)]'
+                                        : 'text-white/50 hover:bg-white/5 hover:text-white/90 hover:border-white/10 border-transparent'
                                 }`}
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isActive ? 'bg-primary/20 text-primary' : ''}`}>
-                                        <Icon className="w-4 h-4" />
+                                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                                        isActive ? 'bg-primary text-primary-foreground' : 'bg-white/5 text-white/40'
+                                    }`}>
+                                        <Icon className="w-5 h-5" />
                                     </div>
-                                    <span className={`whitespace-nowrap text-sm ${isActive ? 'font-medium text-primary' : ''}`}>{item.label}</span>
+                                    <span className={`text-sm font-medium ${isActive ? 'font-bold' : ''} whitespace-nowrap`}>{item.label}</span>
                                 </div>
                                 {item.completed ? (
-                                    <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center shadow-[0_0_8px_hsl(156_70%_42%/0.5)]">
-                                        <div className="w-1.5 h-1.5 rounded-sm border-b-2 border-r-2 border-white rotate-45 transform -translate-y-[1px]" />
+                                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-[0_0_12px_hsl(156_70%_42%/0.6)]">
+                                        <div className="w-2 h-2 rounded-sm border-b-2 border-r-2 border-white rotate-45 transform -translate-y-[0.5px]" />
                                     </div>
                                 ) : (
-                                    <div className="w-4 h-4 rounded-full border border-white/20 flex items-center justify-center">
-                                        <div className="w-2 h-2 rounded-full border border-white/30 rotate-45" />
+                                    <div className="w-5 h-5 rounded-full border border-white/20 flex items-center justify-center">
+                                        <div className="w-2.5 h-2.5 rounded-full border border-white/30 rotate-45" />
                                     </div>
                                 )}
                             </button>

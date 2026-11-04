@@ -42,10 +42,10 @@ export default function CourseEnrollmentCard({
     return (
         <div className="rounded-2xl border border-white/10 bg-white/3 overflow-hidden">
             <div className="px-4 pt-4 pb-3 border-b border-white/8">
-                <p className="text-xs text-yellow-400/70 uppercase tracking-widest mb-0.5">কোর্স</p>
-                <p className="font-bold text-white/90 text-sm leading-snug">{courseName}</p>
+                <p className="text-xs font-semibold text-yellow-400 mb-0.5">কোর্স</p>
+                <p className="font-bold text-white text-sm leading-snug">{courseName}</p>
                 {batchTitle && (
-                    <p className="text-xs text-primary/70 mt-1">{batchTitle}</p>
+                    <p className="text-xs text-primary-glow mt-1">{batchTitle}</p>
                 )}
             </div>
             <div className="p-4 space-y-2">
@@ -55,8 +55,8 @@ export default function CourseEnrollmentCard({
                             <Calendar className="h-3.5 w-3.5 text-primary" />
                         </div>
                         <div>
-                            <p className="text-xs text-primary/70">এনরোলমেন্ট শুরু</p>
-                            <p className="text-sm font-bold text-white/90">{fmtDate(start)}</p>
+                            <p className="text-xs text-white/80">এনরোলমেন্ট শুরু</p>
+                            <p className="text-sm font-bold text-white">{fmtDate(start)}</p>
                         </div>
                     </div>
                 )}
@@ -66,18 +66,18 @@ export default function CourseEnrollmentCard({
                             <Clock className="h-3.5 w-3.5 text-red-400" />
                         </div>
                         <div>
-                            <p className="text-xs text-red-400/70">এনরোলমেন্টের শেষ তারিখ</p>
-                            <p className="text-sm font-bold text-white/90">{fmtDate(end)}</p>
+                            <p className="text-xs text-white/80">এনরোলমেন্টের শেষ তারিখ</p>
+                            <p className="text-sm font-bold text-white">{fmtDate(end)}</p>
                         </div>
                     </div>
                 )}
                 {!start && !end && (
-                    <p className="text-xs text-white/40 italic">এনরোলমেন্টের তারিখ শীঘ্রই জানানো হবে।</p>
+                    <p className="readable-micro-label italic">এনরোলমেন্টের তারিখ শীঘ্রই জানানো হবে।</p>
                 )}
                 {fee > 0 && (
                     <div className="flex items-center justify-between pt-1 border-t border-white/8 mt-2">
-                        <span className="text-xs text-white/50">কোর্স ফি</span>
-                        <span className="text-sm font-bold text-primary">৳{fee}</span>
+                        <span className="text-xs text-white/80">কোর্স ফি</span>
+                        <span className="text-sm font-bold text-primary-glow">৳{fee}</span>
                     </div>
                 )}
                 <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold mt-1 ${isOpen
@@ -116,8 +116,7 @@ export default function CourseEnrollmentCard({
                                     <span className="relative inline-flex rounded-full h-[7px] w-[7px]" style={{ backgroundColor: 'hsl(156 80% 65%)' }} />
                                 </span>
                                 <span
-                                    className="relative text-sm font-bold tracking-wide font-mona"
-                                    style={{ background: 'linear-gradient(90deg, hsl(156 75% 62%) 0%, hsl(156 85% 78%) 50%, hsl(156 70% 60%) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
+                                    className="relative text-sm font-bold font-mona text-primary-glow"
                                 >
                                     এখনই এনরোল করুন
                                 </span>

@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { memo } from "react";
 import {
-  useGetMyBootcampPurchasesQuery,
   type BootcampPurchase,
 } from "@/redux/api/bootcampApi";
 
@@ -104,16 +103,15 @@ const BootcampPurchaseCard = memo(function BootcampPurchaseCard({
           <div className="relative flex flex-col sm:flex-row sm:items-center gap-3 mt-auto pt-1">
             <div className="flex items-center gap-2 sm:ml-auto">
               {slug ? (
-                <Link href={isPaid ? `/bootcamp/${slug}/watch` : `/bootcamp/${slug}`}>
-                  <button
-                    className="group/btn inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm font-bangla
+                <Link
+                  href={isPaid ? `/bootcamp/${slug}/watch` : `/bootcamp/${slug}`}
+                  className="group/btn inline-flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-sm font-bangla
                     bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark text-white
                     shadow-[0_0_14px_hsl(156_70%_42%/0.35)] hover:shadow-[0_0_22px_hsl(156_70%_42%/0.55)]
                     transition-all duration-300 hover:-translate-y-px"
-                  >
+                >
                     <PlayCircle className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
                     {isPaid ? "ভিডিও দেখুন" : "বিস্তারিত দেখুন"}
-                  </button>
                 </Link>
               ) : (
                 <button
@@ -132,31 +130,11 @@ const BootcampPurchaseCard = memo(function BootcampPurchaseCard({
   );
 });
 
-export function BootcampsTab() {
-  const { data, isLoading, error } = useGetMyBootcampPurchasesQuery();
-  const purchases = data?.data ?? [];
+export function BootcampsTab(
+  { bootcamps }: { bootcamps: BootcampPurchase[] }
+) {
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-4">
-        {[0, 1].map((i) => (
-          <div key={i} className="h-44 animate-pulse rounded-2xl bg-white/5 border border-white/10" />
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="rounded-2xl border border-red-400/20 bg-red-500/5 p-8 text-center">
-        <p className="font-bangla text-sm text-red-300">
-          বুটক্যাম্প পারচেজ লোড করা যায়নি। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।
-        </p>
-      </div>
-    );
-  }
-
-  if (purchases.length === 0) {
+  if (bootcamps.length === 0) {
     return (
       <div className="relative rounded-2xl border border-primary/20 bg-surface overflow-hidden flex flex-col items-center justify-center py-20 gap-5 text-center px-6">
         <div
@@ -178,15 +156,11 @@ export function BootcampsTab() {
             আপনি এখনো কোনো বুটক্যাম্প রেকর্ডিং কেনেননি। রেকর্ডিং ব্রাউজ করে শেখা শুরু করুন।
           </p>
         </div>
-        <Link href="/bootcamp" className="relative">
-          <button
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm font-bangla
+        <Link href="/bootcamp" className="relative inline-flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-sm font-bangla
             bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark text-white
             shadow-[0_0_20px_hsl(156_70%_42%/0.3)] hover:shadow-[0_0_30px_hsl(156_70%_42%/0.5)]
-            transition-all duration-300 hover:-translate-y-0.5"
-          >
+            transition-all duration-300 hover:-translate-y-0.5">
             Browse Bootcamps
-          </button>
         </Link>
       </div>
     );
@@ -194,7 +168,7 @@ export function BootcampsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      {purchases.map((purchase) => (
+      {bootcamps.map((purchase) => (
         <BootcampPurchaseCard key={purchase._id} purchase={purchase} />
       ))}
     </div>

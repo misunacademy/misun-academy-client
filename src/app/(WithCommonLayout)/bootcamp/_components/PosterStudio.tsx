@@ -207,7 +207,7 @@ export const PosterStudio = () => {
 
     return (
         <section className="border-y border-white/10 bg-[#0a0a0b] py-14 text-white">
-            <div className="mx-auto grid max-w-6xl items-start gap-10 px-4 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="mx-auto grid max-w-7xl items-start gap-10 px-4 lg:grid-cols-[0.9fr_1.1fr]">
                 <FadeIn>
                     <p className="font-mona text-xs font-bold uppercase tracking-[0.3em] text-[#ffd60a]">
                         {posterStudio.eyebrow}
@@ -215,7 +215,7 @@ export const PosterStudio = () => {
                     <h2 className="mt-2 font-bangla text-2xl font-bold sm:text-3xl">
                         {posterStudio.title}
                     </h2>
-                    <p className="mt-3 font-bangla text-sm leading-relaxed text-white/60">
+                    <p className="mt-3 font-bangla text-sm leading-relaxed text-white/70">
                         {posterStudio.description}
                     </p>
 
@@ -270,14 +270,14 @@ export const PosterStudio = () => {
                             <div className="mt-5 space-y-3">
                                 <div className="flex items-center gap-3">
                                     <Move aria-hidden className="h-4 w-4 shrink-0 text-[#ffd60a]" />
-                                    <p className="font-bangla text-xs text-white/55">
+                                    <p className="font-bangla text-xs text-white/65">
                                         {posterStudio.repositionHint}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <label
                                         htmlFor="bootcamp-poster-zoom"
-                                        className="w-16 shrink-0 font-bangla text-xs text-white/55"
+                                        className="w-16 shrink-0 font-bangla text-xs text-white/65"
                                     >
                                         {posterStudio.zoomLabel}
                                     </label>
@@ -360,7 +360,7 @@ export const PosterStudio = () => {
                             {!hasPhoto && (
                                 <div className="pointer-events-none absolute inset-x-8 top-[16%] flex h-1/2 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-white/25 bg-black/30 text-center backdrop-blur-[2px]">
                                     <ImageIcon className="h-8 w-8 text-white/50" />
-                                    <p className="mt-3 font-bangla text-sm text-white/60">
+                                    <p className="mt-3 font-bangla text-sm text-white/70">
                                         আপনার ছবি এখানে দেখা যাবে
                                     </p>
                                 </div>

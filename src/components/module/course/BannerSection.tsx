@@ -1,13 +1,14 @@
 "use client"
 
-import { Skeleton } from 'boneyard-js/react'
 import { useGetCourseBySlugQuery } from "@/redux/api/courseApi"
 import { useGetCurrentEnrollmentBatchQuery, type BatchResponse } from "@/redux/api/batchApi"
 import { BannerBackground, BannerContent } from "./banner"
+import CoursesLoading from "@/app/(WithCommonLayout)/course-details/loading"
 
 interface BannerSectionProps {
   courseSlug?: string
 }
+
 
 export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
   const { data: courseBySlug, isLoading: courseBySlugLoading } = useGetCourseBySlugQuery(
@@ -27,6 +28,10 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
 
   const isLoading = courseSlug ? (courseBySlugLoading || (!!slugCourseId && slugBatchLoading)) : false
 
+  if (isLoading) {
+    return <CoursesLoading />
+  }
+
   const batchNumber = Number(resolvedBatch?.title?.split(" ")[1] || 0)
 
   const formatDate = (dateStr: Date | string | undefined | null) =>
@@ -43,8 +48,7 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
   const price = resolvedBatch?.price
 
   return (
-    <Skeleton name="BannerSection" loading={isLoading}>
-      <section className="relative bg-surface overflow-hidden font-bangla">
+  <section className="relative bg-surface overflow-hidden font-bangla">
         <BannerBackground />
 
         <BannerContent
@@ -54,6 +58,6 @@ export default function BannerSection({ courseSlug }: BannerSectionProps = {}) {
           courseSlug={courseSlug}
         />
       </section>
-    </Skeleton>
+
   )
 }

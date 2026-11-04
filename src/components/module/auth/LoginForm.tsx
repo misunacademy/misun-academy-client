@@ -25,7 +25,7 @@ interface LoginFormProps {
   onForgotPassword: () => void;
 }
 
-const INPUT_CLASSES = "h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/30 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors autofill:shadow-[inset_0_0_0px_1000px_rgb(13,31,18)] autofill:[-webkit-text-fill-color:white]";
+const INPUT_CLASSES = "h-11 !bg-[#0d1f12] !border-primary/25 text-white placeholder:text-white/50 focus-visible:!ring-1 focus-visible:!ring-primary/40 hover:!border-primary/40 transition-colors autofill:shadow-[inset_0_0_0px_1000px_rgb(13,31,18)] autofill:[-webkit-text-fill-color:white]";
 
 const LoginForm = ({ onLogin, onForgotPassword }: LoginFormProps) => {
   const { signInWithGoogle } = useAuth();
@@ -60,7 +60,7 @@ const LoginForm = ({ onLogin, onForgotPassword }: LoginFormProps) => {
           <InputField
             name="email"
             label="ইমেইল"
-            labelClassName="text-white/70"
+            labelClassName="text-white/85"
             type="email"
             placeholder="your@email.com"
             required
@@ -70,7 +70,7 @@ const LoginForm = ({ onLogin, onForgotPassword }: LoginFormProps) => {
           <PasswordField
             name="password"
             label="পাসওয়ার্ড"
-            labelClassName="text-white/70"
+            labelClassName="text-white/85"
             required
             className={INPUT_CLASSES}
           />
@@ -78,7 +78,7 @@ const LoginForm = ({ onLogin, onForgotPassword }: LoginFormProps) => {
           <div className="flex justify-end">
             <button
               type="button"
-              className="text-xs text-primary/80 hover:text-primary transition-colors font-medium"
+              className="inline-flex min-h-[32px] items-center text-sm text-primary-glow hover:text-white transition-colors font-medium"
               onClick={onForgotPassword}
             >
               পাসওয়ার্ড ভুলে গেছেন?

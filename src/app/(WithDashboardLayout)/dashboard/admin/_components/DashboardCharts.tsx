@@ -68,15 +68,18 @@ export default function DashboardCharts({
                 </CardHeader>
                 <CardContent>
                     {hasCourseData ? (
+                        <>
+                        <p className="sr-only">Bar chart comparing total income by course. Use the arrow keys to explore each value.</p>
                         <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={courseWiseStats}>
+                            <BarChart data={courseWiseStats} accessibilityLayer>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="courseTitle" />
                                 <YAxis />
                                 <Tooltip formatter={(value) => [`BDT ${(value as number)?.toLocaleString() || '0'}`, 'Income']} />
-                                <Bar dataKey="totalIncome" fill="#8884d8" />
+                                <Bar dataKey="totalIncome" fill="hsl(var(--chart-1))" />
                             </BarChart>
                         </ResponsiveContainer>
+                        </>
                     ) : (
                         <div className="flex items-center justify-center h-[300px] text-muted-foreground">
                             No course income data available
@@ -92,8 +95,10 @@ export default function DashboardCharts({
                 </CardHeader>
                 <CardContent>
                     {hasBatchData ? (
+                        <>
+                        <p className="sr-only">Bar chart comparing total income by batch and course. Use the arrow keys to explore each value.</p>
                         <ResponsiveContainer width="100%" height={300}>
-                            <BarChart data={batchWiseIncome} margin={{ top: 12, right: 12, bottom: 36, left: 0 }}>
+                            <BarChart data={batchWiseIncome} margin={{ top: 12, right: 12, bottom: 36, left: 0 }} accessibilityLayer>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="batchTitle" height={48} tick={<BatchCourseTick />} />
                                 <YAxis />
@@ -105,9 +110,10 @@ export default function DashboardCharts({
                                         return entry.courseTitle ? `${entry.batchTitle} - ${entry.courseTitle}` : entry.batchTitle;
                                     }}
                                 />
-                                <Bar dataKey="totalIncome" fill="#82ca9d" />
+                                <Bar dataKey="totalIncome" fill="hsl(var(--chart-2))" />
                             </BarChart>
                         </ResponsiveContainer>
+                        </>
                     ) : (
                         <div className="flex items-center justify-center h-[300px] text-muted-foreground">
                             No batch income data available

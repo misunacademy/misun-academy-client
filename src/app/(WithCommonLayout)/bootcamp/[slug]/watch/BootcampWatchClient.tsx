@@ -20,6 +20,7 @@ import {
 } from '@/redux/api/bootcampApi';
 import { LessonVideoPlayer } from '@/components/shared/lesson-video-player';
 import { DetailCopyright } from '../../_components/detail/DetailCopyright';
+import BootcampWatchLoading from './loading';
 
 function ResourcesBlock({ video }: { video: BootcampVideo }) {
     const resources = video.resources ?? [];
@@ -87,17 +88,13 @@ export default function BootcampWatchClient() {
 
     if (isLoading || (hasPurchased && videosLoading)) {
         return (
-            <main className="bg-[#0a0a0b]">
-                <div className="mx-auto max-w-7xl px-4 py-16">
-                    <div className="h-80 animate-pulse rounded-2xl bg-white/5" />
-                </div>
-            </main>
+            <BootcampWatchLoading />
         );
     }
 
     if (error || !data?.data) {
         return (
-            <main className="bg-[#0a0a0b]">
+            <div className="bg-[#0a0a0b]">
                 <div className="mx-auto max-w-3xl px-4 py-20 text-center">
                     <p className="font-bangla text-xl text-white/70">বুটক্যাম্প পাওয়া যায়নি।</p>
                     <Link
@@ -107,7 +104,7 @@ export default function BootcampWatchClient() {
                         সব বুটক্যাম্প দেখুন
                     </Link>
                 </div>
-            </main>
+            </div>
         );
     }
 
@@ -117,7 +114,7 @@ export default function BootcampWatchClient() {
     // non-purchase — report it distinctly instead of a "buy first" paywall.
     if (hasPurchased && videosError) {
         return (
-            <main className="bg-[#0a0a0b] text-white">
+            <div className="bg-[#0a0a0b] text-white">
                 <div className="mx-auto max-w-3xl px-4 py-20 text-center">
                     <Video className="mx-auto h-10 w-10 text-white/30" />
                     <h1 className="mt-4 font-bangla text-2xl font-bold">
@@ -133,13 +130,13 @@ export default function BootcampWatchClient() {
                         আবার চেষ্টা করুন
                     </button>
                 </div>
-            </main>
+            </div>
         );
     }
 
     if (!hasPurchased) {
         return (
-            <main className="bg-[#0a0a0b] text-white">
+            <div className="bg-[#0a0a0b] text-white">
                 <div className="mx-auto max-w-3xl px-4 py-20 text-center">
                     <Video className="mx-auto h-10 w-10 text-white/30" />
                     <h1 className="mt-4 font-bangla text-2xl font-bold">
@@ -157,7 +154,7 @@ export default function BootcampWatchClient() {
                         বুটক্যাম্প পেজে ফিরুন — ৳{bootcamp.recordedPrice}
                     </Link>
                 </div>
-            </main>
+            </div>
         );
     }
 
@@ -171,7 +168,7 @@ export default function BootcampWatchClient() {
     };
 
     return (
-        <main className="bg-[#0a0a0b] pb-16 text-white">
+        <div className="bg-[#0a0a0b] pb-16 text-white">
             <div className="mx-auto max-w-7xl px-4 pt-6">
                 <button
                     onClick={() => router.push(`/bootcamp/${bootcamp.slug}`)}
@@ -304,6 +301,6 @@ export default function BootcampWatchClient() {
                     </aside>
                 </div>
             )}
-        </main>
+        </div>
     );
 }
