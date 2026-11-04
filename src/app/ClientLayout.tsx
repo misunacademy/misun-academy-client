@@ -1,4 +1,3 @@
-'use client';
 import { Suspense } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 import { Analytics } from "@vercel/analytics/next";
@@ -14,7 +13,7 @@ export default function ClientLayout({
 }: Readonly<{
   children: React.ReactNode;
   locale: string;
-  messages: Record<string, any>;
+  messages: Record<string, Record<string, string>>;
 }>) {
   const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
   const pixelId = process.env.NEXT_PUBLIC_FACEBOOK_PIXEL_ID;

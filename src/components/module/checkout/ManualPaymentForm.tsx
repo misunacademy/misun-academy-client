@@ -33,7 +33,6 @@ export function ManualPaymentForm({
     onBack,
     onPaymentComplete,
     manualAmount,
-    manualCurrency,
     isSubmitting = false,
     batch
 }: ManualPaymentFormProps) {
@@ -75,9 +74,8 @@ export function ManualPaymentForm({
     };
 
     const displayAmount = manualAmount ?? 0;
-    const CURRENCY_SYMBOLS: Record<string, string> = { INR: "INR", BDT: "৳" };
-    const effectiveCurrency = manualCurrency ?? paymentInfo.currency;
-    const currencyLabel = CURRENCY_SYMBOLS[effectiveCurrency] ?? effectiveCurrency;
+    // Manual PhonePe payments always go through the INR account.
+    const currencyLabel = "INR";
     const formattedAmount = `${currencyLabel} ${displayAmount.toLocaleString('en-US')}`;
     const instructions = [
         t('step1'),
@@ -238,7 +236,7 @@ export function ManualPaymentForm({
                                             disabled={!form.formState.isValid || isSubmitting}
                                             className="relative w-full bg-primary hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-emerald-darker disabled:text-white disabled:ring-1 disabled:ring-inset disabled:ring-primary/25 transition-colors duration-300 text-primary-foreground font-bold py-2.5 rounded-xl text-sm"
                                         >
-                                            সাবমিট পেমেন্ট ইNFO
+                                            সাবমিট করুন
                                         </button>
                                     </div>
                                 </div>
