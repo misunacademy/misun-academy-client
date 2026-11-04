@@ -61,6 +61,8 @@ export function useCurriculumProgress() {
   const courseId = params.courseId;
 
   const batchIdFromUrl = searchParams.get("batchId") ?? undefined;
+  const lessonIdFromUrl = searchParams.get("lessonId") ?? undefined;
+  const quizIdFromUrl = searchParams.get("quizId") ?? undefined;
   const { data: enrollments, isLoading: enrollmentsLoading } = useGetEnrollmentsQuery(undefined, { skip: !!batchIdFromUrl });
   const fallbackBatchId = batchIdFromUrl
     ? undefined
@@ -119,13 +121,11 @@ export function useCurriculumProgress() {
     try {
       await completeLesson({ courseId, moduleId, lessonId }).unwrap();
       toast.success("Lesson marked as complete!");
-      refetchProgress();
+      await refetchProgress();
       return true;
     } catch (error: unknown) {
       toast.error((error as { data?: { message?: string } })?.data?.message || "Failed to complete lesson.");
-      // Refresh so lock state in the UI matches the server instead of
-      // leaving the user stranded on content the server considers locked.
-      refetchProgress();
+      await refetchProgress();
       return false;
     }
   };
@@ -159,6 +159,8 @@ export function useCurriculumProgress() {
     course: effectiveCourse,
     courseId,
     batchId,
+    lessonIdFromUrl,
+    quizIdFromUrl,
     isLoading,
     curriculum,
     progress,

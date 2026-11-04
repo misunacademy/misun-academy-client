@@ -1,10 +1,48 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useCurriculumProgress } from "./useCurriculumProgress";
 import { useLessonNav } from "./useLessonNav";
 
 export function useCourseNavigation() {
   const progress = useCurriculumProgress();
   const nav = useLessonNav(progress.curriculum, progress.progress?.currentLesson);
+  const { lessonIdFromUrl, quizIdFromUrl } = progress;
+  const deepLinkHandled = useRef(false);
+
+  // Deep linking: if URL specifies a lessonId or quizId, navigate to it on mount.
+  useEffect(() => {
+    if (deepLinkHandled.current) return;
+    deepLinkHandled.current = true;
+
+    const { curriculum, isLessonUnlocked, isQuizUnlocked } = progress;
+
+    if (quizIdFromUrl) {
+      const moduleIdx = curriculum.findIndex((m) =>
+        (m.quizzes || []).some((q) => q.quizId === quizIdFromUrl)
+      );
+      if (moduleIdx >= 0) {
+        const quizIdx = (curriculum[moduleIdx]?.quizzes || []).findIndex(
+          (q) => q.quizId === quizIdFromUrl
+        );
+        if (quizIdx >= 0 && isQuizUnlocked(moduleIdx, quizIdx)) {
+          nav.selectQuizModule(moduleIdx);
+        }
+      }
+      return;
+    }
+    if (lessonIdFromUrl) {
+      const moduleIdx = curriculum.findIndex((m) =>
+        m.lessons.some((l) => l.lessonId === lessonIdFromUrl)
+      );
+      if (moduleIdx >= 0) {
+        const lessonIdx = curriculum[moduleIdx]?.lessons.findIndex(
+          (l) => l.lessonId === lessonIdFromUrl
+        );
+        if (lessonIdx >= 0 && isLessonUnlocked(moduleIdx, lessonIdx)) {
+          nav.selectLesson(moduleIdx, lessonIdx);
+        }
+      }
+    }
+  }, [lessonIdFromUrl, quizIdFromUrl, nav, progress]);
 
   // Completion = every lesson + quiz done. Was a hardcoded `false`, which
   // made the completion card unreachable. (calculatedPercentage is 0 when
@@ -69,5 +107,7 @@ export function useCourseNavigation() {
     selectQuizModule: nav.selectQuizModule,
     setShowCongratulations: nav.setShowCongratulations,
     setShowCookingMessage: nav.setShowCookingMessage,
+    lessonIdFromUrl: progress.lessonIdFromUrl,
+    quizIdFromUrl: progress.quizIdFromUrl,
   };
 }

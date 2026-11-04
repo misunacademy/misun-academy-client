@@ -40,6 +40,7 @@ export const QuizPlayer = React.memo(function QuizPlayer({
     starting,
     submitting,
     quizInfo,
+    attemptId,
     lastAttempt,
     completedAttempts,
     maxAttempts,
@@ -71,8 +72,6 @@ export const QuizPlayer = React.memo(function QuizPlayer({
     [infoLoading, attemptsLoading, attemptsFetching, phase]
   );
 
-  const zeroQuestions = React.useMemo(() => questions.length === 0, [questions.length]);
-
   if (loading) {
     return (
       <div
@@ -99,50 +98,6 @@ export const QuizPlayer = React.memo(function QuizPlayer({
           <p className="text-white/40" aria-live="polite">
             Quiz not found.
           </p>
-        </DarkCard>
-      </div>
-    );
-  }
-
-  if (zeroQuestions) {
-    return (
-      <div className="p-8 text-center">
-        <DarkCard className="p-8">
-          <h2 className="text-xl font-bold text-white mb-2" aria-live="polite">
-            No Questions Available
-          </h2>
-          <p className="text-white/40 text-sm mb-6" aria-live="polite">
-            This quiz has no questions configured. Please contact the instructor for assistance.
-          </p>
-          <OutlineBtn
-            className="justify-center py-2.5"
-            onClick={onBack}
-            aria-label="Return to course dashboard"
-          >
-            Back to Dashboard
-          </OutlineBtn>
-        </DarkCard>
-      </div>
-    );
-  }
-
-  if (hasPassed && !canReAttempt) {
-    return (
-      <div className="p-8 text-center">
-        <DarkCard className="p-8">
-          <h2 className="text-xl font-bold text-green-400 mb-2" aria-live="polite">
-            Quiz Completed!
-          </h2>
-          <p className="text-white/40 text-sm mb-4" aria-live="polite">
-            You have already passed this quiz. Congratulations!
-          </p>
-          <OutlineBtn
-            className="justify-center py-2.5"
-            onClick={onBack}
-            aria-label="Return to course dashboard"
-          >
-            Back to Dashboard
-          </OutlineBtn>
         </DarkCard>
       </div>
     );
@@ -226,8 +181,6 @@ export const QuizPlayer = React.memo(function QuizPlayer({
                 hasPassed={hasPassed}
                 onReAttempt={handleStart}
                 onReviewAnswers={handleReviewAnswers}
-                onContinue={onComplete}
-                onBack={onBack}
                 isStarting={starting}
                 error={error}
               />
@@ -273,7 +226,7 @@ export const QuizPlayer = React.memo(function QuizPlayer({
             {phase === "result" && quizInfo && (
               <QuizResultView
                 quizId={quizId}
-                attemptId={quizInfo._id}
+                attemptId={attemptId!}
                 questions={questions}
                 onViewSummary={handleViewSummary}
                 canReAttempt={canReAttempt}

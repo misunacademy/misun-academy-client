@@ -4,7 +4,6 @@ import localFont from "next/font/local";
 import ClientLayout from './ClientLayout';
 import OrganizationJsonLd from '@/components/seo/OrganizationJsonLd';
 import WebSiteJsonLd from '@/components/seo/WebSiteJsonLd';
-import { locales } from '@/lib/i18n';
 import './globals.css';
 
 export const metadata: Metadata = {

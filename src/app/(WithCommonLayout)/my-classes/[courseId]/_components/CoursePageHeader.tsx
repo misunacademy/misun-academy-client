@@ -16,8 +16,8 @@ export function CoursePageHeader({ courseTitle, instructorName, totalZames, batc
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
       <Link href="/my-classes">
-        <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border border-white/[0.08] hover:bg-white/[0.06] transition-colors">
-          <ChevronLeft className="h-4 w-4" />
+        <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white/70 border border-white/[0.12] hover:bg-white/[0.06] hover:text-white hover:border-white/[0.20] transition-colors duration-200">
+          <ChevronLeft className="h-4 w-4 text-white/70 hover:text-white transition-colors duration-200" />
           My Classes
         </button>
       </Link>

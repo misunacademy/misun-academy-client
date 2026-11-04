@@ -14,8 +14,6 @@ interface QuizSummaryScreenProps {
   readonly hasPassed: boolean;
   readonly onReAttempt: () => void;
   readonly onReviewAnswers: (attemptId: string) => void;
-  readonly onContinue: () => void;
-  readonly onBack: () => void;
   readonly isStarting: boolean;
   readonly error: string | null;
 }
@@ -29,8 +27,6 @@ export function QuizSummaryScreen({
   hasPassed,
   onReAttempt,
   onReviewAnswers,
-  onContinue,
-  onBack,
   isStarting,
   error,
 }: QuizSummaryScreenProps) {
@@ -111,20 +107,6 @@ export function QuizSummaryScreen({
             Review Answers
           </OutlineBtn>
         )}
-        <OutlineBtn 
-          className="flex-1 justify-center py-2.5" 
-          onClick={onContinue}
-          aria-label="Continue to next lesson"
-        >
-          Continue Lesson
-        </OutlineBtn>
-        <OutlineBtn 
-          className="flex-1 justify-center py-2.5" 
-          onClick={onBack}
-          aria-label="Return to module"
-        >
-          Back to Module
-        </OutlineBtn>
       </div>
     </div>
   );

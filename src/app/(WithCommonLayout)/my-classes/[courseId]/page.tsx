@@ -14,10 +14,11 @@ import CourseProgressBanner from "./_components/CourseProgressBanner";
 import ModuleSidebar from "./_components/ModuleSidebar";
 import { LoadingState, CourseNotFound } from "./_components/CoursePageStates";
 import CourseLessonNav from "./_components/CourseLessonNav";
-import CourseCompletionCard from "./_components/CourseCompletionCard";
 import CourseContentComingSoon from "./_components/CourseContentComingSoon";
 import CourseTabsSection from "./_components/CourseTabsSection";
 import { QuizPlayer } from "./_components/QuizPlayer";
+import { CourseCompletedView } from "./_components/CourseCompletedView";
+import ModuleNotCookedView from "./_components/ModuleNotCookedView";
 import LeaderboardDrawer from "@/components/quiz/LeaderboardDrawer";
 import { CoursePageLayout } from "./_components/CoursePageLayout";
 import { CoursePageHeader } from "./_components/CoursePageHeader";
@@ -59,9 +60,10 @@ export default function CourseDetails() {
     setShowCookingMessage,
     courseId,
     batchId,
+    quizIdFromUrl,
   } = useCourseNavigation();
 
-  const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
+  const [activeQuizId, setActiveQuizId] = useState<string | null>(quizIdFromUrl || null);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   const { data: zamesStatsRaw } = useGetZamesStatsQuery(
@@ -121,7 +123,9 @@ export default function CourseDetails() {
   const handleQuizComplete = useCallback(async () => {
     const quizzes = currentModule?.quizzes || [];
     const next = await advanceToNext(currentQuizIndex, quizzes);
-    if (next && next !== "lesson") {
+    if (next === "lesson") {
+      setActiveQuizId(null);
+    } else if (next && next !== "lesson") {
       setActiveQuizId(next);
     } else if (!next) {
       setActiveQuizId(null);
@@ -139,7 +143,9 @@ export default function CourseDetails() {
   const handleNextDuringQuiz = useCallback(async () => {
     const quizzes = currentModule?.quizzes || [];
     const next = await advanceToNext(currentQuizIndex, quizzes);
-    if (next && next !== "lesson") {
+    if (next === "lesson") {
+      setActiveQuizId(null);
+    } else if (next && next !== "lesson") {
       setActiveQuizId(next);
     } else if (!next) {
       setActiveQuizId(null);
@@ -157,7 +163,8 @@ export default function CourseDetails() {
   const showProgressBanner = !activeQuizId;
   const showMainContent = activeQuizId || curriculum.length === 0 || (currentLesson && !showCookingMessage);
   const showComingSoon = !activeQuizId && showCookingMessage && !isBatchCompleted && !hasCompletedCourse;
-  const showCompletion = !activeQuizId && isBatchCompleted && hasCompletedCourse && showCongratulations;
+  const showNotCooked = !activeQuizId && showCookingMessage && !isBatchCompleted && hasCompletedCourse;
+  const showCompletion = !activeQuizId && showCookingMessage && isBatchCompleted && hasCompletedCourse && showCongratulations;
   const showLessonNav = curriculum.length > 0 && !showCookingMessage;
 
   return (
@@ -193,7 +200,13 @@ export default function CourseDetails() {
             <div className="lg:col-span-2 space-y-5">
               {showMainContent ? (
                 <>
-                  {activeQuizId ? (
+                  {showCompletion ? (
+                    <CourseCompletedView
+                      courseTitle={course.title}
+                      calculatedPercentage={calculatedPercentage}
+                      onDismiss={() => setShowCongratulations(false)}
+                    />
+                  ) : activeQuizId ? (
                     <QuizPlayer
                       key={activeQuizId}
                       quizId={activeQuizId}
@@ -226,13 +239,7 @@ export default function CourseDetails() {
 
               {showComingSoon && <CourseContentComingSoon />}
 
-              {showCompletion && (
-                <CourseCompletionCard
-                  courseTitle={course.title}
-                  calculatedPercentage={calculatedPercentage}
-                  onDismiss={() => setShowCongratulations(false)}
-                />
-              )}
+              {showNotCooked && <ModuleNotCookedView />}
 
               {showLessonNav && (
                 <CourseLessonNav
@@ -241,7 +248,8 @@ export default function CourseDetails() {
                   canGoPrev={activeQuizId ? true : currentModuleIndex !== 0 || currentLessonIndex !== 0}
                   canGoNext={activeQuizId
                     ? currentQuizIndex < (currentModule?.quizzes?.length ?? 0) - 1 || currentModuleIndex < curriculum.length - 1
-                    : !!currentModule && (
+                    : !!currentModule && !!currentLesson && (
+                        !isLessonCompleted(currentModule.moduleId, currentLesson.lessonId) ||
                         currentLessonIndex < currentModule.lessons.length - 1 ||
                         currentModuleIndex < curriculum.length - 1 ||
                         ((currentModule.quizzes?.length ?? 0) > 0)
