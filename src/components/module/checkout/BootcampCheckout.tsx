@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -7,7 +6,7 @@ import { useInitiateEnrollmentMutation, useEnrollStudentManualMutation } from '@
 import { CheckoutHeader } from './CheckoutHeader';
 import { CourseInfoSidebar } from './CourseInfoSidebar';
 import { CheckoutStepOne } from './CheckoutStepOne';
-import ManualPaymentForm from './ManualPaymentForm';
+import { ManualPaymentForm } from './ManualPaymentForm';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -68,7 +67,6 @@ export default function BootcampCheckout({
                 return;
             }
             toast.success('Redirecting to SSLCommerz...');
-            // External gateway URL — full navigation, not next/router.
             window.location.href = url;
         } catch (e: unknown) {
             toast.error(getApiErrorMessage(e, 'Payment initiation failed.'));

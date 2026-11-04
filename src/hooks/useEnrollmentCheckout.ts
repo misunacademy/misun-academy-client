@@ -152,17 +152,6 @@ export function useEnrollmentCheckout(courseSlug?: string) {
     }
   }, [enrollStudent]);
 
-  const resumePayment = useCallback(async () => {
-    if (!resolvedBatchId) {
-      toast.error("Batch information is missing. Please refresh the page.");
-      return;
-    }
-    await processSSLCommerzPayment({
-      batchId: String(resolvedBatchId),
-      paymentMethod: "SSLCommerz",
-    });
-  }, [processSSLCommerzPayment, resolvedBatchId]);
-
   const handleManualPaymentComplete = useCallback(async (paymentData: ManualPaymentData) => {
     if (!enrollmentData) {
       toast.error("Enrollment data missing!");
@@ -220,7 +209,6 @@ export function useEnrollmentCheckout(courseSlug?: string) {
     setShowTutorial,
     setCurrentStep,
     onSubmit,
-    resumePayment,
     goBack,
     handleManualPaymentComplete,
   };

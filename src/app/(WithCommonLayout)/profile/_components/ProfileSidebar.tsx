@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Info, Edit, Loader2, User, ShoppingBagIcon, Settings } from "lucide-react";
 import { Wallet } from "lucide-react";
 import type { AuthUser } from "@/types/auth";
+import React from "react";
 
 export interface NavItem {
     id: string;
@@ -41,11 +42,54 @@ export default function ProfileSidebar({
     activeTab: string;
     setActiveTab: (tab: string) => void;
 }) {
+    const [showInfo, setShowInfo] = React.useState(false);
+    const infoRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (infoRef.current && !infoRef.current.contains(event.target as Node)) {
+                setShowInfo(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [infoRef]);
+
     return (
         <div className="sm:sticky top-6 lg:sticky lg:top-6 flex-shrink-0 w-full lg:w-[320px] sm:h-[calc(100vh-120px)] flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto py-6 px-4 lg:p-6">
-                <div className="w-full flex justify-end mb-2">
-                    <Info className="w-5 h-5 text-white/30 cursor-pointer hover:text-white/70 transition-colors" aria-label="More info" />
+                <div className="flex-1 overflow-y-auto py-6 px-4 lg:p-6 scrollbar-thin">
+                <div className="w-full flex justify-end mb-2 relative" ref={infoRef} onMouseEnter={() => setShowInfo(true)} onMouseLeave={() => setShowInfo(false)}>
+                    <Info
+                        className="w-5 h-5 text-white/30 cursor-pointer hover:text-white/70 transition-colors"
+                        aria-label="More info"
+                        onClick={() => setShowInfo(!showInfo)}
+                    />
+                    {showInfo && (
+                        <div onMouseEnter={() => setShowInfo(true)} onMouseLeave={() => setShowInfo(false)} className="absolute right-0 mt-2 w-64 rounded-xl border border-white/10 bg-surface/95 backdrop-blur p-4 shadow-[0_0_40px_hsl(156_70%_42%/0.10)] z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <h4 className="text-white font-bold font-bangla mb-2 text-sm">প্রোফাইল সম্পূর্ণতা</h4>
+                            <ul className="space-y-2 text-xs text-white/70 font-bangla">
+                                <li className="flex justify-between">
+                                    <span>নাম ও ছবি</span>
+                                    <span className="text-primary">{user.name ? "সেট করা হয়েছে" : "বাকি আছে"}</span>
+                                </li>
+                                <li className="flex justify-between">
+                                    <span>ছাত্র আইডি</span>
+                                    <span className="text-primary">{studentId ? "সেট করা আছে" : "বাকি আছে"}</span>
+                                </li>
+                                <li className="flex justify-between">
+                                    <span>ফোন নম্বর</span>
+                                    <span className="text-primary">{phone ? "সেট করা আছে" : "বাকি আছে"}</span>
+                                </li>
+                                <li className="flex justify-between">
+                                    <span>ইমেইল</span>
+                                    <span className="text-primary">{user.email ? "সেট করা আছে" : "বাকি আছে"}</span>
+                                </li>
+                            </ul>
+                            <p className="mt-3 text-[11px] text-white/50 font-bangla">
+                                প্রোফাইল ১০০% সম্পূর্ণ করলে আপনি সার্টিফিকেট ও এনরোলমেন্ট ফিচার পাবেন।
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex justify-center mb-6 cursor-pointer group" role="button" aria-label="Change profile photo" onClick={() => fileInputRef.current?.click()}>
@@ -85,7 +129,7 @@ export default function ProfileSidebar({
 
                 <div className="w-full border-t border-dashed border-white/10 my-4" />
 
-                <div className="flex sm:flex-col justify-evenly items-center gap-2 w-full mt-4 space-y-1 overflow-auto">
+                <div className="flex sm:flex-col justify-evenly items-center gap-2 w-full mt-4 space-y-1 overflow-auto scrollbar-thin">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = activeTab === item.id;

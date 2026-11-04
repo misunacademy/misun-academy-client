@@ -66,6 +66,9 @@ export interface EnrollmentResponse {
     slug?: string;
   };
   isCertificateAvailable?: boolean;
+  latestPaymentStatus?: string | null;
+  latestPaymentExpiresAt?: string | null;
+  latestPaymentTransactionId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -11,19 +11,21 @@ interface EnrollmentsTabProps {
 export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
     const normalizeStatus = (status?: string) =>
         (status || "").toLowerCase().replace(/_/g, "-");
-    // Terminal payment failures/expired attempts are internal bookkeeping and
-    // never part of the learner-facing enrollment history.
+    // Terminal payment failures/expired attempts and unpaid enrollments are
+    // internal bookkeeping and never part of the learner-facing enrollment history.
     const hiddenStatuses = new Set([
         "payment-failed",
         "expired",
         "failed",
         "cancelled",
         "canceled",
+        "pending",
+        "payment-pending",
     ]);
     const enrollments = (profile?.enrollments || []).filter(
         (enrollment) => !hiddenStatuses.has(normalizeStatus(enrollment.status))
     );
-    const hasEnrollments = enrollments.length > 0;
+    const hasPaidEnrollments = enrollments.length > 0;
 
     const getStatusLabel = (status?: string) => {
         if (!status) return "unknown";
@@ -88,7 +90,7 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
                     My Enrollments
                 </h2>
                 {
-                    hasEnrollments &&
+                    hasPaidEnrollments &&
                     <div className="hidden md:block">
                         <Button asChild variant="outline" className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors text-xs">
                             <Link href="/enrollment-posters">Get Your Enrollment Posters</Link>
@@ -106,12 +108,12 @@ export function EnrollmentsTab({ profile }: EnrollmentsTabProps) {
                                     <div>
                                         <div className="flex items-center gap-3 mb-2">
                                             <span className="text-white/50 text-sm font-mono bg-white/5 px-2 py-1 rounded-md">
-                                                {enrollment?.enrollmentId || "N/A"}
+                                                {enrollment?.status === 'active' || enrollment?.status === 'completed' ? enrollment?.enrollmentId : "—"}
                                             </span>
                                             {getStatusBadge(enrollment.status)}
                                             {
                                                 enrollment?.accessType && enrollment?.accessType === 'special' &&
-                                                (<span className="px-3 py-1 rounded-full text-xs font-medium border bg-accent/10 text-accent-foreground border-accent/20 capitalize">
+                                                (                                                <span className="px-3 py-1 rounded-full text-xs font-medium border bg-accent/10 text-primary-foreground border-accent/20 capitalize">
                                                     Special Access
                                                 </span>)
                                             }

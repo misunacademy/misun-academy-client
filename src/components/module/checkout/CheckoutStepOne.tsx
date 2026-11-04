@@ -4,6 +4,7 @@ import { BatchInfoCard } from "./BatchInfoCard";
 import { VideoTutorialSection } from "./VideoTutorialSection";
 import { PaymentMethodSelector } from "./PaymentMethodSelector";
 import { EnrollmentSubmitSection } from "./EnrollmentSubmitSection";
+import { useTranslations } from 'next-intl';
 
 interface StepOneContentProps {
   form: ReturnType<typeof useEnrollmentCheckout>['form'];
@@ -23,6 +24,7 @@ export function CheckoutStepOne({
   form, batch, course, agreed, isProcessing, isEnrollmentOpen, showTutorial, batchPrice,
   onAgreeChange, onTutorialToggle, onSubmit,
 }: StepOneContentProps) {
+  const t = useTranslations('checkout');
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -30,14 +32,14 @@ export function CheckoutStepOne({
           <div className="space-y-4">
             <h3 className="text-base font-semibold flex items-center gap-2.5 text-white/80">
               <StepBadge number={1} />
-              বর্তমান ব্যাচে ভর্তি
+              {t('courseDetails')}
             </h3>
             <BatchInfoCard batch={batch} course={course} />
           </div>
         ) : (
           <div className="bg-yellow-500/8 border border-yellow-500/20 rounded-xl p-4 text-center">
-            <p className="text-yellow-400 font-medium">এই মুহূর্তে কোনো ব্যাচ চলছে না</p>
-            <p className="text-sm text-white/70 mt-1">পরে আবার দেখুন অথবা সাপোর্টে যোগাযোগ করুন</p>
+            <p className="text-yellow-400 font-medium">{t('batchClosed')}</p>
+            <p className="text-sm text-white/70 mt-1">{t('batchClosedDesc')}</p>
           </div>
         )}
 
@@ -50,14 +52,14 @@ export function CheckoutStepOne({
         <div className="space-y-4">
           <h3 className="text-base font-semibold flex items-center gap-2.5 text-white/80">
             <StepBadge number={2} />
-            পেমেন্ট পদ্ধতি
+            {t('paymentMethodLabel')}
           </h3>
           <FormField
             control={form.control}
             name="paymentMethod"
             render={({ field }) => (
               <FormItem>
-                <PaymentMethodSelector value={field.value} onChange={field.onChange as (v: "SSLCommerz" | "phonePay") => void} />
+                <PaymentMethodSelector value={field.value} onSelect={field.onChange as (v: "SSLCommerz" | "phonePay") => void} />
                 <FormMessage />
               </FormItem>
             )}
