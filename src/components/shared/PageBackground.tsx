@@ -8,9 +8,9 @@ interface GlowOrb {
 }
 
 const defaultOrbs: GlowOrb[] = [
-    { position: "top-[-90px] left-1/2 -translate-x-1/2", size: "w-[520px] h-[220px]", opacity: "bg-primary/10" },
-    { position: "top-[22%] -left-20", size: "w-[240px] h-[240px]", opacity: "bg-primary/6" },
-    { position: "top-[30%] -right-16", size: "w-[220px] h-[220px]", opacity: "bg-primary/5" },
+    { position: "top-[-90px] left-1/2 -translate-x-1/2", size: "w-[520px] h-[220px]", opacity: "bg-primary/10", blur: "blur-[40px]" },
+    { position: "top-[22%] -left-20", size: "w-[240px] h-[240px]", opacity: "bg-primary/6", blur: "blur-[24px]" },
+    { position: "top-[30%] -right-16", size: "w-[220px] h-[220px]", opacity: "bg-primary/5", blur: "blur-[24px]" },
 ];
 
 export default function PageBackground({
