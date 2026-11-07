@@ -35,7 +35,7 @@ const CourseCurriculum = () => (
       {/* ── Outline download ── */}
       <div className="relative z-20 mt-8 flex justify-center">
         <DownloadOutlineButton
-          href="/outlines/misun-academy-course-outline.pdf"
+          href="/outlines/Misun-academy-course-outline.pdf"
           fileName="Misun-Academy-Course-Outline.pdf"
           color="#147a5b"
         />

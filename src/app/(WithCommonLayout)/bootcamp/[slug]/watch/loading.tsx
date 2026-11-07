@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function BootcampWatchLoading() {
   return (
-    <main aria-busy="true" aria-label="Loading bootcamp watch page" className="min-h-screen bg-[#0a0a0b] font-bangla text-white pb-16">
+    <main aria-busy="true" aria-label="Loading bootcamp watch page" className="min-h-screen bg-surface-darker font-bangla text-white pb-16">
       <div className="mx-auto max-w-7xl px-4 pt-6">
         <div className="flex items-center gap-1 font-bangla text-sm text-white/55">
           <Skeleton className="h-4 w-4 shrink-0 rounded-full bg-white/5" />
@@ -16,7 +16,7 @@ export default function BootcampWatchLoading() {
 
       <div className="mx-auto mt-6 grid max-w-7xl gap-5 px-4 lg:grid-cols-[1fr_340px]">
         <div className="space-y-6">
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-surface-darker">
             <Skeleton className="relative w-full h-[340px] rounded-none bg-white/5" />
           </div>
           <Skeleton className="mt-4 h-5 w-24 rounded-full bg-white/10" />
@@ -48,7 +48,7 @@ export default function BootcampWatchLoading() {
 
           <div className="mt-6">
             <Skeleton className="h-5 w-24 rounded-full bg-white/5 mb-4" />
-            <Skeleton className="h-8 w-32 rounded-xl bg-[#0d0d0e] border border-white/10" />
+            <Skeleton className="h-8 w-32 rounded-xl bg-surface-darker border border-white/10" />
             <Skeleton className="h-5 w-32 rounded-full bg-white/5 mb-3" />
             <Skeleton className="h-4 w-full rounded-full bg-white/5" />
             <Skeleton className="h-3 w-5/6 rounded-full bg-white/5" />

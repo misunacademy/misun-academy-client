@@ -1,24 +1,24 @@
 import Image from 'next/image';
 import { HeroBanner } from '@/assets/images';
-// import { HeroBg } from '@/assets/svg';
+import { HeroBg } from '@/assets/svg';
 import { Briefcase, Video, UserCheck, Clock, Home, PenTool, Palette, Layers, Crop, MousePointer2 } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { AIPoweredBadge } from '@/components/ui/ai-powered-badge';
-import Galaxy from './Galaxy';
+// import Galaxy from './Galaxy';
 
 export default function HeroSection() {
   return (
     <section
       data-dark-section
-      className="relative w-full min-h-screen border-b border-white/5 overflow-hidden bg-[#060f0a]"
-      //    style={{
-      //   backgroundImage: `url(${HeroBg.src})`,
-      //   backgroundSize: 'cover',
-      //   backgroundPosition: 'center',
-      //   backgroundRepeat: 'no-repeat',
-      //   backgroundColor: '#060f0a', // Fallback surface
-      // }}
+      className="relative w-full min-h-screen border-b border-white/5 overflow-hidden bg-surface"
+         style={{
+        backgroundImage: `url(${HeroBg.src})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundColor: '#060f0a', // Fallback surface
+      }}
     >
       {/* ── WebThreads background weave ── */}
       <div className="absolute inset-0 z-0 ">
@@ -32,22 +32,22 @@ export default function HeroSection() {
           brightness={0.5}
           mouseInteraction={false}
         /> */}
-           <Galaxy
-          density={1}
+           {/* <Galaxy
+          density={0.5}
           glowIntensity={0.1}
           flareIntensity={0.3}
           starSpeed={0.1}
           mouseRepulsion
           clickWarp
-        />
+        /> */}
       </div>
    {/* ── Background Overlays & Animated Rings ── */}
       {/* bg-gradient-to-b from-surface/80 via-surface/40 to-surface  */}
       {/* <div className="absolute inset-0 bg-gradient-to-b from-[#07120d]/85 via-[#07120d]/55 to-[#060f0a]/95 z-[1]" />
       <div className="absolute inset-x-0 top-0 h-[500px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent z-[1]" /> */}
 
-      <div className="absolute top-1/4 -left-20 lg:left-10 w-64 h-64 md:w-96 md:h-96 border-[8px] md:border-[16px] border-primary/10 rounded-full animate-zoom-in-out z-[2] blur-xl md:blur-2xl" />
-      <div className="absolute bottom-10 -right-20 lg:right-1/4 w-80 h-80 md:w-[30rem] md:h-[30rem] border-[12px] md:border-[24px] border-primary/5 rounded-full animate-zoom-in-out z-[2] blur-2xl md:blur-3xl" style={{ animationDelay: '4s' }} />
+      <div className="absolute top-1/4 -left-20 lg:left-10 w-64 h-64 md:w-96 md:h-96 border-[8px] md:border-[16px] border-primary/10 rounded-full animate-zoom-in-out z-[2] blur-lg md:blur-xl" />
+      <div className="absolute bottom-10 -right-20 lg:right-1/4 w-80 h-80 md:w-[30rem] md:h-[30rem] border-[12px] md:border-[24px] border-primary/5 rounded-full animate-zoom-in-out z-[2] blur-xl md:blur-[28px]" style={{ animationDelay: '4s' }} />
       {/* ── Main Content Container ── */}
       <div className="relative z-10 min-h-screen pt-16 pb-20 flex flex-col justify-center">
         <div className="container mx-auto px-4 max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center">
@@ -168,7 +168,7 @@ export default function HeroSection() {
             {/* The Main Image */}
             <div className="relative z-10 w-[100%] h-[100%] transition-transform duration-1000 ease-out hover:scale-105 hover:rotate-1">
               {/* Image Glow Underneath */}
-              <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full scale-90" />
+              <div className="absolute inset-0 bg-primary/20 blur-[40px] rounded-full scale-90" />
 
               <Image
                 src={HeroBanner}
@@ -216,8 +216,8 @@ export default function HeroSection() {
             </div>
 
             {/* Center Background Tech Dots (Decorative) */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full border border-dashed border-white/5 rounded-full animate-[spin_60s_linear_infinite] motion-reduce:animate-none pointer-events-none -z-10" aria-hidden="true" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] border border-dashed border-primary/10 rounded-full animate-[spin_40s_linear_infinite_reverse] motion-reduce:animate-none pointer-events-none -z-10" aria-hidden="true" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full border border-dashed border-white/5 rounded-full animate-[spin_60s_linear_infinite] motion-reduce:animate-none pointer-events-none -z-10 will-change-transform" aria-hidden="true" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] border border-dashed border-primary/10 rounded-full animate-[spin_40s_linear_infinite_reverse] motion-reduce:animate-none pointer-events-none -z-10 will-change-transform" aria-hidden="true" />
 
           </div>
 

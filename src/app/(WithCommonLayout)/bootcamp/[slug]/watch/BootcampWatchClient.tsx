@@ -94,7 +94,7 @@ export default function BootcampWatchClient() {
 
     if (error || !data?.data) {
         return (
-            <div className="bg-[#0a0a0b]">
+            <div className="bg-surface-darker">
                 <div className="mx-auto max-w-3xl px-4 py-20 text-center">
                     <p className="font-bangla text-xl text-white/70">বুটক্যাম্প পাওয়া যায়নি।</p>
                     <Link
@@ -114,7 +114,7 @@ export default function BootcampWatchClient() {
     // non-purchase — report it distinctly instead of a "buy first" paywall.
     if (hasPurchased && videosError) {
         return (
-            <div className="bg-[#0a0a0b] text-white">
+            <div className="bg-surface-darker text-white">
                 <div className="mx-auto max-w-3xl px-4 py-20 text-center">
                     <Video className="mx-auto h-10 w-10 text-white/30" />
                     <h1 className="mt-4 font-bangla text-2xl font-bold">
@@ -136,7 +136,7 @@ export default function BootcampWatchClient() {
 
     if (!hasPurchased) {
         return (
-            <div className="bg-[#0a0a0b] text-white">
+            <div className="bg-surface-darker text-white">
                 <div className="mx-auto max-w-3xl px-4 py-20 text-center">
                     <Video className="mx-auto h-10 w-10 text-white/30" />
                     <h1 className="mt-4 font-bangla text-2xl font-bold">
@@ -168,7 +168,7 @@ export default function BootcampWatchClient() {
     };
 
     return (
-        <div className="bg-[#0a0a0b] pb-16 text-white">
+        <div className="bg-surface-darker pb-16 text-white">
             <div className="mx-auto max-w-7xl px-4 pt-6">
                 <button
                     onClick={() => router.push(`/bootcamp/${bootcamp.slug}`)}

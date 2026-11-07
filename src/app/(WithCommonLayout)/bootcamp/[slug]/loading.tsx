@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function BootcampDetailLoading() {
   return (
-    <main aria-busy="true" aria-label="Loading bootcamp detail page" className="min-h-screen bg-[#0a0a0b] font-bangla text-white">
+    <main aria-busy="true" aria-label="Loading bootcamp detail page" className="min-h-screen bg-surface-darker font-bangla text-white">
       <section className="relative overflow-hidden py-12 pt-10 pb-24 px-4">
         <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="space-y-6">
@@ -103,7 +103,7 @@ export default function BootcampDetailLoading() {
           <div className="mt-5 space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="relative overflow-hidden rounded-xl border border-white/10 p-[1.5px]">
-                <div className="relative overflow-hidden rounded-xl bg-[#0d0d0e] p-6">
+                <div className="relative overflow-hidden rounded-xl bg-surface-darker p-6">
                   <Skeleton className="h-32 w-full rounded-none bg-white/5 mb-4" />
                   <Skeleton className="h-4 w-1/2 rounded-full bg-white/5 mb-3" />
                   <Skeleton className="h-3 w-3/4 rounded-full bg-white/5" />
@@ -114,7 +114,7 @@ export default function BootcampDetailLoading() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-10 bg-[#0d0d0e]">
+      <section className="mx-auto max-w-7xl px-4 py-10 bg-surface-darker">
         <div className="space-y-5">
           <Skeleton className="h-5 w-32 rounded-full bg-white/5 mb-2" />
           <Skeleton className="mt-1 h-10 w-[320px] rounded-full bg-white/10" />
@@ -138,7 +138,7 @@ export default function BootcampDetailLoading() {
           <div className="mt-5 space-y-6">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="relative overflow-hidden rounded-2xl border border-white/10 p-[1.5px]">
-                <div className="relative overflow-hidden rounded-2xl bg-[#0d0d0e] p-6">
+                <div className="relative overflow-hidden rounded-2xl bg-surface-darker p-6">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/6 via-transparent to-transparent" />
                   <Skeleton className="h-48 w-full rounded-none bg-white/5 mb-4" />
                   <Skeleton className="h-4 w-28 rounded-full bg-white/5 mb-3" />
@@ -150,7 +150,7 @@ export default function BootcampDetailLoading() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-10 bg-[#0d0d0e]">
+      <section className="mx-auto max-w-7xl px-4 py-10 bg-surface-darker">
         <div className="space-y-5">
           <Skeleton className="h-5 w-32 rounded-full bg-white/5 mb-2" />
           <Skeleton className="mt-1 h-10 w-[320px] rounded-full bg-white/10" />

@@ -6,7 +6,7 @@ export function HeroSkeleton() {
       aria-busy="true"
       aria-label="Loading hero section"
       data-dark-section
-      className="relative w-full min-h-screen border-b border-white/5 overflow-hidden bg-[#060f0a]"
+      className="relative w-full min-h-screen border-b border-white/5 overflow-hidden bg-surface"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-surface/80 via-surface/40 to-surface" />
       <div className="absolute inset-x-0 top-0 h-[500px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />

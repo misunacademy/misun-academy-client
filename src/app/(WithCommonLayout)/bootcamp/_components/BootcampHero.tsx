@@ -7,7 +7,7 @@ import frameImage from '@/assets/boocamp/frame.png';
 const heroMeta = [bootcamp.dates, bootcamp.time, bootcamp.platform];
 
 export const BootcampHero = () => (
-    <section className="relative overflow-hidden bg-[#0a0a0b] text-white">
+    <section className="relative overflow-hidden bg-surface-darker text-white">
         <Image
             src={frameImage}
             alt=""

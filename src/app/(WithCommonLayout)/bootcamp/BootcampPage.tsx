@@ -30,7 +30,7 @@ const BootcampPage = () => {
 
     if (!current) {
         return (
-            <div className="bg-[#0a0a0b]">
+            <div className="bg-surface-darker">
                 <section className="mx-auto max-w-7xl px-4 pb-2 pt-12">
                     <p className="font-bangla text-sm font-semibold tracking-wide text-[#ffd60a]">
                         রেকর্ডিং লাইব্রেরি
@@ -59,7 +59,7 @@ const BootcampPage = () => {
     }
 
     return (
-        <div className="bg-[#0a0a0b]">
+        <div className="bg-surface-darker">
             <BootcampHero />
             <BootcampPerks />
             <BootcampDoseSchedule />

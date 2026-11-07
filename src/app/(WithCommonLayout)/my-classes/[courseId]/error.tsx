@@ -10,12 +10,14 @@ export default function ErrorBoundary({ error, reset }: { error: Error & { diges
   }, [error]);
 
   return (
-    <DarkCard className="p-12 flex flex-col items-center justify-center min-h-[400px] text-center">
-      <h2 className="text-xl font-bold text-white mb-2">Something went wrong</h2>
-      <p className="text-white/40 text-sm mb-6">{error?.message ?? "An unexpected error occurred."}</p>
-      <OutlineBtn className="w-full justify-center py-2.5" onClick={reset}>
-        Try Again
-      </OutlineBtn>
-    </DarkCard>
+    <div className="min-h-screen bg-surface-darker flex items-center justify-center">
+      <DarkCard className="p-12 flex flex-col items-center justify-center min-h-[400px] text-center">
+        <h2 className="text-xl font-bold text-white mb-2">Something went wrong</h2>
+        <p className="text-white/40 text-sm mb-6">{error?.message ?? "An unexpected error occurred."}</p>
+        <OutlineBtn className="w-full justify-center py-2.5" onClick={reset}>
+          Try Again
+        </OutlineBtn>
+      </DarkCard>
+    </div>
   );
 }

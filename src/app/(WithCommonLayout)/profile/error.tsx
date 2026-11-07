@@ -16,7 +16,7 @@ export default function ProfileError({
     }, [error]);
 
     return (
-        <div className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-4">
+        <div className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center px-4 bg-surface">
             <div className="w-full max-w-md space-y-6 text-center">
                 <div className="space-y-2">
                     <h1 className="text-3xl font-bold tracking-tighter">

@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PaymentLoading() {
   return (
-    <div className="flex min-h-[60vh] items-center justify-center p-8">
+    <div className="flex min-h-[60vh] items-center justify-center p-8 bg-surface">
       <div className="w-full max-w-lg space-y-6">
         <div className="space-y-2 text-center">
           <Skeleton className="mx-auto h-8 w-[250px]" />

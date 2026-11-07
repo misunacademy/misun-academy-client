@@ -4,7 +4,8 @@ import MisunLogo from '@/assets/svg/misun-logo-svg.svg';
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import Container from '@/components/ui/container';
 import { contactItems, companyLinks, socialLinks } from './contactData';
-
+import SSLCommerz from '@/assets/images/SSL_commerz.png';
+import SSLLogo from '@/assets/images/ssl_logo.png';
 export default function FooterColumns() {
   return (
     <Container className="relative grid grid-cols-1 md:grid-cols-3 gap-10 py-16 px-6 md:px-0 max-w-7xl mx-auto">
@@ -82,6 +83,26 @@ export default function FooterColumns() {
               <br />
               <span className="text-xs text-white/75">(Khulna City Corporation)</span>
             </p>
+          </div>
+          <div className="text-center w-full mt-6">
+            <p className="text-sm font-semibold text-white mb-3">Pay with</p>
+
+            <div className="mt-4 flex flex-wrap justify-center gap-3 md:gap-4 max-w-[720px] mx-auto">
+              <Image
+                src={SSLLogo}
+                alt="SSLCommerz secure logo"
+                width={120}
+                height={120}
+                className="h-auto max-h-[64px] w-auto object-contain"
+              />
+              <Image
+                src={SSLCommerz}
+                alt="SSLCommerz payment gateway"
+                width={400}
+                height={200}
+                className="h-auto max-h-[90px] w-auto object-contain"
+              />
+            </div>
           </div>
         </div>
       </div>
