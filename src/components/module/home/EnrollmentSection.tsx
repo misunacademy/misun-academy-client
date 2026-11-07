@@ -129,17 +129,18 @@ function CourseEnrollmentCard({
                         transition-all duration-300
                     ">
                         <span className="font-bangla text-xs font-medium text-[#ffd60a]/70 uppercase tracking-wider">
-                            ফি
+                            কোর্স ফি: মাত্র{" "}
                         </span>
 
                         <span className="font-mona text-xl font-black tracking-tight text-[#ffd60a] tabular-nums sm:text-3xl">
                             {batch.price
-                                ? batch.price.toLocaleString("en-IN")
+                                ? batch.price.toLocaleString("bn-IN")
                                 : "--"}
                         </span>
 
                         <span className="font-bangla text-xs font-medium text-[#ffd60a]/60 mt-0.5">
-                            ৳
+                            {" "}
+                            টাকা
                         </span>
                     </div>
 

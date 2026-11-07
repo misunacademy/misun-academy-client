@@ -1,24 +1,24 @@
 import Image from 'next/image';
 import { HeroBanner } from '@/assets/images';
-// import { HeroBg } from '@/assets/svg';
+import { HeroBg } from '@/assets/svg';
 import { Briefcase, Video, UserCheck, Clock, Home, PenTool, Palette, Layers, Crop, MousePointer2 } from 'lucide-react';
 import Link from 'next/link';
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { AIPoweredBadge } from '@/components/ui/ai-powered-badge';
-import Galaxy from './Galaxy';
+// import Galaxy from './Galaxy';
 
 export default function HeroSection() {
   return (
     <section
       data-dark-section
       className="relative w-full min-h-screen border-b border-white/5 overflow-hidden bg-surface"
-      //    style={{
-      //   backgroundImage: `url(${HeroBg.src})`,
-      //   backgroundSize: 'cover',
-      //   backgroundPosition: 'center',
-      //   backgroundRepeat: 'no-repeat',
-      //   backgroundColor: '#060f0a', // Fallback surface
-      // }}
+         style={{
+        backgroundImage: `url(${HeroBg.src})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundColor: '#060f0a', // Fallback surface
+      }}
     >
       {/* ── WebThreads background weave ── */}
       <div className="absolute inset-0 z-0 ">
@@ -32,14 +32,14 @@ export default function HeroSection() {
           brightness={0.5}
           mouseInteraction={false}
         /> */}
-           <Galaxy
-          density={1}
+           {/* <Galaxy
+          density={0.5}
           glowIntensity={0.1}
           flareIntensity={0.3}
           starSpeed={0.1}
           mouseRepulsion
           clickWarp
-        />
+        /> */}
       </div>
    {/* ── Background Overlays & Animated Rings ── */}
       {/* bg-gradient-to-b from-surface/80 via-surface/40 to-surface  */}

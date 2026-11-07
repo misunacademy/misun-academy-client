@@ -17,15 +17,11 @@ export default function Footer() {
         />
       </div>
       <div className="absolute inset-0 bg-gradient-to-b from-[#060a12] via-[#060a12]/85 to-[#060a12]/60 pointer-events-none z-0" />
-
       <FooterTop />
-
       <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-primary/8 rounded-full blur-3xl pointer-events-none z-[1]" />
       <div className="absolute top-0 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl pointer-events-none z-[1]" />
       <div className="absolute bottom-10 right-0 w-64 h-64 bg-primary/6 rounded-full blur-3xl pointer-events-none z-[1]" />
-
       <FooterColumns />
-
       <FooterBottom />
     </footer>
   );
