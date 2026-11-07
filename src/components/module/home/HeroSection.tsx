@@ -11,7 +11,7 @@ export default function HeroSection() {
   return (
     <section
       data-dark-section
-      className="relative w-full min-h-screen border-b border-white/5 overflow-hidden bg-[#060f0a]"
+      className="relative w-full min-h-screen border-b border-white/5 overflow-hidden bg-surface"
       //    style={{
       //   backgroundImage: `url(${HeroBg.src})`,
       //   backgroundSize: 'cover',

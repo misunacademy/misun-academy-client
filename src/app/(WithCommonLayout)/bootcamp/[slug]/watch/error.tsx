@@ -16,7 +16,7 @@ export default function BootcampWatchError({
     }, [error]);
 
     return (
-        <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
+        <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 bg-surface-darker">
             <div className="w-full max-w-md space-y-6 text-center">
                 <div className="space-y-2">
                     <h1 className="text-3xl font-bold tracking-tighter">

@@ -88,7 +88,7 @@ function PaymentModal({
             aria-modal="true"
             aria-label={title}
         >
-            <div className="max-w-md w-full rounded-[2rem] border border-white/10 bg-[#0a0a0b] p-8 shadow-2xl text-center">
+            <div className="max-w-md w-full rounded-[2rem] border border-white/10 bg-surface-darker p-8 shadow-2xl text-center">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full">
                     <Icon className={`h-6 w-6 ${iconColor}`} />
                 </div>
@@ -153,7 +153,7 @@ export default function BootcampDetailClient() {
 
     if (error || !data?.data) {
         return (
-            <div className="bg-[#0a0a0b]">
+            <div className="bg-surface-darker">
                 <div className="mx-auto max-w-3xl px-4 py-20 text-center">
                     <p className="font-bangla text-xl text-white/70">বুটক্যাম্প পাওয়া যায়নি।</p>
                     <Link href="/bootcamp" className="mt-6 inline-block rounded-xl bg-[#ffd60a] px-6 py-3 font-bangla font-bold text-black">
@@ -176,7 +176,7 @@ export default function BootcampDetailClient() {
     };
 
     return (
-        <div className="bg-[#0a0a0b] pb-20 text-white lg:pb-0">
+        <div className="bg-surface-darker pb-20 text-white lg:pb-0">
             <DetailHero bootcamp={bootcamp} hasPurchased={hasPurchased} onBuy={handleBuy} watchUrl={watchUrl} />
 
             {hasPurchased ? (

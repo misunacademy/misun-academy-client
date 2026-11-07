@@ -19,7 +19,7 @@ export const BootcampPayment = () => {
     };
 
     return (
-        <section className="border-y border-white/10 bg-[#0a0a0b] py-14 text-white">
+        <section className="border-y border-white/10 bg-surface-darker py-14 text-white">
             <div className="mx-auto max-w-7xl px-4">
                 <div className="grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr]">
                     <FadeIn>

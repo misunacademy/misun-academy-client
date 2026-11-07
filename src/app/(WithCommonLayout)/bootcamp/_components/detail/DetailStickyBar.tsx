@@ -13,7 +13,7 @@ interface Props {
 
 export function DetailStickyBar({ bootcamp, hasPurchased, onBuy, watchUrl }: Props) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0a0a0b]/95 px-4 py-3 backdrop-blur lg:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-surface-darker/95 px-4 py-3 backdrop-blur lg:hidden">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
         <div className="font-bangla">
           <p className="max-w-[45vw] truncate text-sm font-bold">{bootcamp.title}</p>

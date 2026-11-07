@@ -81,7 +81,7 @@ export const BootcampRegistrationForm = () => {
     };
 
     return (
-        <section id="register" className="scroll-mt-20 bg-[#0a0a0b] py-14 text-white">
+        <section id="register" className="scroll-mt-20 bg-surface-darker py-14 text-white">
             <div className="mx-auto max-w-3xl px-4">
                 <FadeIn>
                     <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#141416] shadow-[0_20px_60px_rgba(0,0,0,0.5)]">

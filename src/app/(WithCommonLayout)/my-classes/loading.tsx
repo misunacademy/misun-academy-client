@@ -41,9 +41,9 @@ export default function MyClassesLoading() {
     <main
       aria-busy="true"
       aria-label="Loading enrolled courses"
-      className="relative isolate min-h-screen overflow-hidden bg-[#040a07]"
+      className="relative isolate min-h-screen overflow-hidden bg-surface-darker"
     >
-      <div className="absolute inset-0 z-0 bg-[#040a07]" />
+      <div className="absolute inset-0 z-0 bg-surface-darker" />
 
       <CursorGrid
         style={{

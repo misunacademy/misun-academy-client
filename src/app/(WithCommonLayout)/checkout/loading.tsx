@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CheckoutLoading() {
   return (
-    <div className="flex min-h-[60vh] items-center justify-center p-8">
+    <div className="flex min-h-[60vh] items-center justify-center p-8 bg-surface">
       <div className="w-full max-w-4xl space-y-8">
         <Skeleton className="h-8 w-[200px]" />
         <div className="grid gap-8 lg:grid-cols-3">

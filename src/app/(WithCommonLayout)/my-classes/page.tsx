@@ -73,8 +73,8 @@ const MyClassesPage = () => {
           </Alert>
         </div>
       ) : (
-        <div className="relative isolate min-h-screen overflow-hidden bg-[#040a07]">
-          <div className="absolute inset-0 z-0 bg-[#040a07]"
+        <div className="relative isolate min-h-screen overflow-hidden bg-surface-darker">
+          <div className="absolute inset-0 z-0 bg-surface-darker"
           // style={{
           //   backgroundImage:
           //     "linear-gradient(rgba(32, 180, 134, 0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(32, 180, 134, 0.14) 1px, transparent 1px), radial-gradient(circle at 50% 0%, rgba(32, 180, 134, 0.18), transparent 42%)",
