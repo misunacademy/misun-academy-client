@@ -41,7 +41,7 @@ courses: [
     {
       id: 'photoshop-hero',
       title: 'Photoshop Hero',
-      description: 'Master image editing, manipulation, and digital design',
+      description: 'Be The Hero Of Photoshop',
       level: 'Tool Based - Basic to Advanced',
       sections: [
         {
@@ -81,7 +81,7 @@ courses: [
     {
       id: 'illustrator-wizard',
       title: 'Illustrator Wizard',
-      description: 'Become a wizard in printing design and vector graphic',
+      description: 'Be A Wizard In Illustrator',
       level: 'Tool Based - Basic to Advanced',
       sections: [
         {
