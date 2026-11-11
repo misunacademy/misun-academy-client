@@ -8,6 +8,7 @@ import {
   ChevronUp,
   CreditCard,
   FileText,
+  Gift,
   GraduationCap,
   KeyRound,
   Layers,
@@ -127,6 +128,7 @@ function getAdminGroups(isSuperAdmin: boolean): NavGroup[] {
       items: [
         { title: "Courses", url: "/dashboard/admin/courses", icon: BookOpen },
         { title: "Batches", url: "/dashboard/admin/batch", icon: Layers },
+        { title: "Enrollment Perks", url: "/dashboard/admin/perks", icon: Gift },
         { title: "Recordings", url: "/dashboard/admin/recordings", icon: Video },
         { title: "Quizzes", url: "/dashboard/admin/quizzes", icon: ClipboardCheck },
         { title: "Certificates", url: "/dashboard/admin/certificates", icon: Award },
