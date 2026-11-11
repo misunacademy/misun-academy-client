@@ -8,7 +8,6 @@ import {
   XCircle,
   ChevronLeft,
   ChevronRight,
-  ShieldAlert,
   Loader2,
   BookOpen,
 } from "lucide-react";

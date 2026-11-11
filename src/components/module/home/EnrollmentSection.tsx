@@ -128,7 +128,7 @@ function CourseEnrollmentCard({
                         group-hover:shadow-[0_0_24px_rgba(255,214,10,0.14)]
                         transition-all duration-300
                     ">
-                        <span className="font-bangla text-xl sm:text-3xl font-medium text-[#ffd60a]/70 uppercase">
+                        <span className="font-bangla text-xl sm:text-3xl font-medium text-[#ffd60a] uppercase">
                             কোর্স ফি: মাত্র{" "}
                         </span>
 
@@ -138,7 +138,7 @@ function CourseEnrollmentCard({
                                 : "--"}
                         </span>
 
-                        <span className="font-bangla text-xl sm:text-3xl font-medium text-[#ffd60a]/60 ">
+                        <span className="font-bangla text-xl sm:text-3xl font-medium text-[#ffd60a] ">
                             {" "}
                             টাকা
                         </span>
