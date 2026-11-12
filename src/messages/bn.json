@@ -87,7 +87,7 @@
     "phonePay": "ফোন পে",
     "popular": "প্রমিত",
     "paymentVia": "মाध्यম দিয়ে পেমেন্ট করুন:",
-    "refAmount": "পরিমাণ: {{amount}}",
+    "refAmount": "পরিমাণ: {amount}",
     "sendMoney": "নিচের নম্বরে টাকা পাঠান:",
     "refNumber": "ট্রানজেকশন আইডি:",
     "paymentDetails": "আপনার পেমেন্টের তথ্য দিন",

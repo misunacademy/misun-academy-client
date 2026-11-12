@@ -1,7 +1,7 @@
 import { DiamondMinus } from "lucide-react"
 import Countdown from "../Countdown"
 import { StarEnrollButton } from "../StarEnrollButton"
-import { AnimatedBorder } from "@/components/shared/AnimatedBorder"
+// import { AnimatedBorder } from "@/components/shared/AnimatedBorder"
 import { AIPoweredBadge } from "@/components/ui/ai-powered-badge"
 
 
@@ -37,7 +37,7 @@ export function BannerContent({ batchNumber, price, enrollmentPeriod, courseSlug
         </svg>
         AI Powered
       </span> */}
-      <AIPoweredBadge/>
+      <AIPoweredBadge />
 
       <h1 className="font-bold font-bangla text-[28px] md:text-3xl lg:text-5xl text-center text-white leading-snug">
         কমপ্লিট{" "}
@@ -77,13 +77,39 @@ export function BannerContent({ batchNumber, price, enrollmentPeriod, courseSlug
 function PriceSection({ price }: { price: number }) {
   return (
     <div className="relative my-6 p-[1.5px] rounded-xl overflow-hidden">
-      <AnimatedBorder variant="simple" speed="3s" />
+      {/* <AnimatedBorder variant="simple" speed="3s" />
       <div className="relative rounded-xl px-8 py-4 font-bold font-bangla text-xl text-white bg-black shadow-[0_0_24px_hsl(156_70%_42%/0.4)]">
         কোর্স ফি: মাত্র{" "}
         <span className="text-primary-glow font-bold">
           {price ? price.toLocaleString("bn-IN") : "--"}
         </span>{" "}
         টাকা
+      </div> */}
+      <div className="
+                        self-center shrink-0 w-fit
+                        flex items-baseline gap-1.5 rounded-xl
+                        border border-[#ffd60a]/25
+                        bg-gradient-to-br from-[#ffd60a]/15 via-[#ffd60a]/8 to-[#ffd60a]/2
+                        px-3.5 py-2
+                        shadow-[0_0_20px_rgba(255,214,10,0.10)]
+                        group-hover:border-[#ffd60a]/50
+                        group-hover:shadow-[0_0_24px_rgba(255,214,10,0.14)]
+                        transition-all duration-300
+                    ">
+        <span className="font-bangla text-xl sm:text-3xl font-medium text-[#ffd60a] uppercase">
+          কোর্স ফি: মাত্র{" "}
+        </span>
+
+        <span className="font-mona text-xl font-black tracking-tight text-[#ffd60a] tabular-nums sm:text-3xl">
+          {price
+            ? price.toLocaleString("bn-IN")
+            : "--"}
+        </span>
+
+        <span className="font-bangla text-xl sm:text-3xl font-medium text-[#ffd60a] ">
+          {" "}
+          টাকা
+        </span>
       </div>
     </div>
   )

@@ -13,4 +13,5 @@ export interface EnrolledCourse {
   status: string;
   isCertificateAvailable?: boolean;
   accessType?: "standard" | "special";
+  grantedViaPerk?: boolean;
 }

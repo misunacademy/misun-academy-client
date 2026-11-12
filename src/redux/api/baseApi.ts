@@ -121,6 +121,7 @@ export const baseApi = createApi({
         'AuditLogs',
         'Bootcamp',
         'Announcements',
+        'EnrollmentPerks',
     ],
     endpoints: () => ({}),
 });
