@@ -1,7 +1,7 @@
 import { DiamondMinus } from "lucide-react"
 import Countdown from "../Countdown"
 import { StarEnrollButton } from "../StarEnrollButton"
-import { AnimatedBorder } from "@/components/shared/AnimatedBorder"
+// import { AnimatedBorder } from "@/components/shared/AnimatedBorder"
 import { AIPoweredBadge } from "@/components/ui/ai-powered-badge"
 
 
