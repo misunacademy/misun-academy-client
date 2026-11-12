@@ -4,7 +4,7 @@ import { bootcampPerks } from './bootcampData';
 const perkMarkers = ['✚', '◆', '●', '✦', '▲'];
 
 export const BootcampPerks = () => (
-    <section className="border-y border-white/10 bg-[#0a0a0b] py-14 text-white">
+    <section className="border-y border-white/10 bg-surface-darker py-14 text-white">
         <div className="mx-auto max-w-7xl px-4">
             <FadeIn>
                 <p className="font-mona text-xs font-bold uppercase tracking-[0.3em] text-[#ffd60a]">

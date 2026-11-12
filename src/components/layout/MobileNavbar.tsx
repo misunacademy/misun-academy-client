@@ -76,7 +76,7 @@ export default function MobileNavbar() {
                 )}
             >
                 <Link onClick={closeMenu(setIsOpen)} href="/" className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla">হোম</Link>
-                <Link onClick={closeMenu(setIsOpen)} href="/course-details" className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla">কোর্সসমূহ</Link>
+                <Link onClick={closeMenu(setIsOpen)} href="/course-details" className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla">কোর্সের বিস্তারিত</Link>
                 <Link onClick={closeMenu(setIsOpen)} href="/feedback" className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla">শিক্ষার্থীদের মতামত</Link>
                 <Link onClick={closeMenu(setIsOpen)} href="/about" className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla">আমাদের সম্পর্কে</Link>
                 <Link onClick={closeMenu(setIsOpen)} href="/bootcamp" className="text-lg h-14 flex items-center border-b border-primary/20 font-bangla">বুটক্যাম্প</Link>

@@ -222,7 +222,7 @@ export function CoursePanel({
 
       {/* ── Header ── */}
       <header className="mb-8">
-        <div className="mb-1.5 flex items-center gap-2">
+        {/* <div className="mb-1.5 flex items-center gap-2">
           <span
             aria-hidden="true"
             className="flex h-5 w-5 items-center justify-center rounded border"
@@ -244,7 +244,7 @@ export function CoursePanel({
           >
             {course.level}
           </span>
-        </div>
+        </div> */}
         <h3 className="text-2xl font-bold text-white sm:text-3xl">{course.title}</h3>
         <p className="mt-1 text-sm text-white/80">{course.description}</p>
         <div className="mt-4 flex flex-wrap gap-2">

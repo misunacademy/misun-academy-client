@@ -5,14 +5,14 @@ import { CourseInfoSidebar } from "./CourseInfoSidebar";
 import { CheckoutStepOne } from "./CheckoutStepOne";
 import { CheckoutHeader } from "./CheckoutHeader";
 import { EnrollmentStatusNotice } from "./EnrollmentStatusNotice";
-import ManualPaymentForm from "./ManualPaymentForm";
+import { ManualPaymentForm } from "./ManualPaymentForm";
 
 export default function EnrollmentCheckout({ courseSlug }: { courseSlug?: string } = {}) {
   const {
     form, currentStep, agreed, isProcessing, showTutorial,
     isDataLoading, isEnrollmentOpen, checkoutState, checkoutEnrollment, isCheckoutBlocked,
     resolvedCourse, resolvedBatch, manualPaymentAmount, manualPaymentCurrency,
-    setAgreed, setShowTutorial, setCurrentStep, onSubmit, resumePayment, goBack,
+    setAgreed, setShowTutorial, setCurrentStep, onSubmit, goBack,
     handleManualPaymentComplete,
   } = useEnrollmentCheckout(courseSlug);
 
@@ -68,29 +68,19 @@ export default function EnrollmentCheckout({ courseSlug }: { courseSlug?: string
                     enrollmentId={enrollmentReference}
                   />
                 ) : currentStep === 1 ? (
-                  <div className="space-y-4">
-                    {checkoutState === "resume" && (
-                      <EnrollmentStatusNotice
-                        state="resume"
-                        onResume={resumePayment}
-                        isResuming={isProcessing}
-                        enrollmentId={enrollmentReference}
-                      />
-                    )}
-                    <CheckoutStepOne
-                      form={form}
-                      batch={batch}
-                      course={course}
-                      agreed={agreed}
-                      isProcessing={isProcessing}
-                      isEnrollmentOpen={isEnrollmentOpen}
-                      showTutorial={showTutorial}
-                      batchPrice={batchPrice}
-                      onAgreeChange={setAgreed}
-                      onTutorialToggle={() => setShowTutorial(!showTutorial)}
-                      onSubmit={onSubmit}
-                    />
-                  </div>
+                  <CheckoutStepOne
+                    form={form}
+                    batch={batch}
+                    course={course}
+                    agreed={agreed}
+                    isProcessing={isProcessing}
+                    isEnrollmentOpen={isEnrollmentOpen}
+                    showTutorial={showTutorial}
+                    batchPrice={batchPrice}
+                    onAgreeChange={setAgreed}
+                    onTutorialToggle={() => setShowTutorial(!showTutorial)}
+                    onSubmit={onSubmit}
+                  />
                 ) : (
                   <ManualPaymentForm
                     onBack={() => setCurrentStep(1)}

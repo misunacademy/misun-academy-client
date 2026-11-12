@@ -206,7 +206,7 @@ export const PosterStudio = () => {
     const inputId = 'bootcamp-poster-upload';
 
     return (
-        <section className="border-y border-white/10 bg-[#0a0a0b] py-14 text-white">
+        <section className="border-y border-white/10 bg-surface-darker py-14 text-white">
             <div className="mx-auto grid max-w-7xl items-start gap-10 px-4 lg:grid-cols-[0.9fr_1.1fr]">
                 <FadeIn>
                     <p className="font-mona text-xs font-bold uppercase tracking-[0.3em] text-[#ffd60a]">

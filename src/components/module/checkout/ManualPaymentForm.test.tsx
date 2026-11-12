@@ -1,18 +1,21 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
-import ManualPaymentForm from "./ManualPaymentForm";
+import { ManualPaymentForm } from "./ManualPaymentForm";
 import { paymentInfo } from "@/constants/payment";
+import { IntlProvider } from "next-intl";
 
 const renderForm = (props: Partial<React.ComponentProps<typeof ManualPaymentForm>> = {}) =>
   render(
-    <ManualPaymentForm
-      onBack={() => {}}
-      onPaymentComplete={vi.fn()}
-      manualAmount={5000}
-      batch="8"
-      {...props}
-    />
+    <IntlProvider locale="en" messages={{}}>
+      <ManualPaymentForm
+        onBack={() => {}}
+        onPaymentComplete={vi.fn()}
+        manualAmount={5000}
+        batch="8"
+        {...props}
+      />
+    </IntlProvider>
   );
 
 describe("ManualPaymentForm currency", () => {
@@ -22,9 +25,8 @@ describe("ManualPaymentForm currency", () => {
     expect(screen.getByText(/পরিমাণ: INR/)).toBeInTheDocument();
   });
 
-  it("renders the batch currency when provided (e.g. BDT batches)", () => {
+  it("always uses INR for manual payment (ignores batch currency)", () => {
     renderForm({ manualCurrency: "BDT" });
-    expect(screen.getByText(/পরিমাণ: ৳/)).toBeInTheDocument();
-    expect(screen.queryByText(/INR/)).not.toBeInTheDocument();
+    expect(screen.getByText(/পরিমাণ: INR/)).toBeInTheDocument();
   });
 });

@@ -4,8 +4,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export default function BootcampLoading() {
   return (
-    <main aria-busy="true" aria-label="Loading bootcamp page" className="min-h-screen bg-[#0a0a0b] font-bangla text-white">
-      <section className="relative overflow-hidden bg-[#0a0a0b] py-12 md:pt-16 pb-24 px-4">
+    <main aria-busy="true" aria-label="Loading bootcamp page" className="min-h-screen bg-surface-darker font-bangla text-white">
+      <section className="relative overflow-hidden bg-surface-darker py-12 md:pt-16 pb-24 px-4">
         <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 md:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
           <div className="space-y-6">
             <Skeleton className="h-6 w-48 rounded-full bg-white/5" />
@@ -43,7 +43,7 @@ export default function BootcampLoading() {
         </div>
       </section>
 
-      <section className="py-20 px-4 bg-[#0d0d0e]">
+      <section className="py-20 px-4 bg-surface-darker">
         <div className="mx-auto max-w-7xl">
           <Skeleton className="h-6 w-[240px] rounded-full bg-white/5 mb-8" />
           <div className="grid gap-8 lg:grid-cols-2">
@@ -101,7 +101,7 @@ export default function BootcampLoading() {
         </div>
       </section>
 
-      <section className="py-20 px-4 md:px-6 bg-[#0d0d0e]">
+      <section className="py-20 px-4 md:px-6 bg-surface-darker">
         <div className="mx-auto max-w-7xl">
           <Skeleton className="h-6 w-[200px] rounded-full bg-white/5 mb-8" />
           <div className="grid gap-8 lg:grid-cols-3">
@@ -123,7 +123,7 @@ export default function BootcampLoading() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="relative overflow-hidden rounded-2xl border border-white/10 p-[1.5px]">
-                <div className="relative overflow-hidden rounded-2xl bg-[#0d0d0e] p-6">
+                <div className="relative overflow-hidden rounded-2xl bg-surface-darker p-6">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/6 via-transparent to-transparent" />
                   <Skeleton className="h-48 w-full rounded-none bg-white/5 mb-4" />
                   <Skeleton className="h-4 w-28 bg-white/5 mb-3" />

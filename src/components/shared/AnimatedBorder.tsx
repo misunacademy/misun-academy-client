@@ -52,8 +52,12 @@ export function AnimatedBorder({
       style={{
         ...style,
         background: bg,
-        animation: `spin ${speed} linear infinite${reverse ? " reverse" : ""}`,
+        animationName: "spin",
+        animationDuration: speed,
+        animationTimingFunction: "linear",
         animationDelay: delay,
+        animationIterationCount: "infinite",
+        animationDirection: reverse ? "reverse" : "normal",
       }}
       className={`absolute inset-[-100%] ${props.className ?? ""}`}
     />

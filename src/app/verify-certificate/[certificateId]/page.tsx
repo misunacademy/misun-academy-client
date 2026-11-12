@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { LoadingBoundary } from "@/components/shared/LoadingBoundary";
 import { useParams, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import PageBackground from "@/components/shared/PageBackground";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useVerifyCertificateQuery } from "@/redux/api/certificateApi";
@@ -108,6 +109,7 @@ function VerifyCertificateContent() {
 
     return (
         <LoadingBoundary loading={isLoading}>
+        <PageBackground gradient="bg-surface-darker">
         <div className="max-w-5xl mx-auto p-6 md:p-8 space-y-5">
             <Card>
                 <CardHeader>
@@ -150,6 +152,7 @@ function VerifyCertificateContent() {
                 </CardContent>
             </Card>
         </div>
+        </PageBackground>
         </LoadingBoundary>
     );
 }

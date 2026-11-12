@@ -1,5 +1,6 @@
 import { generateMetadata } from '@/lib/generateMetadata';
 import CourseDetails from './GraphicDesignCourseDetails';
+import PageBackground from '@/components/shared/PageBackground';
 
 export const metadata = generateMetadata({
   title: 'কোর্সসমূহ | MISUN Academy',
@@ -20,5 +21,9 @@ export const metadata = generateMetadata({
 });
 
 export default function CoursesPage() {
-  return <CourseDetails/>
+  return (
+    <PageBackground gradient="bg-surface-darker">
+      <CourseDetails />
+    </PageBackground>
+  );
 }

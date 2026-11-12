@@ -10,7 +10,7 @@ import { bootcampFaq } from './bootcampData';
 import nemonicImage from '@/assets/boocamp/paracetamol-for-photoshop-season-2-nemonic.png';
 
 export const BootcampFaq = () => (
-    <section className="bg-[#0a0a0b] pb-16 text-white">
+    <section className="bg-surface-darker pb-16 text-white">
         <div className="mx-auto max-w-3xl px-4">
             <FadeIn>
                 <h2 className="text-center font-bangla text-2xl font-bold sm:text-3xl">

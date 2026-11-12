@@ -31,7 +31,7 @@ export function DownloadOutlineButton({ href, fileName, color }: DownloadOutline
         aria-hidden="true"
         className="transition-transform duration-200 group-hover:translate-y-0.5 motion-reduce:transition-none"
       />
-      <span>সব কোর্সের আউটলাইন ডাউনলোড করুন</span>
+      <span>আউটলাইন ডাউনলোড করুন</span>
       <span className="rounded-md bg-black/15 px-1.5 py-0.5 text-[11px] font-semibold">PDF</span>
     </a>
   )

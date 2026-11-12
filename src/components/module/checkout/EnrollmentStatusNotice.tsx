@@ -1,16 +1,13 @@
 'use client';
 
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, Clock3, Loader2 } from "lucide-react";
+import { CheckCircle2, Clock3 } from "lucide-react";
 import type { CheckoutEnrollmentState } from "@/lib/enrollment-checkout";
 
 type NoticeState = Exclude<CheckoutEnrollmentState, "none">;
 
 interface EnrollmentStatusNoticeProps {
   state: NoticeState;
-  /** Only used by the `resume` variant. */
-  onResume?: () => void;
-  isResuming?: boolean;
   enrollmentId?: string;
 }
 
@@ -21,8 +18,6 @@ interface EnrollmentStatusNoticeProps {
  */
 export function EnrollmentStatusNotice({
   state,
-  onResume,
-  isResuming = false,
   enrollmentId,
 }: EnrollmentStatusNoticeProps) {
   if (state === "active") {
@@ -65,32 +60,7 @@ export function EnrollmentStatusNotice({
     );
   }
 
-  return (
-    <NoticeCard
-      tone="warning"
-      icon={<AlertTriangle className="w-5 h-5" />}
-      title="অসম্পূর্ণ এনরোলমেন্ট পাওয়া গেছে"
-      description="আপনার আগের পেমেন্টটি সম্পন্ন হয়নি। নতুন করে শুরু না করে আগের এনরোলমেন্টটাই চালিয়ে নিতে পারেন।"
-      reference={enrollmentId}
-      action={
-        <button
-          type="button"
-          onClick={onResume}
-          disabled={isResuming}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-emerald-darker disabled:text-white disabled:ring-1 disabled:ring-inset disabled:ring-primary/25"
-        >
-          {isResuming ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              প্রসেস হচ্ছে...
-            </>
-          ) : (
-            "পেমেন্ট চালিয়ে যান"
-          )}
-        </button>
-      }
-    />
-  );
+  return null;
 }
 
 function NoticeCard({

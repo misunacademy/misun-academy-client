@@ -153,7 +153,7 @@ export default function TimelineItem({
   return (
     <li
       ref={rowRef}
-      className="grid grid-cols-[36px_minmax(0,1fr)] gap-x-4 py-5
+      className="relative grid grid-cols-[36px_minmax(0,1fr)] gap-x-4 py-5
         md:grid-cols-[minmax(0,1fr)_56px_44px_56px_minmax(0,1fr)] md:gap-x-0"
     >
       {/* ── Spine segment + node ── */}

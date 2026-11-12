@@ -108,7 +108,7 @@ export default function EnrollCtaSection({ courseSlug }: EnrollCtaSectionProps =
                             </div>
 
                             {/* CTA button */}
-                            <div>
+                            <div className="flex items-center gap-4 justify-center sm:justify-start">
                                 <StarEnrollButton href={courseSlug ? `/checkout?course=${courseSlug}` : '/checkout'}>
                                     আজই এনরোল করুন
                                 </StarEnrollButton>
