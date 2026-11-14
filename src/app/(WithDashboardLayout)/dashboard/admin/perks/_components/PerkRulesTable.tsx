@@ -174,7 +174,7 @@ export default function PerkRulesTable({ onEditRule }: PerkRulesTableProps) {
               <SelectItem value="all">All Batches</SelectItem>
               {batches.map((batch) => (
                 <SelectItem key={batch._id} value={batch._id}>
-                  {batch.title} {batch.batchNumber ? `(#${batch.batchNumber})` : ""}
+                  {batch.title}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -260,7 +260,7 @@ export default function PerkRulesTable({ onEditRule }: PerkRulesTableProps) {
                   typeof rule.courseId === "object" ? rule.courseId?.title : "Course";
                 const batchTitle =
                   typeof rule.batchId === "object"
-                    ? `${rule.batchId?.title}${rule.batchId?.batchNumber ? ` (#${rule.batchId?.batchNumber})` : ""}`
+                    ? `${rule.batchId?.title}`
                     : "Batch";
 
                 return (
