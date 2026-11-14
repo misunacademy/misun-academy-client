@@ -1,4 +1,4 @@
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Check } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -52,28 +52,25 @@ export default function EnrollmentNotOpenModal({
                 <DialogFooter className="pt-2">
                     <div className="relative group w-full">
                         <div
-                            className="absolute inset-0 rounded-xl blur-sm opacity-20 group-hover:opacity-35 transition-opacity duration-500"
-                            style={{ background: 'radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 70%)' }}
+                            aria-hidden="true"
+                            className="absolute inset-0 rounded-xl bg-primary/40 blur-md opacity-30 group-hover:opacity-60 transition-opacity duration-500"
                         />
                         <button
+                            type="button"
                             onClick={() => onOpenChange(false)}
                             className="relative w-full flex items-center justify-center gap-2 py-3 rounded-xl overflow-hidden cursor-pointer
-                                border border-white/15 group-hover:border-white/30
-                                transition-all duration-400 group-hover:-translate-y-[1px]
-                                group-hover:shadow-[0_0_18px_3px_rgba(255,255,255,0.08)]"
-                            style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 100%)', backdropFilter: 'blur(8px)' }}
+                                bg-gradient-to-r from-emerald-darker via-primary to-emerald-dark
+                                text-white border border-primary/40 group-hover:border-primary-glow/70
+                                transition-all duration-300 group-hover:-translate-y-[1px]
+                                group-hover:shadow-[0_0_22px_4px_hsl(var(--primary)/0.45)]
+                                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-glow/70 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                         >
-                            <div
-                                className="absolute inset-0 translate-x-[-110%] group-hover:translate-x-[110%] transition-transform duration-700 ease-in-out"
-                                style={{ background: 'linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.1) 50%, transparent 65%)' }}
-                            />
-                            <svg className="relative w-4 h-4 shrink-0 text-white/50 group-hover:text-white/70 transition-colors duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M20 6 9 17l-5-5" />
-                            </svg>
                             <span
-                                className="relative text-sm font-bold tracking-wide font-bangla"
-                                style={{ background: 'linear-gradient(90deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.80) 50%, rgba(255,255,255,0.5) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
-                            >
+                                aria-hidden="true"
+                                className="absolute inset-0 translate-x-[-110%] group-hover:translate-x-[110%] transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/25 to-transparent"
+                            />
+                            <Check className="relative w-4 h-4 shrink-0" strokeWidth={2.5} aria-hidden="true" />
+                            <span className="relative text-sm font-bold tracking-wide font-bangla">
                                 বুঝেছি
                             </span>
                         </button>

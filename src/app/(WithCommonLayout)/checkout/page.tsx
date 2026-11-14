@@ -93,12 +93,14 @@ function CheckoutContent() {
 
     if (!enrollmentRunning) {
         return (
-            <EnrollmentNotOpenModal
-                open={openModal}
-                onOpenChange={handleModalChange}
-                courseData={course}
-                batchData={batch}
-            />
+            <div className="min-h-screen bg-surface">
+                <EnrollmentNotOpenModal
+                    open={openModal}
+                    onOpenChange={handleModalChange}
+                    courseData={course}
+                    batchData={batch}
+                />
+            </div>
         );
     }
 
