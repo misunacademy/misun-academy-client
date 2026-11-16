@@ -34,13 +34,28 @@ export function setConsent(choice: ConsentChoice): void {
   }
 }
 
-export function onConsentChange(listener: (choice: ConsentChoice) => void): () => void {
+export function onConsentChange(listener: (choice: ConsentChoice | null) => void): () => void {
   if (typeof window === 'undefined') return () => undefined;
   const handler = (event: Event) => {
-    listener((event as CustomEvent<ConsentChoice>).detail);
+    listener((event as CustomEvent<ConsentChoice | null>).detail ?? null);
   };
   window.addEventListener(CONSENT_EVENT, handler);
   return () => window.removeEventListener(CONSENT_EVENT, handler);
+}
+
+/**
+ * Withdraw the stored choice so the banner can ask again. Needed because
+ * "denied" is final for the banner: without this there is no way to opt back
+ * in after clicking Decline.
+ */
+export function resetConsent(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(CONSENT_KEY);
+  } catch {
+    // Storage unavailable — nothing persisted to clear.
+  }
+  window.dispatchEvent(new CustomEvent<ConsentChoice | null>(CONSENT_EVENT, { detail: null }));
 }
 
 /** useSyncExternalStore-compatible subscription (no setState-in-effect). */
