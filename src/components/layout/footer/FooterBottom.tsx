@@ -1,4 +1,5 @@
 import CurrentYear from '@/components/shared/CurrentYear';
+import ConsentSettingsButton from '@/components/analytics/ConsentSettingsButton';
 
 export default function FooterBottom() {
   return (
@@ -30,12 +31,14 @@ export default function FooterBottom() {
       </div> */}
       <div className="relative z-10 mt-2">
         <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-        <div className="flex w-full justify-center py-5">
+        <div className="flex w-full flex-col items-center justify-center gap-2 py-5 sm:flex-row sm:gap-3">
           <p className="text-sm leading-relaxed text-white/80">
             © <CurrentYear />{' '}
             <span className="text-primary-glow font-medium">Misun Academy</span>
             {' '}— All rights reserved.
           </p>
+          <span aria-hidden="true" className="hidden text-white/25 sm:inline">·</span>
+          <ConsentSettingsButton />
         </div>
       </div>
     </>

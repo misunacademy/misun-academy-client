@@ -8,3 +8,4 @@ dist
 .env*.local
 .turbo
 /graphify-out
+*.tsbuildinfo
