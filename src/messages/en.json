@@ -87,7 +87,7 @@
     "phonePay": "Phone Pay",
     "popular": "Popular",
     "paymentVia": "Pay via:",
-    "refAmount": "Pay via: {{amount}}",
+    "refAmount": "Pay via: {amount}",
     "sendMoney": "Send money to:",
     "refNumber": "Reference number:",
     "paymentDetails": "Enter your payment details",

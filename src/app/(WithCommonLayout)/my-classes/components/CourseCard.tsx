@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { CheckCircle2, PlayCircle, Calendar } from "lucide-react";
+import { CheckCircle2, PlayCircle, Calendar, Gift } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useGetCourseProgressQuery } from "@/redux/api/courseEnrollmentApi";
@@ -66,8 +66,8 @@ export const CourseCard = memo(function CourseCard({ enrollment }: { enrollment:
           ) : (
             <div className="w-full h-full bg-white/5 flex items-center justify-center text-white/30 text-xs">No Image</div>
           )}
-          {/* Status pill */}
-          <div className="absolute top-3 left-3 z-10">
+          {/* Status pill & Perk badge */}
+          <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5 items-center">
             <span
               className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border ${
                 isActive
@@ -80,6 +80,12 @@ export const CourseCard = memo(function CourseCard({ enrollment }: { enrollment:
               {isCompleted && <CheckCircle2 className="w-3 h-3" />}
               {isActive ? "Active" : isCompleted ? "Completed" : enrollment.status}
             </span>
+            {enrollment.grantedViaPerk && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border bg-amber-500/20 text-amber-300 border-amber-400/40 shadow-sm shadow-amber-500/20">
+                <Gift className="w-3 h-3 text-amber-300" />
+                Free Bonus
+              </span>
+            )}
           </div>
         </div>
 

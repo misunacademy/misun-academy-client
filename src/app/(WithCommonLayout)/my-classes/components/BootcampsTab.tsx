@@ -57,7 +57,7 @@ const BootcampPurchaseCard = memo(function BootcampPurchaseCard({
               No Image
             </div>
           )}
-          <div className="absolute top-3 left-3 z-10">
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 flex-wrap">
             <span
               className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border font-bangla ${
                 statusStyle[purchase.status] ?? "bg-white/10 text-white/60 border-white/10"
@@ -65,6 +65,12 @@ const BootcampPurchaseCard = memo(function BootcampPurchaseCard({
             >
               {statusLabel[purchase.status] ?? purchase.status}
             </span>
+            {purchase.amount === 0 && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40">
+                <Flame className="w-2.5 h-2.5 text-amber-400" />
+                Free Bonus
+              </span>
+            )}
           </div>
         </div>
 
