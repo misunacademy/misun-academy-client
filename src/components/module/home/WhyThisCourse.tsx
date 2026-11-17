@@ -131,7 +131,7 @@ export default function WhyThisCourse() {
         <FadeIn delay={0.15} direction="up">
           <p className="md:hidden readable-body max-w-prose mx-auto mt-8 text-center">
             এই কোর্সে সহজ বাংলায় হাতে-কলমে{' '}
-            <span className="font-semibold text-primary-glow">গ্রাফিক্স ডিজাইন</span> শিখে ঘরে বসেই
+            <span className="font-semibold text-primary-glow">গ্রাফিক ডিজাইন</span> শিখে ঘরে বসেই
             ফ্রিল্যান্সিং বা পেশাদার ক্যারিয়ার গড়ার সুযোগ পাবেন।
           </p>
         </FadeIn>
@@ -171,7 +171,7 @@ export default function WhyThisCourse() {
                     <div className="hidden md:block w-72 lg:w-[410px] text-white mx-12 lg:mx-24 mt-20 lg:mt-24 relative z-10">
                       <h2 className="text-3xl lg:text-5xl font-bold leading-[1.25] font-bangla text-white">
                         এই কোর্সে সহজ বাংলায় হাতে-কলমে{' '}
-                        <span className="font-bold text-primary-glow">গ্রাফিক্স ডিজাইন</span> শিখে ঘরে বসেই
+                        <span className="font-bold text-primary-glow">গ্রাফিক ডিজাইন</span> শিখে ঘরে বসেই
                         ফ্রিল্যান্সিং বা পেশাদার ক্যারিয়ার গড়ার সুযোগ পাবেন।
                       </h2>
                       <div className="mt-20">

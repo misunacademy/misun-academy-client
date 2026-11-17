@@ -10,15 +10,15 @@ import { BackToTop } from '@/components/shared';
 
 
 export const metadata = generateMetadata({
-  title: 'AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স | MISUN Academy',
+  title: 'AI Powered কমপ্লিট গ্রাফিক ডিজাইন কোর্স | MISUN Academy',
   description:
-    'ডিজিটাল যুগে সফল ক্যারিয়ারের জন্য সেরা গ্রাফিক্স ডিজাইন কোর্স। ঘরে বসেই ডিজাইন শিখুন এবং ফ্রিল্যান্সিং করে ক্যারিয়ার গড়ুন MISUN Academy-এর সাথে। | Learn graphic design from home and build a successful freelancing career with MISUN Academy.',
+    'ডিজিটাল যুগে সফল ক্যারিয়ারের জন্য সেরা গ্রাফিক ডিজাইন কোর্স। ঘরে বসেই ডিজাইন শিখুন এবং ফ্রিল্যান্সিং করে ক্যারিয়ার গড়ুন MISUN Academy-এর সাথে। | Learn graphic design from home and build a successful freelancing career with MISUN Academy.',
   keywords: [
     'Graphic Design Course in Bangladesh',
     'Freelancing Graphic Course',
     'Graphic Design Online Course BD',
     'best graphic design course Bangladesh',
-    'AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স',
+    'AI Powered কমপ্লিট গ্রাফিক ডিজাইন কোর্স',
     'ফ্রিল্যান্সিং শেখা কোর্স',
     'misun academy graphic design',
     'graphic design course misun academy',
@@ -45,7 +45,7 @@ export default function page() {
   return (
     <PageBackground gradient="bg-surface-darker" dotOpacity="opacity-[0.10]" dotSize="34px">
       <CourseJsonLd
-        name="AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স"
+        name="AI Powered কমপ্লিট গ্রাফিক ডিজাইন কোর্স"
         description="Learn graphic design from home and build a successful freelancing career with MISUN Academy. Complete Adobe Photoshop & Illustrator course in Bangla."
         slug="graphic-design"
         image="/preview/default-og-image.png"

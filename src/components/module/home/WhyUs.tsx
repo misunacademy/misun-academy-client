@@ -37,14 +37,14 @@ const WhyChooseSection = () => {
             bg-primary/10 border border-primary/25 backdrop-blur-sm mb-5">
             <span className="w-1.5 h-1.5 rounded-full bg-primary motion-safe:animate-pulse" />
             <span className="text-xs font-semibold text-primary-glow font-bangla">
-              প্রিমিয়াম গ্রাফিক্স ডিজাইন কোর্স
+              প্রিমিয়াম গ্রাফিক ডিজাইন কোর্স
             </span>
           </div>
 
           <h2 className="text-4xl md:text-5xl font-bold font-bangla mb-5 text-white">
             কেন{' '}
             <span className="relative inline-block text-primary-glow">
-              Misun Academy?
+              MISUN Academy?
               <span className="absolute -bottom-1 left-0 w-full h-[3px] rounded-full bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
             </span>
           </h2>
@@ -56,7 +56,7 @@ const WhyChooseSection = () => {
             <div className="h-px w-16 bg-gradient-to-r from-primary/20 to-transparent" />
           </div>
           <p className="readable-body max-w-3xl mx-auto font-bangla">
-            আপনার সৃজনশীল চিন্তাকে প্রফেশনাল দক্ষতায় রূপান্তর করুন আমাদের সম্পূর্ণ গ্রাফিক্স
+            আপনার সৃজনশীল চিন্তাকে প্রফেশনাল দক্ষতায় রূপান্তর করুন আমাদের সম্পূর্ণ গ্রাফিক
             ডিজাইন কোর্সের মাধ্যমে। ইন্ডাস্ট্রি এক্সপার্টদের কাছ থেকে শিখুন।
           </p>
         </FadeIn>
@@ -120,7 +120,7 @@ const WhyChooseSection = () => {
             </h3>
             <p className="readable-body mb-8 font-bangla">
               শত শত সফল শিক্ষার্থীদের মত আপনিও আপনার ক্যারিয়ার পরিবর্তন করুন আমাদের পূর্ণাঙ্গ
-              গ্রাফিক্স ডিজাইন প্রোগ্রামে অংশগ্রহণ করে। পান লাইফটাইম অ্যাক্সেস এবং ইন্ডাস্ট্রি
+              গ্রাফিক ডিজাইন প্রোগ্রামে অংশগ্রহণ করে। পান লাইফটাইম অ্যাক্সেস এবং ইন্ডাস্ট্রি
               সার্টিফিকেট।
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center font-bangla">

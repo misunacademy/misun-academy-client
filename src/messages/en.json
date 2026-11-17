@@ -114,5 +114,13 @@
     "invalidToken": "Invalid or expired token",
     "paymentNotFound": "Payment not found",
     "enrollmentNotFound": "Enrollment not found"
+  },
+  "consent": {
+    "title": "Your privacy",
+    "message": "We keep a few small cookies in your browser to run this site. If you allow it, we use Google and Facebook tools to see how people use the site and improve our courses and ads. If you don't, the site works the same — and you can change this any time in Cookie settings.",
+    "policyLabel": "Privacy policy",
+    "decline": "No, thanks",
+    "accept": "Allow",
+    "settings": "Cookie settings"
   }
 }
