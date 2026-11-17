@@ -143,7 +143,7 @@ export default function PerkGrantLogsTable() {
                 const isBootcamp = !!log.targetBootcampId;
                 const benefitTitle = isBootcamp
                   ? `Free Bootcamp: ${log.targetBootcampId?.title}${
-                      log.targetBootcampId?.season ? ` (S${log.targetBootcampId.season})` : ""
+                      log.targetBootcampId?.season ? ` (${log.targetBootcampId.season})` : ""
                     }`
                   : `Free ${log.targetCourseId?.title || "Course"}`;
                 const sourceEnrollmentId =

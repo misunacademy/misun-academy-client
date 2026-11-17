@@ -291,7 +291,7 @@ export default function PerkRulesTable({ onEditRule }: PerkRulesTableProps) {
                             ? typeof benefit.targetBootcampId === "object"
                               ? `${benefit.targetBootcampId?.title}${
                                   benefit.targetBootcampId?.season
-                                    ? ` (S${benefit.targetBootcampId.season})`
+                                    ? ` (${benefit.targetBootcampId.season})`
                                     : ""
                                 }`
                               : "Bootcamp"

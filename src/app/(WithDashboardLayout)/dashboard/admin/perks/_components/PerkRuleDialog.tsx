@@ -489,7 +489,7 @@ function PerkRuleForm({ editingRule, onClose }: PerkRuleFormProps) {
                         .map((b) => (
                           <SelectItem key={b._id} value={b._id}>
                             {b.title}
-                            {b.season ? ` — Season ${b.season}` : ""}
+                            {b.season ? ` — ${b.season}` : ""}
                           </SelectItem>
                         ))}
                       {publishedBootcamps.length === 0 && !benefit.targetBootcampId && (
