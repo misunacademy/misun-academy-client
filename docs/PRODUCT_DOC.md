@@ -41,7 +41,7 @@ Redirect safety: `src/lib/auth-redirect.ts` (`isAllowedRedirectUrl`) validates `
 |---|---|---|
 | `/` | `(WithCommonLayout)/page.tsx` | Bangla SEO home: `HeroSection`, lazy `HomeDeferredSections`, `EnrollmentFixed`, `HomepageTracker`, `PageBackground`, `BackToTop`, `FloatingChat` (dev only) |
 | `/courses` | `courses/page.tsx` | Catalog (`CoursesListClient`, `CoursesListScene`) |
-| `/courses/[id]` | `courses/[id]/page.tsx` | Detail, incl. flagship `AI Powered কমপ্লিট গ্রাফিক্স ডিজাইন` (Photoshop/Illustrator + freelancing) |
+| `/courses/[id]` | `courses/[id]/page.tsx` | Detail, incl. flagship `AI Powered কমপ্লিট গ্রাফিক ডিজাইন` (Photoshop/Illustrator + freelancing) |
 | `/bootcamp`, `/bootcamp/[slug]` | `bootcamp/` | Cohort bootcamps, e.g. `প্যারাসিটামল ফর ফটোশপ Season 2.0` — 4-day Zoom, ৳350, portfolio + client-hunting + gifts/internship |
 | `/checkout?batch=` | `checkout/page.tsx` | Enrollment checkout. Branches `EnrollmentCheckout` vs `BootcampCheckout(batchId)`; `useCurrentBatch` + `useGetBatchByIdQuery`; enrollment-window guard `isWindowOpen()` → `EnrollmentNotOpenModal`; fires Meta Pixel + `/api/meta-conversion` CAPI `InitiateCheckout` |
 | `/payment` | `payment/page.tsx` | SSLCommerz return landing (`PaymentStatus`, host `securepay.sslcommerz.com`) |

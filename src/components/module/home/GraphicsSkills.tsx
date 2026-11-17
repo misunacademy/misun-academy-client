@@ -40,7 +40,7 @@ export default function GraphicsSkills() {
                                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
                                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary/80" />
                             </span>
-                            গ্রাফিক্স ডিজাইন কোর্স
+                            গ্রাফিক ডিজাইন কোর্স
                         </div>
                     </FadeIn>
 
@@ -91,7 +91,7 @@ export default function GraphicsSkills() {
                     {/* Subtitle */}
                     <FadeIn delay={0.3} direction="up" className="relative z-10">
                         <p className="mx-auto mb-12 max-w-xl text-base leading-relaxed text-zinc-400/80 md:text-lg hover:text-white/80 transition-colors">
-                            ইন্ডাস্ট্রি-স্ট্যান্ডার্ড ডিজাইন টুল শিখুন এবং আমাদের পূর্ণাঙ্গ গ্রাফিক্স ডিজাইন কোর্সের মাধ্যমে আপনার সৃজনশীলতা উন্মোচন করুন।
+                            ইন্ডাস্ট্রি-স্ট্যান্ডার্ড ডিজাইন টুল শিখুন এবং আমাদের পূর্ণাঙ্গ গ্রাফিক ডিজাইন কোর্সের মাধ্যমে আপনার সৃজনশীলতা উন্মোচন করুন।
                         </p>
                     </FadeIn>
 

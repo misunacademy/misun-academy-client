@@ -27,7 +27,7 @@ export function BannerContent({ batchNumber, price, enrollmentPeriod, courseSlug
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" aria-hidden="true" />
         </span>
-        <span className="text-xs font-semibold text-primary-glow">কমপ্লিট গ্রাফিক্স ডিজাইন কোর্স</span>
+        <span className="text-xs font-semibold text-primary-glow">কমপ্লিট গ্রাফিক ডিজাইন কোর্স</span>
       </div>
 
       {/* <span className="mb-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-lg text-base font-bold tracking-wide text-neutral-900">
@@ -52,7 +52,7 @@ export function BannerContent({ batchNumber, price, enrollmentPeriod, courseSlug
       </h2>
 
       <p className="readable-body w-auto sm:w-10/12 text-center max-w-3xl mt-6 mx-5 font-bangla">
-        AI Powered Complete Graphic Design With Freelancing (Batch-0{batchNumber}) – এই কোর্সটি আপনাকে বেসিক থেকে অ্যাডভান্স লেভেল পর্যন্ত গ্রাফিক্স ডিজাইন শেখাবে বাস্তব প্রজেক্ট ও ক্লাইন্ট হান্টিং স্ট্র্যাটেজির মাধ্যমে। ২৪/৭ সাপোর্ট, <strong>১:১</strong> মেন্টরশিপ, লাইভ ক্লাস এবং AI ইনটিগ্রেটেড ডিজাইনের সাহায্যে আপনি নিজেকে গড়ে তুলতে পারবেন একজন দক্ষ ফ্রিল্যান্স ডিজাইনার হিসেবে।
+        AI Powered Complete Graphic Design With Freelancing (Batch-0{batchNumber}) – এই কোর্সটি আপনাকে বেসিক থেকে অ্যাডভান্স লেভেল পর্যন্ত গ্রাফিক ডিজাইন শেখাবে বাস্তব প্রজেক্ট ও ক্লাইন্ট হান্টিং স্ট্র্যাটেজির মাধ্যমে। ২৪/৭ সাপোর্ট, <strong>১:১</strong> মেন্টরশিপ, লাইভ ক্লাস এবং AI ইনটিগ্রেটেড ডিজাইনের সাহায্যে আপনি নিজেকে গড়ে তুলতে পারবেন একজন দক্ষ ফ্রিল্যান্স ডিজাইনার হিসেবে।
       </p>
 
       <Countdown courseSlug={courseSlug} />
