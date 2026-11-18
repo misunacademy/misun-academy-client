@@ -57,6 +57,7 @@ const nextConfig: NextConfig = {
   // Slim production image: `server.js` + traced deps only.
   output: 'standalone',
   experimental: {
+    agentUpgrade: 'security',
     optimizePackageImports: ['lucide-react', 'recharts', 'date-fns'],
   },
 
