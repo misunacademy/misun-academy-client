@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Loader2,
   BookOpen,
+  Package,
 } from "lucide-react";
 import {
   Table,
@@ -141,10 +142,15 @@ export default function PerkGrantLogsTable() {
                 const studentEmail = log.studentId?.email || "Unknown";
                 const ruleTitle = log.ruleId?.title || "Rule";
                 const isBootcamp = !!log.targetBootcampId;
+                const isDigitalProduct =
+                  log.benefitType === "free_digital_product" ||
+                  !!log.targetDigitalProductId;
                 const benefitTitle = isBootcamp
                   ? `Free Bootcamp: ${log.targetBootcampId?.title}${
                       log.targetBootcampId?.season ? ` (${log.targetBootcampId.season})` : ""
                     }`
+                  : isDigitalProduct
+                  ? `Free Digital Product: ${log.targetDigitalProductId?.title || "Digital Product"}`
                   : `Free ${log.targetCourseId?.title || "Course"}`;
                 const sourceEnrollmentId =
                   log.sourceEnrollmentId?.enrollmentId ||
@@ -171,14 +177,20 @@ export default function PerkGrantLogsTable() {
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${
                           isBootcamp
                             ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"
+                            : isDigitalProduct
+                            ? "bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/20"
                             : "bg-primary/10 text-primary border border-primary/20"
                         }`}
                       >
-                        <BookOpen
-                          className={`w-3.5 h-3.5 shrink-0 ${
-                            isBootcamp ? "text-amber-600 dark:text-amber-400" : "text-primary"
-                          }`}
-                        />
+                        {isDigitalProduct ? (
+                          <Package className="w-3.5 h-3.5 shrink-0 text-violet-600 dark:text-violet-400" />
+                        ) : (
+                          <BookOpen
+                            className={`w-3.5 h-3.5 shrink-0 ${
+                              isBootcamp ? "text-amber-600 dark:text-amber-400" : "text-primary"
+                            }`}
+                          />
+                        )}
                         <span>{benefitTitle}</span>
                       </div>
                     </TableCell>

@@ -26,6 +26,7 @@ import {
 import { useGetAllCoursesQuery } from "@/redux/api/courseApi";
 import { useGetAllBatchesQuery } from "@/redux/api/batchApi";
 import { useGetBootcampCatalogAdminQuery } from "@/redux/api/bootcampApi";
+import { useGetAdminDigitalProductsQuery } from "@/redux/api/digitalProductApi";
 import {
   EnrollmentPerkRule,
   PerkBenefit,
@@ -93,6 +94,10 @@ function PerkRuleForm({ editingRule, onClose }: PerkRuleFormProps) {
           typeof b.targetBootcampId === "object"
             ? (b.targetBootcampId as { _id: string } | undefined)?._id
             : b.targetBootcampId,
+        targetDigitalProductId:
+          typeof b.targetDigitalProductId === "object"
+            ? (b.targetDigitalProductId as { _id: string } | undefined)?._id
+            : b.targetDigitalProductId,
         accessDuration: b.accessDuration || { type: "lifetime" },
         extraConfig: b.extraConfig || {},
       }));
@@ -121,6 +126,11 @@ function PerkRuleForm({ editingRule, onClose }: PerkRuleFormProps) {
   };
 
   const publishedBootcamps = bootcamps.filter(isBootcampPublished);
+
+  const { data: digitalProductsData, isLoading: loadingDigitalProducts } =
+    useGetAdminDigitalProductsQuery({ limit: 100 });
+  const digitalProducts = digitalProductsData?.data || [];
+  const publishedDigitalProducts = digitalProducts.filter((p) => p.isPublished);
 
   const { data: batchesData, isLoading: loadingBatches } = useGetAllBatchesQuery(
     { courseId: courseId || undefined },
@@ -205,6 +215,11 @@ function PerkRuleForm({ editingRule, onClose }: PerkRuleFormProps) {
           toast.error("Please select a target bootcamp for all free bootcamp benefits");
           return;
         }
+      } else if (b.type === "free_digital_product") {
+        if (!b.targetDigitalProductId) {
+          toast.error("Please select a target digital product for all free digital product benefits");
+          return;
+        }
       }
     }
 
@@ -218,6 +233,13 @@ function PerkRuleForm({ editingRule, onClose }: PerkRuleFormProps) {
         return {
           type: b.type,
           targetBootcampId: b.targetBootcampId || undefined,
+          extraConfig: b.extraConfig || {},
+        };
+      }
+      if (b.type === "free_digital_product") {
+        return {
+          type: b.type,
+          targetDigitalProductId: b.targetDigitalProductId || undefined,
           extraConfig: b.extraConfig || {},
         };
       }
@@ -351,14 +373,16 @@ function PerkRuleForm({ editingRule, onClose }: PerkRuleFormProps) {
                 <div className="flex items-center gap-2 flex-1">
                   <Select
                     value={benefit.type}
-                    onValueChange={(val: "free_course" | "free_bootcamp") =>
+                    onValueChange={(val: PerkBenefit["type"]) =>
                       updateBenefit(index, {
                         type: val,
                         targetCourseId: val === "free_course" ? benefit.targetCourseId : undefined,
                         targetBootcampId: val === "free_bootcamp" ? benefit.targetBootcampId : undefined,
+                        targetDigitalProductId:
+                          val === "free_digital_product" ? benefit.targetDigitalProductId : undefined,
                         targetBatchId: undefined,
                         accessDuration:
-                          val === "free_bootcamp"
+                          val === "free_bootcamp" || val === "free_digital_product"
                             ? undefined
                             : benefit.accessDuration || { type: "lifetime" },
                       })
@@ -370,6 +394,7 @@ function PerkRuleForm({ editingRule, onClose }: PerkRuleFormProps) {
                     <SelectContent>
                       <SelectItem value="free_course">Free Course Access</SelectItem>
                       <SelectItem value="free_bootcamp">Free Bootcamp Access</SelectItem>
+                      <SelectItem value="free_digital_product">Free Digital Product</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -504,6 +529,49 @@ function PerkRuleForm({ editingRule, onClose }: PerkRuleFormProps) {
                   </p>
                 </div>
               )}
+
+              {/* FREE DIGITAL PRODUCT fields */}
+              {benefit.type === "free_digital_product" && (
+                <div className="space-y-2">
+                  <Label className="text-xs">Target Digital Product *</Label>
+                  <Select
+                    value={benefit.targetDigitalProductId || ""}
+                    onValueChange={(val) => updateBenefit(index, { targetDigitalProductId: val })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={
+                          loadingDigitalProducts
+                            ? "Loading digital products..."
+                            : publishedDigitalProducts.length === 0
+                            ? "No published digital products available"
+                            : "Choose Bonus Digital Product"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {digitalProducts
+                        .filter(
+                          (p) => p._id === benefit.targetDigitalProductId || p.isPublished
+                        )
+                        .map((p) => (
+                          <SelectItem key={p._id} value={p._id}>
+                            {p.title}
+                          </SelectItem>
+                        ))}
+                      {publishedDigitalProducts.length === 0 && !benefit.targetDigitalProductId && (
+                        <div className="py-3 px-2 text-center text-xs text-muted-foreground">
+                          No published digital products available
+                        </div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[11px] text-muted-foreground">
+                    Students will receive a complimentary paid order with lifetime download access to
+                    this digital product.
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -607,7 +675,7 @@ export default function PerkRuleDialog({
                 {editingRule ? "Edit Enrollment Perk Rule" : "Create Enrollment Perk Rule"}
               </DialogTitle>
               <DialogDescription>
-                Configure bonus courses and benefits granted automatically to students enrolling in this batch.
+                Configure bonus courses, bootcamps, and digital products granted automatically to students enrolling in this batch.
               </DialogDescription>
             </div>
           </div>

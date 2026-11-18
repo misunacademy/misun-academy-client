@@ -287,6 +287,8 @@ export default function PerkRulesTable({ onEditRule }: PerkRulesTableProps) {
                       <div className="space-y-1.5">
                         {rule.benefits?.map((benefit, idx) => {
                           const isBootcamp = benefit.type === "free_bootcamp";
+                          const isDigitalProduct =
+                            benefit.type === "free_digital_product";
                           const targetTitle = isBootcamp
                             ? typeof benefit.targetBootcampId === "object"
                               ? `${benefit.targetBootcampId?.title}${
@@ -295,15 +297,26 @@ export default function PerkRulesTable({ onEditRule }: PerkRulesTableProps) {
                                     : ""
                                 }`
                               : "Bootcamp"
+                            : isDigitalProduct
+                            ? typeof benefit.targetDigitalProductId === "object"
+                              ? benefit.targetDigitalProductId?.title
+                              : "Digital Product"
                             : typeof benefit.targetCourseId === "object"
                             ? benefit.targetCourseId?.title
                             : "Course";
 
-                          const durationLabel = isBootcamp
-                            ? "Lifetime Access"
-                            : benefit.accessDuration?.type === "days"
-                            ? `${benefit.accessDuration.days} Days Access`
-                            : "Lifetime Access";
+                          const durationLabel =
+                            isBootcamp || isDigitalProduct
+                              ? "Lifetime Access"
+                              : benefit.accessDuration?.type === "days"
+                              ? `${benefit.accessDuration.days} Days Access`
+                              : "Lifetime Access";
+
+                          const labelPrefix = isBootcamp
+                            ? "Free Bootcamp: "
+                            : isDigitalProduct
+                            ? "Free Digital Product: "
+                            : "Free ";
 
                           return (
                             <div
@@ -311,22 +324,30 @@ export default function PerkRulesTable({ onEditRule }: PerkRulesTableProps) {
                               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium mr-1.5 mb-1 ${
                                 isBootcamp
                                   ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20"
+                                  : isDigitalProduct
+                                  ? "bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/20"
                                   : "bg-primary/10 text-primary border border-primary/20"
                               }`}
                             >
                               <Sparkles
                                 className={`w-3 h-3 shrink-0 ${
-                                  isBootcamp ? "text-amber-600 dark:text-amber-400" : "text-primary"
+                                  isBootcamp
+                                    ? "text-amber-600 dark:text-amber-400"
+                                    : isDigitalProduct
+                                    ? "text-violet-600 dark:text-violet-400"
+                                    : "text-primary"
                                 }`}
                               />
                               <span>
-                                {isBootcamp ? "Free Bootcamp: " : "Free "}
+                                {labelPrefix}
                                 {targetTitle}
                               </span>
                               <span
                                 className={`text-[10px] ${
                                   isBootcamp
                                     ? "text-amber-700/70 dark:text-amber-400/70"
+                                    : isDigitalProduct
+                                    ? "text-violet-700/70 dark:text-violet-400/70"
                                     : "text-primary/70"
                                 }`}
                               >
