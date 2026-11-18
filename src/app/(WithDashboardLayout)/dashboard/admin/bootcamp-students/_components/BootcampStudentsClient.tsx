@@ -27,7 +27,8 @@ import {
 } from "@/redux/api/bootcampApi";
 import { paginateAll } from "@/lib/paginate-all";
 import BootcampStudentStatsCards from "./BootcampStudentStatsCards";
-import { bootcampStudentColumns } from "./bootcampStudentColumns";
+import { getBootcampStudentColumns } from "./bootcampStudentColumns";
+import { BootcampPurchaseReviewDialog } from "./BootcampPurchaseReviewDialog";
 
 const safeCell = (v: unknown): string => {
   const s = v === null || v === undefined ? "" : String(v);
@@ -74,6 +75,12 @@ export default function BootcampStudentsClient() {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [isExporting, setIsExporting] = useState(false);
+  const [reviewPurchase, setReviewPurchase] = useState<BootcampPurchaseAdminItem | null>(null);
+
+  const columns = useMemo(
+    () => getBootcampStudentColumns((purchase) => setReviewPurchase(purchase)),
+    []
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -309,7 +316,7 @@ export default function BootcampStudentsClient() {
           <Card>
             <CardContent>
               <DataTable
-                columns={bootcampStudentColumns}
+                columns={columns}
                 data={purchases}
                 getRowId={(purchase) => purchase._id}
                 isLoading={isLoading}
@@ -325,6 +332,15 @@ export default function BootcampStudentsClient() {
               />
             </CardContent>
           </Card>
+
+          <BootcampPurchaseReviewDialog
+            open={!!reviewPurchase}
+            onClose={() => {
+              setReviewPurchase(null);
+              refetch();
+            }}
+            purchase={reviewPurchase}
+          />
         </>
       }
     />

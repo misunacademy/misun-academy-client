@@ -43,6 +43,7 @@ export interface BootcampRecordedCard {
   posterImage?: string;
   liveFee?: number;
   recordedPrice: number;
+  recordedPriceINR?: number;
   lessonsCount: number;
   durationMinutes: number;
   status: string;
@@ -100,8 +101,10 @@ export interface BootcampPurchaseAdminItem {
     thumbnail?: string;
   };
   amount: number;
-  method: "manual" | "SSLCommerz";
+  currency?: "BDT" | "INR";
+  method: "manual" | "SSLCommerz" | "PhonePe_Manual";
   transactionId: string;
+  senderNumber?: string;
   status: "pending" | "paid" | "rejected";
   adminNote?: string;
   createdAt: string;
@@ -141,6 +144,7 @@ export interface BootcampCatalogItem {
   platform?: string;
   liveFee: number;
   recordedPrice: number;
+  recordedPriceINR?: number;
   recordedStatus: "draft" | "published";
   thumbnail?: string;
   posterImage?: string;
@@ -375,6 +379,30 @@ const bootcampApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Bootcamp"],
     }),
+
+    submitBootcampPhonePeManual: build.mutation<
+      { success: boolean; message: string; data: BootcampPurchaseAdminItem },
+      { slug: string; senderPhonePe: string; transactionId: string }
+    >({
+      query: ({ slug, ...body }) => ({
+        url: `/bootcamp/slug/${slug}/payment/manual-phonepe`,
+        method: "POST",
+        data: body,
+      }),
+      invalidatesTags: ["Bootcamp"],
+    }),
+
+    reviewBootcampPurchaseAdmin: build.mutation<
+      { success: boolean; message: string; data: BootcampPurchaseAdminItem },
+      { id: string; status: "paid" | "rejected"; adminNote?: string }
+    >({
+      query: ({ id, ...body }) => ({
+        url: `/bootcamp/purchases/${id}/review`,
+        method: "PATCH",
+        data: body,
+      }),
+      invalidatesTags: ["Bootcamp"],
+    }),
   }),
 });
 
@@ -403,4 +431,6 @@ export const {
   useGetBootcampPurchasesQuery,
   useLazyGetBootcampPurchasesQuery,
   useGetBootcampPurchaseStatsQuery,
+  useSubmitBootcampPhonePeManualMutation,
+  useReviewBootcampPurchaseAdminMutation,
 } = bootcampApi;
