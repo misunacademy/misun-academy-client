@@ -139,6 +139,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'misun-academy.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'plus.unsplash.com',
+      },
     ],
   },
 };

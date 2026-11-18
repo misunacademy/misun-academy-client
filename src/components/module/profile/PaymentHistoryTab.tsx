@@ -1,7 +1,7 @@
 "use client";
 
 import { LoadingBoundary } from "@/components/shared/LoadingBoundary";
-import { CreditCard, CheckCircle, XCircle, Clock } from "lucide-react";
+import { CreditCard, CheckCircle, XCircle, Clock, FileCode } from "lucide-react";
 import Link from "next/link";
 import { useGetMyPaymentsQuery } from "@/redux/api/paymentApi";
 import type { PaymentResponse } from "@/redux/api/paymentApi";
@@ -9,6 +9,7 @@ import {
     useGetMyBootcampPurchasesQuery,
     type BootcampPurchase,
 } from "@/redux/api/bootcampApi";
+import { useGetMyDigitalPurchasesQuery } from "@/redux/api/digitalProductApi";
 
 interface GatewayResponse {
     bank_tran_id?: string;
@@ -26,6 +27,8 @@ export function PaymentHistoryTab() {
     const { data, isLoading, error } = useGetMyPaymentsQuery();
     const { data: bootcampData, isLoading: bootcampLoading } =
         useGetMyBootcampPurchasesQuery({ history: true });
+    const { data: digitalData, isLoading: digitalLoading } =
+        useGetMyDigitalPurchasesQuery();
 
     const payments = (data?.data || []).filter(
         (payment) => payment.status !== 'failed' && payment.status !== 'cancel'
@@ -33,7 +36,10 @@ export function PaymentHistoryTab() {
     const bootcampPurchases = (bootcampData?.data || []).filter(
         (purchase) => purchase.status !== 'rejected'
     );
-    const loading = isLoading || bootcampLoading;
+    const digitalPurchases = (digitalData?.data || []).filter(
+        (p) => !p.status || p.status === 'paid'
+    );
+    const loading = isLoading || bootcampLoading || digitalLoading;
 
     const bootcampStatus = (status: BootcampPurchase['status']) =>
         status === 'paid' ? 'success' : status === 'rejected' ? 'failed' : 'pending';
@@ -95,7 +101,7 @@ export function PaymentHistoryTab() {
             </div>
 
             <div className="relative z-10 grid gap-6">
-                {payments.length === 0 && bootcampPurchases.length === 0 ? (
+                {payments.length === 0 && bootcampPurchases.length === 0 && digitalPurchases.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-primary/20 rounded-xl bg-primary/5">
                         <CreditCard className="w-16 h-16 text-primary/40 mb-4" />
                         <h3 className="text-xl text-white/90 font-medium mb-2">No Payment Records Found</h3>
@@ -104,7 +110,92 @@ export function PaymentHistoryTab() {
                         </p>
                     </div>
                 ) : (
-                    bootcampPurchases.map((purchase: BootcampPurchase) => (
+                    <>
+                        {digitalPurchases.map((item) => {
+                            const isINR = item.currency === 'INR';
+                            const paymentMethodDisplay = item.paymentMethod === 'PhonePe_Manual' ? 'PhonePe' : item.paymentMethod === 'Perk' ? 'Enrollment Perk (Free)' : (item.paymentMethod || (isINR ? 'PhonePe' : 'SSLCommerz'));
+                            const baseApi = process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:5000/api/v1';
+
+                            return (
+                                <div key={item.orderNumber} className="flex flex-col gap-6 p-6 rounded-2xl border border-primary/20 bg-surface/40 backdrop-blur-sm hover:bg-surface/60 transition-all duration-300 hover:border-primary/40 group">
+                                    <div className="flex flex-wrap items-start justify-between gap-4 border-b border-surface/10 pb-4">
+                                        <div className="space-y-1">
+                                            <h3 className="text-white font-bold text-lg leading-tight">
+                                                {item.product?.title || 'Digital Product'}
+                                            </h3>
+                                            <p className="text-white/50 text-sm flex items-center gap-1.5">
+                                                <FileCode className="w-3.5 h-3.5 text-primary" />
+                                                Digital Product • <span className="text-white/80">{item.product?.software || 'Script'}</span>
+                                            </p>
+                                        </div>
+                                        <div>
+                                            {getStatusBadge('success')}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
+                                            <div>
+                                                <p className="text-white/40 text-xs mb-1">Order / Txn ID</p>
+                                                <p className="font-mono text-white/60 text-xs break-all">
+                                                    {item.transactionId || item.orderNumber}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-white/40 text-xs mb-1">Amount</p>
+                                                <p className="font-semibold text-primary text-lg">
+                                                    <span className="text-primary/70 text-sm">{isINR ? '₹' : '৳'}</span>{" "}
+                                                    {item.amount?.toLocaleString()}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-white/40 text-xs mb-1">Payment Method</p>
+                                                <p className="capitalize text-white/60 font-medium">
+                                                    {paymentMethodDisplay}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-white/40 text-xs mb-1">Date</p>
+                                                <p className="text-white/60">
+                                                    {item.paidAt ? new Date(item.paidAt).toLocaleDateString('en-US') : 'N/A'}
+                                                </p>
+                                                <p className="text-xs text-white/40">
+                                                    {item.paidAt ? new Date(item.paidAt).toLocaleTimeString('en-US') : ''}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-wrap items-center gap-4 pt-3 border-t border-surface/10">
+                                            <a
+                                                href={`${baseApi}/digital-products/download/${item.downloadToken}/script`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1.5 text-xs text-[#ffd60a] hover:underline"
+                                            >
+                                                <FileCode className="w-3.5 h-3.5" />
+                                                Script Download
+                                            </a>
+                                            <a
+                                                href={`${baseApi}/digital-products/download/${item.downloadToken}/guide`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:underline"
+                                            >
+                                                Guide PDF
+                                            </a>
+                                            <Link
+                                                href="/my-classes"
+                                                className="inline-flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors ml-auto"
+                                            >
+                                                View in Tools & Scripts →
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+                        {bootcampPurchases.map((purchase: BootcampPurchase) => (
                         <div key={purchase._id} className="flex flex-col gap-6 p-6 rounded-2xl border border-primary/20 bg-surface/40 backdrop-blur-sm hover:bg-surface/60 transition-all duration-300 hover:border-primary/40 group">
                             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-surface/10 pb-4">
                                 <div className="space-y-1">
@@ -160,10 +251,9 @@ export function PaymentHistoryTab() {
                                 )}
                             </div>
                         </div>
-                    ))
-                )}
-                {payments.length > 0 && (
-                    payments.map((payment: PaymentResponse) => {
+                    ))}
+
+                    {payments.map((payment: PaymentResponse) => {
                         const gw = payment.gatewayResponse as GatewayResponse | undefined;
                         return (
                         <div key={payment._id} className="flex flex-col gap-6 p-6 rounded-2xl border border-primary/20  bg-surface/40 backdrop-blur-sm hover:bg-surface/60 transition-all duration-300 hover:border-primary/40 group">
@@ -274,8 +364,10 @@ export function PaymentHistoryTab() {
                                 )}
                             </div>
                         </div>
-                    )}
-                ))}
+                        );
+                    })}
+                    </>
+                )}
             </div>
         </div>
         )}

@@ -8,6 +8,7 @@ import {
   Video,
   KeyRound,
   Flame,
+  Package,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AuthGuard from "@/components/shared/AuthGuard";
@@ -24,6 +25,7 @@ const CoursesTab = dynamic(() => import("./components/CoursesTab").then(m => ({ 
 const BootcampsTab = dynamic(() => import("./components/BootcampsTab").then(m => ({ default: m.BootcampsTab })), { ssr: false });
 const LiveRecordingsTab = dynamic(() => import("./components/LiveRecordingsTab").then(m => ({ default: m.LiveRecordingsTab })), { ssr: false });
 const SpecialAccessTab = dynamic(() => import("./components/SpecialAccessTab").then(m => ({ default: m.SpecialAccessTab })), { ssr: false });
+const DigitalProductsTab = dynamic(() => import("./components/DigitalProductsTab").then(m => ({ default: m.DigitalProductsTab })), { ssr: false });
 
 const MyClassesPage = () => {
   const { user } = useAuth();
@@ -191,6 +193,20 @@ const MyClassesPage = () => {
                         </span>
                       )}
                     </TabsTrigger>
+                    <TabsTrigger
+                      value="digital-products"
+                      className="
+                        shrink-0 whitespace-nowrap flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-none border-b-2 border-transparent
+                        text-xs sm:text-sm font-semibold text-white/40
+                        data-[state=active]:border-primary data-[state=active]:text-primary
+                        data-[state=active]:bg-transparent data-[state=active]:shadow-none
+                        hover:text-white/70 transition-all duration-200
+                      "
+                    >
+                      <Package className="w-4 h-4" />
+                      <span className="hidden sm:inline">Tools & Scripts</span>
+                      <span className="sm:hidden">Scripts</span>
+                    </TabsTrigger>
                   </TabsList>
                 </div>
               </div>
@@ -209,6 +225,10 @@ const MyClassesPage = () => {
 
               <TabsContent value="special-access" className="mt-0">
                 <SpecialAccessTab courses={specialAccessCourses} />
+              </TabsContent>
+
+              <TabsContent value="digital-products" className="mt-0">
+                <DigitalProductsTab />
               </TabsContent>
             </Tabs>
           </div>
