@@ -1,3 +1,4 @@
+import { DigitalProductsSection } from '@/app/(WithCommonLayout)/bootcamp/_components/DigitalProductsSection';
 import dynamic from 'next/dynamic';
 
 const WhyThisCourse = dynamic(() => import('./WhyThisCourse'));
@@ -17,6 +18,7 @@ export default function HomeDeferredSections() {
       <div id="enroll-now-anchor">
         <EnrollmentSection />
       </div>
+      <DigitalProductsSection />
       <Feedback />
     </>
   );

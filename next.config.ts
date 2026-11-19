@@ -57,6 +57,7 @@ const nextConfig: NextConfig = {
   // Slim production image: `server.js` + traced deps only.
   output: 'standalone',
   experimental: {
+    agentUpgrade: 'security',
     optimizePackageImports: ['lucide-react', 'recharts', 'date-fns'],
   },
 
@@ -87,7 +88,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: blob: https:",
               "font-src 'self' data: https:",
               `connect-src ${connectSrc}`,
-              "frame-src 'self' https://www.facebook.com https://www.youtube.com https://www.youtube-nocookie.com",
+              "frame-src 'self' https://www.facebook.com https://www.youtube.com https://www.youtube-nocookie.com https://drive.google.com https://docs.google.com",
               "object-src 'none'",
               "base-uri 'self'",
               'upgrade-insecure-requests',
@@ -137,6 +138,14 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'misun-academy.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'plus.unsplash.com',
       },
     ],
   },

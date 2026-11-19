@@ -122,6 +122,8 @@ export const baseApi = createApi({
         'Bootcamp',
         'Announcements',
         'EnrollmentPerks',
+        'DigitalProducts',
+        'DigitalProductOrders',
     ],
     endpoints: () => ({}),
 });

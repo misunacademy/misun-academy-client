@@ -26,6 +26,8 @@ import {
   Users,
   Video,
   ClipboardCheck,
+  Package,
+  ShoppingCart,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -148,6 +150,8 @@ function getAdminGroups(isSuperAdmin: boolean): NavGroup[] {
     {
       label: "Commerce",
       items: [
+        { title: "Digital Products", url: "/dashboard/admin/digital-products", icon: Package },
+        { title: "Digital Orders", url: "/dashboard/admin/digital-product-orders", icon: ShoppingCart },
         { title: "Payments", url: "/dashboard/admin/payment", icon: CreditCard },
         { title: "Refunds", url: "/dashboard/admin/refunds", icon: RotateCcw },
         { title: "Reports", url: "/dashboard/admin/reports", icon: FileText },

@@ -8,6 +8,7 @@ import { BootcampPayment } from './_components/BootcampPayment';
 import { PosterStudio } from './_components/PosterStudio';
 import { BootcampRegistrationForm } from './_components/BootcampRegistrationForm';
 import { BootcampFaq } from './_components/BootcampFaq';
+import { DigitalProductsSection } from './_components/DigitalProductsSection';
 import { PreviousBootcampsGrid } from './_components/PreviousBootcampsGrid';
 import {
     useGetCurrentBootcampQuery,
@@ -42,6 +43,7 @@ const BootcampPage = () => {
                         বর্তমানে কোনো লাইভ বুটক্যাম্প চালু নেই। পূর্বের বুটক্যাম্পের রেকর্ডিং কিনে লাইফটাইম অ্যাক্সেস নিয়ে শেখা শুরু করুন।
                     </p>
                 </section>
+                <DigitalProductsSection />
                 {past.length > 0 ? (
                     <PreviousBootcampsGrid items={past} title="সব রেকর্ডিং বুটক্যাম্প" />
                 ) : (
@@ -68,6 +70,7 @@ const BootcampPage = () => {
             <BootcampRegistrationForm />
             <BootcampFaq />
             <PreviousBootcampsGrid items={past} />
+        
             <BreadcrumbJsonLd />
         </div>
     );
