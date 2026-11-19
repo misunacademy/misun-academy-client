@@ -313,8 +313,8 @@ export default function BootcampStudentsClient() {
 
           {filtersCard}
 
-          <Card>
-            <CardContent>
+          {/* <Card>
+            <CardContent> */}
               <DataTable
                 columns={columns}
                 data={purchases}
@@ -330,8 +330,8 @@ export default function BootcampStudentsClient() {
                   onPageChange: setPage,
                 }}
               />
-            </CardContent>
-          </Card>
+            {/* </CardContent>
+          </Card> */}
 
           <BootcampPurchaseReviewDialog
             open={!!reviewPurchase}
