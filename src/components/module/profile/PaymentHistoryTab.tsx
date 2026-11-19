@@ -33,9 +33,7 @@ export function PaymentHistoryTab() {
     const payments = (data?.data || []).filter(
         (payment) => payment.status !== 'failed' && payment.status !== 'cancel'
     );
-    const bootcampPurchases = (bootcampData?.data || []).filter(
-        (purchase) => purchase.status !== 'rejected'
-    );
+    const bootcampPurchases = (bootcampData?.data || []);
     const digitalPurchases = (digitalData?.data || []).filter(
         (p) => p.status !== 'cancelled'
     );
@@ -284,6 +282,37 @@ export function PaymentHistoryTab() {
                                     >
                                         Watch recording →
                                     </Link>
+                                )}
+
+                                {purchase.status === 'rejected' && (
+                                    <div className="mt-2 rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+                                        <div className="flex items-start gap-2">
+                                            <XCircle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
+                                            <div>
+                                                <p className="text-red-400 font-semibold text-sm mb-1">পেমেন্ট যাচাই ব্যর্থ হয়েছে</p>
+                                                <p className="text-red-300/80 text-xs leading-relaxed">
+                                                    {purchase.adminNote || 'Transaction ID বা পেমেন্ট তথ্যের অসঙ্গতি থাকায় অ্যাডমিন কর্তৃক বাতিল করা হয়েছে।'}
+                                                </p>
+                                                <p className="text-red-300/60 text-xs mt-2">
+                                                    সঠিক পেমেন্ট প্রুফ থাকলে সাপোর্টে যোগাযোগ করুন অথবা পুনরায় আবেদন করুন।
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {purchase.status === 'pending' && (
+                                    <div className="mt-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+                                        <div className="flex items-start gap-2">
+                                            <Clock className="h-4 w-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                                            <div>
+                                                <p className="text-amber-400 font-semibold text-sm mb-1">পেমেন্ট যাচাই চলছে</p>
+                                                <p className="text-amber-300/80 text-xs leading-relaxed">
+                                                    আপনার PhonePe পেমেন্ট তথ্য যাচাই করা হচ্ছে। সাধারণত ২৪ ঘণ্টার মধ্যে এক্সেস দেওয়া হয়।
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         </div>
