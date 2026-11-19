@@ -84,7 +84,9 @@ export interface MyPurchasedDigitalProduct {
     transactionId?: string;
     paymentMethod?: string;
     status?: string;
-    paidAt: string;
+    adminNote?: string;
+    createdAt?: string;
+    paidAt?: string;
     amount: number;
     currency: 'BDT' | 'INR';
     product: {
@@ -96,9 +98,9 @@ export interface MyPurchasedDigitalProduct {
         scriptFileName?: string;
         guideFileName?: string;
     };
-    downloadToken: string;
-    scriptDownloadUrl: string;
-    guideDownloadUrl: string;
+    downloadToken?: string;
+    scriptDownloadUrl?: string;
+    guideDownloadUrl?: string;
 }
 
 export const digitalProductApi = baseApi.injectEndpoints({
@@ -122,7 +124,7 @@ export const digitalProductApi = baseApi.injectEndpoints({
 
         initiateDigitalProductSSL: builder.mutation<
             { success: boolean; data: { paymentUrl: string; orderNumber: string; transactionId: string } },
-            { productId: string; name: string; email: string; phone: string; address?: string }
+            { productId: string; name: string; email: string; phone: string; address?: string; redirectPath?: string }
         >({
             query: (body) => ({
                 url: '/digital-products/checkout/sslcommerz',

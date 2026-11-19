@@ -37,7 +37,7 @@ export function PaymentHistoryTab() {
         (purchase) => purchase.status !== 'rejected'
     );
     const digitalPurchases = (digitalData?.data || []).filter(
-        (p) => !p.status || p.status === 'paid'
+        (p) => p.status !== 'cancelled'
     );
     const loading = isLoading || bootcampLoading || digitalLoading;
 
@@ -115,6 +115,12 @@ export function PaymentHistoryTab() {
                             const isINR = item.currency === 'INR';
                             const paymentMethodDisplay = item.paymentMethod === 'PhonePe_Manual' ? 'PhonePe' : item.paymentMethod === 'Perk' ? 'Enrollment Perk (Free)' : (item.paymentMethod || (isINR ? 'PhonePe' : 'SSLCommerz'));
                             const baseApi = process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:5000/api/v1';
+                            const itemStatus =
+                                item.status === 'paid'
+                                    ? 'success'
+                                    : item.status === 'rejected'
+                                    ? 'failed'
+                                    : 'pending';
 
                             return (
                                 <div key={item.orderNumber} className="flex flex-col gap-6 p-6 rounded-2xl border border-primary/20 bg-surface/40 backdrop-blur-sm hover:bg-surface/60 transition-all duration-300 hover:border-primary/40 group">
@@ -129,7 +135,7 @@ export function PaymentHistoryTab() {
                                             </p>
                                         </div>
                                         <div>
-                                            {getStatusBadge('success')}
+                                            {getStatusBadge(itemStatus)}
                                         </div>
                                     </div>
 
@@ -157,39 +163,69 @@ export function PaymentHistoryTab() {
                                             <div>
                                                 <p className="text-white/40 text-xs mb-1">Date</p>
                                                 <p className="text-white/60">
-                                                    {item.paidAt ? new Date(item.paidAt).toLocaleDateString('en-US') : 'N/A'}
+                                                    {item.paidAt || item.createdAt ? new Date(item.paidAt || item.createdAt!).toLocaleDateString('en-US') : 'N/A'}
                                                 </p>
                                                 <p className="text-xs text-white/40">
-                                                    {item.paidAt ? new Date(item.paidAt).toLocaleTimeString('en-US') : ''}
+                                                    {item.paidAt || item.createdAt ? new Date(item.paidAt || item.createdAt!).toLocaleTimeString('en-US') : ''}
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-wrap items-center gap-4 pt-3 border-t border-surface/10">
-                                            <a
-                                                href={`${baseApi}/digital-products/download/${item.downloadToken}/script`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1.5 text-xs text-[#ffd60a] hover:underline"
-                                            >
-                                                <FileCode className="w-3.5 h-3.5" />
-                                                Script Download
-                                            </a>
-                                            <a
-                                                href={`${baseApi}/digital-products/download/${item.downloadToken}/guide`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:underline"
-                                            >
-                                                Guide PDF
-                                            </a>
-                                            <Link
-                                                href="/my-classes"
-                                                className="inline-flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors ml-auto"
-                                            >
-                                                View in Tools & Scripts →
-                                            </Link>
-                                        </div>
+                                        {item.status === 'rejected' && (
+                                            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm font-bangla mb-4">
+                                                <div className="flex items-center gap-2 font-bold text-destructive">
+                                                    <XCircle className="w-4 h-4 shrink-0" />
+                                                    পেমেন্ট বাতিল করা হয়েছে (Payment Rejected)
+                                                </div>
+                                                <p className="mt-1.5 text-xs text-white/90 leading-relaxed">
+                                                    <span className="font-semibold text-red-300">বাতিলের কারণ:</span>{' '}
+                                                    {item.adminNote || 'Transaction ID বা পেমেন্ট তথ্যের অসঙ্গতি থাকায় অ্যাডমিন কর্তৃক বাতিল করা হয়েছে।'}
+                                                </p>
+                                                <p className="mt-2 text-[11px] text-white/50">
+                                                    আপনার কোনো প্রশ্ন বা সঠিক পেমেন্ট প্রুফ থাকলে অনুগ্রহ করে অর্ডার নম্বর সহ আমাদের সাপোর্টে যোগাযোগ করুন।
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {item.status === 'pending' && (
+                                            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm font-bangla mb-4">
+                                                <div className="flex items-center gap-2 font-bold text-amber-400">
+                                                    <Clock className="w-4 h-4 shrink-0" />
+                                                    পেমেন্ট ভেরিফিকেশন চলছে (Under Verification)
+                                                </div>
+                                                <p className="mt-1 text-xs text-white/80">
+                                                    আমাদের টিম আপনার পেমেন্ট তথ্য যাচাই করছে। ভেরিফিকেশন সম্পন্ন হলেই ডাউনলোড লিংক আনলক হয়ে যাবে।
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {item.status === 'paid' && item.downloadToken && (
+                                            <div className="flex flex-wrap items-center gap-4 pt-3 border-t border-surface/10">
+                                                <a
+                                                    href={`${baseApi}/digital-products/download/${item.downloadToken}/script`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1.5 text-xs text-[#ffd60a] hover:underline"
+                                                >
+                                                    <FileCode className="w-3.5 h-3.5" />
+                                                    Script Download
+                                                </a>
+                                                <a
+                                                    href={`${baseApi}/digital-products/download/${item.downloadToken}/guide`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:underline"
+                                                >
+                                                    Guide PDF
+                                                </a>
+                                                <Link
+                                                    href="/my-classes"
+                                                    className="inline-flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors ml-auto"
+                                                >
+                                                    View in Tools & Scripts →
+                                                </Link>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             );

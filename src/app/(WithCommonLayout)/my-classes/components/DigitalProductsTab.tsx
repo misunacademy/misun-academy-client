@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { FileCode, FileText, Download, Sparkles, Package, Calendar } from 'lucide-react';
+import { FileCode, FileText, Download, Sparkles, Package, Calendar, XCircle, Clock } from 'lucide-react';
 import { useGetMyDigitalPurchasesQuery } from '@/redux/api/digitalProductApi';
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 
@@ -26,13 +26,13 @@ export function DigitalProductsTab() {
                 <Package className="mx-auto h-12 w-12 text-white/30" />
                 <h3 className="mt-4 text-lg font-bold text-white">কোনো ডিজিটাল প্রোডাক্ট কেনা নেই</h3>
                 <p className="mt-1 text-sm text-white/60">
-                    বুটক্যাম্প পেজ থেকে ফটোশপ ও ইলাস্ট্রেটর শর্টকাট স্ক্রিপ্ট প্যাক সংগ্রহ করলে এখানে ডাউনলোড লিংক পাবেন।
+                    ডিজিটাল প্রোডাক্টস পেজ থেকে ফটোশপ ও ইলাস্ট্রেটর শর্টকাট স্ক্রিপ্ট প্যাক সংগ্রহ করলে এখানে ডাউনলোড লিংক পাবেন।
                 </p>
                 <Link
-                    href="/bootcamp"
+                    href="/digital-products"
                     className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#ffd60a] px-5 py-2.5 text-xs font-bold text-black hover:bg-[#ffd60a]/90"
                 >
-                    <Sparkles className="h-4 w-4" /> বুটক্যাম্প পেজে যান
+                    <Sparkles className="h-4 w-4" /> ডিজিটাল প্রোডাক্ট দেখুন
                 </Link>
             </div>
         );
@@ -41,6 +41,10 @@ export function DigitalProductsTab() {
     return (
         <div className="space-y-4">
             {purchases.map((item) => {
+                const isPaid = item.status === 'paid';
+                const isRejected = item.status === 'rejected';
+                const isPending = !isPaid && !isRejected;
+
                 const scriptUrl = item.downloadToken
                     ? `${baseApi}/digital-products/download/${item.downloadToken}/script`
                     : item.scriptDownloadUrl || '#';
@@ -59,6 +63,8 @@ export function DigitalProductsTab() {
                         : item.product?.software === 'illustrator'
                           ? 'bg-orange-500/20 text-orange-400 border-orange-500/40'
                           : 'bg-[#ffd60a]/20 text-[#ffd60a] border-[#ffd60a]/40';
+
+                const purchaseDate = item.paidAt || item.createdAt;
 
                 return (
                     <div
@@ -96,11 +102,21 @@ export function DigitalProductsTab() {
                                         <FileCode className="h-10 w-10 text-[#ffd60a]/40" />
                                     </div>
                                 )}
-                                {/* Software badge */}
-                                <div className="absolute top-3 left-3 z-10">
+                                {/* Software & Status badges */}
+                                <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-1.5">
                                     <span className={`inline-flex items-center text-[11px] font-bold px-2.5 py-1 rounded-full border uppercase ${softwareColor}`}>
                                         {softwareLabel}
                                     </span>
+                                    {isRejected && (
+                                        <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border bg-red-500/20 text-red-400 border-red-500/40">
+                                            বাতিল
+                                        </span>
+                                    )}
+                                    {isPending && (
+                                        <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border bg-amber-500/20 text-amber-400 border-amber-500/40">
+                                            যাচাই চলছে
+                                        </span>
+                                    )}
                                 </div>
                             </div>
 
@@ -119,43 +135,77 @@ export function DigitalProductsTab() {
                                 <div className="relative flex items-center gap-1.5 text-xs text-white/35">
                                     <Calendar className="w-3.5 h-3.5" />
                                     <span className="font-bangla">
-                                        ক্রয়:{' '}
-                                        {new Date(item.paidAt).toLocaleDateString('bn-BD', {
-                                            day: 'numeric',
-                                            month: 'short',
-                                            year: 'numeric',
-                                        })}
+                                        তারিখ:{' '}
+                                        {purchaseDate
+                                            ? new Date(purchaseDate).toLocaleDateString('bn-BD', {
+                                                  day: 'numeric',
+                                                  month: 'short',
+                                                  year: 'numeric',
+                                              })
+                                            : 'N/A'}
                                     </span>
                                 </div>
 
-                                {/* Download buttons */}
-                                <div className="relative mt-auto space-y-2 pt-3 border-t border-white/5">
-                                    <a
-                                        href={scriptUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-between rounded-xl border border-[#ffd60a]/30 bg-[#ffd60a]/10 px-4 py-2.5 text-xs font-bold text-[#ffd60a] transition hover:bg-[#ffd60a]/20"
-                                    >
-                                        <span className="flex items-center gap-2 font-bangla">
-                                            <FileCode className="h-4 w-4" />
-                                            স্ক্রিপ্ট কোড ডাউনলোড করুন
-                                        </span>
-                                        <Download className="h-3.5 w-3.5" />
-                                    </a>
+                                {/* Rejection Notice */}
+                                {isRejected && (
+                                    <div className="relative mt-auto rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 text-xs font-bangla">
+                                        <div className="flex items-center gap-1.5 font-bold text-red-400">
+                                            <XCircle className="h-4 w-4 shrink-0" />
+                                            পেমেন্ট বাতিল করা হয়েছে (Payment Rejected)
+                                        </div>
+                                        <p className="mt-1 text-white/90 leading-relaxed">
+                                            <span className="font-semibold text-red-300">কারণ:</span>{' '}
+                                            {item.adminNote || 'Transaction ID বা তথ্যের অসঙ্গতি থাকায় বাতিল করা হয়েছে।'}
+                                        </p>
+                                        <p className="mt-1.5 text-[11px] text-white/50">
+                                            কোনো প্রশ্ন থাকলে অর্ডার নম্বর সহ সাপোর্টে যোগাযোগ করুন।
+                                        </p>
+                                    </div>
+                                )}
 
-                                    <a
-                                        href={guideUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-xs font-bold text-emerald-400 transition hover:bg-emerald-500/20"
-                                    >
-                                        <span className="flex items-center gap-2 font-bangla">
-                                            <FileText className="h-4 w-4" />
-                                            ইনস্টলেশন গাইড (PDF) ডাউনলোড
-                                        </span>
-                                        <Download className="h-3.5 w-3.5" />
-                                    </a>
-                                </div>
+                                {/* Pending Notice */}
+                                {isPending && (
+                                    <div className="relative mt-auto rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs font-bangla">
+                                        <div className="flex items-center gap-1.5 font-bold text-amber-400">
+                                            <Clock className="h-4 w-4 shrink-0" />
+                                            পেমেন্ট ভেরিফিকেশন চলছে (Under Verification)
+                                        </div>
+                                        <p className="mt-1 text-white/80">
+                                            আমাদের টিম আপনার পেমেন্ট যাচাই করছে। ভেরিফাই হলেই এখানে ডাউনলোড লিংক চলে আসবে।
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Download buttons (Paid only) */}
+                                {isPaid && (
+                                    <div className="relative mt-auto space-y-2 pt-3 border-t border-white/5">
+                                        <a
+                                            href={scriptUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center justify-between rounded-xl border border-[#ffd60a]/30 bg-[#ffd60a]/10 px-4 py-2.5 text-xs font-bold text-[#ffd60a] transition hover:bg-[#ffd60a]/20"
+                                        >
+                                            <span className="flex items-center gap-2 font-bangla">
+                                                <FileCode className="h-4 w-4" />
+                                                স্ক্রিপ্ট কোড ডাউনলোড করুন
+                                            </span>
+                                            <Download className="h-3.5 w-3.5" />
+                                        </a>
+
+                                        <a
+                                            href={guideUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-xs font-bold text-emerald-400 transition hover:bg-emerald-500/20"
+                                        >
+                                            <span className="flex items-center gap-2 font-bangla">
+                                                <FileText className="h-4 w-4" />
+                                                ইনস্টলেশন গাইড (PDF) ডাউনলোড
+                                            </span>
+                                            <Download className="h-3.5 w-3.5" />
+                                        </a>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

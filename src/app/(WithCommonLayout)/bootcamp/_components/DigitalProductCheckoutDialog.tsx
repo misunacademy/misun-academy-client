@@ -74,11 +74,17 @@ export function DigitalProductCheckoutDialog({
         }
 
         try {
+            const currentPath =
+                typeof window !== 'undefined'
+                    ? window.location.pathname
+                    : '/digital-products';
+
             const res = await initiateSSL({
                 productId: product._id,
                 name: user.name || 'Student',
                 email: user.email || '',
                 phone: user.phone || '',
+                redirectPath: currentPath || '/digital-products',
             }).unwrap();
 
             if (res.data?.paymentUrl) {
