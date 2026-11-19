@@ -5,10 +5,12 @@ import { useGetModuleQuizzesQuery } from "@/redux/api/quizApi";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Video, FileText, ChevronDown, ChevronRight, Edit, Trash2, GripVertical, ArrowUp, ArrowDown, ClipboardList } from "lucide-react";
+import { Plus, Video, FileText, ChevronDown, ChevronRight, Edit, Trash2, GripVertical, ArrowUp, ArrowDown, ClipboardList, Play } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { LessonVideoPlayer } from "@/components/shared/lesson-video-player";
 import Link from "next/link";
 
 
@@ -84,6 +86,7 @@ const ModuleCard = ({
   const quizzes = ((quizzesData as { data?: Array<{ _id: string; title: string; status: string; totalQuestions: number; totalMarks: number; timeLimit?: number; orderIndex: number }> })?.data || []) as Array<{ _id: string; title: string; status: string; totalQuestions: number; totalMarks: number; timeLimit?: number; orderIndex: number }>;
   const [deleteLessonDialogOpen, setDeleteLessonDialogOpen] = useState(false);
   const [lessonToDelete, setLessonToDelete] = useState<string | null>(null);
+  const [previewLesson, setPreviewLesson] = useState<Lesson | null>(null);
 
   const handleDeleteLesson = async () => {
     if (!lessonToDelete) return;
@@ -178,6 +181,11 @@ const ModuleCard = ({
                         <Badge variant={lesson.isPublished ? 'default' : 'secondary'} className="text-xs">
                           {lesson.isPublished ? 'Published' : 'Draft'}
                         </Badge>
+                        {lesson.type === 'video' && (lesson.videoId || lesson.videoUrl) && (
+                          <Button variant="ghost" size="sm" onClick={() => setPreviewLesson(lesson)} title="Preview video">
+                            <Play className="h-3 w-3" />
+                          </Button>
+                        )}
                         <Button variant="ghost" size="sm" onClick={() => onEditLesson(lesson)}>
                           <Edit className="h-3 w-3" />
                         </Button>
@@ -243,6 +251,24 @@ const ModuleCard = ({
           </div>
         </CardContent>
       )}
+
+      {/* Lesson Video Preview Dialog */}
+      <Dialog open={!!previewLesson} onOpenChange={(open) => !open && setPreviewLesson(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{previewLesson?.title}</DialogTitle>
+          </DialogHeader>
+          {previewLesson && (
+            <LessonVideoPlayer
+              videoId={previewLesson.videoId}
+              videoSource={previewLesson.videoSource}
+              url={previewLesson.videoUrl}
+              title={previewLesson.title}
+              className="rounded-xl"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Lesson Confirmation Dialog */}
       <AlertDialog open={deleteLessonDialogOpen} onOpenChange={setDeleteLessonDialogOpen}>
