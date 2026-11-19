@@ -387,7 +387,7 @@ const bootcampApi = baseApi.injectEndpoints({
       query: ({ slug, ...body }) => ({
         url: `/bootcamp/slug/${slug}/payment/manual-phonepe`,
         method: "POST",
-        data: body,
+        body,
       }),
       invalidatesTags: ["Bootcamp"],
     }),
@@ -399,7 +399,7 @@ const bootcampApi = baseApi.injectEndpoints({
       query: ({ id, ...body }) => ({
         url: `/bootcamp/purchases/${id}/review`,
         method: "PATCH",
-        data: body,
+        body,
       }),
       invalidatesTags: ["Bootcamp"],
     }),
