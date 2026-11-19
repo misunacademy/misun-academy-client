@@ -88,7 +88,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: blob: https:",
               "font-src 'self' data: https:",
               `connect-src ${connectSrc}`,
-              "frame-src 'self' https://www.facebook.com https://www.youtube.com https://www.youtube-nocookie.com",
+              "frame-src 'self' https://www.facebook.com https://www.youtube.com https://www.youtube-nocookie.com https://drive.google.com https://docs.google.com",
               "object-src 'none'",
               "base-uri 'self'",
               'upgrade-insecure-requests',
