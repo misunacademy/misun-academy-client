@@ -10,6 +10,7 @@ import {
     Package,
     CheckCircle2,
     XCircle,
+    Clock,
     Eye,
     EyeOff,
     FileCode,
@@ -20,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { getApiErrorMessage } from '@/lib/api-helpers';
 import {
     DigitalProduct,
     useGetAdminDigitalProductsQuery,
@@ -31,12 +33,14 @@ import { DigitalProductModal } from './DigitalProductModal';
 export function DigitalProductsClient() {
     const [search, setSearch] = useState('');
     const [softwareFilter, setSoftwareFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<DigitalProduct | null>(null);
 
     const { data, isLoading, refetch } = useGetAdminDigitalProductsQuery({
         search: search || undefined,
         software: softwareFilter || undefined,
+        status: statusFilter || undefined,
     });
 
     const [updateProduct] = useUpdateAdminDigitalProductMutation();
@@ -55,14 +59,19 @@ export function DigitalProductsClient() {
     };
 
     const handleTogglePublished = async (p: DigitalProduct) => {
+        if (!p.isPublished && (!p.scriptFile?.url || !p.guidePdf?.url)) {
+            toast.error('Cannot publish product without script file and guide PDF. Please edit the product and upload files.');
+            return;
+        }
+
         try {
             await updateProduct({
                 id: p._id,
                 data: { isPublished: !p.isPublished },
             }).unwrap();
-            toast.success(p.isPublished ? 'Product un-published' : 'Product published');
-        } catch {
-            toast.error('Failed to update status');
+            toast.success(p.isPublished ? 'Product moved to draft' : 'Product published successfully');
+        } catch (err) {
+            toast.error(getApiErrorMessage(err, 'Failed to update status'));
         }
     };
 
@@ -79,18 +88,18 @@ export function DigitalProductsClient() {
     return (
         <DashboardPageContainer
             heading={
-                <h1 className="flex items-center gap-2 font-bangla text-2xl font-bold text-gray-900">
+                <h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
                     <Package className="h-6 w-6 text-amber-500" />
-                    ডিজিটাল প্রোডাক্টস ম্যানেজমেন্ট
+                    Digital Products Management
                 </h1>
             }
-            subheading="বুটক্যাম্প পেজে প্রদর্শিত ফটোশপ ও ইলাস্ট্রেটর শর্টকাট স্ক্রিপ্ট, ইনস্ট্রাকশন PDF এবং মূল্য এখান থেকে পরিচালনা করুন।"
+            subheading="Manage shortcut scripts, instruction guides, pricing, and downloadable assets sold through the storefront."
             buttons={
                 <Button
                     onClick={handleOpenCreate}
-                    className="flex items-center gap-2 bg-[#ffd60a] font-bangla font-bold text-black transition hover:bg-[#ffd60a]/90 shadow-sm"
+                    className="flex items-center gap-2 bg-[#ffd60a] font-bold text-black transition hover:bg-[#ffd60a]/90 shadow-sm"
                 >
-                    <Plus className="h-4 w-4" /> নতুন প্রোডাক্ট যোগ করুন
+                    <Plus className="h-4 w-4" /> Add New Product
                 </Button>
             }
             content={
@@ -104,7 +113,7 @@ export function DigitalProductsClient() {
                                     <Input
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
-                                        placeholder="প্রোডাক্ট খুঁজুন..."
+                                        placeholder="Search products by title or slug..."
                                         className="bg-gray-50/50 border-gray-200 pl-9 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white"
                                     />
                                 </div>
@@ -113,11 +122,20 @@ export function DigitalProductsClient() {
                                     onChange={(e) => setSoftwareFilter(e.target.value)}
                                     className="rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-primary"
                                 >
-                                    <option value="">সব সফটওয়্যার</option>
+                                    <option value="">All Software</option>
                                     <option value="photoshop">Photoshop</option>
                                     <option value="illustrator">Illustrator</option>
                                     <option value="bundle">Combo Bundle</option>
                                     <option value="other">Other</option>
+                                </select>
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                                >
+                                    <option value="">All Statuses</option>
+                                    <option value="published">Published</option>
+                                    <option value="draft">Draft</option>
                                 </select>
                             </div>
                         </CardContent>
@@ -129,26 +147,26 @@ export function DigitalProductsClient() {
                             <table className="w-full text-left text-sm text-gray-700">
                                 <thead className="border-b border-gray-200 bg-gray-100 text-xs font-bold uppercase text-gray-800">
                                     <tr>
-                                        <th className="px-6 py-4">প্রোডাক্ট</th>
-                                        <th className="px-6 py-4">সফটওয়্যার</th>
-                                        <th className="px-6 py-4">মূল্য (BDT / INR)</th>
-                                        <th className="px-6 py-4">ফাইলসমূহ</th>
-                                        <th className="px-6 py-4">স্ট্যাটাস</th>
-                                        <th className="px-6 py-4">মোট বিক্রি</th>
-                                        <th className="px-6 py-4 text-right">অ্যাকশন</th>
+                                        <th className="px-6 py-4">Product</th>
+                                        <th className="px-6 py-4">Software</th>
+                                        <th className="px-6 py-4">Price (BDT / INR)</th>
+                                        <th className="px-6 py-4">Files</th>
+                                        <th className="px-6 py-4">Status</th>
+                                        <th className="px-6 py-4">Sales</th>
+                                        <th className="px-6 py-4 text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                     {isLoading ? (
                                         <tr>
-                                            <td colSpan={7} className="px-6 py-12 text-center text-gray-600 font-semibold font-bangla">
-                                                ডাটা লোড হচ্ছে...
+                                            <td colSpan={7} className="px-6 py-12 text-center text-gray-600 font-semibold">
+                                                Loading digital products...
                                             </td>
                                         </tr>
                                     ) : products.length === 0 ? (
                                         <tr>
-                                            <td colSpan={7} className="px-6 py-12 text-center text-gray-600 font-semibold font-bangla">
-                                                কোনো ডিজিটাল প্রোডাক্ট পাওয়া যায়নি।
+                                            <td colSpan={7} className="px-6 py-12 text-center text-gray-600 font-semibold">
+                                                No digital products found.
                                             </td>
                                         </tr>
                                     ) : (
@@ -164,7 +182,7 @@ export function DigitalProductsClient() {
                                                 <tr key={p._id} className="transition hover:bg-gray-50/80">
                                                     <td className="px-6 py-4">
                                                         <div>
-                                                            <div className="flex items-center gap-2 font-bangla font-bold text-gray-900 text-sm">
+                                                            <div className="flex items-center gap-2 font-bold text-gray-900 text-sm">
                                                                 {p.title}
                                                                 {p.badge && (
                                                                     <span className="rounded bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-900 border border-amber-300">
@@ -192,20 +210,24 @@ export function DigitalProductsClient() {
                                                         </Badge>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <div className="text-xs font-bangla space-y-0.5">
+                                                        <div className="text-xs space-y-0.5">
                                                             <div className="text-emerald-900 font-bold text-sm">{bdtPrice}</div>
                                                             <div className="text-amber-900 font-semibold">{inrPrice}</div>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <div className="text-xs text-gray-800 space-y-1">
-                                                            <div className="flex items-center gap-1.5 truncate max-w-[180px] font-medium" title={p.scriptFile?.fileName}>
-                                                                <FileCode className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                                                                <span className="truncate">{p.scriptFile?.fileName}</span>
+                                                            <div className="flex items-center gap-1.5 truncate max-w-[180px] font-medium" title={p.scriptFile?.fileName || 'No script file uploaded'}>
+                                                                <FileCode className={`h-3.5 w-3.5 shrink-0 ${p.scriptFile?.url ? 'text-amber-600' : 'text-gray-300'}`} />
+                                                                <span className={`truncate ${p.scriptFile?.url ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                                                                    {p.scriptFile?.fileName || 'No script file'}
+                                                                </span>
                                                             </div>
-                                                            <div className="flex items-center gap-1.5 truncate max-w-[180px] text-gray-600 font-medium" title={p.guidePdf?.fileName}>
-                                                                <FileText className="h-3.5 w-3.5 text-blue-600 shrink-0" />
-                                                                <span className="truncate">{p.guidePdf?.fileName}</span>
+                                                            <div className="flex items-center gap-1.5 truncate max-w-[180px] font-medium" title={p.guidePdf?.fileName || 'No guide PDF uploaded'}>
+                                                                <FileText className={`h-3.5 w-3.5 shrink-0 ${p.guidePdf?.url ? 'text-blue-600' : 'text-gray-300'}`} />
+                                                                <span className={`truncate ${p.guidePdf?.url ? 'text-gray-600' : 'text-gray-400 italic'}`}>
+                                                                    {p.guidePdf?.fileName || 'No guide PDF'}
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -213,16 +235,21 @@ export function DigitalProductsClient() {
                                                         <div className="flex flex-col gap-1 text-xs">
                                                             <span
                                                                 className={`inline-flex items-center gap-1 font-bold ${
-                                                                    p.isPublished ? 'text-emerald-700' : 'text-gray-500'
+                                                                    p.isPublished ? 'text-emerald-700' : 'text-amber-700'
                                                                 }`}
                                                             >
                                                                 {p.isPublished ? (
                                                                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                                                                 ) : (
-                                                                    <XCircle className="h-3.5 w-3.5 text-gray-400" />
+                                                                    <Clock className="h-3.5 w-3.5 text-amber-600" />
                                                                 )}
-                                                                {p.isPublished ? 'পাবলিশড' : 'ড্রাফট'}
+                                                                {p.isPublished ? 'Published' : 'Draft'}
                                                             </span>
+                                                            {!p.isPublished && (!p.scriptFile?.url || !p.guidePdf?.url) && (
+                                                                <span className="text-[10px] text-amber-600 font-medium">
+                                                                    (Incomplete Files)
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 font-mono font-bold text-gray-900 text-sm">
@@ -248,7 +275,7 @@ export function DigitalProductsClient() {
                                                                 size="sm"
                                                                 onClick={() => handleOpenEdit(p)}
                                                                 className="h-8 w-8 p-0 text-gray-600 hover:text-gray-950"
-                                                                title="এডিট করুন"
+                                                                title="Edit Product"
                                                             >
                                                                 <Edit2 className="h-4 w-4" />
                                                             </Button>
@@ -258,6 +285,7 @@ export function DigitalProductsClient() {
                                                                 onClick={() => handleDelete(p._id, p.title)}
                                                                 disabled={isDeleting}
                                                                 className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-700"
+                                                                title="Delete Product"
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
                                                             </Button>
