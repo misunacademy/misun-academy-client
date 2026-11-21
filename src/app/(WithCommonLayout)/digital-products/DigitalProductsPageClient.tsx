@@ -2,12 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { toast } from 'sonner';
 import {
     Sparkles,
-    CheckCircle2,
-    Zap,
     Search,
     FileCode,
     ShieldCheck,
@@ -16,7 +13,6 @@ import {
     RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
 import {

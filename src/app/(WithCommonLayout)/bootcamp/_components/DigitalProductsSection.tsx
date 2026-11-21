@@ -6,13 +6,8 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import {
     Sparkles,
-    CheckCircle2,
-    Zap,
     ArrowRight,
 } from 'lucide-react';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
     Carousel,
     CarouselContent,

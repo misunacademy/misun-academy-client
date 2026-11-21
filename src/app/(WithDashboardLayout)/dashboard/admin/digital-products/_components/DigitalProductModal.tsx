@@ -259,7 +259,7 @@ export function DigitalProductModal({
             finalSlug = `${software}-script-${Date.now().toString(36)}`;
         }
 
-        const payload: any = {
+        const payload: Partial<DigitalProduct> = {
             title: title.trim(),
             slug: finalSlug,
             tagline: tagline.trim(),
@@ -268,9 +268,15 @@ export function DigitalProductModal({
             badge: badge.trim(),
             thumbnail: thumbnail.trim(),
             priceBDT: Number(priceBDT) || 0,
-            discountPriceBDT: discountPriceBDT !== undefined && discountPriceBDT !== null && (discountPriceBDT as any) !== '' ? Number(discountPriceBDT) : undefined,
+            discountPriceBDT:
+                discountPriceBDT !== undefined && discountPriceBDT !== null && String(discountPriceBDT).trim() !== ''
+                    ? Number(discountPriceBDT)
+                    : undefined,
             priceINR: Number(priceINR) || 0,
-            discountPriceINR: discountPriceINR !== undefined && discountPriceINR !== null && (discountPriceINR as any) !== '' ? Number(discountPriceINR) : undefined,
+            discountPriceINR:
+                discountPriceINR !== undefined && discountPriceINR !== null && String(discountPriceINR).trim() !== ''
+                    ? Number(discountPriceINR)
+                    : undefined,
             features: features.filter((f) => f.trim().length > 0),
             isPublished: targetIsPublished,
             status: targetIsPublished ? 'published' : 'draft',
