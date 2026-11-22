@@ -134,7 +134,7 @@ export default function BootcampPurchaseDialog({
                         </div>
                         <div className="text-right">
                             <span className="font-mona text-xl font-bold text-emerald-400">
-                                {selectedTab === 'sslcommerz' ? `৳${bdtAmount}` : `₹${inrAmount}`}
+                                {selectedTab === 'sslcommerz' ? `৳${bdtAmount.toLocaleString("bn")}` : `₹${inrAmount.toLocaleString("bn")}`}
                             </span>
                         </div>
                     </div>
@@ -158,16 +158,15 @@ export default function BootcampPurchaseDialog({
                         <button
                             type="button"
                             onClick={() => setSelectedTab('sslcommerz')}
-                            className={`flex flex-col items-center justify-center rounded-xl border p-4 text-center transition ${
-                                selectedTab === 'sslcommerz'
+                            className={`flex flex-col items-center justify-center rounded-xl border p-4 text-center transition ${selectedTab === 'sslcommerz'
                                     ? 'border-[#ffd60a] bg-[#ffd60a]/10 shadow-[0_0_15px_rgba(255,214,10,0.15)]'
                                     : 'border-white/10 bg-white/[0.02] hover:border-white/20'
-                            }`}
+                                }`}
                         >
                             <CreditCard className="h-6 w-6 text-[#ffd60a]" />
                             <span className="mt-2 font-bangla text-xs font-bold text-white">SSLCommerz</span>
                             <span className="font-bangla text-[10px] text-white/60">
-                                কার্ড / বিকাশ / নগদ (৳{bdtAmount})
+                                কার্ড / বিকাশ / নগদ (৳{bdtAmount.toLocaleString("bn")})
                             </span>
                             <span className="mt-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[9px] font-semibold text-emerald-400">
                                 ইনস্ট্যান্ট এক্সেস
@@ -177,18 +176,17 @@ export default function BootcampPurchaseDialog({
                         <button
                             type="button"
                             onClick={() => setSelectedTab('phonepe')}
-                            className={`flex flex-col items-center justify-center rounded-xl border p-4 text-center transition ${
-                                selectedTab === 'phonepe'
+                            className={`flex flex-col items-center justify-center rounded-xl border p-4 text-center transition ${selectedTab === 'phonepe'
                                     ? 'border-purple-400 bg-purple-500/10 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
                                     : 'border-white/10 bg-white/[0.02] hover:border-white/20'
-                            }`}
+                                }`}
                         >
                             <div className="h-6 w-16 relative">
                                 <Image src={phonePe} alt="PhonePe" fill className="object-contain" />
                             </div>
                             <span className="mt-2 font-bangla text-xs font-bold text-white">ম্যানুয়াল পেমেন্ট</span>
                             <span className="font-bangla text-[10px] text-amber-300">
-                                🇮🇳 ভারতীয়দের জন্য (₹{inrAmount})
+                                🇮🇳 ভারতীয়দের জন্য (₹{inrAmount.toLocaleString("bn")})
                             </span>
                             <span className="mt-1 rounded-full bg-purple-500/20 px-2 py-0.5 text-[9px] font-semibold text-purple-300">
                                 PhonePe UPI
@@ -220,7 +218,7 @@ export default function BootcampPurchaseDialog({
                             ) : (
                                 <CreditCard className="mr-2 h-4 w-4" />
                             )}
-                            ৳{bdtAmount} টাকা পেমেন্ট করুন
+                            ৳{bdtAmount.toLocaleString("bn")} টাকা পেমেন্ট করুন
                         </Button>
                     </form>
                 ) : (
@@ -247,10 +245,10 @@ export default function BootcampPurchaseDialog({
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-white/70">পাঠানোর পরিমাণ:</span>
-                                <span className="font-mona text-base font-bold text-amber-300">₹{inrAmount} INR</span>
+                                <span className="font-mona text-base font-bold text-amber-300">₹{inrAmount.toLocaleString("bn")} INR</span>
                             </div>
                             <p className="text-[11px] text-white/50 pt-1">
-                                * অনুগ্রহ করে PhonePe অ্যাপ থেকে উপরের নম্বরে ₹{inrAmount} সেন্ড মানি করুন। এরপর নিচের বক্সে আপনার PhonePe নম্বর ও Transaction ID দিয়ে সাবমিট করুন।
+                                * অনুগ্রহ করে PhonePe অ্যাপ থেকে উপরের নম্বরে ₹{inrAmount.toLocaleString("bn")} সেন্ড মানি করুন। এরপর নিচের বক্সে আপনার PhonePe নম্বর ও Transaction ID দিয়ে সাবমিট করুন।
                             </p>
                         </div>
 

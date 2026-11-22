@@ -92,7 +92,7 @@ const BootcampPurchaseCard = memo(function BootcampPurchaseCard({
                 day: "numeric",
                 year: "numeric",
               })}
-              <span className="text-white/30">• ৳{purchase.amount}</span>
+              <span className="text-white/30">• ৳{purchase.amount.toLocaleString("bn")}</span>
             </p>
           </div>
 

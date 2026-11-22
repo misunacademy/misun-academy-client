@@ -23,11 +23,11 @@ export function DetailValueCard({ bootcamp, hasPurchased, onBuy, watchUrl }: Pro
             </p>
             <div className="mt-1 flex flex-wrap items-baseline gap-3">
               <span className="font-bangla text-4xl font-bold">
-                ৳{bootcamp.recordedPrice}
+                ৳{bootcamp.recordedPrice.toLocaleString("bn")}
               </span>
               {bootcamp.liveFee > bootcamp.recordedPrice ? (
                 <span className="font-bangla text-lg text-white/40 line-through">
-                  ৳{bootcamp.liveFee}
+                  ৳{bootcamp.liveFee.toLocaleString("bn")}
                 </span>
               ) : null}
             </div>

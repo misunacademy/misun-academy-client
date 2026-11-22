@@ -74,13 +74,13 @@ export function DetailHero({ bootcamp, hasPurchased, onBuy, watchUrl }: Props) {
                   onClick={onBuy}
                   className="rounded-xl bg-[#ffd60a] px-6 py-3 font-bangla text-base font-bold text-black shadow-[0_0_28px_rgba(255,214,10,0.35)] hover:scale-[1.02]"
                 >
-                  এখনই কিনুন — ৳{bootcamp.recordedPrice}
+                  এখনই কিনুন — ৳{bootcamp.recordedPrice.toLocaleString("bn")}
                 </button>
                 {discount > 0 ? (
                   <span className="rounded-lg border border-[#ffd60a]/30 bg-[#ffd60a]/10 px-3 py-2 font-bangla text-sm font-bold text-[#ffd60a]">
                     {discount}% ছাড়
                     <span className="ml-2 font-normal text-white/50 line-through">
-                      ৳{bootcamp.liveFee}
+                      ৳{bootcamp.liveFee.toLocaleString("bn")}
                     </span>
                   </span>
                 ) : null}
