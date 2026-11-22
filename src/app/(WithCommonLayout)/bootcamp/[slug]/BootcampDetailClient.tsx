@@ -242,6 +242,7 @@ export default function BootcampDetailClient() {
                 slug={bootcamp.slug}
                 title={`${bootcamp.title} ${bootcamp.season}`}
                 price={bootcamp.recordedPrice}
+                priceINR={bootcamp.recordedPriceINR}
             />
             {paymentModal === 'success' && (
                 <PaymentModal

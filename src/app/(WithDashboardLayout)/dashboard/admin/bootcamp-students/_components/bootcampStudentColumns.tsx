@@ -1,6 +1,7 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Clock, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, Clock, Eye, XCircle } from "lucide-react";
 import type { BootcampPurchaseAdminItem } from "@/redux/api/bootcampApi";
 
 const toWaMe = (value: string): string => {
@@ -15,7 +16,7 @@ export const getBootcampPurchaseStatusBadge = (status: string) => {
   switch (status) {
     case "paid":
       return (
-        <Badge variant="default" className="flex w-fit items-center gap-1">
+        <Badge variant="default" className="flex w-fit items-center gap-1 bg-emerald-600 text-white">
           <CheckCircle className="h-3 w-3" />
           Paid
         </Badge>
@@ -24,7 +25,7 @@ export const getBootcampPurchaseStatusBadge = (status: string) => {
       return (
         <Badge variant="destructive" className="flex w-fit items-center gap-1">
           <XCircle className="h-3 w-3" />
-          Failed
+          Rejected
         </Badge>
       );
     default:
@@ -40,7 +41,9 @@ export const getBootcampPurchaseStatusBadge = (status: string) => {
   }
 };
 
-export const bootcampStudentColumns: ColumnDef<BootcampPurchaseAdminItem>[] = [
+export const getBootcampStudentColumns = (
+  onReview?: (purchase: BootcampPurchaseAdminItem) => void
+): ColumnDef<BootcampPurchaseAdminItem>[] => [
   {
     id: "buyer",
     header: "Buyer",
@@ -86,19 +89,55 @@ export const bootcampStudentColumns: ColumnDef<BootcampPurchaseAdminItem>[] = [
   },
   {
     accessorKey: "amount",
-    header: "Amount (৳)",
-    cell: ({ row }) => `৳${Number(row.original.amount ?? 0).toLocaleString("en-US")}`,
+    header: "Amount",
+    cell: ({ row }) => {
+      const isINR = row.original.currency === "INR";
+      return (
+        <span className="font-semibold">
+          {isINR ? "₹" : "৳"}
+          {Number(row.original.amount ?? 0).toLocaleString("en-US")}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "method",
     header: "Method",
-    cell: ({ row }) => (row.original.method === "manual" ? "Manual" : "SSLCommerz"),
+    cell: ({ row }) => {
+      const method = row.original.method;
+      if (method === "PhonePe_Manual") {
+        return (
+          <span className="inline-flex items-center rounded border border-purple-200 bg-purple-50 px-2 py-0.5 text-xs font-semibold text-purple-700">
+            PhonePe
+          </span>
+        );
+      }
+      if (method === "manual") {
+        return (
+          <span className="inline-flex items-center rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
+            Manual
+          </span>
+        );
+      }
+      return (
+        <span className="inline-flex items-center rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+          SSLCommerz
+        </span>
+      );
+    },
   },
   {
     accessorKey: "transactionId",
     header: "Transaction ID",
     cell: ({ row }) => (
-      <span className="font-mono text-xs">{row.original.transactionId}</span>
+      <div className="space-y-0.5">
+        <span className="font-mono text-xs">{row.original.transactionId}</span>
+        {row.original.senderNumber && (
+          <div className="font-mono text-[11px] text-muted-foreground">
+            UPI: {row.original.senderNumber}
+          </div>
+        )}
+      </div>
     ),
   },
   {
@@ -111,4 +150,38 @@ export const bootcampStudentColumns: ColumnDef<BootcampPurchaseAdminItem>[] = [
     header: "Status",
     cell: ({ row }) => getBootcampPurchaseStatusBadge(row.original.status),
   },
+  ...(onReview
+    ? [
+        {
+          id: "actions",
+          header: "Action",
+          cell: ({ row }: { row: { original: BootcampPurchaseAdminItem } }) => {
+            const isPending = row.original.status === "pending";
+            return (
+              <Button
+                variant={isPending ? "default" : "outline"}
+                size="sm"
+                onClick={() => onReview(row.original)}
+                className={`h-7 text-xs font-bangla ${
+                  isPending
+                    ? "bg-amber-600 text-white hover:bg-amber-700 shadow-sm"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                {isPending ? (
+                  <>
+                    <Eye className="mr-1 h-3.5 w-3.5" />
+                    যাচাই করুন
+                  </>
+                ) : (
+                  "বিবরণ"
+                )}
+              </Button>
+            );
+          },
+        } as ColumnDef<BootcampPurchaseAdminItem>,
+      ]
+    : []),
 ];
+
+export const bootcampStudentColumns = getBootcampStudentColumns();

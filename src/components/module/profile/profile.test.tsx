@@ -27,6 +27,7 @@ vi.mock("@/hooks/useAuth", () => ({
 }));
 
 vi.mock("next/image", () => ({
+    // eslint-disable-next-line @next/next/no-img-element -- test double for next/image
     default: ({ src, alt, ...props }: MockImageProps) => <img src={src} alt={alt} {...props} />,
 }));
 

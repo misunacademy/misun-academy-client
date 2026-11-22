@@ -1,10 +1,11 @@
 import { baseApi } from './baseApi';
 
 export interface PerkBenefit {
-  type: 'free_course' | 'free_bootcamp' | 'discount_coupon' | 'resource' | 'certificate' | 'mentorship';
+  type: 'free_course' | 'free_bootcamp' | 'free_digital_product' | 'discount_coupon' | 'resource' | 'certificate' | 'mentorship';
   targetCourseId?: string;
   targetBatchId?: string;
   targetBootcampId?: string;
+  targetDigitalProductId?: string;
   accessDuration?: {
     type: 'lifetime' | 'days';
     days?: number;
@@ -13,7 +14,7 @@ export interface PerkBenefit {
 }
 
 export interface PopulatedPerkBenefit {
-  type: 'free_course' | 'free_bootcamp' | 'discount_coupon' | 'resource' | 'certificate' | 'mentorship';
+  type: 'free_course' | 'free_bootcamp' | 'free_digital_product' | 'discount_coupon' | 'resource' | 'certificate' | 'mentorship';
   targetCourseId?: {
     _id: string;
     title: string;
@@ -33,6 +34,13 @@ export interface PopulatedPerkBenefit {
     slug?: string;
     thumbnail?: string;
     posterImage?: string;
+  };
+  targetDigitalProductId?: {
+    _id: string;
+    title: string;
+    slug?: string;
+    thumbnail?: string;
+    software?: string;
   };
   accessDuration?: {
     type: 'lifetime' | 'days';
@@ -104,6 +112,13 @@ export interface PerkGrantLog {
     season?: string;
     slug?: string;
     thumbnail?: string;
+  };
+  targetDigitalProductId?: {
+    _id: string;
+    title: string;
+    slug?: string;
+    thumbnail?: string;
+    software?: string;
   };
   sourceEnrollmentId?: {
     _id: string;

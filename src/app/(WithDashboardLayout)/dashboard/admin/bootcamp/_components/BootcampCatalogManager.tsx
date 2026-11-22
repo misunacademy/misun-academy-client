@@ -40,6 +40,7 @@ const emptyForm = {
     platform: 'Online (Zoom)',
     liveFee: '350',
     recordedPrice: '499',
+    recordedPriceINR: '399',
     thumbnail: '',
     posterImage: '',
     registrationOpen: true,
@@ -126,6 +127,7 @@ export default function BootcampCatalogManager() {
             platform: b.platform ?? 'Online (Zoom)',
             liveFee: String(b.liveFee ?? 0),
             recordedPrice: String(b.recordedPrice ?? 0),
+            recordedPriceINR: String(b.recordedPriceINR ?? (b.recordedPrice ? Math.round(b.recordedPrice * 0.75) : 399)),
             thumbnail: b.thumbnail ?? '',
             posterImage: b.posterImage ?? '',
             registrationOpen: b.registrationOpen ?? true,
@@ -191,6 +193,7 @@ export default function BootcampCatalogManager() {
             registrationOpen: form.registrationOpen,
             liveFee: Number(form.liveFee) || 0,
             recordedPrice: Number(form.recordedPrice) || 0,
+            recordedPriceINR: Number(form.recordedPriceINR) || 0,
         };
         if (form.slug.trim()) payload.slug = form.slug.trim();
         if (form.tagline.trim()) payload.tagline = form.tagline.trim();
@@ -427,6 +430,10 @@ export default function BootcampCatalogManager() {
                         <div className="space-y-2">
                             <label className="text-sm font-medium" htmlFor="bc-recprice">Recorded price (৳)</label>
                             <Input id="bc-recprice" type="number" min={0} value={form.recordedPrice} onChange={(e) => set('recordedPrice', e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium" htmlFor="bc-recprice-inr">Recorded price (₹ INR)</label>
+                            <Input id="bc-recprice-inr" type="number" min={0} value={form.recordedPriceINR} onChange={(e) => set('recordedPriceINR', e.target.value)} />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium" htmlFor="bc-thumb">Thumbnail</label>

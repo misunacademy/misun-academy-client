@@ -99,6 +99,7 @@ export const BootcampRecordedCard = ({ item }: { item: Card }) => {
                 slug={item.slug}
                 title={`${item.title} ${item.season}`}
                 price={item.recordedPrice}
+                priceINR={item.recordedPriceINR}
             />
         </div>
     );

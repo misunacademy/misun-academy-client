@@ -40,16 +40,27 @@ export function LessonVideoPlayer({ url, type, videoSource, videoId, title, clas
         </div>
       );
     }
+    const driveViewUrl = `https://drive.google.com/file/d/${driveId}/view`;
     return (
       <div className={`relative aspect-video w-full rounded-xl overflow-hidden ${className || ''}`}>
         <iframe
           key={driveId}
           src={buildDrivePreviewUrl(driveId)}
           className="absolute inset-0 w-full h-full"
-          allow="autoplay; fullscreen; picture-in-picture"
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
           allowFullScreen
           title={title || 'Lesson video'}
         />
+        <a
+          href={driveViewUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute bottom-2 right-2 z-10 flex items-center gap-1 rounded bg-black/60 px-2 py-1 text-xs text-white/80 hover:bg-black/80 hover:text-white transition-colors"
+          title="Open in Google Drive"
+        >
+          🔗 Open in Drive
+        </a>
       </div>
     );
   }
