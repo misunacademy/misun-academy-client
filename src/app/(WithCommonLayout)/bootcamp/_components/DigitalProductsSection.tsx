@@ -6,13 +6,8 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import {
     Sparkles,
-    CheckCircle2,
-    Zap,
     ArrowRight,
 } from 'lucide-react';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
     Carousel,
     CarouselContent,
@@ -25,6 +20,7 @@ import {
     DigitalProduct,
     useGetPublishedDigitalProductsQuery,
 } from '@/redux/api/digitalProductApi';
+import { DigitalProductCard } from './DigitalProductCard';
 import { DigitalProductCheckoutDialog } from './DigitalProductCheckoutDialog';
 import { DigitalProductSuccessDialog } from './DigitalProductSuccessDialog';
 
@@ -127,146 +123,17 @@ export function DigitalProductsSection({
                         className="w-full cursor-grab active:cursor-grabbing"
                     >
                         <CarouselContent className="-ml-4 sm:-ml-6 py-4">
-                            {products.map((product) => {
-                                const bdtPrice = product.discountPriceBDT ?? product.priceBDT;
-                                const inrPrice = product.discountPriceINR ?? product.priceINR;
-                                const hasBdtDiscount = Boolean(product.discountPriceBDT);
-                                const hasInrDiscount = Boolean(product.discountPriceINR);
-                                const isBundle = product.software === 'bundle';
-
-                                return (
-                                    <CarouselItem
-                                        key={product._id}
-                                        className="pl-4 sm:pl-6 basis-full sm:basis-1/2 lg:basis-1/3"
-                                    >
-                                        <div
-                                            className={`group relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border transition-all duration-300 hover:-translate-y-1 ${
-                                                isBundle
-                                                    ? 'border-[#ffd60a]/50 bg-gradient-to-b from-[#1a1a20] to-[#121216] shadow-[0_0_30px_rgba(255,214,10,0.1)]'
-                                                    : 'border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04]'
-                                            }`}
-                                        >
-                                            {/* Top Badge & Header */}
-                                            <div className="p-6 sm:p-7">
-                                                <div className="flex items-center justify-between">
-                                                    <Badge
-                                                        variant="outline"
-                                                        className={`font-mono text-xs font-bold uppercase tracking-wider ${
-                                                            product.software === 'photoshop'
-                                                                ? 'border-blue-500/40 bg-blue-500/10 text-blue-400'
-                                                                : product.software === 'illustrator'
-                                                                  ? 'border-orange-500/40 bg-orange-500/10 text-orange-400'
-                                                                  : 'border-yellow-500/50 bg-[#ffd60a]/15 text-[#ffd60a]'
-                                                        }`}
-                                                    >
-                                                        {product.software === 'bundle'
-                                                            ? 'Ps + Ai Bundle'
-                                                            : product.software}
-                                                    </Badge>
-
-                                                    {product.badge && (
-                                                        <span className="rounded-full bg-[#ffd60a] px-3 py-1 font-bangla text-xs font-bold text-black shadow-sm">
-                                                            {product.badge}
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                <h3 className="mt-4 font-bangla text-xl font-bold text-white transition group-hover:text-[#ffd60a]">
-                                                    {product.title}
-                                                </h3>
-
-                                                {product.tagline && (
-                                                    <p className="mt-2 font-bangla text-xs leading-relaxed text-white/60">
-                                                        {product.tagline}
-                                                    </p>
-                                                )}
-
-                                                {/* Thumbnail */}
-                                                {product.thumbnail && (
-                                                    <div className="mt-5 overflow-hidden rounded-xl border border-white/10 bg-black/40">
-                                                        <Image
-                                                            src={product.thumbnail}
-                                                            alt={product.title}
-                                                            width={600}
-                                                            height={340}
-                                                            className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                        />
-                                                    </div>
-                                                )}
-
-                                                {/* Features List */}
-                                                {product.features && product.features.length > 0 && (
-                                                    <ul className="mt-6 space-y-2.5">
-                                                        {product.features.map((feat, idx) => (
-                                                            <li
-                                                                key={idx}
-                                                                className="flex items-start gap-2.5 font-bangla text-xs text-white/80"
-                                                            >
-                                                                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#ffd60a]" />
-                                                                <span>{feat}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                )}
-                                            </div>
-
-                                            {/* Bottom Pricing & CTA */}
-                                            <div className="mt-auto border-t border-white/10 bg-white/[0.01] p-6 sm:p-7">
-                                                <div className="flex items-end justify-between">
-                                                    <div>
-                                                        <div className="text-[11px] font-bangla text-white/50">
-                                                            মূল্য (বাংলাদেশ):
-                                                        </div>
-                                                        <div className="flex items-baseline gap-2">
-                                                            <span className="font-mona text-2xl font-bold text-emerald-400">
-                                                                ৳{bdtPrice}
-                                                            </span>
-                                                            {hasBdtDiscount && (
-                                                                <span className="font-mona text-xs text-white/40 line-through">
-                                                                    ৳{product.priceBDT}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="text-right">
-                                                        <div className="text-[11px] font-bangla text-amber-300/70">
-                                                            🇮🇳 ভারত (PhonePe):
-                                                        </div>
-                                                        <div className="flex items-baseline justify-end gap-1.5">
-                                                            <span className="font-mona text-lg font-bold text-amber-300">
-                                                                ₹{inrPrice}
-                                                            </span>
-                                                            {hasInrDiscount && (
-                                                                <span className="font-mona text-xs text-white/40 line-through">
-                                                                    ₹{product.priceINR}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <Button
-                                                    onClick={() => handleOpenCheckout(product)}
-                                                    className={`mt-5 w-full py-5 font-bangla text-sm font-bold transition ${
-                                                        isBundle
-                                                            ? 'bg-[#ffd60a] text-black shadow-lg shadow-[#ffd60a]/20 hover:bg-[#ffd60a]/90'
-                                                            : 'bg-white/10 text-white hover:bg-white/20'
-                                                    }`}
-                                                >
-                                                    <Zap className="mr-2 h-4 w-4" /> এখনই সংগ্রহ করুন
-                                                </Button>
-
-                                                <div className="mt-3 flex items-center justify-center gap-3 text-[10px] font-bangla text-white/40">
-                                                    <span>• ইনস্ট্যান্ট ডাউনলোড</span>
-                                                    <span>• লাইফটাইম এক্সেস</span>
-                                                    <span>• ফুল সাপোর্ট</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CarouselItem>
-                                );
-                            })}
+                            {products.map((product) => (
+                                <CarouselItem
+                                    key={product._id}
+                                    className="pl-4 sm:pl-6 basis-full sm:basis-1/2 lg:basis-1/3"
+                                >
+                                    <DigitalProductCard
+                                        product={product}
+                                        onBuy={handleOpenCheckout}
+                                    />
+                                </CarouselItem>
+                            ))}
                         </CarouselContent>
 
                         {/* Navigation Arrows */}

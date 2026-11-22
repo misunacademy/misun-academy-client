@@ -95,7 +95,7 @@ export const getBootcampStudentColumns = (
       return (
         <span className="font-semibold">
           {isINR ? "₹" : "৳"}
-          {Number(row.original.amount ?? 0).toLocaleString("en-US")}
+          {Number(row.original.amount ?? 0)}
         </span>
       );
     },

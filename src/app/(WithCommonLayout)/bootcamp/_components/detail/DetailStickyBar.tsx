@@ -19,11 +19,11 @@ export function DetailStickyBar({ bootcamp, hasPurchased, onBuy, watchUrl }: Pro
           <p className="max-w-[45vw] truncate text-sm font-bold">{bootcamp.title}</p>
           <p className="text-sm">
             <span className="font-bold text-[#ffd60a]">
-              ৳{bootcamp.recordedPrice}
+              ৳{bootcamp.recordedPrice.toLocaleString("bn")}
             </span>{" "}
             {bootcamp.liveFee > bootcamp.recordedPrice ? (
               <span className="text-xs text-white/40 line-through">
-                ৳{bootcamp.liveFee}
+                ৳{bootcamp.liveFee.toLocaleString("bn")}
               </span>
             ) : null}
           </p>

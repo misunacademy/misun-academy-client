@@ -77,7 +77,7 @@ export default function CourseEnrollmentCard({
                 {fee > 0 && (
                     <div className="flex items-center justify-between pt-1 border-t border-white/8 mt-2">
                         <span className="text-xs text-white/80">কোর্স ফি</span>
-                        <span className="text-sm font-bold text-primary-glow">৳{fee}</span>
+                        <span className="text-sm font-bold text-primary-glow">৳{fee.toLocaleString("bn")}</span>
                     </div>
                 )}
                 <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold mt-1 ${isOpen
