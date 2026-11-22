@@ -23,8 +23,8 @@ export function DigitalProductCard({ product, onBuy }: DigitalProductCardProps) 
 
     const bdtPrice = product.discountPriceBDT ?? product.priceBDT;
     const inrPrice = product.discountPriceINR ?? product.priceINR;
-    const hasBdtDiscount = Boolean(product.discountPriceBDT);
-    const hasInrDiscount = Boolean(product.discountPriceINR);
+    const hasBdtDiscount = Boolean(product.discountPriceBDT && product.discountPriceBDT < product.priceBDT);
+    const hasInrDiscount = Boolean(product.discountPriceINR && product.discountPriceINR < product.priceINR);
 
     const allFeatures = product.features || [];
     // Show half of features (minimum 2) when collapsed
@@ -134,36 +134,36 @@ export function DigitalProductCard({ product, onBuy }: DigitalProductCardProps) 
 
             {/* Bottom Pricing & CTA */}
             <div className="mt-auto border-t border-white/10 bg-white/[0.015] p-5 sm:p-6">
-                <div className="flex items-end justify-between">
+                <div className="flex items-end justify-between gap-2">
                     <div>
-                        <div className="text-[11px] font-bangla text-white/50">
+                        <div className="text-[11px] font-bangla text-white/60">
                             মূল্য (বাংলাদেশ):
                         </div>
-                        <div className="flex items-baseline gap-1.5">
-                            <span className="font-mona text-xl font-bold text-emerald-400">
-                                ৳{bdtPrice}
-                            </span>
+                        <div className="mt-1 flex items-baseline gap-2">
                             {hasBdtDiscount && (
-                                <span className="font-mona text-xs text-white/40 line-through">
-                                    ৳{product.priceBDT}
+                                <span className="font-mona text-base sm:text-xl font-semibold text-white/40 line-through decoration-red-500/80 decoration-2">
+                                    ৳{product.priceBDT.toLocaleString("bn")}
                                 </span>
                             )}
+                            <span className="font-mona text-2xl sm:text-3xl font-extrabold text-emerald-400 tracking-tight">
+                                ৳{bdtPrice.toLocaleString("bn")}
+                            </span>
                         </div>
                     </div>
 
                     <div className="text-right">
-                        <div className="text-[11px] font-bangla text-amber-300/70">
-                            🇮🇳 ভারত (PhonePe):
+                        <div className="text-[11px] font-bangla text-amber-300/80">
+                            🇮🇳 ভারত:
                         </div>
-                        <div className="flex items-baseline justify-end gap-1">
-                            <span className="font-mona text-base font-bold text-amber-300">
-                                ₹{inrPrice}
-                            </span>
+                        <div className="mt-1 flex items-baseline justify-end gap-1.5">
                             {hasInrDiscount && (
-                                <span className="font-mona text-[11px] text-white/40 line-through">
-                                    ₹{product.priceINR}
+                                <span className="font-mona text-base sm:text-xl font-semibold text-white/40 line-through decoration-red-500/80 decoration-2">
+                                    ₹{product.priceINR.toLocaleString("bn")}
                                 </span>
                             )}
+                            <span className="font-mona text-2xl sm:text-3xl font-bold text-amber-300">
+                                ₹{inrPrice.toLocaleString("bn")}
+                            </span>
                         </div>
                     </div>
                 </div>

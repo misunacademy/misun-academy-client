@@ -170,13 +170,6 @@ export function DigitalProductsClient() {
                                         </tr>
                                     ) : (
                                         products.map((p) => {
-                                            const bdtPrice = p.discountPriceBDT
-                                                ? `৳${p.discountPriceBDT} (৳${p.priceBDT})`
-                                                : `৳${p.priceBDT}`;
-                                            const inrPrice = p.discountPriceINR
-                                                ? `₹${p.discountPriceINR} (₹${p.priceINR})`
-                                                : `₹${p.priceINR}`;
-
                                             return (
                                                 <tr key={p._id} className="transition hover:bg-gray-50/80">
                                                     <td className="px-6 py-4">
@@ -209,9 +202,39 @@ export function DigitalProductsClient() {
                                                         </Badge>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <div className="text-xs space-y-0.5">
-                                                            <div className="text-emerald-900 font-bold text-sm">{bdtPrice}</div>
-                                                            <div className="text-amber-900 font-semibold">{inrPrice}</div>
+                                                        <div className="text-xs space-y-1">
+                                                            <div className="flex items-center gap-1.5">
+                                                                {p.discountPriceBDT && p.discountPriceBDT < p.priceBDT ? (
+                                                                    <>
+                                                                        <span className="font-medium text-gray-400 line-through decoration-red-500/70 text-xs">
+                                                                            ৳{p.priceBDT}
+                                                                        </span>
+                                                                        <span className="text-emerald-800 font-bold text-sm">
+                                                                            ৳{p.discountPriceBDT}
+                                                                        </span>
+                                                                    </>
+                                                                ) : (
+                                                                    <span className="text-emerald-800 font-bold text-sm">
+                                                                        ৳{p.priceBDT}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                {p.discountPriceINR && p.discountPriceINR < p.priceINR ? (
+                                                                    <>
+                                                                        <span className="font-medium text-gray-400 line-through decoration-red-500/70 text-[11px]">
+                                                                            ₹{p.priceINR}
+                                                                        </span>
+                                                                        <span className="text-amber-800 font-bold text-xs">
+                                                                            ₹{p.discountPriceINR}
+                                                                        </span>
+                                                                    </>
+                                                                ) : (
+                                                                    <span className="text-amber-800 font-semibold text-xs">
+                                                                        ₹{p.priceINR}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
