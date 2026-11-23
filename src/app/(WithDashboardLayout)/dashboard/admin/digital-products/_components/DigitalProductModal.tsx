@@ -225,7 +225,8 @@ export function DigitalProductModal({
                 .trim()
                 .replace(/[^a-z0-9\s-]/g, '')
                 .replace(/\s+/g, '-')
-                .replace(/-+/g, '-');
+                .replace(/-+/g, '-')
+                .replace(/^-+|-+$/g, '');
             setSlug(cleanSlug);
         }
     };
@@ -253,9 +254,10 @@ export function DigitalProductModal({
             }
         }
 
-        // Auto-generate fallback slug if cleanSlug was empty (e.g. Pure Bengali title)
+        // Auto-generate fallback slug when the title yields nothing usable
+        // (e.g. Pure Bengali title sanitises to "" or a lone "-").
         let finalSlug = slug.trim();
-        if (!finalSlug) {
+        if (finalSlug.replace(/-/g, '').length < 2) {
             finalSlug = `${software}-script-${Date.now().toString(36)}`;
         }
 
