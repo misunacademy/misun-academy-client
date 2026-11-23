@@ -9,6 +9,8 @@ import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 export function DigitalProductsTab() {
     const { data, isLoading } = useGetMyDigitalPurchasesQuery();
     const purchases = data?.data ?? [];
+    // Rejected digital products are hidden from this view per user preference.
+    const visiblePurchases = purchases.filter((item) => item.status !== 'rejected');
 
     const baseApi = process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:5000/api/v1';
 
@@ -20,7 +22,7 @@ export function DigitalProductsTab() {
         );
     }
 
-    if (purchases.length === 0) {
+    if (visiblePurchases.length === 0) {
         return (
             <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-12 text-center font-bangla">
                 <Package className="mx-auto h-12 w-12 text-white/30" />
@@ -40,7 +42,7 @@ export function DigitalProductsTab() {
 
     return (
         <div className="space-y-4">
-            {purchases.map((item) => {
+            {visiblePurchases.map((item) => {
                 const isPaid = item.status === 'paid';
                 const isRejected = item.status === 'rejected';
                 const isPending = !isPaid && !isRejected;

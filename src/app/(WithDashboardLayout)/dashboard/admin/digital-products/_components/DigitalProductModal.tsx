@@ -72,6 +72,7 @@ export function DigitalProductModal({
     const [discountPriceBDT, setDiscountPriceBDT] = useState<number | undefined>(250);
     const [priceINR, setPriceINR] = useState<number>(399);
     const [discountPriceINR, setDiscountPriceINR] = useState<number | undefined>(199);
+    const [isFree, setIsFree] = useState(false);
 
     const [features, setFeatures] = useState<string[]>(['']);
 
@@ -95,9 +96,13 @@ export function DigitalProductModal({
             setBadge(editingProduct.badge || '');
             setThumbnail(editingProduct.thumbnail || '');
             setPriceBDT(editingProduct.priceBDT ?? 0);
-            setDiscountPriceBDT(editingProduct.discountPriceBDT);
+            setDiscountPriceBDT(editingProduct.discountPriceBDT ?? undefined);
             setPriceINR(editingProduct.priceINR ?? 0);
-            setDiscountPriceINR(editingProduct.discountPriceINR);
+            setDiscountPriceINR(editingProduct.discountPriceINR ?? undefined);
+            setIsFree(
+                (editingProduct.discountPriceBDT ?? editingProduct.priceBDT ?? 0) <= 0 &&
+                    (editingProduct.discountPriceINR ?? editingProduct.priceINR ?? 0) <= 0
+            );
             setFeatures(editingProduct.features?.length ? editingProduct.features : ['']);
 
             setScriptFileName(editingProduct.scriptFile?.fileName || '');
@@ -121,6 +126,7 @@ export function DigitalProductModal({
             setDiscountPriceBDT(250);
             setPriceINR(399);
             setDiscountPriceINR(199);
+            setIsFree(false);
             setFeatures(['১-ক্লিকে রান করার শর্টকাট স্ক্রিপ্ট', 'স্টেপ-বাই-স্টেপ ইনস্টলেশন গাইড PDF']);
             setScriptFileName('');
             setScriptUrl('');
@@ -231,6 +237,19 @@ export function DigitalProductModal({
         }
     };
 
+    const handleFreeToggle = (checked: boolean) => {
+        setIsFree(checked);
+        if (checked) {
+            setPriceBDT(0);
+            setDiscountPriceBDT(undefined);
+            setPriceINR(0);
+            setDiscountPriceINR(undefined);
+        } else if (priceBDT <= 0 && priceINR <= 0) {
+            setPriceBDT(500);
+            setPriceINR(399);
+        }
+    };
+
     const handleSubmit = async (e?: React.FormEvent, explicitPublishStatus?: boolean) => {
         if (e) e.preventDefault();
 
@@ -261,6 +280,11 @@ export function DigitalProductModal({
             finalSlug = `${software}-script-${Date.now().toString(36)}`;
         }
 
+        // Discounts are sent as `null` when cleared so the server explicitly
+        // unsets the old value (Mongoose ignores `undefined` in updates).
+        const toDiscountValue = (value: number | undefined): number | null =>
+            value === undefined || String(value).trim() === '' ? null : Number(value);
+
         const payload: Partial<DigitalProduct> = {
             title: title.trim(),
             slug: finalSlug,
@@ -269,16 +293,10 @@ export function DigitalProductModal({
             software,
             badge: badge.trim(),
             thumbnail: thumbnail.trim(),
-            priceBDT: Number(priceBDT) || 0,
-            discountPriceBDT:
-                discountPriceBDT !== undefined && discountPriceBDT !== null && String(discountPriceBDT).trim() !== ''
-                    ? Number(discountPriceBDT)
-                    : undefined,
-            priceINR: Number(priceINR) || 0,
-            discountPriceINR:
-                discountPriceINR !== undefined && discountPriceINR !== null && String(discountPriceINR).trim() !== ''
-                    ? Number(discountPriceINR)
-                    : undefined,
+            priceBDT: isFree ? 0 : Number(priceBDT) || 0,
+            discountPriceBDT: isFree ? null : toDiscountValue(discountPriceBDT),
+            priceINR: isFree ? 0 : Number(priceINR) || 0,
+            discountPriceINR: isFree ? null : toDiscountValue(discountPriceINR),
             features: features.filter((f) => f.trim().length > 0),
             isPublished: targetIsPublished,
             status: targetIsPublished ? 'published' : 'draft',
@@ -486,9 +504,30 @@ export function DigitalProductModal({
 
                     {/* Dual Currency Pricing */}
                     <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
-                        <h4 className="text-sm font-semibold text-gray-900">
-                            Pricing (Bangladesh & India)
-                        </h4>
+                        <div className="flex items-center justify-between gap-3">
+                            <div>
+                                <h4 className="text-sm font-semibold text-gray-900">
+                                    Pricing (Bangladesh & India)
+                                </h4>
+                                <p className="text-[11px] text-gray-500 mt-0.5">
+                                    Free products are claimed without any payment gateway.
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-[11px] font-semibold text-emerald-800">
+                                    Free Product
+                                </span>
+                                <Switch checked={isFree} onCheckedChange={handleFreeToggle} />
+                            </div>
+                        </div>
+
+                        {isFree && (
+                            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-2.5 text-[11px] font-medium text-emerald-800">
+                                Both prices are set to zero. Students can claim this product from the
+                                storefront without choosing a payment method.
+                            </div>
+                        )}
+
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-2 rounded-lg border border-emerald-200 bg-emerald-50/40 p-3">
                                 <span className="text-xs font-bold text-emerald-800">🇧🇩 Bangladesh (BDT ৳)</span>
@@ -497,22 +536,26 @@ export function DigitalProductModal({
                                         <label className="text-[11px] font-medium text-gray-600">Regular Price (৳)</label>
                                         <Input
                                             type="number"
+                                            min={0}
                                             value={priceBDT}
                                             onChange={(e) => setPriceBDT(Number(e.target.value))}
                                             required
-                                            className="bg-white border-gray-300 text-gray-900"
+                                            disabled={isFree}
+                                            className="bg-white border-gray-300 text-gray-900 disabled:bg-gray-100"
                                         />
                                     </div>
                                     <div>
                                         <label className="text-[11px] font-medium text-gray-600">Discounted Price (৳)</label>
                                         <Input
                                             type="number"
+                                            min={0}
                                             value={discountPriceBDT ?? ''}
                                             onChange={(e) =>
                                                 setDiscountPriceBDT(e.target.value ? Number(e.target.value) : undefined)
                                             }
                                             placeholder="Leave empty if no discount"
-                                            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                                            disabled={isFree}
+                                            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 disabled:bg-gray-100"
                                         />
                                     </div>
                                 </div>
@@ -527,22 +570,26 @@ export function DigitalProductModal({
                                         <label className="text-[11px] font-medium text-gray-600">Regular Price (₹)</label>
                                         <Input
                                             type="number"
+                                            min={0}
                                             value={priceINR}
                                             onChange={(e) => setPriceINR(Number(e.target.value))}
                                             required
-                                            className="bg-white border-gray-300 text-gray-900"
+                                            disabled={isFree}
+                                            className="bg-white border-gray-300 text-gray-900 disabled:bg-gray-100"
                                         />
                                     </div>
                                     <div>
                                         <label className="text-[11px] font-medium text-gray-600">Discounted Price (₹)</label>
                                         <Input
                                             type="number"
+                                            min={0}
                                             value={discountPriceINR ?? ''}
                                             onChange={(e) =>
                                                 setDiscountPriceINR(e.target.value ? Number(e.target.value) : undefined)
                                             }
                                             placeholder="Leave empty if no discount"
-                                            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                                            disabled={isFree}
+                                            className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 disabled:bg-gray-100"
                                         />
                                     </div>
                                 </div>

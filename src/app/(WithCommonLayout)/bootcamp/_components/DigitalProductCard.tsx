@@ -5,6 +5,7 @@ import Image from 'next/image';
 import {
     CheckCircle2,
     Zap,
+    Gift,
     ChevronDown,
     ChevronUp,
     FileCode,
@@ -12,6 +13,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DigitalProduct } from '@/redux/api/digitalProductApi';
+import {
+    getEffectiveBdtPrice,
+    getEffectiveInrPrice,
+    hasBdtDiscount,
+    hasInrDiscount,
+    isBdtFree,
+    isFullyFree,
+    isInrFree,
+} from '@/lib/digitalProductPricing';
 
 interface DigitalProductCardProps {
     product: DigitalProduct;
@@ -21,10 +31,13 @@ interface DigitalProductCardProps {
 export function DigitalProductCard({ product, onBuy }: DigitalProductCardProps) {
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const bdtPrice = product.discountPriceBDT ?? product.priceBDT;
-    const inrPrice = product.discountPriceINR ?? product.priceINR;
-    const hasBdtDiscount = Boolean(product.discountPriceBDT && product.discountPriceBDT < product.priceBDT);
-    const hasInrDiscount = Boolean(product.discountPriceINR && product.discountPriceINR < product.priceINR);
+    const bdtPrice = getEffectiveBdtPrice(product);
+    const inrPrice = getEffectiveInrPrice(product);
+    const bdtFree = isBdtFree(product);
+    const inrFree = isInrFree(product);
+    const freeProduct = isFullyFree(product);
+    const showBdtDiscount = hasBdtDiscount(product) && !bdtFree;
+    const showInrDiscount = hasInrDiscount(product) && !inrFree;
 
     const allFeatures = product.features || [];
     // Show half of features (minimum 2) when collapsed
@@ -82,7 +95,7 @@ export function DigitalProductCard({ product, onBuy }: DigitalProductCardProps) 
 
                 {/* Title & Tagline */}
                 <div className="mt-4">
-                    <h3 className="font-bangla text-lg font-bold text-white transition group-hover:text-[#ffd60a] line-clamp-1">
+                    <h3 className="font-bangla text-lg font-bold leading-snug text-white transition group-hover:text-[#ffd60a] line-clamp-2 min-h-[3.1rem]">
                         {product.title}
                     </h3>
 
@@ -134,35 +147,49 @@ export function DigitalProductCard({ product, onBuy }: DigitalProductCardProps) 
 
             {/* Bottom Pricing & CTA */}
             <div className="mt-auto border-t border-white/10 bg-white/[0.015] p-5 sm:p-6">
-                <div className="flex items-end justify-between gap-2">
-                    <div>
-                        <div className="text-[11px] font-bangla text-white/60">
-                            মূল্য (বাংলাদেশ):
+                <div className="grid grid-cols-2 divide-x divide-white/10">
+                    <div className="min-w-0 pr-3 sm:pr-4">
+                        <div className="flex items-center gap-1 text-lg font-bold text-white/75">
+                            <span aria-hidden>🇧🇩</span>
+                            <span className="font-bangla">বাংলাদেশ</span>
                         </div>
-                        <div className="mt-1 flex items-baseline gap-2">
-                            {hasBdtDiscount && (
-                                <span className="font-mona text-base sm:text-xl font-semibold text-white/40 line-through decoration-red-500/80 decoration-2">
+                        <div className="mt-1.5 flex flex-wrap items-baseline gap-1.5">
+                            {showBdtDiscount && (
+                                <span className="font-mona text-xs font-semibold text-white/40 line-through decoration-red-500/80 decoration-2 sm:text-sm">
                                     ৳{product.priceBDT.toLocaleString("bn")}
                                 </span>
                             )}
-                            <span className="font-mona text-2xl sm:text-3xl font-extrabold text-emerald-400 tracking-tight">
-                                ৳{bdtPrice.toLocaleString("bn")}
+                            <span
+                                className={`tracking-tight ${
+                                    bdtFree
+                                        ? 'font-bangla text-lg font-extrabold text-emerald-400 sm:text-xl'
+                                        : 'font-mona text-lg font-extrabold text-emerald-400 sm:text-xl'
+                                }`}
+                            >
+                                {bdtFree ? 'ফ্রি' : `৳${bdtPrice.toLocaleString("bn")}`}
                             </span>
                         </div>
                     </div>
 
-                    <div className="text-right">
-                        <div className="text-[11px] font-bangla text-amber-300/80">
-                            🇮🇳 ভারত:
+                    <div className="min-w-0 pl-3 text-right sm:pl-4">
+                        <div className="flex items-center justify-end gap-1 text-lg font-bold text-amber-300/90">
+                            <span aria-hidden>🇮🇳</span>
+                            <span className="font-bangla">ভারত</span>
                         </div>
-                        <div className="mt-1 flex items-baseline justify-end gap-1.5">
-                            {hasInrDiscount && (
-                                <span className="font-mona text-base sm:text-xl font-semibold text-white/40 line-through decoration-red-500/80 decoration-2">
+                        <div className="mt-1.5 flex flex-wrap items-baseline justify-end gap-1.5">
+                            {showInrDiscount && (
+                                <span className="font-mona text-xs font-semibold text-white/40 line-through decoration-red-500/80 decoration-2 sm:text-sm">
                                     ₹{product.priceINR.toLocaleString("bn")}
                                 </span>
                             )}
-                            <span className="font-mona text-2xl sm:text-3xl font-bold text-amber-300">
-                                ₹{inrPrice.toLocaleString("bn")}
+                            <span
+                                className={`tracking-tight ${
+                                    inrFree
+                                        ? 'font-bangla text-lg font-extrabold text-amber-300 sm:text-xl'
+                                        : 'font-mona text-lg font-bold text-amber-300 sm:text-xl'
+                                }`}
+                            >
+                                {inrFree ? 'ফ্রি' : `₹${inrPrice.toLocaleString("bn")}`}
                             </span>
                         </div>
                     </div>
@@ -170,14 +197,35 @@ export function DigitalProductCard({ product, onBuy }: DigitalProductCardProps) 
 
                 <Button
                     onClick={() => onBuy(product)}
-                    className="mt-4 w-full bg-[#ffd60a] py-4 font-bangla text-sm font-bold text-black shadow-md shadow-[#ffd60a]/15 transition-all duration-200 hover:bg-[#ffd60a]/90"
+                    className={`mt-4 w-full py-4 font-bangla text-sm font-bold text-black shadow-md transition-all duration-200 ${
+                        freeProduct
+                            ? 'bg-emerald-400 shadow-emerald-500/15 hover:bg-emerald-300'
+                            : 'bg-[#ffd60a] shadow-[#ffd60a]/15 hover:bg-[#ffd60a]/90'
+                    }`}
                 >
-                    <Zap className="mr-2 h-4 w-4" /> এখনই সংগ্রহ করুন
+                    {freeProduct ? (
+                        <>
+                            <Gift className="mr-2 h-4 w-4" /> ফ্রি সংগ্রহ করুন
+                        </>
+                    ) : (
+                        <>
+                            <Zap className="mr-2 h-4 w-4" /> এখনই সংগ্রহ করুন
+                        </>
+                    )}
                 </Button>
 
                 <div className="mt-2.5 flex items-center justify-center gap-2.5 text-[10px] font-bangla text-white/40">
-                    <span>• ইনস্ট্যান্ট ডাউনলোড</span>
-                    <span>• লাইফটাইম এক্সেস</span>
+                    {freeProduct ? (
+                        <>
+                            <span>• কোনো পেমেন্ট লাগবে না</span>
+                            <span>• ইনস্ট্যান্ট ডাউনলোড</span>
+                        </>
+                    ) : (
+                        <>
+                            <span>• ইনস্ট্যান্ট ডাউনলোড</span>
+                            <span>• লাইফটাইম এক্সেস</span>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
