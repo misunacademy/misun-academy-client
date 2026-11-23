@@ -30,9 +30,10 @@ export interface DigitalProduct {
     thumbnail?: string;
     badge?: string;
     features: string[];
-    scriptFile: DigitalProductFile;
-    guidePdf: DigitalProductFile;
+    scriptFile?: DigitalProductFile;
+    guidePdf?: DigitalProductFile;
     isPublished: boolean;
+    status?: 'draft' | 'published';
     salesCount: number;
     createdAt?: string;
     updatedAt?: string;
@@ -164,7 +165,7 @@ export const digitalProductApi = baseApi.injectEndpoints({
         // Admin: Products
         getAdminDigitalProducts: builder.query<
             { success: boolean; data: DigitalProduct[]; meta: { total: number; page: number; limit: number; totalPage: number } },
-            { search?: string; software?: string; isPublished?: boolean; page?: number; limit?: number } | void
+            { search?: string; software?: string; isPublished?: boolean; status?: string; page?: number; limit?: number } | void
         >({
             query: (params) => ({
                 url: '/digital-products/admin/products',

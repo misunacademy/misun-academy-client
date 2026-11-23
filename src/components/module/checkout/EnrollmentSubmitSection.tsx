@@ -2,7 +2,6 @@
 import { Loader2 } from "lucide-react";
 import { AnimatedBorder } from '@/components/shared/AnimatedBorder';
 import { useTranslations } from 'next-intl';
-import { formatBDT } from '@/lib/i18n';
 
 interface EnrollmentSubmitSectionProps {
   totalPrice: number;
@@ -32,7 +31,7 @@ export function EnrollmentSubmitSection({
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
         <div className="flex justify-between items-center font-semibold text-lg">
           <span className="text-white/80">{t('coursePrice')}</span>
-          <span className="text-primary font-bold">{formatBDT(totalPrice)}</span>
+          <span className="text-primary font-bold">৳{totalPrice.toLocaleString("bn")}</span>
         </div>
       </div>
 

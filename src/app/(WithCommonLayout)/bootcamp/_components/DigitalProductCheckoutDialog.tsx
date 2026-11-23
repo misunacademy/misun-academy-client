@@ -148,14 +148,42 @@ export function DigitalProductCheckoutDialog({
                             <h3 className="mt-1 text-base font-bold text-white">{product.title}</h3>
                         </div>
                         <div className="text-right">
-                            <span className="font-mona text-xl font-bold text-emerald-400">
-                                {selectedTab === 'sslcommerz' ? `৳${bdtAmount}` : `₹${inrAmount}`}
-                            </span>
-                            {product.discountPriceBDT && selectedTab === 'sslcommerz' && (
-                                <div className="text-xs text-white/40 line-through">৳{product.priceBDT}</div>
-                            )}
-                            {product.discountPriceINR && selectedTab === 'phonepe' && (
-                                <div className="text-xs text-white/40 line-through">₹{product.priceINR}</div>
+                            {selectedTab === 'sslcommerz' ? (
+                                <div>
+                                    <div className="flex items-baseline justify-end gap-2">
+                                        {product.discountPriceBDT && product.discountPriceBDT < product.priceBDT && (
+                                            <span className="font-mona text-base font-semibold text-white/40 line-through decoration-red-500/80 decoration-2">
+                                                ৳{product.priceBDT.toLocaleString("bn")}
+                                            </span>
+                                        )}
+                                        <span className="font-mona text-2xl font-bold text-emerald-400">
+                                            ৳{bdtAmount.toLocaleString("bn")}
+                                        </span>
+                                    </div>
+                                    {product.discountPriceBDT && product.discountPriceBDT < product.priceBDT && (
+                                        <span className="mt-0.5 inline-block rounded bg-red-500/15 border border-red-500/30 px-1.5 py-0.5 font-mono text-[10px] font-bold text-red-400">
+                                            {Math.round(((product.priceBDT - product.discountPriceBDT) / product.priceBDT) * 100).toLocaleString("bn")}% OFF
+                                        </span>
+                                    )}
+                                </div>
+                            ) : (
+                                <div>
+                                    <div className="flex items-baseline justify-end gap-2">
+                                        {product.discountPriceINR && product.discountPriceINR < product.priceINR && (
+                                            <span className="font-mona text-base font-semibold text-white/40 line-through decoration-red-500/80 decoration-2">
+                                                ₹{product.priceINR.toLocaleString("bn")}
+                                            </span>
+                                        )}
+                                        <span className="font-mona text-2xl font-bold text-amber-300">
+                                            ₹{inrAmount.toLocaleString("bn")}
+                                        </span>
+                                    </div>
+                                    {product.discountPriceINR && product.discountPriceINR < product.priceINR && (
+                                        <span className="mt-0.5 inline-block rounded bg-amber-500/15 border border-amber-500/30 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-300">
+                                            {Math.round(((product.priceINR - product.discountPriceINR) / product.priceINR) * 100).toLocaleString("bn")}% OFF
+                                        </span>
+                                    )}
+                                </div>
                             )}
                         </div>
                     </div>
@@ -188,7 +216,7 @@ export function DigitalProductCheckoutDialog({
                             <CreditCard className="h-6 w-6 text-[#ffd60a]" />
                             <span className="mt-2 font-bangla text-xs font-bold text-white">SSLCommerz</span>
                             <span className="font-bangla text-[10px] text-white/60">
-                                কার্ড / বিকাশ / নগদ (৳{bdtAmount})
+                                কার্ড / বিকাশ / নগদ (৳{bdtAmount.toLocaleString("bn")})
                             </span>
                             <span className="mt-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[9px] font-semibold text-emerald-400">
                                 ইনস্ট্যান্ট এক্সেস
@@ -209,7 +237,7 @@ export function DigitalProductCheckoutDialog({
                             </div>
                             <span className="mt-2 font-bangla text-xs font-bold text-white">ম্যানুয়াল পেমেন্ট</span>
                             <span className="font-bangla text-[10px] text-amber-300">
-                                🇮🇳 ভারতীয়দের জন্য (₹{inrAmount})
+                                🇮🇳 ভারতীয়দের জন্য (₹{inrAmount.toLocaleString("bn")})
                             </span>
                             <span className="mt-1 rounded-full bg-purple-500/20 px-2 py-0.5 text-[9px] font-semibold text-purple-300">
                                 PhonePe UPI
@@ -241,7 +269,7 @@ export function DigitalProductCheckoutDialog({
                             ) : (
                                 <CreditCard className="mr-2 h-4 w-4" />
                             )}
-                            ৳{bdtAmount} টাকা পেমেন্ট করুন
+                            ৳{bdtAmount.toLocaleString("bn")} টাকা পেমেন্ট করুন
                         </Button>
                     </form>
                 ) : (
@@ -268,10 +296,10 @@ export function DigitalProductCheckoutDialog({
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-white/70">পাঠানোর পরিমাণ:</span>
-                                <span className="font-mona text-base font-bold text-amber-300">₹{inrAmount} INR</span>
+                                <span className="font-mona text-base font-bold text-amber-300">₹{inrAmount.toLocaleString("bn")} INR</span>
                             </div>
                             <p className="text-[11px] text-white/50 pt-1">
-                                * অনুগ্রহ করে PhonePe অ্যাপ থেকে উপরের নম্বরে ₹{inrAmount} সেন্ড মানি করুন। এরপর নিচের বক্সে আপনার PhonePe নম্বর ও Transaction ID দিয়ে সাবমিট করুন।
+                                * অনুগ্রহ করে PhonePe অ্যাপ থেকে উপরের নম্বরে ₹{inrAmount.toLocaleString("bn")} সেন্ড মানি করুন। এরপর নিচের বক্সে আপনার PhonePe নম্বর ও Transaction ID দিয়ে সাবমিট করুন।
                             </p>
                         </div>
 

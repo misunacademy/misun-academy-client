@@ -144,10 +144,10 @@ export function DigitalProductModal({
             const res = await uploadAsset(formData).unwrap();
             if (res.data?.url) {
                 setThumbnail(res.data.url);
-                toast.success('থাম্বনেইল সফলভাবে Cloudinary-তে আপলোড হয়েছে!');
+                toast.success('Thumbnail uploaded to Cloudinary successfully!');
             }
         } catch (err) {
-            toast.error(getApiErrorMessage(err, 'থাম্বনেইল আপলোড ব্যর্থ হয়েছে'));
+            toast.error(getApiErrorMessage(err, 'Failed to upload thumbnail'));
         } finally {
             setIsUploadingThumbnail(false);
             e.target.value = '';
@@ -168,10 +168,10 @@ export function DigitalProductModal({
                 setScriptFileName(res.data.fileName || file.name);
                 setScriptUrl(res.data.url);
                 setScriptFileSize(res.data.fileSize || '');
-                toast.success('স্ক্রিপ্ট কোড ফাইল সফলভাবে Cloudinary-তে আপলোড হয়েছে!');
+                toast.success('Script code file uploaded to Cloudinary successfully!');
             }
         } catch (err) {
-            toast.error(getApiErrorMessage(err, 'স্ক্রিপ্ট ফাইল আপলোড ব্যর্থ হয়েছে'));
+            toast.error(getApiErrorMessage(err, 'Failed to upload script file'));
         } finally {
             setIsUploadingScript(false);
             e.target.value = '';
@@ -192,10 +192,10 @@ export function DigitalProductModal({
                 setGuideFileName(res.data.fileName || file.name);
                 setGuideUrl(res.data.url);
                 setGuideFileSize(res.data.fileSize || '');
-                toast.success('ইনস্ট্রাকশন PDF সফলভাবে Cloudinary-তে আপলোড হয়েছে!');
+                toast.success('Instruction PDF uploaded to Cloudinary successfully!');
             }
         } catch (err) {
-            toast.error(getApiErrorMessage(err, 'গাইড PDF আপলোড ব্যর্থ হয়েছে'));
+            toast.error(getApiErrorMessage(err, 'Failed to upload instruction PDF'));
         } finally {
             setIsUploadingGuide(false);
             e.target.value = '';
@@ -225,36 +225,43 @@ export function DigitalProductModal({
                 .trim()
                 .replace(/[^a-z0-9\s-]/g, '')
                 .replace(/\s+/g, '-')
-                .replace(/-+/g, '-');
+                .replace(/-+/g, '-')
+                .replace(/^-+|-+$/g, '');
             setSlug(cleanSlug);
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (e?: React.FormEvent, explicitPublishStatus?: boolean) => {
+        if (e) e.preventDefault();
+
+        const targetIsPublished = explicitPublishStatus !== undefined ? explicitPublishStatus : isPublished;
 
         if (!title.trim()) {
-            toast.error('প্রোডাক্টের নাম লিখুন');
+            toast.error('Please enter product title');
             return;
         }
 
-        if (!scriptUrl.trim()) {
-            toast.error('অনুগ্রহ করে স্ক্রিপ্ট কোড ফাইলটি আপলোড করুন');
-            return;
+        // For published products, ensure mandatory files are uploaded
+        if (targetIsPublished) {
+            if (!scriptUrl.trim()) {
+                toast.error('Please upload the script code file before publishing');
+                return;
+            }
+
+            if (!guideUrl.trim()) {
+                toast.error('Please upload the instruction guide PDF before publishing');
+                return;
+            }
         }
 
-        if (!guideUrl.trim()) {
-            toast.error('অনুগ্রহ করে ইনস্ট্রাকশন গাইড PDF আপলোড করুন');
-            return;
-        }
-
-        // Auto-generate fallback slug if cleanSlug was empty (e.g. Pure Bengali title)
+        // Auto-generate fallback slug when the title yields nothing usable
+        // (e.g. Pure Bengali title sanitises to "" or a lone "-").
         let finalSlug = slug.trim();
-        if (!finalSlug) {
+        if (finalSlug.replace(/-/g, '').length < 2) {
             finalSlug = `${software}-script-${Date.now().toString(36)}`;
         }
 
-        const payload = {
+        const payload: Partial<DigitalProduct> = {
             title: title.trim(),
             slug: finalSlug,
             tagline: tagline.trim(),
@@ -262,35 +269,48 @@ export function DigitalProductModal({
             software,
             badge: badge.trim(),
             thumbnail: thumbnail.trim(),
-            priceBDT: Number(priceBDT),
-            discountPriceBDT: discountPriceBDT !== undefined ? Number(discountPriceBDT) : undefined,
-            priceINR: Number(priceINR),
-            discountPriceINR: discountPriceINR !== undefined ? Number(discountPriceINR) : undefined,
+            priceBDT: Number(priceBDT) || 0,
+            discountPriceBDT:
+                discountPriceBDT !== undefined && discountPriceBDT !== null && String(discountPriceBDT).trim() !== ''
+                    ? Number(discountPriceBDT)
+                    : undefined,
+            priceINR: Number(priceINR) || 0,
+            discountPriceINR:
+                discountPriceINR !== undefined && discountPriceINR !== null && String(discountPriceINR).trim() !== ''
+                    ? Number(discountPriceINR)
+                    : undefined,
             features: features.filter((f) => f.trim().length > 0),
-            scriptFile: {
+            isPublished: targetIsPublished,
+            status: targetIsPublished ? 'published' : 'draft',
+        };
+
+        if (scriptUrl.trim()) {
+            payload.scriptFile = {
                 fileName: scriptFileName.trim() || 'script-file',
                 url: scriptUrl.trim(),
                 fileSize: scriptFileSize.trim() || undefined,
-            },
-            guidePdf: {
+            };
+        }
+
+        if (guideUrl.trim()) {
+            payload.guidePdf = {
                 fileName: guideFileName.trim() || 'guide.pdf',
                 url: guideUrl.trim(),
                 fileSize: guideFileSize.trim() || undefined,
-            },
-            isPublished,
-        };
+            };
+        }
 
         try {
             if (editingProduct) {
                 await updateProduct({ id: editingProduct._id, data: payload }).unwrap();
-                toast.success('ডিজিটাল প্রোডাক্ট সফলভাবে আপডেট হয়েছে');
+                toast.success(targetIsPublished ? 'Digital product updated & published successfully' : 'Draft saved successfully');
             } else {
                 await createProduct(payload).unwrap();
-                toast.success('ডিজিটাল প্রোডাক্ট সফলভাবে তৈরি হয়েছে');
+                toast.success(targetIsPublished ? 'Digital product created & published successfully' : 'Draft product saved successfully');
             }
             onClose();
         } catch (err) {
-            toast.error(getApiErrorMessage(err, 'প্রোডাক্ট সংরক্ষণ করতে সমস্যা হয়েছে'));
+            toast.error(getApiErrorMessage(err, 'Failed to save product'));
         }
     };
 
@@ -300,9 +320,9 @@ export function DigitalProductModal({
         <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
             <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto bg-white text-gray-900 border-gray-200 shadow-xl">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 font-bangla text-xl text-gray-900">
+                    <DialogTitle className="flex items-center gap-2 text-xl text-gray-900">
                         <Sparkles className="h-5 w-5 text-amber-500" />
-                        {editingProduct ? 'ডিজিটাল প্রোডাক্ট এডিট করুন' : 'নতুন ডিজিটাল প্রোডাক্ট যোগ করুন'}
+                        {editingProduct ? 'Edit Digital Product' : 'Add New Digital Product'}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -332,21 +352,21 @@ export function DigitalProductModal({
                 <form onSubmit={handleSubmit} className="space-y-6 pt-2">
                     {/* General Info */}
                     <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
-                        <h4 className="font-bangla text-sm font-semibold text-gray-900">মৌলিক তথ্য</h4>
+                        <h4 className="text-sm font-semibold text-gray-900">Basic Information</h4>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-1.5 sm:col-span-2">
-                                <label className="font-bangla text-xs font-medium text-gray-700">প্রোডাক্টের নাম *</label>
+                                <label className="text-xs font-medium text-gray-700">Product Title *</label>
                                 <Input
                                     value={title}
                                     onChange={(e) => handleTitleChange(e.target.value)}
-                                    placeholder="যেমন: ফটোশপ সুপার শর্টকাট স্ক্রিপ্ট প্যাক"
+                                    placeholder="e.g. Photoshop Super Retouch Shortcut Script"
                                     required
                                     className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="font-bangla text-xs font-medium text-gray-700">সফটওয়্যার টাইপ</label>
+                                <label className="text-xs font-medium text-gray-700">Software Type</label>
                                 <select
                                     value={software}
                                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -362,21 +382,21 @@ export function DigitalProductModal({
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="font-bangla text-xs font-medium text-gray-700">ব্যাজ (ঐচ্ছিক)</label>
+                                <label className="text-xs font-medium text-gray-700">Badge (Optional)</label>
                                 <Input
                                     value={badge}
                                     onChange={(e) => setBadge(e.target.value)}
-                                    placeholder="বেস্টসেলার / নতুন / সেভ ৫৫%"
+                                    placeholder="Bestseller / New / Save 55%"
                                     className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                                 />
                             </div>
 
                             <div className="space-y-1.5 sm:col-span-2">
-                                <label className="font-bangla text-xs font-medium text-gray-700">ট্যাগলাইন / সাবটাইটেল</label>
+                                <label className="text-xs font-medium text-gray-700">Tagline / Subtitle</label>
                                 <Input
                                     value={tagline}
                                     onChange={(e) => setTagline(e.target.value)}
-                                    placeholder="ডিজাইন ও এডিটিংয়ের কাজকে করুন ৫ গুণ দ্রুত — মাত্র এক ক্লিকে!"
+                                    placeholder="Speed up your design and retouching workflow 5x in one click!"
                                     className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                                 />
                             </div>
@@ -384,9 +404,9 @@ export function DigitalProductModal({
                             {/* Thumbnail (Direct Cloudinary Upload Only - No manual URL input) */}
                             <div className="space-y-2 sm:col-span-2 rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
                                 <div className="flex items-center justify-between">
-                                    <label className="font-bangla text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                                    <label className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
                                         <ImageIcon className="h-4 w-4 text-emerald-600" />
-                                        প্রোডাক্ট থাম্বনেইল ছবি (Cloudinary)
+                                        Product Thumbnail (Cloudinary)
                                     </label>
                                     <Button
                                         type="button"
@@ -394,17 +414,17 @@ export function DigitalProductModal({
                                         variant="outline"
                                         onClick={() => thumbnailInputRef.current?.click()}
                                         disabled={isUploadingThumbnail}
-                                        className="h-8 border-emerald-300 bg-emerald-50 text-xs font-bangla font-semibold text-emerald-800 hover:bg-emerald-100"
+                                        className="h-8 border-emerald-300 bg-emerald-50 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
                                     >
                                         {isUploadingThumbnail ? (
                                             <>
                                                 <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin text-emerald-700" />
-                                                আপলোড হচ্ছে...
+                                                Uploading...
                                             </>
                                         ) : (
                                             <>
                                                 <Upload className="mr-1.5 h-3.5 w-3.5 text-emerald-700" />
-                                                {thumbnail ? 'ছবি পরিবর্তন করুন' : 'ছবি আপলোড করুন'}
+                                                {thumbnail ? 'Change Image' : 'Upload Image'}
                                             </>
                                         )}
                                     </Button>
@@ -423,7 +443,7 @@ export function DigitalProductModal({
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-1 text-xs font-bold text-emerald-800">
-                                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> ক্লাউডিনারিতে আপলোড সম্পন্ন
+                                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Uploaded to Cloudinary
                                             </div>
                                             <p className="text-[11px] text-gray-500 font-mono truncate">Cloudinary Image Hosted</p>
                                         </div>
@@ -433,7 +453,7 @@ export function DigitalProductModal({
                                             size="sm"
                                             onClick={() => setThumbnail('')}
                                             className="h-7 w-7 p-0 text-gray-400 hover:text-red-500"
-                                            title="মুছে ফেলুন"
+                                            title="Remove Image"
                                         >
                                             <X className="h-4 w-4" />
                                         </Button>
@@ -444,20 +464,20 @@ export function DigitalProductModal({
                                         className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 p-4 transition hover:bg-gray-50 text-center"
                                     >
                                         <ImageIcon className="h-6 w-6 text-gray-400 mb-1" />
-                                        <span className="font-bangla text-xs text-gray-600">
-                                            এখানে ক্লিক করে প্রোডাক্টের থাম্বনেইল ছবি আপলোড করুন
+                                        <span className="text-xs text-gray-600">
+                                            Click here to upload product thumbnail image
                                         </span>
                                     </div>
                                 )}
                             </div>
 
                             <div className="space-y-1.5 sm:col-span-2">
-                                <label className="font-bangla text-xs font-medium text-gray-700">বিস্তারিত বিবরণ</label>
+                                <label className="text-xs font-medium text-gray-700">Detailed Description</label>
                                 <Textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     rows={3}
-                                    placeholder="প্রোডাক্ট সম্পর্কে বিস্তারিত লিখুন..."
+                                    placeholder="Write a detailed description of the product and its usage..."
                                     className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                                 />
                             </div>
@@ -466,15 +486,15 @@ export function DigitalProductModal({
 
                     {/* Dual Currency Pricing */}
                     <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
-                        <h4 className="font-bangla text-sm font-semibold text-gray-900">
-                            মূল্য নির্ধারণ (বাংলাদেশ ও ভারত)
+                        <h4 className="text-sm font-semibold text-gray-900">
+                            Pricing (Bangladesh & India)
                         </h4>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="space-y-2 rounded-lg border border-emerald-200 bg-emerald-50/40 p-3">
-                                <span className="text-xs font-bold text-emerald-800">🇧🇩 বাংলাদেশ (BDT ৳)</span>
+                                <span className="text-xs font-bold text-emerald-800">🇧🇩 Bangladesh (BDT ৳)</span>
                                 <div className="space-y-2">
                                     <div>
-                                        <label className="text-[11px] font-medium text-gray-600">রেগুলার মূল্য (৳)</label>
+                                        <label className="text-[11px] font-medium text-gray-600">Regular Price (৳)</label>
                                         <Input
                                             type="number"
                                             value={priceBDT}
@@ -484,14 +504,14 @@ export function DigitalProductModal({
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-[11px] font-medium text-gray-600">ডিসকাউন্ট অফার মূল্য (৳)</label>
+                                        <label className="text-[11px] font-medium text-gray-600">Discounted Price (৳)</label>
                                         <Input
                                             type="number"
                                             value={discountPriceBDT ?? ''}
                                             onChange={(e) =>
                                                 setDiscountPriceBDT(e.target.value ? Number(e.target.value) : undefined)
                                             }
-                                            placeholder="অফার না থাকলে ফাঁকা রাখুন"
+                                            placeholder="Leave empty if no discount"
                                             className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                                         />
                                     </div>
@@ -500,11 +520,11 @@ export function DigitalProductModal({
 
                             <div className="space-y-2 rounded-lg border border-amber-200 bg-amber-50/40 p-3">
                                 <span className="text-xs font-bold text-amber-800">
-                                    🇮🇳 ভারত / PhonePe (INR ₹)
+                                    🇮🇳 India / PhonePe (INR ₹)
                                 </span>
                                 <div className="space-y-2">
                                     <div>
-                                        <label className="text-[11px] font-medium text-gray-600">রেগুলার মূল্য (₹)</label>
+                                        <label className="text-[11px] font-medium text-gray-600">Regular Price (₹)</label>
                                         <Input
                                             type="number"
                                             value={priceINR}
@@ -514,14 +534,14 @@ export function DigitalProductModal({
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-[11px] font-medium text-gray-600">ডিসকাউন্ট অফার মূল্য (₹)</label>
+                                        <label className="text-[11px] font-medium text-gray-600">Discounted Price (₹)</label>
                                         <Input
                                             type="number"
                                             value={discountPriceINR ?? ''}
                                             onChange={(e) =>
                                                 setDiscountPriceINR(e.target.value ? Number(e.target.value) : undefined)
                                             }
-                                            placeholder="অফার না থাকলে ফাঁকা রাখুন"
+                                            placeholder="Leave empty if no discount"
                                             className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                                         />
                                     </div>
@@ -533,8 +553,8 @@ export function DigitalProductModal({
                     {/* Features List */}
                     <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
                         <div className="flex items-center justify-between">
-                            <h4 className="font-bangla text-sm font-semibold text-gray-900">
-                                মূল ফিচার ও সুবিধাসমূহ
+                            <h4 className="text-sm font-semibold text-gray-900">
+                                Key Features & Highlights
                             </h4>
                             <Button
                                 type="button"
@@ -543,7 +563,7 @@ export function DigitalProductModal({
                                 onClick={handleAddFeature}
                                 className="h-8 border-gray-300 bg-white text-xs text-gray-700 hover:bg-gray-100"
                             >
-                                <Plus className="mr-1 h-3.5 w-3.5" /> ফিচার যোগ করুন
+                                <Plus className="mr-1 h-3.5 w-3.5" /> Add Feature
                             </Button>
                         </div>
                         <div className="space-y-2">
@@ -552,7 +572,7 @@ export function DigitalProductModal({
                                     <Input
                                         value={feat}
                                         onChange={(e) => handleFeatureChange(idx, e.target.value)}
-                                        placeholder={`ফিচার ${idx + 1}`}
+                                        placeholder={`Feature ${idx + 1}`}
                                         className="bg-white border-gray-300 text-gray-900 text-sm"
                                     />
                                     {features.length > 1 && (
@@ -573,8 +593,8 @@ export function DigitalProductModal({
 
                     {/* Downloadable Files: Script & Instruction PDF (Direct Cloudinary Upload Only - No manual URL input) */}
                     <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
-                        <h4 className="font-bangla text-sm font-semibold text-gray-900">
-                            ডাউনলোডেবল ফাইল (ক্লাউডিনারি আপলোড)
+                        <h4 className="text-sm font-semibold text-gray-900">
+                            Downloadable Assets (Cloudinary)
                         </h4>
                         <div className="space-y-4">
                             {/* Script File */}
@@ -582,7 +602,7 @@ export function DigitalProductModal({
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-xs font-bold text-amber-900">
                                         <FileCode className="h-4 w-4 text-amber-600" />
-                                        ১. স্ক্রিপ্ট কোড ফাইল (.jsx / .zip / .js) *
+                                        1. Script Code File (.jsx / .zip / .js) *
                                     </div>
                                     <Button
                                         type="button"
@@ -590,17 +610,17 @@ export function DigitalProductModal({
                                         variant="outline"
                                         onClick={() => scriptInputRef.current?.click()}
                                         disabled={isUploadingScript}
-                                        className="h-8 border-amber-300 bg-amber-50 text-xs font-bangla font-semibold text-amber-900 hover:bg-amber-100"
+                                        className="h-8 border-amber-300 bg-amber-50 text-xs font-semibold text-amber-900 hover:bg-amber-100"
                                     >
                                         {isUploadingScript ? (
                                             <>
                                                 <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin text-amber-700" />
-                                                আপলোড হচ্ছে...
+                                                Uploading...
                                             </>
                                         ) : (
                                             <>
                                                 <Upload className="mr-1.5 h-3.5 w-3.5 text-amber-700" />
-                                                {scriptUrl ? 'ফাইল পরিবর্তন করুন' : 'স্ক্রিপ্ট ফাইল আপলোড করুন'}
+                                                {scriptUrl ? 'Change File' : 'Upload Script File'}
                                             </>
                                         )}
                                     </Button>
@@ -615,8 +635,8 @@ export function DigitalProductModal({
                                                     {scriptFileName || 'Script File'}
                                                 </div>
                                                 <div className="text-[11px] text-gray-600 font-mono">
-                                                    {scriptFileSize ? `সাইজ: ${scriptFileSize} • ` : ''}
-                                                    Cloudinary-তে সংরক্ষিত
+                                                    {scriptFileSize ? `Size: ${scriptFileSize} • ` : ''}
+                                                    Hosted on Cloudinary
                                                 </div>
                                             </div>
                                         </div>
@@ -627,7 +647,7 @@ export function DigitalProductModal({
                                                 rel="noreferrer"
                                                 className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 hover:underline"
                                             >
-                                                টেস্ট লিংক <ExternalLink className="h-3 w-3" />
+                                                Preview Link <ExternalLink className="h-3 w-3" />
                                             </a>
                                             <Button
                                                 type="button"
@@ -639,7 +659,7 @@ export function DigitalProductModal({
                                                     setScriptFileSize('');
                                                 }}
                                                 className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-                                                title="মুছে ফেলুন"
+                                                title="Remove File"
                                             >
                                                 <X className="h-3.5 w-3.5" />
                                             </Button>
@@ -650,20 +670,20 @@ export function DigitalProductModal({
                                         onClick={() => scriptInputRef.current?.click()}
                                         className="flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-amber-200 bg-amber-50/30 p-3.5 text-center transition hover:bg-amber-50/70"
                                     >
-                                        <span className="font-bangla text-xs text-amber-900 font-medium">
-                                            এখানে ক্লিক করে .jsx বা .zip স্ক্রিপ্ট ফাইল নির্বাচন করুন (সরাসরি ক্লাউডিনারিতে আপলোড হবে)
+                                        <span className="text-xs text-amber-900 font-medium">
+                                            Click here to select .jsx, .js or .zip script file (direct Cloudinary upload)
                                         </span>
                                     </div>
                                 )}
 
                                 <div>
                                     <label className="text-[11px] font-medium text-gray-600">
-                                        ফাইলের নাম (প্রয়োজনে পরিবর্তন করতে পারেন)
+                                        Custom File Name (Optional)
                                     </label>
                                     <Input
                                         value={scriptFileName}
                                         onChange={(e) => setScriptFileName(e.target.value)}
-                                        placeholder="যেমন: Photoshop-Shortcuts.jsx"
+                                        placeholder="e.g. Photoshop-Shortcuts.jsx"
                                         className="bg-white border-gray-300 text-gray-900 text-xs mt-1"
                                     />
                                 </div>
@@ -674,7 +694,7 @@ export function DigitalProductModal({
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-xs font-bold text-blue-900">
                                         <FileText className="h-4 w-4 text-blue-600" />
-                                        ২. ইনস্ট্রাকশন গাইড (PDF) *
+                                        2. Instruction Guide (PDF) *
                                     </div>
                                     <Button
                                         type="button"
@@ -682,17 +702,17 @@ export function DigitalProductModal({
                                         variant="outline"
                                         onClick={() => guideInputRef.current?.click()}
                                         disabled={isUploadingGuide}
-                                        className="h-8 border-blue-300 bg-blue-50 text-xs font-bangla font-semibold text-blue-900 hover:bg-blue-100"
+                                        className="h-8 border-blue-300 bg-blue-50 text-xs font-semibold text-blue-900 hover:bg-blue-100"
                                     >
                                         {isUploadingGuide ? (
                                             <>
                                                 <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin text-blue-700" />
-                                                আপলোড হচ্ছে...
+                                                Uploading...
                                             </>
                                         ) : (
                                             <>
                                                 <Upload className="mr-1.5 h-3.5 w-3.5 text-blue-700" />
-                                                {guideUrl ? 'PDF পরিবর্তন করুন' : 'গাইড PDF আপলোড করুন'}
+                                                {guideUrl ? 'Change PDF' : 'Upload Guide PDF'}
                                             </>
                                         )}
                                     </Button>
@@ -707,8 +727,8 @@ export function DigitalProductModal({
                                                     {guideFileName || 'Installation-Guide.pdf'}
                                                 </div>
                                                 <div className="text-[11px] text-gray-600 font-mono">
-                                                    {guideFileSize ? `সাইজ: ${guideFileSize} • ` : ''}
-                                                    Cloudinary-তে সংরক্ষিত
+                                                    {guideFileSize ? `Size: ${guideFileSize} • ` : ''}
+                                                    Hosted on Cloudinary
                                                 </div>
                                             </div>
                                         </div>
@@ -719,7 +739,7 @@ export function DigitalProductModal({
                                                 rel="noreferrer"
                                                 className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-800 hover:underline"
                                             >
-                                                টেস্ট লিংক <ExternalLink className="h-3 w-3" />
+                                                Preview Link <ExternalLink className="h-3 w-3" />
                                             </a>
                                             <Button
                                                 type="button"
@@ -731,7 +751,7 @@ export function DigitalProductModal({
                                                     setGuideFileSize('');
                                                 }}
                                                 className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-                                                title="মুছে ফেলুন"
+                                                title="Remove File"
                                             >
                                                 <X className="h-3.5 w-3.5" />
                                             </Button>
@@ -742,20 +762,20 @@ export function DigitalProductModal({
                                         onClick={() => guideInputRef.current?.click()}
                                         className="flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-blue-200 bg-blue-50/30 p-3.5 text-center transition hover:bg-blue-50/70"
                                     >
-                                        <span className="font-bangla text-xs text-blue-900 font-medium">
-                                            এখানে ক্লিক করে নির্দেশিকা .pdf ফাইল নির্বাচন করুন (সরাসরি ক্লাউডিনারিতে আপলোড হবে)
+                                        <span className="text-xs text-blue-900 font-medium">
+                                            Click here to select instruction .pdf file (direct Cloudinary upload)
                                         </span>
                                     </div>
                                 )}
 
                                 <div>
                                     <label className="text-[11px] font-medium text-gray-600">
-                                        ফাইলের নাম (প্রয়োজনে পরিবর্তন করতে পারেন)
+                                        Custom File Name (Optional)
                                     </label>
                                     <Input
                                         value={guideFileName}
                                         onChange={(e) => setGuideFileName(e.target.value)}
-                                        placeholder="যেমন: Installation-Guide.pdf"
+                                        placeholder="e.g. Installation-Guide.pdf"
                                         className="bg-white border-gray-300 text-gray-900 text-xs mt-1"
                                     />
                                 </div>
@@ -763,36 +783,60 @@ export function DigitalProductModal({
                         </div>
                     </div>
 
-                    {/* Status Visibility (Only Publish Switch) */}
+                    {/* Status Visibility */}
                     <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50/50 p-4">
                         <div>
-                            <label className="font-bangla text-sm font-semibold text-gray-900 block">
-                                পাবলিশ স্ট্যাটাস
-                            </label>
-                            <p className="font-bangla text-xs text-gray-500">
-                                চালু থাকলে শিক্ষার্থীরা বুটক্যাম্প পেজে এই ডিজিটাল প্রোডাক্টটি দেখতে ও কিনতে পারবে।
+                            <div className="flex items-center gap-2">
+                                <label className="text-sm font-semibold text-gray-900 block">
+                                    Publication Status
+                                </label>
+                                <span
+                                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                                        isPublished
+                                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                            : 'bg-amber-100 text-amber-800 border border-amber-300'
+                                    }`}
+                                >
+                                    {isPublished ? 'Published (Live)' : 'Draft (Unpublished)'}
+                                </span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                                {isPublished
+                                    ? 'Published products are visible and purchasable by students on the storefront. All files required.'
+                                    : 'Draft mode allows saving partial information without downloadable files.'}
                             </p>
                         </div>
                         <Switch checked={isPublished} onCheckedChange={setIsPublished} />
                     </div>
 
-                    <DialogFooter className="gap-2 pt-2">
+                    <DialogFooter className="gap-2 pt-2 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end">
                         <Button
                             type="button"
                             variant="outline"
                             onClick={onClose}
                             disabled={isSaving}
-                            className="border-gray-300 bg-white text-gray-700 hover:bg-gray-100 font-bangla"
+                            className="border-gray-300 bg-white text-gray-700 hover:bg-gray-100"
                         >
-                            বাতিল
+                            Cancel
                         </Button>
                         <Button
-                            type="submit"
+                            type="button"
+                            onClick={() => handleSubmit(undefined, false)}
                             disabled={isSaving || isUploadingThumbnail || isUploadingScript || isUploadingGuide}
-                            className="bg-[#ffd60a] font-bangla font-bold text-black hover:bg-[#ffd60a]/90 shadow-sm"
+                            variant="secondary"
+                            className="border border-amber-300 bg-amber-50 font-bold text-amber-900 hover:bg-amber-100 shadow-sm"
                         >
-                            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {editingProduct ? 'আপডেট সম্পন্ন করুন' : 'প্রোডাক্ট সংরক্ষণ করুন'}
+                            {isSaving && !isPublished && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Save as Draft
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={() => handleSubmit(undefined, true)}
+                            disabled={isSaving || isUploadingThumbnail || isUploadingScript || isUploadingGuide}
+                            className="bg-[#ffd60a] font-bold text-black hover:bg-[#ffd60a]/90 shadow-sm"
+                        >
+                            {isSaving && isPublished && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {editingProduct ? 'Update & Publish' : 'Publish Product'}
                         </Button>
                     </DialogFooter>
                 </form>

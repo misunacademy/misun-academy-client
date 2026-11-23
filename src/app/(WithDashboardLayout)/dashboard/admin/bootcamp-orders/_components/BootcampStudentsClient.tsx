@@ -278,7 +278,7 @@ export default function BootcampStudentsClient() {
 
   return (
     <DashboardPageContainer
-      heading="Bootcamp Students"
+      heading="Bootcamp Order And Payment Verification"
       subheading="Everyone who bought a recorded bootcamp — filter, review, and export every page to Excel"
       buttons={
         <div className="flex items-center gap-2">

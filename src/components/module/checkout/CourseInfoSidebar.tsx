@@ -83,7 +83,7 @@ function PriceSummary({ batch }: { batch: Record<string, unknown> | undefined })
               <div className="flex justify-between items-center text-lg font-semibold">
                 <span className="text-white/70">কোর্সের মূল্য</span>
                 <span className="text-primary font-bold">
-                  ৳{((batch.price as number)?.toLocaleString?.('en-IN') || 0)}
+                  ৳{((batch.price as number)?.toLocaleString?.('bn') || 0)}
                 </span>
               </div>
             </>

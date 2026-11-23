@@ -151,7 +151,7 @@ export default function BootcampWatchClient() {
                         className="mt-6 inline-block rounded-xl bg-[#ffd60a] px-6 py-3 font-bangla font-bold text-black"
                     >
                         <ArrowLeft className="mr-1 inline h-4 w-4" />
-                        বুটক্যাম্প পেজে ফিরুন — ৳{bootcamp.recordedPrice}
+                        বুটক্যাম্প পেজে ফিরুন — ৳{bootcamp.recordedPrice.toLocaleString("bn")}
                     </Link>
                 </div>
             </div>
