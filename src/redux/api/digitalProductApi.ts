@@ -34,6 +34,7 @@ export interface DigitalProduct {
     guidePdf?: DigitalProductFile;
     isPublished: boolean;
     status?: 'draft' | 'published';
+    sortOrder?: number;
     salesCount: number;
     createdAt?: string;
     updatedAt?: string;
@@ -229,6 +230,18 @@ export const digitalProductApi = baseApi.injectEndpoints({
             invalidatesTags: ['DigitalProducts'],
         }),
 
+        reorderAdminDigitalProducts: builder.mutation<
+            { success: boolean; data: { reordered: number } },
+            { items: { id: string; sortOrder: number }[] }
+        >({
+            query: (body) => ({
+                url: '/digital-products/admin/products/reorder',
+                method: 'PATCH',
+                body,
+            }),
+            invalidatesTags: ['DigitalProducts'],
+        }),
+
         // Admin: Orders
         getAdminDigitalOrders: builder.query<
             { success: boolean; data: DigitalProductOrder[]; meta: { total: number; page: number; limit: number; totalPage: number } },
@@ -286,6 +299,7 @@ export const {
     useCreateAdminDigitalProductMutation,
     useUpdateAdminDigitalProductMutation,
     useDeleteAdminDigitalProductMutation,
+    useReorderAdminDigitalProductsMutation,
     useGetAdminDigitalOrdersQuery,
     useGetAdminDigitalOrdersStatsQuery,
     useReviewAdminDigitalOrderMutation,

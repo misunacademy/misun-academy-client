@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState, type DragEvent } from 'react';
 import { toast } from 'sonner';
 import {
     Plus,
@@ -14,6 +14,8 @@ import {
     EyeOff,
     FileCode,
     FileText,
+    GripVertical,
+    ArrowUpDown,
 } from 'lucide-react';
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
 import { Button } from '@/components/ui/button';
@@ -27,6 +29,7 @@ import {
     useGetAdminDigitalProductsQuery,
     useUpdateAdminDigitalProductMutation,
     useDeleteAdminDigitalProductMutation,
+    useReorderAdminDigitalProductsMutation,
 } from '@/redux/api/digitalProductApi';
 import { DigitalProductModal } from './DigitalProductModal';
 
@@ -36,17 +39,82 @@ export function DigitalProductsClient() {
     const [statusFilter, setStatusFilter] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<DigitalProduct | null>(null);
+    // In-progress drag order. Stores ids only, so every rendered row still uses
+    // the freshest server data (edits are never stale).
+    const [draftOrder, setDraftOrder] = useState<{ key: string; ids: string[] } | null>(null);
+    const orderRef = useRef<string[]>([]);
+    const draftKeyRef = useRef('');
+    const dragIndexRef = useRef<number | null>(null);
 
     const { data, isLoading, refetch } = useGetAdminDigitalProductsQuery({
         search: search || undefined,
         software: softwareFilter || undefined,
         status: statusFilter || undefined,
+        limit: 100,
     });
 
     const [updateProduct] = useUpdateAdminDigitalProductMutation();
     const [deleteProduct, { isLoading: isDeleting }] = useDeleteAdminDigitalProductMutation();
+    const [reorderProducts] = useReorderAdminDigitalProductsMutation();
 
     const products = data?.data ?? [];
+    const isFilterActive = Boolean(search.trim() || softwareFilter || statusFilter);
+    const productsKey = products.map((p) => p._id).join(',');
+
+    const productById = new Map(products.map((p) => [p._id, p] as const));
+    const displayProducts =
+        draftOrder && draftOrder.key === productsKey
+            ? draftOrder.ids
+                  .map((id) => productById.get(id))
+                  .filter((p): p is DigitalProduct => Boolean(p))
+            : products;
+
+    const handleDragStart = (index: number) => {
+        if (isFilterActive) return;
+        dragIndexRef.current = index;
+        draftKeyRef.current = productsKey;
+        orderRef.current = displayProducts.map((p) => p._id);
+    };
+
+    const handleDragOver = (
+        event: DragEvent<HTMLTableRowElement>,
+        index: number
+    ) => {
+        event.preventDefault();
+        if (isFilterActive) return;
+
+        const from = dragIndexRef.current;
+        if (from === null || from === index) return;
+
+        const next = [...orderRef.current];
+        const [moved] = next.splice(from, 1);
+        if (!moved) return;
+        next.splice(index, 0, moved);
+
+        orderRef.current = next;
+        setDraftOrder({ key: draftKeyRef.current, ids: next });
+        dragIndexRef.current = index;
+    };
+
+    const handleDragEnd = async () => {
+        dragIndexRef.current = null;
+        if (isFilterActive) return;
+
+        const currentIds = orderRef.current;
+        const baseline = products.map((p) => p._id).join(',');
+        if (!currentIds.length || currentIds.join(',') === baseline) return;
+
+        const items = currentIds.map((id, index) => ({ id, sortOrder: index }));
+
+        try {
+            await reorderProducts({ items }).unwrap();
+            toast.success('Product order updated successfully');
+        } catch (err) {
+            toast.error(getApiErrorMessage(err, 'Failed to update product order'));
+            setDraftOrder(null);
+            refetch();
+        }
+    };
 
     const handleOpenCreate = () => {
         setEditingProduct(null);
@@ -138,6 +206,16 @@ export function DigitalProductsClient() {
                                     <option value="draft">Draft</option>
                                 </select>
                             </div>
+                            <p
+                                className={`mt-3 flex items-center gap-1.5 text-[11px] font-medium ${
+                                    isFilterActive ? 'text-amber-700' : 'text-gray-500'
+                                }`}
+                            >
+                                <ArrowUpDown className="h-3.5 w-3.5 shrink-0" />
+                                {isFilterActive
+                                    ? 'Drag & drop ordering is paused while filters are active. Clear the filters to rearrange products.'
+                                    : 'Drag the handle on the left of any row to change the storefront display order. Changes save automatically.'}
+                            </p>
                         </CardContent>
                     </Card>
 
@@ -147,6 +225,9 @@ export function DigitalProductsClient() {
                             <table className="w-full text-left text-sm text-gray-700">
                                 <thead className="border-b border-gray-200 bg-gray-100 text-xs font-bold uppercase text-gray-800">
                                     <tr>
+                                        <th className="w-10 px-3 py-4">
+                                            <span className="sr-only">Reorder</span>
+                                        </th>
                                         <th className="px-6 py-4">Product</th>
                                         <th className="px-6 py-4">Software</th>
                                         <th className="px-6 py-4">Price (BDT / INR)</th>
@@ -159,23 +240,51 @@ export function DigitalProductsClient() {
                                 <tbody className="divide-y divide-gray-200">
                                     {isLoading ? (
                                         <tr>
-                                            <td colSpan={7} className="px-6 py-12 text-center text-gray-600 font-semibold">
+                                            <td colSpan={8} className="px-6 py-12 text-center text-gray-600 font-semibold">
                                                 Loading digital products...
                                             </td>
                                         </tr>
-                                    ) : products.length === 0 ? (
+                                    ) : displayProducts.length === 0 ? (
                                         <tr>
-                                            <td colSpan={7} className="px-6 py-12 text-center text-gray-600 font-semibold">
+                                            <td colSpan={8} className="px-6 py-12 text-center text-gray-600 font-semibold">
                                                 No digital products found.
                                             </td>
                                         </tr>
                                     ) : (
-                                        products.map((p) => {
+                                        displayProducts.map((p, index) => {
                                             const bdtFree = getEffectiveBdtPrice(p) <= 0;
                                             const inrFree = getEffectiveInrPrice(p) <= 0;
 
                                             return (
-                                                <tr key={p._id} className="transition hover:bg-gray-50/80">
+                                                <tr
+                                                    key={p._id}
+                                                    draggable={!isFilterActive}
+                                                    onDragStart={() => handleDragStart(index)}
+                                                    onDragOver={(event) => handleDragOver(event, index)}
+                                                    onDragEnd={handleDragEnd}
+                                                    onDrop={(event) => event.preventDefault()}
+                                                    className={`transition hover:bg-gray-50/80 ${
+                                                        isFilterActive
+                                                            ? ''
+                                                            : 'cursor-move active:bg-amber-50/60'
+                                                    }`}
+                                                >
+                                                    <td className="px-3 py-4 align-middle">
+                                                        <span
+                                                            title={
+                                                                isFilterActive
+                                                                    ? 'Clear filters to reorder'
+                                                                    : 'Drag to reorder'
+                                                            }
+                                                            className={`inline-flex h-8 w-8 items-center justify-center rounded-md ${
+                                                                isFilterActive
+                                                                    ? 'cursor-not-allowed text-gray-300'
+                                                                    : 'cursor-grab text-gray-400 hover:bg-gray-100 hover:text-gray-700 active:cursor-grabbing'
+                                                            }`}
+                                                        >
+                                                            <GripVertical className="h-4 w-4" />
+                                                        </span>
+                                                    </td>
                                                     <td className="px-6 py-4">
                                                         <div>
                                                             <div className="flex items-center gap-2 font-bold text-gray-900 text-sm">
