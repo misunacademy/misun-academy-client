@@ -232,7 +232,11 @@ export const digitalProductApi = baseApi.injectEndpoints({
 
         reorderAdminDigitalProducts: builder.mutation<
             { success: boolean; data: { reordered: number } },
-            { items: { id: string; sortOrder: number }[] }
+            {
+                items: { id: string; sortOrder: number }[];
+                page?: number;
+                limit?: number;
+            }
         >({
             query: (body) => ({
                 url: '/digital-products/admin/products/reorder',

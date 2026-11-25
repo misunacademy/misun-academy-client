@@ -16,6 +16,8 @@ import {
     FileText,
     GripVertical,
     ArrowUpDown,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import DashboardPageContainer from '@/components/layout/DashboardPageContainer';
 import { Button } from '@/components/ui/button';
@@ -33,10 +35,13 @@ import {
 } from '@/redux/api/digitalProductApi';
 import { DigitalProductModal } from './DigitalProductModal';
 
+const PAGE_SIZE = 10;
+
 export function DigitalProductsClient() {
     const [search, setSearch] = useState('');
     const [softwareFilter, setSoftwareFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [page, setPage] = useState(1);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<DigitalProduct | null>(null);
     // In-progress drag order. Stores ids only, so every rendered row still uses
@@ -50,7 +55,8 @@ export function DigitalProductsClient() {
         search: search || undefined,
         software: softwareFilter || undefined,
         status: statusFilter || undefined,
-        limit: 100,
+        page,
+        limit: PAGE_SIZE,
     });
 
     const [updateProduct] = useUpdateAdminDigitalProductMutation();
@@ -60,6 +66,10 @@ export function DigitalProductsClient() {
     const products = data?.data ?? [];
     const isFilterActive = Boolean(search.trim() || softwareFilter || statusFilter);
     const productsKey = products.map((p) => p._id).join(',');
+    const total = data?.meta?.total ?? 0;
+    const totalPages = Math.max(1, data?.meta?.totalPage ?? 1);
+    const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+    const rangeEnd = Math.min(page * PAGE_SIZE, total);
 
     const productById = new Map(products.map((p) => [p._id, p] as const));
     const displayProducts =
@@ -107,7 +117,7 @@ export function DigitalProductsClient() {
         const items = currentIds.map((id, index) => ({ id, sortOrder: index }));
 
         try {
-            await reorderProducts({ items }).unwrap();
+            await reorderProducts({ items, page, limit: PAGE_SIZE }).unwrap();
             toast.success('Product order updated successfully');
         } catch (err) {
             toast.error(getApiErrorMessage(err, 'Failed to update product order'));
@@ -148,6 +158,11 @@ export function DigitalProductsClient() {
         try {
             await deleteProduct(id).unwrap();
             toast.success('Product deleted successfully');
+            // Never leave the admin on a page that became empty after deleting
+            // its last product.
+            if (products.length === 1 && page > 1) {
+                setPage((prev) => Math.max(1, prev - 1));
+            }
         } catch {
             toast.error('Failed to delete product');
         }
@@ -180,14 +195,20 @@ export function DigitalProductsClient() {
                                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                     <Input
                                         value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
+                                        onChange={(e) => {
+                                            setSearch(e.target.value);
+                                            setPage(1);
+                                        }}
                                         placeholder="Search products by title or slug..."
                                         className="bg-gray-50/50 border-gray-200 pl-9 text-sm text-gray-900 placeholder:text-gray-400 focus:bg-white"
                                     />
                                 </div>
                                 <select
                                     value={softwareFilter}
-                                    onChange={(e) => setSoftwareFilter(e.target.value)}
+                                    onChange={(e) => {
+                                        setSoftwareFilter(e.target.value);
+                                        setPage(1);
+                                    }}
                                     className="rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-primary"
                                 >
                                     <option value="">All Software</option>
@@ -198,7 +219,10 @@ export function DigitalProductsClient() {
                                 </select>
                                 <select
                                     value={statusFilter}
-                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    onChange={(e) => {
+                                        setStatusFilter(e.target.value);
+                                        setPage(1);
+                                    }}
                                     className="rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-primary"
                                 >
                                     <option value="">All Statuses</option>
@@ -214,7 +238,7 @@ export function DigitalProductsClient() {
                                 <ArrowUpDown className="h-3.5 w-3.5 shrink-0" />
                                 {isFilterActive
                                     ? 'Drag & drop ordering is paused while filters are active. Clear the filters to rearrange products.'
-                                    : 'Drag the handle on the left of any row to change the storefront display order. Changes save automatically.'}
+                                    : `Drag the handle on the left of any row to change the order (within the current page). Changes save automatically.`}
                             </p>
                         </CardContent>
                     </Card>
@@ -436,6 +460,38 @@ export function DigitalProductsClient() {
                                     )}
                                 </tbody>
                             </table>
+                        </div>
+
+                        {/* Server-side pagination */}
+                        <div className="flex flex-col gap-2 border-t border-gray-200 bg-gray-50/60 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                            <p className="text-xs font-medium text-gray-600">
+                                {total === 0
+                                    ? 'No products to show'
+                                    : `Showing ${rangeStart}–${rangeEnd} of ${total} product${total === 1 ? '' : 's'}`}
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                                    disabled={page <= 1 || isLoading}
+                                    className="h-8 gap-1 border-gray-300 text-xs"
+                                >
+                                    <ChevronLeft className="h-3.5 w-3.5" /> Previous
+                                </Button>
+                                <span className="min-w-[90px] text-center text-xs font-semibold text-gray-700">
+                                    Page {page} of {totalPages}
+                                </span>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                                    disabled={page >= totalPages || isLoading}
+                                    className="h-8 gap-1 border-gray-300 text-xs"
+                                >
+                                    Next <ChevronRight className="h-3.5 w-3.5" />
+                                </Button>
+                            </div>
                         </div>
                     </Card>
 
