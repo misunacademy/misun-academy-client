@@ -172,7 +172,7 @@ export function DigitalProductCard({ product, onBuy }: DigitalProductCardProps) 
                     </div>
 
                     <div className="min-w-0 pl-3 text-right sm:pl-4">
-                        <div className="flex items-center justify-end gap-1 text-lg font-bold text-amber-300/90">
+                        <div className="flex items-center justify-end gap-1 text-lg font-bold text-white/75">
                             <span aria-hidden>🇮🇳</span>
                             <span className="font-bangla">ভারত</span>
                         </div>
@@ -185,8 +185,8 @@ export function DigitalProductCard({ product, onBuy }: DigitalProductCardProps) 
                             <span
                                 className={`tracking-tight ${
                                     inrFree
-                                        ? 'font-bangla text-lg font-extrabold text-amber-300 sm:text-xl'
-                                        : 'font-mona text-lg font-bold text-amber-300 sm:text-xl'
+                                        ? 'font-bangla text-lg font-extrabold text-white sm:text-xl'
+                                        : 'font-mona text-lg font-bold text-white sm:text-xl'
                                 }`}
                             >
                                 {inrFree ? 'ফ্রি' : `₹${inrPrice.toLocaleString("bn")}`}
