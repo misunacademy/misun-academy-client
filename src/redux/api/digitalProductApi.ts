@@ -24,9 +24,9 @@ export interface DigitalProduct {
     description?: string;
     software: 'photoshop' | 'illustrator' | 'bundle' | 'other';
     priceBDT: number;
-    discountPriceBDT?: number;
+    discountPriceBDT?: number | null;
     priceINR: number;
-    discountPriceINR?: number;
+    discountPriceINR?: number | null;
     thumbnail?: string;
     badge?: string;
     features: string[];
@@ -54,7 +54,7 @@ export interface DigitalProductOrder {
         phone: string;
         country: string;
     };
-    paymentMethod: 'SSLCommerz' | 'PhonePe_Manual' | 'Perk';
+    paymentMethod: 'SSLCommerz' | 'PhonePe_Manual' | 'Perk' | 'Free';
     currency: 'BDT' | 'INR';
     amount: number;
     transactionId: string;
@@ -152,6 +152,28 @@ export const digitalProductApi = baseApi.injectEndpoints({
                 body,
             }),
             invalidatesTags: ['DigitalProductOrders'],
+        }),
+
+        claimFreeDigitalProduct: builder.mutation<
+            {
+                success: boolean;
+                message: string;
+                data: { orderNumber: string; downloadToken: string; alreadyClaimed: boolean };
+            },
+            {
+                productId: string;
+                name?: string;
+                email?: string;
+                phone?: string;
+                currency?: 'BDT' | 'INR';
+            }
+        >({
+            query: (body) => ({
+                url: '/digital-products/checkout/free',
+                method: 'POST',
+                body,
+            }),
+            invalidatesTags: ['DigitalProductOrders', 'DigitalProducts'],
         }),
 
         getMyDigitalPurchases: builder.query<{ success: boolean; data: MyPurchasedDigitalProduct[] }, void>({
@@ -258,6 +280,7 @@ export const {
     useGetProductBySlugQuery,
     useInitiateDigitalProductSSLMutation,
     useSubmitDigitalProductPhonePeMutation,
+    useClaimFreeDigitalProductMutation,
     useGetMyDigitalPurchasesQuery,
     useGetAdminDigitalProductsQuery,
     useCreateAdminDigitalProductMutation,

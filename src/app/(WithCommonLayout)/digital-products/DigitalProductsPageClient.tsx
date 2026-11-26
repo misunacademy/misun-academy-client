@@ -42,12 +42,20 @@ export default function DigitalProductsPageClient() {
     // derived during render instead of being copied into state inside an effect.
     const [manualOrderNumber, setManualOrderNumber] = useState<string | null>(null);
 
+    // A free claim returns the download token immediately, so it opens the
+    // success dialog in its unlocked (download) state.
+    const [freeClaim, setFreeClaim] = useState<{ orderNumber: string; downloadToken: string } | null>(null);
+
     const digitalPayment = searchParams.get('digitalPayment');
     const isPaymentSuccess = digitalPayment === 'success';
-    const successOpen = manualOrderNumber !== null || isPaymentSuccess;
-    const successOrderId = manualOrderNumber ?? searchParams.get('orderId') ?? undefined;
-    const successToken = manualOrderNumber !== null ? undefined : searchParams.get('token') ?? undefined;
+    const successOpen = freeClaim !== null || manualOrderNumber !== null || isPaymentSuccess;
+    const successOrderId =
+        freeClaim?.orderNumber ?? manualOrderNumber ?? searchParams.get('orderId') ?? undefined;
+    const successToken =
+        freeClaim?.downloadToken ??
+        (manualOrderNumber !== null ? undefined : searchParams.get('token') ?? undefined);
     const isManualPending = manualOrderNumber !== null;
+    const isFreeClaim = freeClaim !== null;
 
     useEffect(() => {
         if (digitalPayment === 'success') {
@@ -69,6 +77,10 @@ export default function DigitalProductsPageClient() {
 
     const handleManualSuccess = (orderNumber: string) => {
         setManualOrderNumber(orderNumber);
+    };
+
+    const handleFreeSuccess = (orderNumber: string, downloadToken: string) => {
+        setFreeClaim({ orderNumber, downloadToken });
     };
 
     // Filter products
@@ -276,6 +288,7 @@ export default function DigitalProductsPageClient() {
                 onClose={() => setCheckoutOpen(false)}
                 product={selectedProduct}
                 onSuccessManual={handleManualSuccess}
+                onSuccessFree={handleFreeSuccess}
             />
 
             {/* Success / Download Dialog */}
@@ -283,6 +296,7 @@ export default function DigitalProductsPageClient() {
                 open={successOpen}
                 onClose={() => {
                     setManualOrderNumber(null);
+                    setFreeClaim(null);
                     if (searchParams.get('digitalPayment')) {
                         router.replace('/digital-products', { scroll: false });
                     }
@@ -290,6 +304,7 @@ export default function DigitalProductsPageClient() {
                 orderId={successOrderId}
                 downloadToken={successToken}
                 isManualPending={isManualPending}
+                isFreeClaim={isFreeClaim}
             />
         </div>
     );

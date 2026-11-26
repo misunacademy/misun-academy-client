@@ -7,7 +7,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, Download, FileCode, FileText, Clock } from 'lucide-react';
+import { CheckCircle2, Download, FileCode, FileText, Clock, Gift } from 'lucide-react';
 
 interface DigitalProductSuccessDialogProps {
     open: boolean;
@@ -15,6 +15,7 @@ interface DigitalProductSuccessDialogProps {
     orderId?: string;
     downloadToken?: string;
     isManualPending?: boolean;
+    isFreeClaim?: boolean;
 }
 
 export function DigitalProductSuccessDialog({
@@ -23,6 +24,7 @@ export function DigitalProductSuccessDialog({
     orderId,
     downloadToken,
     isManualPending = false,
+    isFreeClaim = false,
 }: DigitalProductSuccessDialogProps) {
     const baseApi = process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:5000/api/v1';
 
@@ -44,10 +46,20 @@ export function DigitalProductSuccessDialog({
                                 : 'bg-emerald-500/10 text-emerald-400'
                         }`}
                     >
-                        {isManualPending ? <Clock className="h-7 w-7" /> : <CheckCircle2 className="h-7 w-7" />}
+                        {isManualPending ? (
+                            <Clock className="h-7 w-7" />
+                        ) : isFreeClaim ? (
+                            <Gift className="h-7 w-7" />
+                        ) : (
+                            <CheckCircle2 className="h-7 w-7" />
+                        )}
                     </div>
                     <DialogTitle className="font-bangla text-xl font-bold">
-                        {isManualPending ? 'পেমেন্ট রিকোয়েস্ট গৃহীত হয়েছে' : 'পেমেন্ট সফল হয়েছে!'}
+                        {isManualPending
+                            ? 'পেমেন্ট রিকোয়েস্ট গৃহীত হয়েছে'
+                            : isFreeClaim
+                              ? 'ফ্রি প্রোডাক্ট আনলক হয়েছে!'
+                              : 'পেমেন্ট সফল হয়েছে!'}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -70,7 +82,9 @@ export function DigitalProductSuccessDialog({
                 ) : (
                     <div className="mt-4 space-y-4 font-bangla">
                         <p className="text-xs text-white/70">
-                            অভিনন্দন! আপনার ডিজিটাল প্রোডাক্ট সফলভাবে আনলক হয়েছে। নিচের বাটনগুলো চেপে এখনই ডাউনলোড করুন:
+                            {isFreeClaim
+                                ? 'অভিনন্দন! আপনার ফ্রি ডিজিটাল প্রোডাক্টটি সফলভাবে সংগ্রহ করা হয়েছে। নিচের বাটনগুলো চেপে এখনই ডাউনলোড করুন:'
+                                : 'অভিনন্দন! আপনার ডিজিটাল প্রোডাক্ট সফলভাবে আনলক হয়েছে। নিচের বাটনগুলো চেপে এখনই ডাউনলোড করুন:'}
                         </p>
 
                         <div className="space-y-2.5">

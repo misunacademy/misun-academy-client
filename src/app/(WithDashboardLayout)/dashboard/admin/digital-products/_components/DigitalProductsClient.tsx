@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { getApiErrorMessage } from '@/lib/api-helpers';
+import { getEffectiveBdtPrice, getEffectiveInrPrice } from '@/lib/digitalProductPricing';
 import {
     DigitalProduct,
     useGetAdminDigitalProductsQuery,
@@ -170,6 +171,9 @@ export function DigitalProductsClient() {
                                         </tr>
                                     ) : (
                                         products.map((p) => {
+                                            const bdtFree = getEffectiveBdtPrice(p) <= 0;
+                                            const inrFree = getEffectiveInrPrice(p) <= 0;
+
                                             return (
                                                 <tr key={p._id} className="transition hover:bg-gray-50/80">
                                                     <td className="px-6 py-4">
@@ -204,7 +208,9 @@ export function DigitalProductsClient() {
                                                     <td className="px-6 py-4">
                                                         <div className="text-xs space-y-1">
                                                             <div className="flex items-center gap-1.5">
-                                                                {p.discountPriceBDT && p.discountPriceBDT < p.priceBDT ? (
+                                                                {bdtFree ? (
+                                                                    <span className="font-bold text-emerald-800 text-sm">ফ্রি</span>
+                                                                ) : p.discountPriceBDT != null && p.discountPriceBDT < p.priceBDT ? (
                                                                     <>
                                                                         <span className="font-medium text-gray-400 line-through decoration-red-500/70 text-xs">
                                                                             ৳{p.priceBDT}
@@ -220,7 +226,9 @@ export function DigitalProductsClient() {
                                                                 )}
                                                             </div>
                                                             <div className="flex items-center gap-1.5">
-                                                                {p.discountPriceINR && p.discountPriceINR < p.priceINR ? (
+                                                                {inrFree ? (
+                                                                    <span className="font-bold text-amber-800 text-xs">ফ্রি</span>
+                                                                ) : p.discountPriceINR != null && p.discountPriceINR < p.priceINR ? (
                                                                     <>
                                                                         <span className="font-medium text-gray-400 line-through decoration-red-500/70 text-[11px]">
                                                                             ₹{p.priceINR}

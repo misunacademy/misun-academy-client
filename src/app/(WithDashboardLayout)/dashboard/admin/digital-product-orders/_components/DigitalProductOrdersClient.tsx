@@ -230,6 +230,13 @@ export function DigitalProductOrdersClient() {
                                                             >
                                                                 Enrollment Perk (Free)
                                                             </Badge>
+                                                        ) : o.paymentMethod === 'Free' ? (
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="border-emerald-300 bg-emerald-50 text-emerald-900 text-[11px] font-bold"
+                                                            >
+                                                                Free Download
+                                                            </Badge>
                                                         ) : (
                                                             <Badge
                                                                 variant="outline"

@@ -111,7 +111,7 @@ export function PaymentHistoryTab() {
                     <>
                         {digitalPurchases.map((item) => {
                             const isINR = item.currency === 'INR';
-                            const paymentMethodDisplay = item.paymentMethod === 'PhonePe_Manual' ? 'PhonePe' : item.paymentMethod === 'Perk' ? 'Enrollment Perk (Free)' : (item.paymentMethod || (isINR ? 'PhonePe' : 'SSLCommerz'));
+                            const paymentMethodDisplay = item.paymentMethod === 'PhonePe_Manual' ? 'PhonePe' : item.paymentMethod === 'Perk' ? 'Enrollment Perk (Free)' : item.paymentMethod === 'Free' ? 'Free Claim' : (item.paymentMethod || (isINR ? 'PhonePe' : 'SSLCommerz'));
                             const baseApi = process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:5000/api/v1';
                             const itemStatus =
                                 item.status === 'paid'
@@ -148,8 +148,14 @@ export function PaymentHistoryTab() {
                                             <div>
                                                 <p className="text-white/40 text-xs mb-1">Amount</p>
                                                 <p className="font-semibold text-primary text-lg">
-                                                    <span className="text-primary/70 text-sm">{isINR ? '₹' : '৳'}</span>{" "}
-                                                    {item.amount?.toLocaleString()}
+                                                    {item.amount === 0 ? (
+                                                        <span className="text-emerald-400">ফ্রি</span>
+                                                    ) : (
+                                                        <>
+                                                            <span className="text-primary/70 text-sm">{isINR ? '₹' : '৳'}</span>{" "}
+                                                            {item.amount?.toLocaleString()}
+                                                        </>
+                                                    )}
                                                 </p>
                                             </div>
                                             <div>
