@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
@@ -11,28 +11,47 @@ import {
     Download,
     Headphones,
     RefreshCw,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import {
     DigitalProduct,
-    useGetPublishedDigitalProductsQuery,
+    useGetPublishedDigitalProductsPaginatedQuery,
 } from '@/redux/api/digitalProductApi';
 import { DigitalProductCheckoutDialog } from '../bootcamp/_components/DigitalProductCheckoutDialog';
 import { DigitalProductSuccessDialog } from '../bootcamp/_components/DigitalProductSuccessDialog';
 import { DigitalProductCard } from '../bootcamp/_components/DigitalProductCard';
+
+const PAGE_SIZE = 9;
 
 export default function DigitalProductsPageClient() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { user } = useAuth();
 
-    const { data, isLoading } = useGetPublishedDigitalProductsQuery();
-    const products = useMemo(() => data?.data ?? [], [data]);
-
     const [selectedCategory, setSelectedCategory] = useState<'all' | 'photoshop' | 'illustrator' | 'bundle'>('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const debouncedSearch = useDebouncedValue(searchQuery.trim(), 350);
+
+    const { data, isLoading, isFetching } = useGetPublishedDigitalProductsPaginatedQuery({
+        page,
+        limit: PAGE_SIZE,
+        software: selectedCategory === 'all' ? undefined : selectedCategory,
+        search: debouncedSearch || undefined,
+    });
+
+    const products = data?.data ?? [];
+    const meta = data?.meta;
+    const counts = meta?.counts ?? { all: 0, photoshop: 0, illustrator: 0, bundle: 0 };
+    const total = meta?.total ?? 0;
+    const totalPages = Math.max(1, meta?.totalPage ?? 1);
+    const rangeStart = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+    const rangeEnd = Math.min(page * PAGE_SIZE, total);
 
     const [selectedProduct, setSelectedProduct] = useState<DigitalProduct | null>(null);
     const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -83,27 +102,10 @@ export default function DigitalProductsPageClient() {
         setFreeClaim({ orderNumber, downloadToken });
     };
 
-    // Filter products
-    const filteredProducts = useMemo(() => {
-        return products.filter((p) => {
-            const matchesCat =
-                selectedCategory === 'all' ||
-                p.software.toLowerCase() === selectedCategory.toLowerCase();
-            const matchesQuery =
-                !searchQuery.trim() ||
-                p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (p.tagline && p.tagline.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                p.software.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesCat && matchesQuery;
-        });
-    }, [products, selectedCategory, searchQuery]);
-
-    const counts = useMemo(() => ({
-        all: products.length,
-        photoshop: products.filter((p) => p.software === 'photoshop').length,
-        illustrator: products.filter((p) => p.software === 'illustrator').length,
-        bundle: products.filter((p) => p.software === 'bundle').length,
-    }), [products]);
+    const handleCategoryChange = (category: 'all' | 'photoshop' | 'illustrator' | 'bundle') => {
+        setSelectedCategory(category);
+        setPage(1);
+    };
 
     return (
         <div className="relative min-h-screen bg-[#09090b] text-white">
@@ -136,7 +138,7 @@ export default function DigitalProductsPageClient() {
                     <div className="flex flex-wrap gap-2">
                         <button
                             type="button"
-                            onClick={() => setSelectedCategory('all')}
+                            onClick={() => handleCategoryChange('all')}
                             className={`rounded-xl px-4 py-2 font-bangla text-xs font-bold transition-all ${
                                 selectedCategory === 'all'
                                     ? 'bg-[#ffd60a] text-black shadow-md shadow-[#ffd60a]/20'
@@ -148,7 +150,7 @@ export default function DigitalProductsPageClient() {
 
                         <button
                             type="button"
-                            onClick={() => setSelectedCategory('photoshop')}
+                            onClick={() => handleCategoryChange('photoshop')}
                             className={`rounded-xl px-4 py-2 font-bangla text-xs font-bold transition-all ${
                                 selectedCategory === 'photoshop'
                                     ? 'bg-blue-500 text-white shadow-md shadow-blue-500/20'
@@ -160,7 +162,7 @@ export default function DigitalProductsPageClient() {
 
                         <button
                             type="button"
-                            onClick={() => setSelectedCategory('illustrator')}
+                            onClick={() => handleCategoryChange('illustrator')}
                             className={`rounded-xl px-4 py-2 font-bangla text-xs font-bold transition-all ${
                                 selectedCategory === 'illustrator'
                                     ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20'
@@ -172,7 +174,7 @@ export default function DigitalProductsPageClient() {
 
                         <button
                             type="button"
-                            onClick={() => setSelectedCategory('bundle')}
+                            onClick={() => handleCategoryChange('bundle')}
                             className={`rounded-xl px-4 py-2 font-bangla text-xs font-bold transition-all ${
                                 selectedCategory === 'bundle'
                                     ? 'bg-yellow-400 text-black shadow-md shadow-yellow-400/20'
@@ -188,7 +190,10 @@ export default function DigitalProductsPageClient() {
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
                         <Input
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                setPage(1);
+                            }}
                             placeholder="স্ক্রিপ্ট বা সফটওয়্যার খুঁজুন..."
                             className="border-white/10 bg-white/5 pl-9 text-xs font-bangla text-white placeholder:text-white/40 focus:border-[#ffd60a]"
                         />
@@ -203,7 +208,7 @@ export default function DigitalProductsPageClient() {
                 )}
 
                 {/* Empty State */}
-                {!isLoading && filteredProducts.length === 0 && (
+                {!isLoading && products.length === 0 && (
                     <div className="my-16 rounded-3xl border border-dashed border-white/10 bg-white/[0.02] p-12 text-center">
                         <FileCode className="mx-auto h-12 w-12 text-white/30" />
                         <h3 className="mt-4 font-bangla text-lg font-bold text-white">কোনো প্রোডাক্ট পাওয়া যায়নি</h3>
@@ -215,6 +220,7 @@ export default function DigitalProductsPageClient() {
                             onClick={() => {
                                 setSelectedCategory('all');
                                 setSearchQuery('');
+                                setPage(1);
                             }}
                             className="mt-4 border-white/20 text-xs font-bangla text-white hover:bg-white/10"
                         >
@@ -224,15 +230,52 @@ export default function DigitalProductsPageClient() {
                 )}
 
                 {/* Products Grid */}
-                {!isLoading && filteredProducts.length > 0 && (
-                    <div className="mt-10 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                        {filteredProducts.map((product) => (
+                {!isLoading && products.length > 0 && (
+                    <div
+                        aria-busy={isFetching}
+                        className={`mt-10 grid gap-8 transition-opacity md:grid-cols-2 lg:grid-cols-3 ${
+                            isFetching ? 'opacity-60' : 'opacity-100'
+                        }`}
+                    >
+                        {products.map((product) => (
                             <DigitalProductCard
                                 key={product._id}
                                 product={product}
                                 onBuy={handleOpenCheckout}
                             />
                         ))}
+                    </div>
+                )}
+
+                {/* Server-side pagination */}
+                {!isLoading && total > 0 && (
+                    <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
+                        <p className="font-bangla text-xs text-white/50">
+                            দেখানো হচ্ছে {rangeStart}–{rangeEnd} / {total} প্রোডাক্ট
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                                disabled={page <= 1 || isFetching}
+                                className="gap-1 border-white/20 bg-white/5 font-bangla text-xs text-white hover:bg-white/10 hover:text-white disabled:opacity-40"
+                            >
+                                <ChevronLeft className="h-3.5 w-3.5" /> আগের
+                            </Button>
+                            <span className="min-w-[90px] text-center font-bangla text-xs font-semibold text-white/70">
+                                পেজ {page} / {totalPages}
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                                disabled={page >= totalPages || isFetching}
+                                className="gap-1 border-white/20 bg-white/5 font-bangla text-xs text-white hover:bg-white/10 hover:text-white disabled:opacity-40"
+                            >
+                                পরের <ChevronRight className="h-3.5 w-3.5" />
+                            </Button>
+                        </div>
                     </div>
                 )}
 

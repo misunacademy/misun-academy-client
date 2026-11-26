@@ -34,6 +34,7 @@ export interface DigitalProduct {
     guidePdf?: DigitalProductFile;
     isPublished: boolean;
     status?: 'draft' | 'published';
+    sortOrder?: number;
     salesCount: number;
     createdAt?: string;
     updatedAt?: string;
@@ -80,6 +81,21 @@ export interface DigitalProductOrderStats {
     paidOrders: number;
 }
 
+export interface DigitalProductListCounts {
+    all: number;
+    photoshop: number;
+    illustrator: number;
+    bundle: number;
+}
+
+export interface DigitalProductListMeta {
+    page: number;
+    limit: number;
+    total: number;
+    totalPage: number;
+    counts: DigitalProductListCounts;
+}
+
 export interface MyPurchasedDigitalProduct {
     orderNumber: string;
     transactionId?: string;
@@ -111,6 +127,18 @@ export const digitalProductApi = baseApi.injectEndpoints({
             query: () => ({
                 url: '/digital-products/bootcamp',
                 method: 'GET',
+            }),
+            providesTags: ['DigitalProducts'],
+        }),
+
+        getPublishedDigitalProductsPaginated: builder.query<
+            { success: boolean; data: DigitalProduct[]; meta: DigitalProductListMeta },
+            { page?: number; limit?: number; software?: string; search?: string } | void
+        >({
+            query: (params) => ({
+                url: '/digital-products',
+                method: 'GET',
+                params: params || {},
             }),
             providesTags: ['DigitalProducts'],
         }),
@@ -229,6 +257,22 @@ export const digitalProductApi = baseApi.injectEndpoints({
             invalidatesTags: ['DigitalProducts'],
         }),
 
+        reorderAdminDigitalProducts: builder.mutation<
+            { success: boolean; data: { reordered: number } },
+            {
+                items: { id: string; sortOrder: number }[];
+                page?: number;
+                limit?: number;
+            }
+        >({
+            query: (body) => ({
+                url: '/digital-products/admin/products/reorder',
+                method: 'PATCH',
+                body,
+            }),
+            invalidatesTags: ['DigitalProducts'],
+        }),
+
         // Admin: Orders
         getAdminDigitalOrders: builder.query<
             { success: boolean; data: DigitalProductOrder[]; meta: { total: number; page: number; limit: number; totalPage: number } },
@@ -277,6 +321,7 @@ export const digitalProductApi = baseApi.injectEndpoints({
 
 export const {
     useGetPublishedDigitalProductsQuery,
+    useGetPublishedDigitalProductsPaginatedQuery,
     useGetProductBySlugQuery,
     useInitiateDigitalProductSSLMutation,
     useSubmitDigitalProductPhonePeMutation,
@@ -286,6 +331,7 @@ export const {
     useCreateAdminDigitalProductMutation,
     useUpdateAdminDigitalProductMutation,
     useDeleteAdminDigitalProductMutation,
+    useReorderAdminDigitalProductsMutation,
     useGetAdminDigitalOrdersQuery,
     useGetAdminDigitalOrdersStatsQuery,
     useReviewAdminDigitalOrderMutation,
